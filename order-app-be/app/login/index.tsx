@@ -1,22 +1,50 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { TextInput, Button, Text } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from "react";
+import { View, StyleSheet } from "react-native";
+import { TextInput, Button, Text, ActivityIndicator } from "react-native-paper";
+import { loginRequest } from "../../api/api.service";
+import Toast from "react-native-toast-message";
+import { useDispatch, useSelector } from "react-redux";
+import { updateUser } from "../../stores/userSlice";
+import { RootState } from "../../stores/store";
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigation = useNavigation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.shop.user);
 
-  const handleLogin = () => {
-    // Implement authentication logic here
-    console.log('Email:', email, 'Password:', password);
-    // Example: navigation.navigate('Home');
+  const handleLogin = async () => {
+    console.log(user);
+    if (!email.trim() || !password.trim()) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Email and password are required",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const userData = await loginRequest(email, password);
+      dispatch(updateUser(userData));
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Login Failed",
+        text2: "Invalid email or password",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text variant="headlineLarge" style={styles.title}>Login</Text>
+      <Text variant="headlineLarge" style={styles.title}>
+        Login
+      </Text>
       <TextInput
         label="Email"
         value={email}
@@ -32,9 +60,22 @@ const LoginScreen = () => {
         secureTextEntry
         style={styles.input}
       />
-      <Button mode="contained" onPress={handleLogin} style={styles.button}>
-        Login
-      </Button>
+      {loading ? (
+        <ActivityIndicator
+          animating={true}
+          size="large"
+          style={styles.loader}
+        />
+      ) : (
+        <Button
+          mode="contained"
+          onPress={handleLogin}
+          style={styles.button}
+          disabled={loading}
+        >
+          Login
+        </Button>
+      )}
     </View>
   );
 };
@@ -42,12 +83,12 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   title: {
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 20,
   },
   input: {
@@ -55,6 +96,10 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 10,
+  },
+  loader: {
+    marginTop: 10,
+    alignSelf: "center",
   },
 });
 
