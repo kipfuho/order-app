@@ -1,7 +1,19 @@
+export interface Tokens {
+  access: {
+    token: string;
+    expires: Date;
+  };
+  refresh: {
+    token: string;
+    expires: Date;
+  };
+}
+
 export interface User {
   id?: string;
   name?: string;
   email?: string;
+  tokens?: Tokens;
 }
 
 export interface Restaurant {

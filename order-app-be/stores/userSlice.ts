@@ -1,6 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import _ from "lodash";
-import { Department, Dish, DishCategory, Employee, Restaurant, Table, TablePosition, Unit, User } from "./state.interface";
+import {
+  Department,
+  Dish,
+  DishCategory,
+  Employee,
+  Restaurant,
+  Table,
+  TablePosition,
+  Unit,
+  User,
+} from "./state.interface";
 
 interface ShopState {
   user: User | null;
@@ -35,6 +45,7 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     updateUser: (state, action: PayloadAction<User | null>) => {
+      console.log(action);
       if (!_.get(action, "payload")) {
         return;
       }
@@ -199,6 +210,7 @@ export const userSlice = createSlice({
 
 // Action creators
 export const {
+  updateUser,
   updateAllRestaurants,
   updateRestaurant,
   updateAllTables,
