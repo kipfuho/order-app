@@ -30,7 +30,7 @@ export const customerSlice = createSlice({
       state.cart = action.payload;
     },
 
-    updateUser: (state, action: PayloadAction<Customer | null>) => {
+    updateCustomer: (state, action: PayloadAction<Customer | null>) => {
       if (!_.get(action, "payload")) return;
       state.user = action.payload;
     },
@@ -38,6 +38,6 @@ export const customerSlice = createSlice({
 });
 
 // Action creators
-export const { updateMenu, updateCart, updateUser } = customerSlice.actions;
+export const { updateMenu, updateCart, updateCustomer } = customerSlice.actions;
 
 export default customerSlice.reducer;
