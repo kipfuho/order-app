@@ -8,14 +8,13 @@ import { updateUser } from "../../stores/userSlice";
 import { RootState } from "../../stores/store";
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("ctcakip@gmail.com");
+  const [password, setPassword] = useState("1234567q");
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.shop.user);
 
   const handleLogin = async () => {
-    console.log(user);
     if (!email.trim() || !password.trim()) {
       Toast.show({
         type: "error",
@@ -28,7 +27,6 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       const userData = await loginRequest(email, password);
-      dispatch(updateUser(userData));
     } catch (error) {
       Toast.show({
         type: "error",
