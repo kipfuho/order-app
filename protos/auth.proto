@@ -1,5 +1,6 @@
-package userpackage;
 syntax = "proto3";
+
+package auth;
 
 message User {
   string name = 1;
