@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON } = require('../../models/plugins');
+const { toJSON } = require('../../utils/plugins');
 const { getRestaurantFromCache } = require('../../metadata/restaraurantMetadata.service');
 const { getStartTimeOfToday } = require('../../utils/common');
 const { PaymentMethod, OrderSessionStatus } = require('../../utils/constant');

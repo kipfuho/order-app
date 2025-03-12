@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON } = require('../../models/plugins');
+const { toJSON } = require('../../utils/plugins');
 const { Status } = require('../../utils/constant');
 
 const dishSchema = mongoose.Schema(

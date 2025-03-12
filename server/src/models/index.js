@@ -1,5 +1,5 @@
-module.exports.Token = require('./token.model');
-module.exports.User = require('./user.model');
+module.exports.Token = require('../auth/models/token.model');
+module.exports.User = require('../auth/models/user.model');
 module.exports.Restaurant = require('../restaurant-management/models/restaurant.model');
 module.exports.TablePosition = require('../restaurant-management/models/tablePosition.model');
 module.exports.Table = require('../restaurant-management/models/table.model');

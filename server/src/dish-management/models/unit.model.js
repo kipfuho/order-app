@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const mongoose = require('mongoose');
-const { toJSON } = require('../../models/plugins');
+const { toJSON } = require('../../utils/plugins');
 const { Status, Countries } = require('../../utils/constant');
 const { getRestaurantCountry } = require('../../middlewares/clsHooked');
 

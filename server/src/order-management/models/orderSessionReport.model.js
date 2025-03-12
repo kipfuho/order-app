@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON } = require('../../models/plugins');
+const { toJSON } = require('../../utils/plugins');
 const { orderSchema } = require('./order.model');
 const { discountSchema } = require('./orderSession.model');
 const { OrderSessionStatus, PaymentMethod } = require('../../utils/constant');
