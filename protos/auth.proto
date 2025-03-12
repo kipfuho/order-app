@@ -1,0 +1,26 @@
+package userpackage;
+syntax = "proto3";
+
+message User {
+  string name = 1;
+  string email = 2;
+}
+
+message Tokens {
+    message Token {
+        string token = 1;
+        int64 expires = 2;
+    }
+    Token access = 1;
+    Token refresh = 2;
+}
+
+message LoginRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    User user = 1;
+    Tokens tokens = 2;
+}
