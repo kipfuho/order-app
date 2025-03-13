@@ -4,11 +4,11 @@ const { formatDateDDMMYYYY } = require('../../utils/common');
 
 /* eslint-disable no-param-reassign */
 const convertOrderSessionForResponse = (orderSession) => {
-  orderSession.restaurantId = orderSession.restaurant.id;
+  orderSession.shopId = orderSession.shop.id;
   orderSession.tableIds = orderSession.tables;
   orderSession.endedAt = formatDateDDMMYYYY(orderSession.endedAt);
   orderSession.createdAt = formatDateDDMMYYYY(orderSession.createdAt);
-  delete orderSession.restaurant;
+  delete orderSession.shop;
   delete orderSession.table;
   return {
     orderSessionId: orderSession.id,

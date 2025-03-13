@@ -72,17 +72,17 @@ const getEmployeePermissions = () => {
   return getSession({ key: 'permissions' }) || [];
 };
 
-const setRestaurantToSession = (restaurantJson) => {
-  return setSession({ key: 'restaurant', value: restaurantJson });
+const setShopToSession = (shopJson) => {
+  return setSession({ key: 'shop', value: shopJson });
 };
 
-const getRestaurantFromSession = () => {
-  return getSession({ key: 'restaurant' });
+const getShopFromSession = () => {
+  return getSession({ key: 'shop' });
 };
 
-const getRestaurantTimeZone = () => {
-  const restaurant = getRestaurantFromSession();
-  const utcOffSet = _.get(restaurant, 'utcOffset') || 7;
+const getShopTimeZone = () => {
+  const shop = getShopFromSession();
+  const utcOffSet = _.get(shop, 'utcOffset') || 7;
   if (utcOffSet === 9) {
     return 'Asia/Tokyo';
   }
@@ -90,25 +90,25 @@ const getRestaurantTimeZone = () => {
   if (utcOffSet === 7) {
     return 'Asia/Ho_Chi_Minh';
   }
-  if (_.get(restaurant, 'timezone')) {
-    return restaurant.timezone;
+  if (_.get(shop, 'timezone')) {
+    return shop.timezone;
   }
   return 'Asia/Ho_Chi_Minh';
 };
 
-const getRestaurantCountry = () => {
-  const restaurant = getRestaurantFromSession();
-  return _.get(restaurant, 'country.name') || Countries.VietNam.name;
+const getShopCountry = () => {
+  const shop = getShopFromSession();
+  return _.get(shop, 'country.name') || Countries.VietNam.name;
 };
 
-const getRestaurantCurrency = () => {
-  const restaurant = getRestaurantFromSession();
-  return _.get(restaurant, 'country.currency') || Countries.VietNam.currency;
+const getShopCurrency = () => {
+  const shop = getShopFromSession();
+  return _.get(shop, 'country.currency') || Countries.VietNam.currency;
 };
 
-const getRestaurantLang = () => {
-  const restaurant = getRestaurantFromSession();
-  const country = _.get(restaurant, 'country.name');
+const getShopLang = () => {
+  const shop = getShopFromSession();
+  const country = _.get(shop, 'country.name');
   if (country === Countries.VietNam.name) {
     return 'vi';
   }
@@ -116,19 +116,19 @@ const getRestaurantLang = () => {
 };
 
 const getClientLanguageWithHook = () => {
-  return getSession({ key: 'clientLanguage' }) || getRestaurantLang();
+  return getSession({ key: 'clientLanguage' }) || getShopLang();
 };
 
 module.exports = {
   clsHooked,
   setSession,
   getSession,
-  setRestaurantToSession,
-  getRestaurantFromSession,
-  getRestaurantCurrency,
-  getRestaurantTimeZone,
-  getRestaurantCountry,
-  getRestaurantLang,
+  setShopToSession,
+  getShopFromSession,
+  getShopCurrency,
+  getShopTimeZone,
+  getShopCountry,
+  getShopLang,
   setEmployeePermissions,
   getEmployeePermissions,
   getClientLanguageWithHook,

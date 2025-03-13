@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const moment = require('moment-timezone');
-const { getRestaurantTimeZone, getRestaurantCurrency, getRestaurantFromSession } = require('../middlewares/clsHooked');
+const { getShopTimeZone, getShopCurrency, getShopFromSession } = require('../middlewares/clsHooked');
 const constant = require('./constant');
 
 const sleep = (msec) => new Promise((resolve) => setTimeout(resolve, msec));
@@ -12,7 +12,7 @@ const formatDateTime = ({ dateTime, format, timeZone }) => {
   moment.locale('en');
   if (!timeZone) {
     // eslint-disable-next-line no-param-reassign
-    timeZone = getRestaurantTimeZone();
+    timeZone = getShopTimeZone();
   }
 
   // eslint-disable-next-line no-param-reassign
@@ -24,7 +24,7 @@ const formatDateDDMMYYYY = (dateTime, timeZone) => formatDateTime({ dateTime, ti
 const getCurrencyPrecision = (currency) => {
   if (!currency) {
     // eslint-disable-next-line no-param-reassign
-    currency = getRestaurantCurrency();
+    currency = getShopCurrency();
   }
 
   return constant.CurrencySetting[currency];
@@ -33,9 +33,9 @@ const getCurrencyPrecision = (currency) => {
 const _getRoundPrice = (price, type) => {
   let p = 0;
   try {
-    const restaurant = getRestaurantFromSession();
-    p = getCurrencyPrecision({ country: _.get(restaurant, 'country.currency') });
-    switch (_.get(restaurant, type)) {
+    const shop = getShopFromSession();
+    p = getCurrencyPrecision({ country: _.get(shop, 'country.currency') });
+    switch (_.get(shop, type)) {
       case constant.RoundingPaymentType.FLOOR:
         return _.floor(price, p);
       case constant.RoundingPaymentType.CEIL:
@@ -61,8 +61,8 @@ const getRoundTaxAmount = (amount) => {
 };
 
 /*
- * eg: get restaurantId tu orderSession. co the restaurantId la object do populate.
- * const restaurantId = getStringId({ object: orderSession, key: 'restaurantId' });
+ * eg: get shopId tu orderSession. co the shopId la object do populate.
+ * const shopId = getStringId({ object: orderSession, key: 'shopId' });
  */
 const getStringId = ({ object, key }) => {
   const id = _.get(object, `${key}.id`);

@@ -1,12 +1,12 @@
 const _ = require('lodash');
 const { Order, OrderSession, Cart } = require('../../models');
 const orderUtilService = require('./orderUtils.service');
-const { getTablesFromCache } = require('../../metadata/restaraurantMetadata.service');
+const { getTablesFromCache } = require('../../metadata/shopMetadata.service');
 const { throwBadRequest } = require('../../utils/errorHandling');
 
-const createOrder = async ({ tableId, restaurantId, orderSessionId, dishOrders }) => {
-  const orderSession = await orderUtilService.getOrCreateOrderSession({ orderSessionId, tableId, restaurantId });
-  const order = await orderUtilService.createNewOrder({ tableId, restaurantId, orderSessionId, dishOrders });
+const createOrder = async ({ tableId, shopId, orderSessionId, dishOrders }) => {
+  const orderSession = await orderUtilService.getOrCreateOrderSession({ orderSessionId, tableId, shopId });
+  const order = await orderUtilService.createNewOrder({ tableId, shopId, orderSessionId, dishOrders });
   orderSession.orders = [order];
   return orderSession;
 };
@@ -67,9 +67,9 @@ const updateOrder = async ({ orderUpdates }) => {
   await Order.bulkWrite(bulkOps);
 };
 
-const getOrderSessions = async ({ restaurantId }) => {
-  const tables = await getTablesFromCache({ restaurantId });
-  const orderSessions = await OrderSession.find({ restaurantId });
+const getOrderSessions = async ({ shopId }) => {
+  const tables = await getTablesFromCache({ shopId });
+  const orderSessions = await OrderSession.find({ shopId });
   const tableById = _.keyBy(tables, 'id');
 
   _.forEach(tables, (table) => {
@@ -132,15 +132,15 @@ const updateCart = async ({ updatedishRequests, cartId }) => {
   return Cart.findByIdAndUpdate(cartId, { $set: cartItems });
 };
 
-const checkoutCart = async ({ cartId, tableId, restaurantId }) => {
+const checkoutCart = async ({ cartId, tableId, shopId }) => {
   const cart = await Cart.findById(cartId);
   throwBadRequest(!cart, 'Không tìm thấy giỏ hàng');
   throwBadRequest(_.isEmpty(cart.cartItems), 'Giỏ hàng rỗng');
 
-  const orderSession = await orderUtilService.getOrCreateOrderSession({ tableId, restaurantId });
+  const orderSession = await orderUtilService.getOrCreateOrderSession({ tableId, shopId });
   const order = await orderUtilService.createNewOrder({
     tableId,
-    restaurantId,
+    shopId,
     orderSessionId: orderSession.id,
     dishOrders: cart.cartItems,
   });

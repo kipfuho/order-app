@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { toJSON } = require('../../utils/plugins');
-const { getRestaurantFromCache } = require('../../metadata/restaraurantMetadata.service');
+const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { getStartTimeOfToday } = require('../../utils/common');
 const { PaymentMethod, OrderSessionStatus } = require('../../utils/constant');
 
@@ -41,7 +41,7 @@ const discountSchema = mongoose.Schema(
 
 const orderSessionSchema = mongoose.Schema(
   {
-    restaurant: { type: mongoose.Types.ObjectId, ref: 'Restaurant' },
+    shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     tables: [{ type: mongoose.Types.ObjectId, ref: 'Table' }],
     orders: [{ type: mongoose.Types.ObjectId, ref: 'Order' }],
     discounts: [discountSchema],
@@ -70,23 +70,23 @@ const orderSessionSchema = mongoose.Schema(
   }
 );
 
-orderSessionSchema.statics.getLastActiveOrderSessionBeforeCreatedAt = async function (restaurantId, createdAt) {
+orderSessionSchema.statics.getLastActiveOrderSessionBeforeCreatedAt = async function (shopId, createdAt) {
   return this.findOne({
-    restaurantId: mongoose.Types.ObjectId(restaurantId),
+    shopId: mongoose.Types.ObjectId(shopId),
     createdAt: { $lt: createdAt },
     orderSessionNo: { $exists: true },
   }).sort({ createdAt: -1 });
 };
 
-orderSessionSchema.statics.getLastActiveOrderSessionSortByOrderSessionNo = async function (restaurantId) {
-  const restaurant = await getRestaurantFromCache({ restaurantId });
+orderSessionSchema.statics.getLastActiveOrderSessionSortByOrderSessionNo = async function (shopId) {
+  const shop = await getShopFromCache({ shopId });
   const startOfDay = getStartTimeOfToday({
-    timezone: restaurant.timezone || 'Asia/Ho_Chi_Minh',
-    reportTime: restaurant.reportTime || 0,
+    timezone: shop.timezone || 'Asia/Ho_Chi_Minh',
+    reportTime: shop.reportTime || 0,
   });
   return this.findOne(
     {
-      restaurantId: mongoose.Types.ObjectId(restaurantId),
+      shopId: mongoose.Types.ObjectId(shopId),
       orderSessionNo: { $exists: true },
       createdAt: { $gte: startOfDay },
     },

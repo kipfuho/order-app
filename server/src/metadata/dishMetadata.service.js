@@ -17,12 +17,12 @@ const _getDishCategoriesFromClsHook = ({ key }) => {
   return categories;
 };
 
-const getDishFromCache = async ({ restaurantId, dishId }) => {
+const getDishFromCache = async ({ shopId, dishId }) => {
   if (!dishId) {
     return;
   }
 
-  const key = getMenuKey({ restaurantId });
+  const key = getMenuKey({ shopId });
   const clsHookDishes = _getDishesFromClsHook({ key });
   if (!_.isEmpty(clsHookDishes)) {
     return _.find(clsHookDishes, (dish) => dish.id === dishId);
@@ -41,8 +41,8 @@ const getDishFromCache = async ({ restaurantId, dishId }) => {
   return dish.toJSON();
 };
 
-const getDishesFromCache = async ({ restaurantId }) => {
-  const key = getMenuKey({ restaurantId });
+const getDishesFromCache = async ({ shopId }) => {
+  const key = getMenuKey({ shopId });
   const clsHookDishes = _getDishesFromClsHook({ key });
   if (!_.isEmpty(clsHookDishes)) {
     return clsHookDishes;
@@ -56,7 +56,7 @@ const getDishesFromCache = async ({ restaurantId }) => {
       return dishes;
     }
 
-    const dishModels = await Dish.find({ restaurantId, status: constant.Status.enabled }).populate('category');
+    const dishModels = await Dish.find({ shopId, status: constant.Status.enabled }).populate('category');
     const disheJsons = _.map(dishModels, (dish) => dish.toJSON());
     const newMenuVal = { ...menuVal, dishes: disheJsons };
     redisClient.putJson({ key, jsonVal: newMenuVal });
@@ -65,18 +65,18 @@ const getDishesFromCache = async ({ restaurantId }) => {
   }
 
   const currentClsHookedValue = getSession({ key });
-  const dishes = await Dish.find({ restaurantId, status: constant.Status.enabled }).populate('category');
+  const dishes = await Dish.find({ shopId, status: constant.Status.enabled }).populate('category');
   const disheJsons = _.map(dishes, (dish) => dish.toJSON());
   setSession({ key, value: { ...currentClsHookedValue, dishes: disheJsons } });
   return disheJsons;
 };
 
-const getDishCategoryFromCache = async ({ restaurantId, dishCategoryId }) => {
+const getDishCategoryFromCache = async ({ shopId, dishCategoryId }) => {
   if (!dishCategoryId) {
     return;
   }
 
-  const key = getMenuKey({ restaurantId });
+  const key = getMenuKey({ shopId });
   const clsHookDishCategories = _getDishCategoriesFromClsHook({ key });
   if (!_.isEmpty(clsHookDishCategories)) {
     return _.find(clsHookDishCategories, (dishCategory) => dishCategory.id === dishCategoryId);
@@ -95,8 +95,8 @@ const getDishCategoryFromCache = async ({ restaurantId, dishCategoryId }) => {
   return dishCategory.toJSON();
 };
 
-const getDishCategoriesFromCache = async ({ restaurantId }) => {
-  const key = getMenuKey({ restaurantId });
+const getDishCategoriesFromCache = async ({ shopId }) => {
+  const key = getMenuKey({ shopId });
   const clsHookDishCategories = _getDishCategoriesFromClsHook({ key });
   if (!_.isEmpty(clsHookDishCategories)) {
     return clsHookDishCategories;
@@ -110,7 +110,7 @@ const getDishCategoriesFromCache = async ({ restaurantId }) => {
       return categories;
     }
 
-    const dishCategoryModels = await DishCategory.find({ restaurantId, status: constant.Status.enabled });
+    const dishCategoryModels = await DishCategory.find({ shopId, status: constant.Status.enabled });
     const dishCategoryJsons = _.map(dishCategoryModels, (dishCategory) => dishCategory.toJSON());
     const newMenuVal = { ...menuVal, categories: dishCategoryJsons };
     redisClient.putJson({ key, jsonVal: newMenuVal });
@@ -119,7 +119,7 @@ const getDishCategoriesFromCache = async ({ restaurantId }) => {
   }
 
   const currentClsHookedValue = getSession({ key });
-  const dishCategories = await DishCategory.find({ restaurantId, status: constant.Status.enabled });
+  const dishCategories = await DishCategory.find({ shopId, status: constant.Status.enabled });
   const dishCategoryJsons = _.map(dishCategories, (dish) => dish.toJSON());
   setSession({ key, value: { ...currentClsHookedValue, categories: dishCategoryJsons } });
   return dishCategoryJsons;

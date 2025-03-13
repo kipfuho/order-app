@@ -3,14 +3,14 @@ const { Dish } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getDishFromCache, getDishesFromCache } = require('../../metadata/dishMetadata.service');
 
-const getDish = async ({ restaurantId, dishId }) => {
-  const dish = await getDishFromCache({ restaurantId, dishId });
+const getDish = async ({ shopId, dishId }) => {
+  const dish = await getDishFromCache({ shopId, dishId });
   throwBadRequest(!dish, 'Không tìm thấy món ăn');
   return dish;
 };
 
-const getDishes = async ({ restaurantId }) => {
-  return getDishesFromCache({ restaurantId });
+const getDishes = async ({ shopId }) => {
+  return getDishesFromCache({ shopId });
 };
 
 const _validateDish = (dish) => {
@@ -21,19 +21,19 @@ const _validateDish = (dish) => {
   );
   throwBadRequest(price < 0, 'Giá món ăn không được nhỏ hơn 0');
 };
-const createDish = async ({ restaurantId, createBody }) => {
+const createDish = async ({ shopId, createBody }) => {
   _validateDish(createBody);
   // eslint-disable-next-line no-param-reassign
-  createBody.restaurant = restaurantId;
+  createBody.shop = shopId;
   const dish = await Dish.create(createBody);
   return dish;
 };
 
-const updateDish = async ({ restaurantId, dishId, updateBody }) => {
+const updateDish = async ({ shopId, dishId, updateBody }) => {
   _validateDish(updateBody);
   // eslint-disable-next-line no-param-reassign
-  updateBody.restaurant = restaurantId;
-  const dish = await Dish.findByIdAndUpdate({ dishId, restaurantId }, { $set: updateBody }, { new: true });
+  updateBody.shop = shopId;
+  const dish = await Dish.findByIdAndUpdate({ dishId, shopId }, { $set: updateBody }, { new: true });
   throwBadRequest(!dish, 'Không tìm thấy món ăn');
   return dish;
 };

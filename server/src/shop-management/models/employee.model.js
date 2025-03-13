@@ -8,7 +8,7 @@ const logger = require('../../config/logger');
 
 const employeeSchema = mongoose.Schema(
   {
-    restaurant: { type: mongoose.Types.ObjectId, ref: 'Restaurant' },
+    shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     user: { type: mongoose.Types.ObjectId, ref: 'User' },
     name: { type: String },
     position: { type: mongoose.Types.ObjectId, ref: 'EmployeePosition' },
@@ -23,8 +23,8 @@ const employeeSchema = mongoose.Schema(
 
 employeeSchema.post('save', async function (doc) {
   try {
-    const restaurantId = getStringId({ object: doc, key: 'restaurant' });
-    await deleteEmployeeCache({ restaurantId });
+    const shopId = getStringId({ object: doc, key: 'shop' });
+    await deleteEmployeeCache({ shopId });
   } catch (err) {
     logger.error(`error running post hook save of employee model`);
   }
@@ -33,16 +33,16 @@ employeeSchema.post('save', async function (doc) {
 employeeSchema.post(new RegExp('.*update.*', 'i'), async function () {
   try {
     const filter = this.getFilter();
-    let restaurantId = _.get(filter, 'restaurant');
+    let shopId = _.get(filter, 'shop');
     const employeeId = _.get(filter, '_id');
-    if (!restaurantId) {
+    if (!shopId) {
       const employee = await this.model.findById(employeeId);
-      restaurantId = _.get(employee, 'restaurant');
+      shopId = _.get(employee, 'shop');
     }
-    if (!restaurantId) {
+    if (!shopId) {
       return;
     }
-    await deleteEmployeeCache({ restaurantId });
+    await deleteEmployeeCache({ shopId });
   } catch (err) {
     logger.error(`error running post hook update of employee model`);
   }

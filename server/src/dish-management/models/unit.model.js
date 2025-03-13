@@ -2,11 +2,11 @@ const _ = require('lodash');
 const mongoose = require('mongoose');
 const { toJSON } = require('../../utils/plugins');
 const { Status, Countries } = require('../../utils/constant');
-const { getRestaurantCountry } = require('../../middlewares/clsHooked');
+const { getShopCountry } = require('../../middlewares/clsHooked');
 
 const unitSchema = mongoose.Schema(
   {
-    restaurant: { type: mongoose.Types.ObjectId, ref: 'Restaurant' },
+    shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     name: { type: String, trim: true },
     code: { type: String, trim: true },
     description: {
@@ -165,12 +165,12 @@ const defaultUnitList = {
   ],
 };
 
-unitSchema.statics.createDefaultUnits = async function (restaurantId) {
-  const restaurantCountry = getRestaurantCountry() || Countries.VietNam;
-  const units = defaultUnitList[restaurantCountry];
+unitSchema.statics.createDefaultUnits = async function (shopId) {
+  const shopCountry = getShopCountry() || Countries.VietNam;
+  const units = defaultUnitList[shopCountry];
   const bulkOps = _.map(units, (unit) => ({
     updateOne: {
-      filter: { restaurantId },
+      filter: { shopId },
       update: { $set: { name: unit.unitName, code: unit.unitCode } },
       upsert: true,
     },

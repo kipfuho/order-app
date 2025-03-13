@@ -8,7 +8,7 @@ const { deleteTableCache } = require('../../metadata/common');
 
 const tableSchema = mongoose.Schema(
   {
-    restaurant: { type: mongoose.Types.ObjectId, ref: 'Restaurant' },
+    shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     name: { type: String },
     position: { type: mongoose.Types.ObjectId, ref: 'TablePosition' },
     status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
@@ -20,12 +20,12 @@ const tableSchema = mongoose.Schema(
 
 tableSchema.post('save', async function (doc) {
   try {
-    const restaurantId = getStringId({ object: doc, key: 'restaurant' });
-    if (!restaurantId) {
+    const shopId = getStringId({ object: doc, key: 'shop' });
+    if (!shopId) {
       return;
     }
 
-    await deleteTableCache({ restaurantId });
+    await deleteTableCache({ shopId });
   } catch (err) {
     logger.error(`error running post hook save of table model`);
   }
@@ -34,16 +34,16 @@ tableSchema.post('save', async function (doc) {
 tableSchema.post(new RegExp('.*update.*', 'i'), async function () {
   try {
     const filter = this.getFilter();
-    let restaurantId = _.get(filter, 'restaurant');
+    let shopId = _.get(filter, 'shop');
     const tableId = _.get(filter, '_id');
-    if (!restaurantId) {
+    if (!shopId) {
       const table = await this.model.findById(tableId);
-      restaurantId = _.get(table, 'restaurant');
+      shopId = _.get(table, 'shop');
     }
-    if (!restaurantId) {
+    if (!shopId) {
       return;
     }
-    await deleteTableCache({ restaurantId });
+    await deleteTableCache({ shopId });
   } catch (err) {
     logger.error(`error running post hook update of table model`);
   }

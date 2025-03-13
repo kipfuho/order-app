@@ -20,12 +20,12 @@ const _getDepartmentsFromClsHook = ({ key }) => {
   return departments;
 };
 
-const getEmployeeFromCache = async ({ restaurantId, employeeId }) => {
+const getEmployeeFromCache = async ({ shopId, employeeId }) => {
   if (!employeeId) {
     return;
   }
 
-  const key = getEmployeeKey({ restaurantId });
+  const key = getEmployeeKey({ shopId });
   const clsHookEmployees = _getEmployeesFromClsHook({ key });
   if (!_.isEmpty(clsHookEmployees)) {
     return _.find(clsHookEmployees, (employee) => employee.id === employeeId);
@@ -45,8 +45,8 @@ const getEmployeeFromCache = async ({ restaurantId, employeeId }) => {
   return employeeJson;
 };
 
-const getEmployeesFromCache = async ({ restaurantId }) => {
-  const key = getEmployeeKey({ restaurantId });
+const getEmployeesFromCache = async ({ shopId }) => {
+  const key = getEmployeeKey({ shopId });
   const clsHookEmployees = _getEmployeesFromClsHook({ key });
   if (!_.isEmpty(clsHookEmployees)) {
     return clsHookEmployees;
@@ -59,7 +59,7 @@ const getEmployeesFromCache = async ({ restaurantId }) => {
       return employees;
     }
 
-    const employeeModels = await Employee.find({ restaurantId, status: constant.Status.enabled })
+    const employeeModels = await Employee.find({ shopId, status: constant.Status.enabled })
       .populate('user')
       .populate('position')
       .populate('department');
@@ -73,7 +73,7 @@ const getEmployeesFromCache = async ({ restaurantId }) => {
     return employeeJsons;
   }
 
-  const employees = await Employee.find({ restaurantId, status: constant.Status.enabled })
+  const employees = await Employee.find({ shopId, status: constant.Status.enabled })
     .populate('user')
     .populate('position')
     .populate('department');
@@ -86,12 +86,12 @@ const getEmployeesFromCache = async ({ restaurantId }) => {
   return employeeJsons;
 };
 
-const getEmployeePositionFromCache = async ({ restaurantId, employeePositionId }) => {
+const getEmployeePositionFromCache = async ({ shopId, employeePositionId }) => {
   if (!employeePositionId) {
     return;
   }
 
-  const key = getEmployeePositionKey({ restaurantId });
+  const key = getEmployeePositionKey({ shopId });
   const clsHookEmployeePositions = _getEmployeePositionsFromClsHook({ key });
   if (!_.isEmpty(clsHookEmployeePositions)) {
     return _.find(clsHookEmployeePositions, (employeePosition) => employeePosition.id === employeePositionId);
@@ -109,8 +109,8 @@ const getEmployeePositionFromCache = async ({ restaurantId, employeePositionId }
   return employeePosition.toJSON();
 };
 
-const getEmployeePositionsFromCache = async ({ restaurantId }) => {
-  const key = getEmployeePositionKey({ restaurantId });
+const getEmployeePositionsFromCache = async ({ shopId }) => {
+  const key = getEmployeePositionKey({ shopId });
   const clsHookEmployeePositions = _getEmployeePositionsFromClsHook({ key });
   if (!_.isEmpty(clsHookEmployeePositions)) {
     return clsHookEmployeePositions;
@@ -123,25 +123,25 @@ const getEmployeePositionsFromCache = async ({ restaurantId }) => {
       return employeePositions;
     }
 
-    const employeePositionModels = await EmployeePosition.find({ restaurantId, status: constant.Status.enabled });
+    const employeePositionModels = await EmployeePosition.find({ shopId, status: constant.Status.enabled });
     const employeePositionJsons = _.map(employeePositionModels, (employeePosition) => employeePosition.toJSON());
     redisClient.putJson({ key, jsonVal: employeePositionJsons });
     setSession({ key, value: employeePositionJsons });
     return employeePositionJsons;
   }
 
-  const employeePositions = await EmployeePosition.find({ restaurantId, status: constant.Status.enabled });
+  const employeePositions = await EmployeePosition.find({ shopId, status: constant.Status.enabled });
   const employeePositionJsons = _.map(employeePositions, (employeePosition) => employeePosition.toJSON());
   setSession({ key, value: employeePositionJsons });
   return employeePositionJsons;
 };
 
-const getDepartmentFromCache = async ({ restaurantId, departmentId }) => {
+const getDepartmentFromCache = async ({ shopId, departmentId }) => {
   if (!departmentId) {
     return;
   }
 
-  const key = getDepartmentKey({ restaurantId });
+  const key = getDepartmentKey({ shopId });
   const clsHookDepartments = _getDepartmentsFromClsHook({ key });
   if (!_.isEmpty(clsHookDepartments)) {
     return _.find(clsHookDepartments, (department) => department.id === departmentId);
@@ -159,8 +159,8 @@ const getDepartmentFromCache = async ({ restaurantId, departmentId }) => {
   return department.toJSON();
 };
 
-const getDepartmentsFromCache = async ({ restaurantId }) => {
-  const key = getDepartmentKey({ restaurantId });
+const getDepartmentsFromCache = async ({ shopId }) => {
+  const key = getDepartmentKey({ shopId });
   const clsHookDepartments = _getDepartmentsFromClsHook({ key });
   if (!_.isEmpty(clsHookDepartments)) {
     return clsHookDepartments;
@@ -173,14 +173,14 @@ const getDepartmentsFromCache = async ({ restaurantId }) => {
       return departments;
     }
 
-    const departmentModels = await Department.find({ restaurantId, status: constant.Status.enabled });
+    const departmentModels = await Department.find({ shopId, status: constant.Status.enabled });
     const departmentJsons = _.map(departmentModels, (department) => department.toJSON());
     redisClient.putJson({ key, jsonVal: departmentJsons });
     setSession({ key, value: departmentJsons });
     return departmentJsons;
   }
 
-  const departments = await EmployeePosition.find({ restaurantId, status: constant.Status.enabled });
+  const departments = await EmployeePosition.find({ shopId, status: constant.Status.enabled });
   const departmentJsons = _.map(departments, (department) => department.toJSON());
   setSession({ key, value: departmentJsons });
   return departmentJsons;

@@ -4,7 +4,7 @@ const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const { roleRights, roles } = require('../config/roles');
 const { appid } = require('../config/config');
-const { getRestaurantFromCache, getEmployeeFromCache } = require('../metadata/restaraurantMetadata.service');
+const { getShopFromCache, getEmployeeFromCache } = require('../metadata/shopMetadata.service');
 
 const getAppId = (req) => _.get(req, 'headers.appid') || '';
 const isCustomerRequest = (req) => {
@@ -12,9 +12,9 @@ const isCustomerRequest = (req) => {
   return appId.includes(appid.customer);
 };
 
-const isRestaurantRequest = (req) => {
+const isShopRequest = (req) => {
   const appId = getAppId(req);
-  return appId.includes(appid.restaurant);
+  return appId.includes(appid.shop);
 };
 
 const _verifyAdmin = (req, requiredRights) => {
@@ -40,21 +40,21 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
   }
 
   req.isCustomerRequest = isCustomerRequest(req);
-  req.isRestaurantRequest = isRestaurantRequest(req);
+  req.isShopRequest = isShopRequest(req);
 
-  let { restaurantId } = req;
-  if (!restaurantId) {
-    restaurantId = req.params.restaurantId || _.get(req, 'body.restaurantId');
+  let { shopId } = req;
+  if (!shopId) {
+    shopId = req.params.shopId || _.get(req, 'body.shopId');
   }
-  if (!restaurantId) {
+  if (!shopId) {
     resolve();
     return;
   }
 
-  const restaurant = await getRestaurantFromCache({ restaurantId });
+  const shop = await getShopFromCache({ shopId });
 
-  if (restaurant.userId.toString() !== user.id) {
-    const employee = await getEmployeeFromCache({ userId: user.id, restaurantId });
+  if (shop.userId.toString() !== user.id) {
+    const employee = await getEmployeeFromCache({ userId: user.id, shopId });
     if (!employee) {
       return reject(new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy nhân viên'));
     }

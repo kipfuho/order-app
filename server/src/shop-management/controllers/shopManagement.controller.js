@@ -1,164 +1,171 @@
 const _ = require('lodash');
 const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
-const restaurantManagementService = require('../services/restaurantManagement.service');
+const shopManagementService = require('../services/shopManagement.service');
 
-const getRestaurant = catchAsync(async (req, res) => {
-  const restaurantId = _.get(req, 'params.restaurantId');
-  const restaurant = await restaurantManagementService.getRestaurant(restaurantId);
-  res.status(httpStatus.OK).send({ restaurant });
+const getShop = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'params.shopId');
+  const shop = await shopManagementService.getShop(shopId);
+  res.status(httpStatus.OK).send({ shop });
 });
 
-const createRestaurant = catchAsync(async (req, res) => {
+const queryShop = catchAsync(async (req, res) => {
+  const query = req;
+  const shops = await shopManagementService.queryShop(query);
+  res.status(httpStatus.OK).send({ shops });
+});
+
+const createShop = catchAsync(async (req, res) => {
   const createBody = req.body;
   const ownerUserId = _.get(req, 'user.id');
-  const restaurant = await restaurantManagementService.createRestaurant({ createBody, ownerUserId });
-  res.status(httpStatus.CREATED).send({ restaurant });
+  const shop = await shopManagementService.createShop({ createBody, ownerUserId });
+  res.status(httpStatus.CREATED).send({ shop });
 });
 
-const updateRestaurant = catchAsync(async (req, res) => {
-  const restaurantId = _.get(req, 'params.restaurantId');
+const updateShop = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'params.shopId');
   const updateBody = req.body;
-  await restaurantManagementService.updateRestaurant(restaurantId, updateBody);
+  await shopManagementService.updateShop(shopId, updateBody);
   res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
-const deleteRestaurant = catchAsync(async (req, res) => {
-  const restaurantId = _.get(req, 'params.restaurantId');
-  await restaurantManagementService.deleteRestaurant(restaurantId);
+const deleteShop = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'params.shopId');
+  await shopManagementService.deleteShop(shopId);
   res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
 });
 
 const getTable = catchAsync(async (req, res) => {
   const tableId = _.get(req, 'params.tableId');
-  const table = await restaurantManagementService.getTable(tableId);
+  const table = await shopManagementService.getTable(tableId);
   res.status(httpStatus.OK).send({ table });
 });
 
 const createTable = catchAsync(async (req, res) => {
   const createBody = req.body;
-  const table = await restaurantManagementService.createTable(createBody);
+  const table = await shopManagementService.createTable(createBody);
   res.status(httpStatus.CREATED).send({ table });
 });
 
 const updateTable = catchAsync(async (req, res) => {
   const tableId = _.get(req, 'params.tableId');
   const updateBody = req.body;
-  await restaurantManagementService.updateTable(tableId, updateBody);
+  await shopManagementService.updateTable(tableId, updateBody);
   res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteTable = catchAsync(async (req, res) => {
   const tableId = _.get(req, 'params.tableId');
-  await restaurantManagementService.deleteTable(tableId);
+  await shopManagementService.deleteTable(tableId);
   res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
 });
 
 const getTablePosition = catchAsync(async (req, res) => {
   const tablePositionId = _.get(req, 'params.tablePositionId');
-  const tablePosition = await restaurantManagementService.getTablePosition(tablePositionId);
+  const tablePosition = await shopManagementService.getTablePosition(tablePositionId);
   res.status(httpStatus.OK).send({ tablePosition });
 });
 
 const createTablePosition = catchAsync(async (req, res) => {
   const createBody = req.body;
-  const tablePosition = await restaurantManagementService.createTablePosition(createBody);
+  const tablePosition = await shopManagementService.createTablePosition(createBody);
   res.status(httpStatus.CREATED).send({ tablePosition });
 });
 
 const updateTablePosition = catchAsync(async (req, res) => {
   const tablePositionId = _.get(req, 'params.tablePositionId');
   const updateBody = req.body;
-  await restaurantManagementService.updateTablePosition(tablePositionId, updateBody);
+  await shopManagementService.updateTablePosition(tablePositionId, updateBody);
   res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteTablePosition = catchAsync(async (req, res) => {
   const tablePositionId = _.get(req, 'params.tablePositionId');
-  await restaurantManagementService.deleteTablePosition(tablePositionId);
+  await shopManagementService.deleteTablePosition(tablePositionId);
   res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
 });
 
 const getEmployee = catchAsync(async (req, res) => {
   const employeeId = _.get(req, 'params.employeeId');
-  const employee = await restaurantManagementService.getEmployee(employeeId);
+  const employee = await shopManagementService.getEmployee(employeeId);
   res.status(httpStatus.OK).send({ employee });
 });
 
 const createEmployee = catchAsync(async (req, res) => {
   const createBody = req.body;
-  const employee = await restaurantManagementService.createEmployee(createBody);
+  const employee = await shopManagementService.createEmployee(createBody);
   res.status(httpStatus.CREATED).send({ employee });
 });
 
 const updateEmployee = catchAsync(async (req, res) => {
   const employeeId = _.get(req, 'params.employeeId');
   const updateBody = req.body;
-  await restaurantManagementService.updateEmployee(employeeId, updateBody);
+  await shopManagementService.updateEmployee(employeeId, updateBody);
   res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteEmployee = catchAsync(async (req, res) => {
   const employeeId = _.get(req, 'params.employeeId');
-  await restaurantManagementService.deleteEmployee(employeeId);
+  await shopManagementService.deleteEmployee(employeeId);
   res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
 });
 
 const getEmployeePosition = catchAsync(async (req, res) => {
   const employeePositionId = _.get(req, 'params.employeePositionId');
-  const employeePosition = await restaurantManagementService.getEmployeePosition(employeePositionId);
+  const employeePosition = await shopManagementService.getEmployeePosition(employeePositionId);
   res.status(httpStatus.OK).send({ employeePosition });
 });
 
 const createEmployeePosition = catchAsync(async (req, res) => {
   const createBody = req.body;
-  const employeePosition = await restaurantManagementService.createEmployeePosition(createBody);
+  const employeePosition = await shopManagementService.createEmployeePosition(createBody);
   res.status(httpStatus.CREATED).send({ employeePosition });
 });
 
 const updateEmployeePosition = catchAsync(async (req, res) => {
   const employeePositionId = _.get(req, 'params.employeePositionId');
   const updateBody = req.body;
-  await restaurantManagementService.updateEmployeePosition(employeePositionId, updateBody);
+  await shopManagementService.updateEmployeePosition(employeePositionId, updateBody);
   res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteEmployeePosition = catchAsync(async (req, res) => {
   const employeePositionId = _.get(req, 'params.employeePositionId');
-  await restaurantManagementService.deleteEmployeePosition(employeePositionId);
+  await shopManagementService.deleteEmployeePosition(employeePositionId);
   res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
 });
 
 const getDepartment = catchAsync(async (req, res) => {
   const departmentId = _.get(req, 'params.departmentId');
-  const department = await restaurantManagementService.getDepartment(departmentId);
+  const department = await shopManagementService.getDepartment(departmentId);
   res.status(httpStatus.OK).send({ department });
 });
 
 const createDepartment = catchAsync(async (req, res) => {
   const createBody = req.body;
-  const department = await restaurantManagementService.createDepartment(createBody);
+  const department = await shopManagementService.createDepartment(createBody);
   res.status(httpStatus.CREATED).send({ department });
 });
 
 const updateDepartment = catchAsync(async (req, res) => {
   const departmentId = _.get(req, 'params.departmentId');
   const updateBody = req.body;
-  await restaurantManagementService.updateDepartment(departmentId, updateBody);
+  await shopManagementService.updateDepartment(departmentId, updateBody);
   res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteDepartment = catchAsync(async (req, res) => {
   const departmentId = _.get(req, 'params.departmentId');
-  await restaurantManagementService.deleteDepartment(departmentId);
+  await shopManagementService.deleteDepartment(departmentId);
   res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
 });
 
 module.exports = {
-  getRestaurant,
-  createRestaurant,
-  updateRestaurant,
-  deleteRestaurant,
+  getShop,
+  queryShop,
+  createShop,
+  updateShop,
+  deleteShop,
   getTable,
   createTable,
   updateTable,

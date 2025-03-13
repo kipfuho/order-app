@@ -1,8 +1,8 @@
 const _ = require('lodash');
 const moment = require('moment-timezone');
 const redisClient = require('../../utils/redis');
-const { getRestaurantFromCache, getTablesFromCache } = require('../../metadata/restaraurantMetadata.service');
-const { getRestaurantTimeZone } = require('../../middlewares/clsHooked');
+const { getShopFromCache, getTablesFromCache } = require('../../metadata/shopMetadata.service');
+const { getShopTimeZone } = require('../../middlewares/clsHooked');
 const { Order, OrderSession } = require('../../models');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const { OrderSessionDiscountType, DiscountValueType, OrderSessionStatus } = require('../../utils/constant');
@@ -10,7 +10,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 
 const formatDateTimeToISOStringRegardingReportTime = ({ dateTime, reportTime }) => {
   try {
-    const timeZone = getRestaurantTimeZone();
+    const timeZone = getShopTimeZone();
     let rpTime = reportTime;
     if (!rpTime) {
       rpTime = 0;
@@ -25,13 +25,13 @@ const formatDateTimeToISOStringRegardingReportTime = ({ dateTime, reportTime }) 
   }
 };
 
-const getNextAvailableOrderNo = async ({ restaurantId, keyBase, lastOrderNo }) => {
+const getNextAvailableOrderNo = async ({ shopId, keyBase, lastOrderNo }) => {
   let currentOrderNo = lastOrderNo;
   const retryTime = 10;
   if (redisClient.isRedisConnected()) {
     for (let counter = 0; counter < retryTime; counter += 1) {
       currentOrderNo += 1;
-      const key = `${restaurantId}_${keyBase}_${currentOrderNo}`;
+      const key = `${shopId}_${keyBase}_${currentOrderNo}`;
       // eslint-disable-next-line no-await-in-loop
       const canUseOrderNo = await redisClient.getCloudLock({ key, periodInSecond: 60 * 5 });
       if (canUseOrderNo) {
@@ -42,19 +42,19 @@ const getNextAvailableOrderNo = async ({ restaurantId, keyBase, lastOrderNo }) =
   return currentOrderNo + 1;
 };
 
-const getOrderSessionNoForNewOrderSession = async (restaurantId, createdAt) => {
+const getOrderSessionNoForNewOrderSession = async (shopId, createdAt) => {
   let lastActiveOrderSession;
   if (createdAt) {
-    lastActiveOrderSession = await OrderSession.getLastActiveOrderSessionBeforeCreatedAt(restaurantId, createdAt);
+    lastActiveOrderSession = await OrderSession.getLastActiveOrderSessionBeforeCreatedAt(shopId, createdAt);
   } else {
-    lastActiveOrderSession = await OrderSession.getLastActiveOrderSessionSortByOrderSessionNo(restaurantId);
+    lastActiveOrderSession = await OrderSession.getLastActiveOrderSessionSortByOrderSessionNo(shopId);
   }
-  // not existed last active order session in this restaurant => default = 1
+  // not existed last active order session in this shop => default = 1
   if (_.isEmpty(lastActiveOrderSession)) {
     return 1;
   }
-  const restaurant = await getRestaurantFromCache({ restaurantId });
-  const reportTime = restaurant.reportTime || 0;
+  const shop = await getShopFromCache({ shopId });
+  const reportTime = shop.reportTime || 0;
   // get orderSessionNo with default = 1
   const lastActiveOrderSessionNo = _.get(lastActiveOrderSession, 'orderSessionNo', 0);
   // check diffrent time between lastActiveOrderSession and current
@@ -65,38 +65,38 @@ const getOrderSessionNoForNewOrderSession = async (restaurantId, createdAt) => {
   });
   if (current.substring(0, 10) === lastActiveOrderSessionCreatedAt.substring(0, 10)) {
     return getNextAvailableOrderNo({
-      restaurantId,
+      shopId,
       keyBase: 'orderSessionNo',
       lastOrderNo: lastActiveOrderSessionNo,
     });
   }
   return getNextAvailableOrderNo({
-    restaurantId,
+    shopId,
     keyBase: 'orderSessionNo',
     lastOrderNo: 0,
   });
 };
 
-const getOrCreateOrderSession = async ({ orderSessionId, tableId, restaurantId }) => {
+const getOrCreateOrderSession = async ({ orderSessionId, tableId, shopId }) => {
   if (orderSessionId) {
     const orderSession = await OrderSession.findById(orderSessionId);
     return orderSession;
   }
 
-  const restaurant = await getRestaurantFromCache({ restaurantId });
-  const orderSessionNo = await getOrderSessionNoForNewOrderSession(restaurantId);
+  const shop = await getShopFromCache({ shopId });
+  const orderSessionNo = await getOrderSessionNoForNewOrderSession(shopId);
   const orderSession = await OrderSession.create({
     tables: [tableId],
-    restaurantId,
+    shopId,
     orderSessionNo,
-    taxRate: _.get(restaurant, 'taxRate', 0),
+    taxRate: _.get(shop, 'taxRate', 0),
   });
 
   return orderSession.toJSON();
 };
 
-const createNewOrder = async ({ tableId, restaurantId, orderSessionId, dishOrders, orderNo }) => {
-  const dishes = await getDishesFromCache({ restaurantId });
+const createNewOrder = async ({ tableId, shopId, orderSessionId, dishOrders, orderNo }) => {
+  const dishes = await getDishesFromCache({ shopId });
   const dishById = _.keyBy(dishes, 'id');
   const orderDishOrders = _.map(dishOrders, (dishOrder) => {
     const { dishId, quantity, name, taxRate, price, isTaxIncludedPrice } = dishOrder;
@@ -121,7 +121,7 @@ const createNewOrder = async ({ tableId, restaurantId, orderSessionId, dishOrder
       taxIncludedPrice: _.get(dish, 'isTaxIncludedPrice') ? price : null,
     };
   });
-  const order = await Order.create({ tableId, restaurantId, orderSessionId, orderNo, dishOrders: orderDishOrders });
+  const order = await Order.create({ tableId, shopId, orderSessionId, orderNo, dishOrders: orderDishOrders });
 
   return order.toJSON();
 };
@@ -134,11 +134,11 @@ const _getOrderSessionJson = async (orderSessionId) => {
   const orderSessionJson = orderSession.toJSON();
   const orders = await Order.find({ orderSessionId });
 
-  const restaurantId = orderSession.restaurant;
-  const restaurant = await getRestaurantFromCache({ restaurantId });
-  const tables = await getTablesFromCache({ restaurantId });
+  const shopId = orderSession.shop;
+  const shop = await getShopFromCache({ shopId });
+  const tables = await getTablesFromCache({ shopId });
   const tableById = _.keyBy(tables, 'id');
-  const dishes = await getDishesFromCache({ restaurantId });
+  const dishes = await getDishesFromCache({ shopId });
   const dishById = _.keyBy(dishes, 'id');
 
   const orderJsons = _.map(orders, (order) => {
@@ -151,7 +151,7 @@ const _getOrderSessionJson = async (orderSessionId) => {
     });
     return orderJson;
   });
-  orderSessionJson.restaurant = restaurant;
+  orderSessionJson.shop = shop;
   orderSessionJson.orders = orderJsons;
   orderSessionJson.tables = _.map(orderSessionJson.tables, (tableId) => tableById[tableId]);
   return {
@@ -163,12 +163,12 @@ const _getOrderSessionJson = async (orderSessionId) => {
 const calculateTax = async ({ orderSessionJson, dishOrders, calculateTaxDirectly = false }) => {
   let totalTaxAmount = 0;
   const taxAmountByTaxRate = {};
-  const restaurantTaxRate = _.get(orderSessionJson, 'taxRate');
+  const shopTaxRate = _.get(orderSessionJson, 'taxRate');
   _.forEach(dishOrders, (dishOrder) => {
     let dishTaxRate = dishOrder.taxRate;
     const beforeTaxPrice = dishOrder.price;
 
-    if (restaurantTaxRate < 0.001) {
+    if (shopTaxRate < 0.001) {
       dishTaxRate = 0;
       // eslint-disable-next-line no-param-reassign
       dishOrder.taxIncludedPrice = dishOrder.price;

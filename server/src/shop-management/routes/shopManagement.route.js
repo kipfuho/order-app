@@ -1,5 +1,5 @@
 const express = require('express');
-const restaurantManagementController = require('../controllers/restaurantManagement.controller');
+const shopManagementController = require('../controllers/shopManagement.controller');
 const tableRoute = require('./table.route');
 const tablePositionRoute = require('./tablePosition.route');
 const employeeRoute = require('./employee.route');
@@ -41,9 +41,11 @@ defaultRoutes.forEach((route) => {
   router.use(route.path, route.route);
 });
 
-router.get('/:restaurantId', auth(), restaurantManagementController.getRestaurant);
-router.post('/create', auth(), restaurantManagementController.createRestaurant);
-router.patch('/:restaurantId', auth(), restaurantManagementController.updateRestaurant);
-router.delete('/:restaurantId', auth(), restaurantManagementController.deleteRestaurant);
+router.get('/:shopId', auth(), shopManagementController.getShop);
+router
+  .get('/', auth(), shopManagementController.queryShop)
+  .post('/', auth(), shopManagementController.createShop);
+router.patch('/:shopId', auth(), shopManagementController.updateShop);
+router.delete('/:shopId', auth(), shopManagementController.deleteShop);
 
 module.exports = router;

@@ -9,7 +9,7 @@ const PaymentMethodEnum = Object.values(PaymentMethod);
 
 const orderSessionReportSchema = mongoose.Schema(
   {
-    restaurant: { type: mongoose.Types.ObjectId, ref: 'Restaurant' },
+    shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     table: [{ type: mongoose.Types.ObjectId, ref: 'Table' }],
     orders: [orderSchema],
     discounts: [discountSchema],

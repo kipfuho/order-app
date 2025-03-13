@@ -6,7 +6,7 @@ const cartItemSchema = mongoose.Schema(
   {
     dish: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Restaurant',
+      ref: 'Shop',
     },
     quantity: { type: Number },
   },
@@ -17,9 +17,9 @@ const cartItemSchema = mongoose.Schema(
 
 const cartSchema = mongoose.Schema(
   {
-    restaurant: {
+    shop: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Restaurant',
+      ref: 'Shop',
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,

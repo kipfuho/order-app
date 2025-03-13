@@ -1,13 +1,13 @@
 const _ = require('lodash');
 const mongoose = require('mongoose');
-const { toJSON } = require('../../utils/plugins');
+const { toJSON, paginate } = require('../../utils/plugins');
 const { Status, RoundingPaymentType } = require('../../utils/constant');
-const { deleteRestaurantCache } = require('../../metadata/common');
+const { deleteShopCache } = require('../../metadata/common');
 const logger = require('../../config/logger');
 
 const RoundingPaymentTypeEnum = Object.values(RoundingPaymentType);
 
-const restaurantSchema = mongoose.Schema(
+const shopSchema = mongoose.Schema(
   {
     status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
     name: { type: String },
@@ -41,35 +41,36 @@ const restaurantSchema = mongoose.Schema(
   }
 );
 
-restaurantSchema.post('save', async function (doc) {
+shopSchema.post('save', async function (doc) {
   try {
-    const restaurantId = _.get(doc, '_id');
-    if (!restaurantId) {
+    const shopId = _.get(doc, '_id');
+    if (!shopId) {
       return;
     }
 
-    await deleteRestaurantCache({ restaurantId });
+    await deleteShopCache({ shopId });
   } catch (err) {
-    logger.error(`error running post hook save of restaurant model`);
+    logger.error(`error running post hook save of shop model`);
   }
 });
 
-restaurantSchema.post(new RegExp('.*update.*', 'i'), async function () {
+shopSchema.post(new RegExp('.*update.*', 'i'), async function () {
   try {
     const filter = this.getFilter();
-    const restaurantId = _.get(filter, '_id');
-    if (!restaurantId) {
+    const shopId = _.get(filter, '_id');
+    if (!shopId) {
       return;
     }
-    await deleteRestaurantCache({ restaurantId });
+    await deleteShopCache({ shopId });
   } catch (err) {
-    logger.error(`error running post hook update of restaurant model`);
+    logger.error(`error running post hook update of shop model`);
   }
 });
 
 // add plugin that converts mongoose to json
-restaurantSchema.plugin(toJSON);
+shopSchema.plugin(toJSON);
+shopSchema.plugin(paginate);
 
-const Restaurant = mongoose.model('Restaurant', restaurantSchema);
+const Shop = mongoose.model('Shop', shopSchema);
 
-module.exports = Restaurant;
+module.exports = Shop;

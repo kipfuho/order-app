@@ -8,9 +8,9 @@ const logger = require('../../config/logger');
 
 const employeeDepartmentSchema = mongoose.Schema(
   {
-    restaurant: {
+    shop: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Restaurant',
+      ref: 'Shop',
     },
     name: {
       type: String,
@@ -32,13 +32,13 @@ const employeeDepartmentSchema = mongoose.Schema(
 
 employeeDepartmentSchema.post('save', async function (doc) {
   try {
-    const restaurantId = getStringId({ object: doc, key: 'restaurant' });
-    if (!restaurantId) {
+    const shopId = getStringId({ object: doc, key: 'shop' });
+    if (!shopId) {
       return;
     }
 
-    await deleteEmployeeCache({ restaurantId });
-    await deleteDepartmentCache({ restaurantId });
+    await deleteEmployeeCache({ shopId });
+    await deleteDepartmentCache({ shopId });
   } catch (err) {
     logger.error(`error running post hook save of department model`);
   }
@@ -47,17 +47,17 @@ employeeDepartmentSchema.post('save', async function (doc) {
 employeeDepartmentSchema.post(new RegExp('.*update.*', 'i'), async function () {
   try {
     const filter = this.getFilter();
-    let restaurantId = _.get(filter, 'restaurant');
+    let shopId = _.get(filter, 'shop');
     const departmentId = _.get(filter, '_id');
-    if (!restaurantId) {
+    if (!shopId) {
       const department = await this.model.findById(departmentId);
-      restaurantId = _.get(department, 'restaurant');
+      shopId = _.get(department, 'shop');
     }
-    if (!restaurantId) {
+    if (!shopId) {
       return;
     }
-    await deleteEmployeeCache({ restaurantId });
-    await deleteDepartmentCache({ restaurantId });
+    await deleteEmployeeCache({ shopId });
+    await deleteDepartmentCache({ shopId });
   } catch (err) {
     logger.error(`error running post hook update of department model`);
   }

@@ -4,7 +4,7 @@ const { Status } = require('../../utils/constant');
 
 const dishCategorySchema = mongoose.Schema(
   {
-    restaurant: { type: mongoose.Types.ObjectId, ref: 'Restaurant' },
+    shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     name: { type: String },
     status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
   },

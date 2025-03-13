@@ -27,7 +27,7 @@ const envVarsSchema = Joi.object()
     SMTP_PASSWORD: Joi.string().description('password for email server'),
     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
     CUSTOMER_APPID: Joi.string().description('appid for customer request'),
-    RESTAURANT_APPID: Joi.string().description('appid for restaurant request'),
+    SHOP_APPID: Joi.string().description('appid for shop request'),
   })
   .unknown();
 
@@ -70,6 +70,6 @@ module.exports = {
   },
   appid: {
     customer: envVars.CUSTOMER_APPID,
-    restaurant: envVars.RESTAURANT_APPID,
+    shop: envVars.SHOP_APPID,
   },
 };

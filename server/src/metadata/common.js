@@ -1,64 +1,64 @@
 const redisClient = require('../utils/redis');
 
-const getRestaurantKey = ({ restaurantId }) => `restaurant_${restaurantId}`;
-const getTableKey = ({ restaurantId }) => `table_${restaurantId}`;
-const getTablePositionKey = ({ restaurantId }) => `tablePosition_${restaurantId}`;
-const getEmployeeKey = ({ restaurantId }) => `employee_${restaurantId}`;
-const getEmployeePositionKey = ({ restaurantId }) => `employeePosition_${restaurantId}`;
-const getDepartmentKey = ({ restaurantId }) => `department_${restaurantId}`;
-const getMenuKey = ({ restaurantId }) => `menu_${restaurantId}`;
+const getShopKey = ({ shopId }) => `shop_${shopId}`;
+const getTableKey = ({ shopId }) => `table_${shopId}`;
+const getTablePositionKey = ({ shopId }) => `tablePosition_${shopId}`;
+const getEmployeeKey = ({ shopId }) => `employee_${shopId}`;
+const getEmployeePositionKey = ({ shopId }) => `employeePosition_${shopId}`;
+const getDepartmentKey = ({ shopId }) => `department_${shopId}`;
+const getMenuKey = ({ shopId }) => `menu_${shopId}`;
 
-const deleteRestaurantCache = async ({ restaurantId }) => {
+const deleteShopCache = async ({ shopId }) => {
   if (redisClient.isRedisConnected()) {
-    redisClient.deleteKey(getRestaurantKey({ restaurantId }));
+    redisClient.deleteKey(getShopKey({ shopId }));
   }
 };
 
-const deleteTableCache = async ({ restaurantId }) => {
+const deleteTableCache = async ({ shopId }) => {
   if (redisClient.isRedisConnected()) {
-    redisClient.deleteKey(getTableKey({ restaurantId }));
+    redisClient.deleteKey(getTableKey({ shopId }));
   }
 };
 
-const deleteTablePositionCache = async ({ restaurantId }) => {
+const deleteTablePositionCache = async ({ shopId }) => {
   if (redisClient.isRedisConnected()) {
-    redisClient.deleteKey(getTablePositionKey({ restaurantId }));
+    redisClient.deleteKey(getTablePositionKey({ shopId }));
   }
 };
 
-const deleteEmployeeCache = async ({ restaurantId }) => {
+const deleteEmployeeCache = async ({ shopId }) => {
   if (redisClient.isRedisConnected()) {
-    redisClient.deleteKey(getEmployeeKey({ restaurantId }));
+    redisClient.deleteKey(getEmployeeKey({ shopId }));
   }
 };
 
-const deleteEmployeePositionCache = async ({ restaurantId }) => {
+const deleteEmployeePositionCache = async ({ shopId }) => {
   if (redisClient.isRedisConnected()) {
-    redisClient.deleteKey(getEmployeePositionKey({ restaurantId }));
+    redisClient.deleteKey(getEmployeePositionKey({ shopId }));
   }
 };
 
-const deleteDepartmentCache = async ({ restaurantId }) => {
+const deleteDepartmentCache = async ({ shopId }) => {
   if (redisClient.isRedisConnected()) {
-    redisClient.deleteKey(getDepartmentKey({ restaurantId }));
+    redisClient.deleteKey(getDepartmentKey({ shopId }));
   }
 };
 
-const deleteMenuCache = async ({ restaurantId }) => {
+const deleteMenuCache = async ({ shopId }) => {
   if (redisClient.isRedisConnected()) {
-    redisClient.deleteKey(getMenuKey({ restaurantId }));
+    redisClient.deleteKey(getMenuKey({ shopId }));
   }
 };
 
 module.exports = {
-  getRestaurantKey,
+  getShopKey,
   getDepartmentKey,
   getEmployeeKey,
   getEmployeePositionKey,
   getTableKey,
   getTablePositionKey,
   getMenuKey,
-  deleteRestaurantCache,
+  deleteShopCache,
   deleteDepartmentCache,
   deleteEmployeeCache,
   deleteEmployeePositionCache,
