@@ -27,6 +27,7 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       const userData = await loginRequest(email, password);
+      dispatch(updateUser(userData));
     } catch (error) {
       Toast.show({
         type: "error",

@@ -9,12 +9,19 @@ const register = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send({ user, tokens });
 });
 
-const login = catchAsync(async (req, res) => {
+const loginWithProtobuf = catchAsync(async (req, res) => {
   const requestBody = req.body;
   const user = await authService.loginUserWithEmailAndPassword(requestBody);
   const tokens = await tokenService.generateAuthTokens(user);
   const response = await authConverter.convertLoginResponse({ user, tokens });
   res.send(response);
+});
+
+const login = catchAsync(async (req, res) => {
+  const { email, password } = req.body;
+  const user = await authService.loginUserWithEmailAndPassword({ email, password });
+  const tokens = await tokenService.generateAuthTokens(user);
+  res.send({ user, tokens });
 });
 
 const logout = catchAsync(async (req, res) => {
@@ -51,6 +58,7 @@ const verifyEmail = catchAsync(async (req, res) => {
 
 module.exports = {
   register,
+  loginWithProtobuf,
   login,
   logout,
   refreshTokens,

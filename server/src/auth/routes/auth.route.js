@@ -8,13 +8,15 @@ const { convertLoginRequest } = require('../converters/auth.converter');
 const router = express.Router();
 
 router.post('/register', validate(authValidation.register), authController.register);
+// example of using protobuf
 router.post(
-  '/login',
+  '/loginWithProtobuf',
   express.raw({ type: 'application/x-protobuf' }),
   convertLoginRequest,
   validate(authValidation.login),
-  authController.login
+  authController.loginWithProtobuf
 );
+router.post('/login', validate(authValidation.login), authController.login);
 router.post('/logout', validate(authValidation.logout), authController.logout);
 router.post('/refresh-tokens', validate(authValidation.refreshTokens), authController.refreshTokens);
 router.post('/forgot-password', validate(authValidation.forgotPassword), authController.forgotPassword);
