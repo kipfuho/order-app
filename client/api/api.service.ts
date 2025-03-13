@@ -105,3 +105,11 @@ export const loginRequest = async (email: string, password: string) => {
 
   return { ...user, tokens };
 };
+
+export const refreshTokensRequest = async (refreshToken: string) => {
+  const tokens: Tokens = await apiRequest("POST", "v1/auth/refresh-tokens", {
+    refreshToken,
+  });
+
+  return tokens;
+};

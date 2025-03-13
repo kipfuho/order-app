@@ -8,12 +8,13 @@ import {
   Restaurant,
   Table,
   TablePosition,
+  Tokens,
   Unit,
   User,
 } from "./state.interface";
 
 interface ShopState {
-  user: User | null;
+  user: User;
   restaurants: Restaurant[];
   tables: Table[];
   tablePositions: TablePosition[];
@@ -27,7 +28,7 @@ interface ShopState {
 
 // Initial state
 const initialState: ShopState = {
-  user: null,
+  user: {},
   restaurants: [],
   tables: [],
   tablePositions: [],
@@ -44,12 +45,17 @@ export const userSlice = createSlice({
   name: "shop",
   initialState,
   reducers: {
-    updateUser: (state, action: PayloadAction<User | null>) => {
-      console.log(action);
+    updateUser: (state, action: PayloadAction<User>) => {
       if (!_.get(action, "payload")) {
         return;
       }
-      state.user = action.payload;
+      state.user = {
+        ...state.user,
+        ...action.payload,
+      };
+    },
+    resetUser: (state) => {
+      state.user = {};
     },
 
     updateAllRestaurants: (state, action: PayloadAction<Restaurant[]>) => {
@@ -211,6 +217,7 @@ export const userSlice = createSlice({
 // Action creators
 export const {
   updateUser,
+  resetUser,
   updateAllRestaurants,
   updateRestaurant,
   updateAllTables,

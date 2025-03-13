@@ -1,11 +1,11 @@
 export interface Tokens {
   access: {
     token: string;
-    expires: Date;
+    expires: number;
   };
   refresh: {
     token: string;
-    expires: Date;
+    expires: number;
   };
 }
 
