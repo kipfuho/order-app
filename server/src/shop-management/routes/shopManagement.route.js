@@ -38,13 +38,18 @@ const defaultRoutes = [
 ];
 
 defaultRoutes.forEach((route) => {
-  router.use(route.path, route.route);
+  router.use(
+    `/:shopId/${route.path}`,
+    function (req, res, next) {
+      req.shopId = req.params.shopId;
+      next();
+    },
+    route.route
+  );
 });
 
 router.get('/:shopId', auth(), shopManagementController.getShop);
-router
-  .get('/', auth(), shopManagementController.queryShop)
-  .post('/', auth(), shopManagementController.createShop);
+router.get('/', auth(), shopManagementController.queryShop).post('/', auth(), shopManagementController.createShop);
 router.patch('/:shopId', auth(), shopManagementController.updateShop);
 router.delete('/:shopId', auth(), shopManagementController.deleteShop);
 

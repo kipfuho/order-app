@@ -10,13 +10,13 @@ export interface Tokens {
 }
 
 export interface User {
-  id?: string;
+  id: string;
+  email: string;
   name?: string;
-  email?: string;
   tokens?: Tokens;
 }
 
-export interface Restaurant {
+export interface Shop {
   id: string;
   name: string;
   location?: string;

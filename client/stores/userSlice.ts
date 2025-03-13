@@ -5,7 +5,7 @@ import {
   Dish,
   DishCategory,
   Employee,
-  Restaurant,
+  Shop,
   Table,
   TablePosition,
   Tokens,
@@ -15,7 +15,7 @@ import {
 
 interface ShopState {
   user: User;
-  restaurants: Restaurant[];
+  shops: Shop[];
   tables: Table[];
   tablePositions: TablePosition[];
   employees: Employee[];
@@ -29,7 +29,7 @@ interface ShopState {
 // Initial state
 const initialState: ShopState = {
   user: {},
-  restaurants: [],
+  shops: [],
   tables: [],
   tablePositions: [],
   employees: [],
@@ -58,22 +58,22 @@ export const userSlice = createSlice({
       state.user = {};
     },
 
-    updateAllRestaurants: (state, action: PayloadAction<Restaurant[]>) => {
+    updateAllShops: (state, action: PayloadAction<Shop[]>) => {
       if (!_.get(action, "payload")) {
         return;
       }
-      state.restaurants = action.payload;
+      state.shops = action.payload;
     },
-    updateRestaurant: (state, action: PayloadAction<Restaurant>) => {
+    updateShop: (state, action: PayloadAction<Shop>) => {
       if (!_.get(action, "payload")) {
         return;
       }
       const { id, ...updatedData } = action.payload;
-      const index = _.findIndex(state.restaurants, (res) => res.id === id);
+      const index = _.findIndex(state.shops, (shop) => shop.id === id);
 
       if (index !== -1) {
-        state.restaurants[index] = {
-          ...state.restaurants[index],
+        state.shops[index] = {
+          ...state.shops[index],
           ...updatedData,
         };
       }
@@ -218,8 +218,8 @@ export const userSlice = createSlice({
 export const {
   updateUser,
   resetUser,
-  updateAllRestaurants,
-  updateRestaurant,
+  updateAllShops,
+  updateShop,
   updateAllTables,
   updateTable,
   updateAllTablePositions,

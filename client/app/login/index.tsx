@@ -1,18 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { TextInput, Button, Text, ActivityIndicator } from "react-native-paper";
 import { loginRequest } from "../../api/api.service";
 import Toast from "react-native-toast-message";
-import { useDispatch, useSelector } from "react-redux";
-import { updateUser } from "../../stores/userSlice";
-import { RootState } from "../../stores/store";
+import { router } from "expo-router";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("ctcakip@gmail.com");
   const [password, setPassword] = useState("1234567q");
   const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.shop.user);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -26,8 +22,11 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      const userData = await loginRequest(email, password);
-      dispatch(updateUser(userData));
+      const result = await loginRequest(email, password);
+      // go home page
+      if (result) {
+        router.replace("/");
+      }
     } catch (error) {
       Toast.show({
         type: "error",
