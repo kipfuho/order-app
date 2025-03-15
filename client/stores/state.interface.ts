@@ -19,6 +19,7 @@ export interface User {
 export interface Shop {
   id: string;
   name: string;
+  email: string;
   location?: string;
 }
 
