@@ -1,31 +1,36 @@
 import _ from "lodash";
-import { useDispatch, useSelector } from "react-redux";
 import { Tokens } from "../stores/state.interface";
-import { RootState } from "../stores/store";
+import store from "../stores/store";
 import { refreshTokensRequest } from "./api.service";
-import { resetUser, updateUser } from "../stores/userSlice";
+import { signIn, signOut } from "../stores/authSlice";
 
-const isTokenExpired = (expires: number | undefined) => {
-  if (!expires) return false;
-  return Date.now() >= expires;
+export const isTokenExpired = (
+  token:
+    | Partial<{
+        expires: number;
+      }>
+    | undefined
+) => {
+  if (!token || !token.expires) return false;
+  return Date.now() >= token.expires;
 };
 
 export const getAccessToken = async (): Promise<string> => {
-  const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.shop.user);
+  const state = store.getState(); // Access Redux state
+  const user = state.auth.session;
   if (!user || !user.tokens) {
     return "";
   }
 
-  if (isTokenExpired(_.get(user, "tokens.access.expires"))) {
+  if (isTokenExpired(_.get(user, "tokens.access"))) {
     const newTokens: Tokens = await refreshTokensRequest(
       user.tokens.refresh.token
     );
     if (!newTokens) {
-      dispatch(resetUser());
+      store.dispatch(signOut());
       return "";
     }
-    dispatch(updateUser({ tokens: newTokens }));
+    store.dispatch(signIn({ ...user, tokens: newTokens }));
     return newTokens.access.token;
   }
   return user.tokens.access.token;

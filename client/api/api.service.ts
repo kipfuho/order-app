@@ -1,21 +1,22 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { Shop, Tokens, User } from "../stores/state.interface";
 import { auth } from "../generated/auth";
+import { updateAllShops } from "../stores/userSlice";
+import { Dispatch } from "redux";
 import { getAccessToken } from "./utils.service";
-import { useDispatch } from "react-redux";
-import { updateAllShops, updateUser } from "../stores/userSlice";
+import { signIn } from "../stores/authSlice";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 // Create an Axios instance
-const apiProtobufClient = axios.create({
+const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-const apiClient = axios.create({
+const apiProtobufClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/x-protobuf",
@@ -38,7 +39,7 @@ export const apiProtobufRequest = async <T>(
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     };
 
-    const response = await apiClient.request<T>(config);
+    const response = await apiProtobufClient.request<T>(config);
     return response.data;
   } catch (error: any) {
     console.error("API Request Error:", error.response?.data || error.message);
@@ -99,11 +100,15 @@ export const loginRequestProtobuf = async (email: string, password: string) => {
   }
 };
 
-export const loginRequest = async (
-  email: string,
-  password: string
-): Promise<boolean> => {
-  const dispatch = useDispatch();
+export const loginRequest = async ({
+  email,
+  password,
+  dispatch,
+}: {
+  email: string;
+  password: string;
+  dispatch: Dispatch;
+}): Promise<boolean> => {
   const {
     user,
     tokens,
@@ -119,7 +124,7 @@ export const loginRequest = async (
     },
   });
 
-  dispatch(updateUser({ ...user, tokens }));
+  dispatch(signIn({ ...user, tokens }));
   return true;
 };
 
@@ -135,14 +140,62 @@ export const refreshTokensRequest = async (refreshToken: string) => {
   return tokens;
 };
 
-export const queryShopsRequest = async (
-  user: User,
-  searchName: string,
-  sortBy: string = "createdAt",
-  page: number = 1,
-  limit: number = 10
-) => {
-  const dispatch = useDispatch();
+export const createShopRequest = async ({
+  name,
+  phone,
+  email,
+  taxRate,
+  location,
+}: {
+  name: string;
+  email: string;
+  phone?: string;
+  taxRate?: number;
+  location?: string;
+}) => {
+  const accessToken = await getAccessToken();
+  const body: {
+    name: string;
+    email: string;
+    phone?: string;
+    taxRate?: number;
+    location?: string;
+  } = { name, email };
+
+  if (location) {
+    body.location = location;
+  }
+  if (phone) {
+    body.name = name;
+  }
+  if (taxRate) {
+    body.taxRate = taxRate;
+  }
+
+  await apiRequest({
+    method: "POST",
+    endpoint: "/v1/shops",
+    token: accessToken,
+    data: body,
+  });
+};
+
+export const queryShopsRequest = async ({
+  user,
+  searchName,
+  sortBy = "createdAt",
+  page = 1,
+  limit = 10,
+  dispatch,
+}: {
+  user: User | null;
+  searchName?: string;
+  sortBy?: string;
+  page: number;
+  limit: number;
+  dispatch: Dispatch;
+}) => {
+  if (!user) return [];
   const accessToken = await getAccessToken();
   const queryParams = new URLSearchParams({
     employeeUserId: user.id,
@@ -159,11 +212,63 @@ export const queryShopsRequest = async (
     queryParams.append("userId", user.id);
   }
 
-  const shops: Shop[] = await apiRequest({
+  const shops: { results: Shop[] } = await apiRequest({
     method: "GET",
     endpoint: `/v1/shops?${queryParams.toString()}`,
     token: accessToken,
   });
 
-  dispatch(updateAllShops(shops));
+  dispatch(updateAllShops(shops.results));
+};
+
+export const updateShopRequest = async ({
+  shopId,
+  name,
+  phone,
+  email,
+  taxRate,
+  location,
+}: {
+  shopId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  taxRate?: number;
+  location?: string;
+}) => {
+  const accessToken = await getAccessToken();
+  const body: {
+    name: string;
+    email: string;
+    phone?: string;
+    taxRate?: number;
+    location?: string;
+  } = { name, email };
+
+  if (location) {
+    body.location = location;
+  }
+  if (phone) {
+    body.name = name;
+  }
+  if (taxRate) {
+    body.taxRate = taxRate;
+  }
+
+  await apiRequest({
+    method: "PATCH",
+    endpoint: `/v1/shops/${shopId}`,
+    token: accessToken,
+    data: body,
+  });
+};
+
+export const deleteShopRequest = async ({ shopId }: { shopId: string }) => {
+  const accessToken = await getAccessToken();
+
+  await apiRequest({
+    method: "DELETE",
+    endpoint: `/v1/shops/${shopId}`,
+    token: accessToken,
+  });
 };
