@@ -1,36 +1,113 @@
-  import { Provider } from "react-redux";
-  import { PersistGate } from "redux-persist/integration/react";
-  import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
-  import { Stack } from "expo-router";
-  import * as SplashScreen from "expo-splash-screen";
-  import { useEffect } from "react";
-  import "react-native-reanimated";
-  import { useColorScheme } from "@/hooks/useColorScheme";
-  import Toast from "react-native-toast-message";
+import { useEffect, useState } from "react";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import "react-native-reanimated";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import Toast from "react-native-toast-message";
+import store, { persistor } from "../stores/store";
+import _ from "lodash";
+import { StyleSheet } from "react-native";
 
-  import store, { persistor } from "../stores/store";
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
 
-  // Prevent the splash screen from auto-hiding before asset loading is complete.
-  SplashScreen.preventAutoHideAsync();
+export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const [isRootReady, setIsRootReady] = useState(false);
 
-  export default function RootLayout() {
-    const colorScheme = useColorScheme();
+  useEffect(() => {
+    // Hide the splash screen and mark the root layout as ready
+    SplashScreen.hideAsync().then(() => {
+      setIsRootReady(true);
+    });
+  }, []);
 
-    useEffect(() => {
-      SplashScreen.hideAsync();
-    }, []);
-
-    return (
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-            <Toast />
-          </ThemeProvider>
-        </PersistGate>
-      </Provider>
-    );
+  // Prevent rendering UserLayout until RootLayout is ready
+  if (!isRootReady) {
+    return null;
   }
+
+  return (
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
+          <Stack>
+            <Stack.Screen name="(shop)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="(shop)/shop/[shopId]"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <Toast />
+        </ThemeProvider>
+      </PersistGate>
+    </Provider>
+  );
+}
+
+export const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  title: { fontSize: 24, fontWeight: "bold" },
+  createButton: {
+    backgroundColor: "#007bff",
+    padding: 10,
+    borderRadius: 5,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  createButtonText: { color: "#fff", fontWeight: "bold" },
+  loader: { flex: 1, justifyContent: "center" },
+  shopItem: { padding: 15, borderBottomWidth: 1, borderColor: "#ddd" },
+  shopName: { fontSize: 18, fontWeight: "bold" },
+  shopDetails: { fontSize: 14, color: "gray" },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    marginBottom: 15,
+    borderRadius: 5,
+  },
+  cancelButton: {
+    marginTop: 10,
+    padding: 10,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    justifyContent: "center",
+  },
+  cancelButtonText: {
+    color: "red",
+    fontWeight: "bold",
+  },
+  button: {
+    marginTop: 10,
+  },
+
+  backButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#007bff",
+    borderRadius: 5,
+    alignItems: "center",
+    alignSelf: "center",
+    width: 150,
+  },
+  backButtonText: { color: "#fff", fontWeight: "bold" },
+  errorText: { color: "red", fontSize: 18, textAlign: "center" },
+});

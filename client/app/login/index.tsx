@@ -4,11 +4,14 @@ import { TextInput, Button, Text, ActivityIndicator } from "react-native-paper";
 import { loginRequest } from "../../api/api.service";
 import Toast from "react-native-toast-message";
 import { router } from "expo-router";
+import { useDispatch } from "react-redux";
+import { styles } from "../_layout";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("ctcakip@gmail.com");
   const [password, setPassword] = useState("1234567q");
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -22,7 +25,7 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      const result = await loginRequest(email, password);
+      const result = await loginRequest({ email, password, dispatch });
       // go home page
       if (result) {
         router.replace("/");
@@ -77,28 +80,5 @@ const LoginScreen = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 20,
-    backgroundColor: "white",
-  },
-  title: {
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  input: {
-    marginBottom: 10,
-  },
-  button: {
-    marginTop: 10,
-  },
-  loader: {
-    marginTop: 10,
-    alignSelf: "center",
-  },
-});
 
 export default LoginScreen;
