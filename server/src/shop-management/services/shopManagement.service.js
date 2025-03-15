@@ -13,7 +13,7 @@ const getShop = async (shopId) => {
 };
 
 const queryShop = async (query) => {
-  const filter = pick(query, ['name']);
+  const filter = _.pick(query, ['name']);
   filter.status = Status.enabled;
   const { employeeUserId } = query;
 
@@ -27,12 +27,12 @@ const queryShop = async (query) => {
     };
 
   const employees = await Employee.find({ user: employeeUserId, status: Status.enabled });
-  const employeeShopIds = _.map(employees, (e) => mongoose.Types.ObjectId(e.shopId));
-  const selfOwnerShops = await Shop.find({ userId: mongoose.Types.ObjectId(employeeUserId) }, { _id: 1 });
+  const employeeShopIds = _.map(employees, 'shop');
+  const selfOwnerShops = await Shop.find({ userId: employeeUserId }, { _id: 1 });
   const selfOwnerShopIds = _.map(selfOwnerShops, (shop) => shop._id);
-  filter._id = _.concat(employeeShopIds, selfOwnerShopIds);
+  filter._id = { $in: _.concat(employeeShopIds, selfOwnerShopIds) };
 
-  const options = pick(query, ['sortBy', 'limit', 'page']);
+  const options = _.pick(query, ['sortBy', 'limit', 'page']);
   const shops = await Shop.paginate(filter, options);
   return shops;
 };

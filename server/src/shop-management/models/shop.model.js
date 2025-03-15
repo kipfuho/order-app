@@ -15,6 +15,7 @@ const shopSchema = mongoose.Schema(
     email: { type: String },
     owner: { type: mongoose.Types.ObjectId, ref: 'User' },
     taxRate: { type: Number },
+    location: { type: String },
     dishPriceRoundingType: { type: String, enum: RoundingPaymentTypeEnum, default: RoundingPaymentType.ROUND },
     discountRoundingType: { type: String, enum: RoundingPaymentTypeEnum, default: RoundingPaymentType.ROUND },
     taxRoundingType: { type: String, enum: RoundingPaymentTypeEnum, default: RoundingPaymentType.ROUND },

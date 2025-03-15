@@ -30,43 +30,47 @@ const _verifyAdmin = (req, requiredRights) => {
 };
 
 const verifyCallback = (req, resolve, reject, requiredRights) => async (err, user, info) => {
-  if (err || info || !user) {
-    return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
-  }
-  req.user = user;
+  try {
+    if (err || info || !user) {
+      return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
+    }
+    req.user = user;
 
-  if (!_verifyAdmin(req, requiredRights)) {
-    return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
-  }
+    if (!_verifyAdmin(req, requiredRights)) {
+      return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+    }
 
-  req.isCustomerRequest = isCustomerRequest(req);
-  req.isShopRequest = isShopRequest(req);
+    req.isCustomerRequest = isCustomerRequest(req);
+    req.isShopRequest = isShopRequest(req);
 
-  let { shopId } = req;
-  if (!shopId) {
-    shopId = req.params.shopId || _.get(req, 'body.shopId');
-  }
-  if (!shopId) {
+    let { shopId } = req;
+    if (!shopId) {
+      shopId = req.params.shopId || _.get(req, 'body.shopId');
+    }
+    if (!shopId) {
+      resolve();
+      return;
+    }
+
+    const shop = await getShopFromCache({ shopId });
+
+    if (shop.owner.toString() !== user.id) {
+      const employee = await getEmployeeFromCache({ userId: user.id, shopId });
+      if (!employee) {
+        return reject(new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy nhân viên'));
+      }
+      req.employee = employee;
+      const { permissions } = employee;
+      const hasPermissions = requiredRights.every((right) => permissions.includes(right));
+      if (!hasPermissions) {
+        return reject(new ApiError(httpStatus.FORBIDDEN, 'Không có đủ quyền'));
+      }
+    }
+
     resolve();
-    return;
+  } catch (err) {
+    reject(err);
   }
-
-  const shop = await getShopFromCache({ shopId });
-
-  if (shop.userId.toString() !== user.id) {
-    const employee = await getEmployeeFromCache({ userId: user.id, shopId });
-    if (!employee) {
-      return reject(new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy nhân viên'));
-    }
-    req.employee = employee;
-    const { permissions } = employee;
-    const hasPermissions = requiredRights.every((right) => permissions.includes(right));
-    if (!hasPermissions) {
-      return reject(new ApiError(httpStatus.FORBIDDEN, 'Không có đủ quyền'));
-    }
-  }
-
-  resolve();
 };
 
 const auth =

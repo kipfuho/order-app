@@ -10,9 +10,9 @@ const getShop = catchAsync(async (req, res) => {
 });
 
 const queryShop = catchAsync(async (req, res) => {
-  const query = req;
+  const query = _.get(req, 'query');
   const shops = await shopManagementService.queryShop(query);
-  res.status(httpStatus.OK).send({ shops });
+  res.status(httpStatus.OK).send(shops);
 });
 
 const createShop = catchAsync(async (req, res) => {

@@ -24,14 +24,14 @@ const getShopFromCache = async ({ shopId }) => {
       return shop;
     }
 
-    const shopModel = await Shop.find({ _id: shopId, status: constant.Status.enabled });
+    const shopModel = await Shop.findOne({ _id: shopId, status: constant.Status.enabled });
     const shopJson = shopModel.toJSON();
     redisClient.putJson({ key, jsonVal: shopJson });
     setSession({ key, value: shopJson });
     return shopJson;
   }
 
-  const shop = await Shop.find({ _id: shopId, status: constant.Status.enabled });
+  const shop = await Shop.findOne({ _id: shopId, status: constant.Status.enabled });
   const shopJson = shop.toJSON();
   setSession({ key, value: shopJson });
   return shopJson;
