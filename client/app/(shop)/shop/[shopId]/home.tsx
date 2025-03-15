@@ -18,6 +18,7 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores/store";
 import { Ionicons } from "@expo/vector-icons";
+import { deleteShopRequest } from "../../../../api/api.service";
 
 interface Item {
   title: string;
@@ -86,12 +87,9 @@ export default function ShopPage() {
     setConfirmModalVisible(true); // Open confirmation modal
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     setConfirmModalVisible(false);
-    deleteShop();
-  };
-
-  const deleteShop = () => {
+    await deleteShopRequest({ shopId: shop.id });
     router.replace("/"); // Redirect to home
   };
 
