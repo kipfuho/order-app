@@ -4,10 +4,9 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  FlatList,
-  Dimensions,
   Modal,
-  Alert,
+  SafeAreaView,
+  useWindowDimensions,
 } from "react-native";
 import {
   Link,
@@ -17,8 +16,8 @@ import {
 } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores/store";
-import { Ionicons } from "@expo/vector-icons";
 import { deleteShopRequest } from "../../../../api/api.service";
+import { Ionicons } from "@expo/vector-icons";
 
 interface Item {
   title: string;
@@ -35,25 +34,25 @@ const BUTTONS: Item[] = [
 ];
 
 export default function ShopPage() {
-  const { shopId } = useLocalSearchParams(); // Get shop ID from URL
+  const { shopId } = useLocalSearchParams();
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
   );
   const router = useRouter();
   const navigation = useNavigation();
 
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+
   if (!shop) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <Text style={styles.errorText}>Shop not found</Text>
-
-        {/* Wrap the Link inside a TouchableOpacity or View with styles */}
         <Link href="/" asChild>
           <TouchableOpacity style={styles.backButton}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
         </Link>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -74,60 +73,54 @@ export default function ShopPage() {
     setModalVisible(false);
     router.push({
       pathname: "/shop/[shopId]/update-shop",
-      params: {
-        shopId,
-      },
-    }); // Navigate to update page
+      params: { shopId: shop.id },
+    });
   };
 
-  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
-
   const handleDelete = () => {
-    setModalVisible(false); // Close options modal
-    setConfirmModalVisible(true); // Open confirmation modal
+    setModalVisible(false);
+    setConfirmModalVisible(true);
   };
 
   const confirmDelete = async () => {
     setConfirmModalVisible(false);
     await deleteShopRequest({ shopId: shop.id });
-    router.replace("/"); // Redirect to home
+    router.replace("/");
   };
 
+  const { width } = useWindowDimensions(); // Dynamically get the current width
+  const buttonSize = width / 3 - 20;
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>{shop.name}</Text>
       <Text style={styles.details}>Location: {shop.location}</Text>
 
-      <FlatList
-        data={BUTTONS}
-        keyExtractor={(item) => item.route}
-        numColumns={getNumColumns()}
-        contentContainerStyle={styles.buttonGrid}
-        renderItem={({ item }) => (
+      <View style={styles.buttonGrid}>
+        {BUTTONS.map((item) => (
           <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
+            key={item.route}
+            style={[styles.button, { width: buttonSize }]}
+            onPress={() =>
               router.push({
                 pathname: `/shop/[shopId]/${item.route}`,
-                params: {
-                  shopId: shop.id,
-                },
-              });
-            }}
+                params: { shopId: shop.id },
+              })
+            }
           >
             <Text style={styles.buttonText}>{item.title}</Text>
           </TouchableOpacity>
-        )}
-      />
+        ))}
+      </View>
 
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
 
-      {/* Modal for Update & Delete */}
+      {/* Update & Delete Modal */}
       <Modal
         visible={modalVisible}
-        transparent={true}
+        transparent
         animationType="fade"
         onRequestClose={() => setModalVisible(false)}
       >
@@ -152,19 +145,16 @@ export default function ShopPage() {
         </View>
       </Modal>
 
+      {/* Confirm Delete Modal */}
       <Modal
         visible={confirmModalVisible}
-        transparent={true}
+        transparent
         animationType="fade"
         onRequestClose={() => setConfirmModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text
-              style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}
-            >
-              Confirm Deletion
-            </Text>
+            <Text style={styles.modalHeader}>Confirm Deletion</Text>
             <Text>Are you sure you want to delete this shop?</Text>
             <TouchableOpacity
               onPress={confirmDelete}
@@ -181,15 +171,9 @@ export default function ShopPage() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
-
-// Get number of columns dynamically based on screen width
-const getNumColumns = () => {
-  const screenWidth = Dimensions.get("window").width;
-  return screenWidth > 600 ? 4 : 3; // 4 per row on tablets, 3 per row on mobile
-};
 
 const styles = StyleSheet.create({
   container: {
@@ -204,24 +188,35 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 10,
   },
-  details: { fontSize: 18, textAlign: "center", marginBottom: 20 },
-  errorText: { color: "red", fontSize: 18, textAlign: "center" },
-
+  details: {
+    fontSize: 18,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 18,
+    textAlign: "center",
+  },
   buttonGrid: {
-    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
     paddingVertical: 10,
   },
   button: {
-    flex: 1,
+    height: 100,
     margin: 5,
     backgroundColor: "#007bff",
-    paddingVertical: 15,
+    justifyContent: "center",
     alignItems: "center",
     borderRadius: 10,
-    minWidth: 100, // Minimum button size
   },
-  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   backButton: {
     marginTop: 20,
     padding: 10,
@@ -231,8 +226,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     width: 150,
   },
-  backButtonText: { color: "#fff", fontWeight: "bold" },
-
+  backButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -246,6 +243,11 @@ const styles = StyleSheet.create({
     width: 250,
     alignItems: "center",
   },
+  modalHeader: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
   modalButton: {
     padding: 15,
     width: "100%",
@@ -254,7 +256,15 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     borderRadius: 5,
   },
-  modalText: { color: "#fff", fontWeight: "bold" },
-  modalCancel: { marginTop: 10 },
-  modalCancelText: { color: "#007bff", fontWeight: "bold" },
+  modalText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  modalCancel: {
+    marginTop: 10,
+  },
+  modalCancelText: {
+    color: "#007bff",
+    fontWeight: "bold",
+  },
 });

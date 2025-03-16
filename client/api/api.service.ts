@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { Shop, Tokens, User } from "../stores/state.interface";
+import { DishCategory, Shop, Tokens, User } from "../stores/state.interface";
 import { auth } from "../generated/auth";
 import { updateAllShops } from "../stores/userSlice";
 import { Dispatch } from "redux";
@@ -270,5 +270,32 @@ export const deleteShopRequest = async ({ shopId }: { shopId: string }) => {
     method: "DELETE",
     endpoint: `/v1/shops/${shopId}`,
     token: accessToken,
+  });
+};
+
+export const createTablePositionRequest = async ({
+  shopId,
+  name,
+  categories,
+}: {
+  shopId: string;
+  name: string;
+  categories: DishCategory[];
+}) => {
+  const accessToken = await getAccessToken();
+  const body: {
+    name: string;
+    categories?: DishCategory[];
+  } = { name };
+
+  if (categories) {
+    body.categories = categories;
+  }
+
+  await apiRequest({
+    method: "POST",
+    endpoint: `/v1/shops/${shopId}/tablepositions`,
+    token: accessToken,
+    data: body,
   });
 };

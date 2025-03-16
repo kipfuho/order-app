@@ -25,13 +25,13 @@ export interface Shop {
 
 export interface Table {
   id: string;
-  number: number;
+  name: string;
+  position: string;
 }
 
 export interface TablePosition {
   id: string;
-  x: number;
-  y: number;
+  name: string;
 }
 
 export interface Employee {

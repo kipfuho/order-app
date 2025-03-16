@@ -110,4 +110,19 @@ export const styles = StyleSheet.create({
   },
   backButtonText: { color: "#fff", fontWeight: "bold" },
   errorText: { color: "red", fontSize: 18, textAlign: "center" },
+  item: {
+    padding: 15,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 10,
+    marginVertical: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  itemText: {
+    fontSize: 18,
+    color: "#333",
+  },
 });
