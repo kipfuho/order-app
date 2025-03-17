@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const mongoose = require('mongoose');
 const { createNamespace, getNamespace } = require('cls-hooked');
 const logger = require('../config/logger');
 const { Countries, SESSION_NAME_SPACE, Language } = require('../utils/constant');
@@ -7,6 +8,12 @@ if (!getNamespace(SESSION_NAME_SPACE)) {
   createNamespace(SESSION_NAME_SPACE);
 }
 const CLS_HOOK_KEYS = 'ALL_CLS_HOOK_KEY';
+
+// Patch Mongoose to use the namespace
+const bindMongooseToCLS = (clsSession) => {
+  mongoose.Query.prototype.exec = clsSession.bind(mongoose.Query.prototype.exec);
+  mongoose.Aggregate.prototype.exec = clsSession.bind(mongoose.Aggregate.prototype.exec);
+};
 
 const clsHooked = (req, res, next) => {
   if (req.method === 'OPTIONS') {
@@ -18,6 +25,8 @@ const clsHooked = (req, res, next) => {
   } else {
     clsSession = getNamespace(SESSION_NAME_SPACE);
   }
+  bindMongooseToCLS(clsSession);
+
   clsSession.run(() => {
     clsSession.set('clientLanguage', _.get(req, 'headers.lang') || Language.english);
     clsSession.set('path', _.get(req, 'path') || '');

@@ -1,58 +1,79 @@
+const {
+  getEmployeePositionFromCache,
+  getEmployeePositionsFromCache,
+  getEmployeeFromCache,
+  getEmployeesFromCache,
+} = require('../../metadata/employeeMetadata.service');
 const { EmployeePosition, Employee } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 
-const getEmployee = async (employeeId) => {
-  const employee = await Employee.findById(employeeId);
+const getEmployee = async ({ shopId, employeeId }) => {
+  const employee = await getEmployeeFromCache({ employeeId, shopId });
   throwBadRequest(!employee, 'Không tìm thấy nhân viên');
   return employee;
 };
 
-const createEmployee = async (createBody) => {
-  const employee = await Employee.create(createBody);
+const getEmployees = async ({ shopId }) => {
+  const employees = await getEmployeesFromCache({ shopId });
+  throwBadRequest(!employees, 'Không tìm thấy nhân viên');
+  return employees;
+};
+
+const createEmployee = async ({ shopId, createBody }) => {
+  const employee = await Employee.create({ ...createBody, shop: shopId });
   return employee;
 };
 
-const updateEmployee = async (employeeId, updateBody) => {
-  const employee = await Employee.findByIdAndUpdate(employeeId, { $set: updateBody }, { new: true });
+const updateEmployee = async ({ shopId, employeeId, updateBody }) => {
+  const employee = await Employee.findOneAndUpdate({ _id: employeeId, shop: shopId }, { $set: updateBody }, { new: true });
   throwBadRequest(!employee, 'Không tìm thấy nhân viên');
   return employee;
 };
 
-const deleteEmployee = async (employeeId) => {
-  await Employee.deleteOne({ _id: employeeId });
+const deleteEmployee = async ({ shopId, employeeId }) => {
+  await Employee.deleteOne({ _id: employeeId, shop: shopId });
 };
 
-const getEmployeePosition = async (employeePositionId) => {
-  const employeePosition = await EmployeePosition.findById(employeePositionId);
+const getEmployeePosition = async ({ shopId, employeePositionId }) => {
+  const employeePosition = await getEmployeePositionFromCache({ employeePositionId, shopId });
   throwBadRequest(!employeePosition, 'Không tìm thấy vị trí nhân viên');
   return employeePosition;
 };
 
-const createEmployeePosition = async (createBody) => {
-  const employeePosition = await EmployeePosition.create(createBody);
+const getEmployeePositions = async ({ shopId }) => {
+  const employeePositions = await getEmployeePositionsFromCache({ shopId });
+  throwBadRequest(!employeePositions, 'Không tìm thấy vị trí nhân viên');
+  return employeePositions;
+};
+
+const createEmployeePosition = async ({ shopId, createBody }) => {
+  const employeePosition = await EmployeePosition.create({ ...createBody, shop: shopId });
   return employeePosition;
 };
 
-const updateEmployeePosition = async (employeePositionId, updateBody) => {
-  const employeePosition = await EmployeePosition.findByIdAndUpdate(employeePositionId, { $set: updateBody }, { new: true });
+const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody }) => {
+  const employeePosition = await EmployeePosition.findOneAndUpdate(
+    { _id: employeePositionId, shop: shopId },
+    { $set: updateBody },
+    { new: true }
+  );
   throwBadRequest(!employeePosition, 'Không tìm thấy vị trí nhân viên');
   return employeePosition;
 };
 
-const deleteEmployeePosition = async (employeePositionId) => {
-  await EmployeePosition.deleteOne({ _id: employeePositionId });
+const deleteEmployeePosition = async ({ shopId, employeePositionId }) => {
+  await EmployeePosition.deleteOne({ _id: employeePositionId, shop: shopId });
 };
-
-const getEmployeesPosition = async () => {};
 
 module.exports = {
   getEmployee,
+  getEmployees,
   createEmployee,
   updateEmployee,
   deleteEmployee,
   getEmployeePosition,
+  getEmployeePositions,
   createEmployeePosition,
   updateEmployeePosition,
   deleteEmployeePosition,
-  getEmployeesPosition,
 };

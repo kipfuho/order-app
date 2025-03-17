@@ -73,7 +73,7 @@ const createShop = async ({ createBody, ownerUserId }) => {
   return shop;
 };
 
-const updateShop = async (shopId, updateBody) => {
+const updateShop = async ({ shopId, updateBody }) => {
   const shop = await Shop.findByIdAndUpdate(shopId, { $set: updateBody }, { new: true });
   throwBadRequest(!shop, 'Không tìm thấy nhà hàng');
   return shop;
@@ -83,13 +83,10 @@ const deleteShop = async (shopId) => {
   await Shop.deleteOne({ _id: shopId });
 };
 
-const getShopes = async () => {};
-
 module.exports = {
   getShop,
   queryShop,
   createShop,
   updateShop,
   deleteShop,
-  getShopes,
 };

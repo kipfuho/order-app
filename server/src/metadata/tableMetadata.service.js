@@ -34,7 +34,7 @@ const getTableFromCache = async ({ shopId, tableId }) => {
     }
   }
 
-  const table = await Table.findById(tableId).populate('position');
+  const table = await Table.findOne({ _id: tableId, shop: shopId }).populate('position');
   return table.toJSON();
 };
 
@@ -52,39 +52,39 @@ const getTablesFromCache = async ({ shopId }) => {
       return tables;
     }
 
-    const tableModels = await Table.find({ shopId, status: constant.Status.enabled }).populate('position');
+    const tableModels = await Table.find({ shop: shopId, status: constant.Status.enabled }).populate('position');
     const tableJsons = _.map(tableModels, (table) => table.toJSON());
     redisClient.putJson({ key, jsonVal: tableJsons });
     setSession({ key, value: tableJsons });
     return tableJsons;
   }
 
-  const tables = await Table.find({ shopId, status: constant.Status.enabled }).populate('position');
+  const tables = await Table.find({ shop: shopId, status: constant.Status.enabled }).populate('position');
   const tableJsons = _.map(tables, (table) => table.toJSON());
   setSession({ key, value: tableJsons });
   return tableJsons;
 };
 
-const getTablePositionFromCache = async ({ shopId, tablePostionId }) => {
-  if (!tablePostionId) {
+const getTablePositionFromCache = async ({ shopId, tablePositionId }) => {
+  if (!tablePositionId) {
     return;
   }
 
   const key = getTablePositionKey({ shopId });
   const clsHookTablePositions = _getTablePositionsFromClsHook({ key });
   if (!_.isEmpty(clsHookTablePositions)) {
-    return _.find(clsHookTablePositions, (tablePostion) => tablePostion.id === tablePostionId);
+    return _.find(clsHookTablePositions, (tablePostion) => tablePostion.id === tablePositionId);
   }
 
   if (redisClient.isRedisConnected()) {
     const tablePostions = await redisClient.getJson(key);
     if (!_.isEmpty(tablePostions)) {
       setSession({ key, value: tablePostions });
-      return _.find(tablePostions, (tablePostion) => tablePostion.id === tablePostionId);
+      return _.find(tablePostions, (tablePostion) => tablePostion.id === tablePositionId);
     }
   }
 
-  const tablePostion = await TablePosition.findById(tablePostionId).populate('category');
+  const tablePostion = await TablePosition.findOne({ _id: tablePositionId, shop: shopId }).populate('category');
   return tablePostion.toJSON();
 };
 
@@ -102,7 +102,7 @@ const getTablePositionsFromCache = async ({ shopId }) => {
       return tablePostions;
     }
 
-    const tablePostionModels = await TablePosition.find({ shopId, status: constant.Status.enabled })
+    const tablePostionModels = await TablePosition.find({ shop: shopId, status: constant.Status.enabled })
       .populate('dishCategories')
       .populate('tables');
     const tablePostionJsons = _.map(tablePostionModels, (tablePostion) => tablePostion.toJSON());
@@ -111,7 +111,7 @@ const getTablePositionsFromCache = async ({ shopId }) => {
     return tablePostionJsons;
   }
 
-  const tablePostions = await TablePosition.find({ shopId, status: constant.Status.enabled })
+  const tablePostions = await TablePosition.find({ shop: shopId, status: constant.Status.enabled })
     .populate('dishCategories')
     .populate('tables');
   const tablePostionJsons = _.map(tablePostions, (tablePostion) => tablePostion.toJSON());

@@ -53,6 +53,7 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
     }
 
     const shop = await getShopFromCache({ shopId });
+    req.shop = shop;
 
     if (shop.owner.toString() !== user.id) {
       const employee = await getEmployeeFromCache({ userId: user.id, shopId });

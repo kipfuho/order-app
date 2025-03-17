@@ -1,29 +1,41 @@
+const { getDepartmentFromCache, getDepartmentsFromCache } = require('../../metadata/departmentMetadata.service');
 const { Department } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 
-const getDepartment = async (departmentId) => {
-  const department = await Department.findById(departmentId);
+const getDepartment = async ({ shopId, departmentId }) => {
+  const department = await getDepartmentFromCache({ departmentId, shopId });
   throwBadRequest(!department, 'Không tìm thấy bộ phận');
   return department;
 };
 
-const createDepartment = async (createBody) => {
-  const department = await Department.create(createBody);
-  return department;
-};
-
-const updateDepartment = async (departmentId, updateBody) => {
-  const department = await Department.findByIdAndUpdate(departmentId, { $set: updateBody }, { new: true });
+const getDepartments = async ({ shopId }) => {
+  const department = await getDepartmentsFromCache({ shopId });
   throwBadRequest(!department, 'Không tìm thấy bộ phận');
   return department;
 };
 
-const deleteDepartment = async (departmentId) => {
-  await Department.deleteOne({ _id: departmentId });
+const createDepartment = async ({ shopId, createBody }) => {
+  const department = await Department.create({ ...createBody, shop: shopId });
+  return department;
+};
+
+const updateDepartment = async ({ shopId, departmentId, updateBody }) => {
+  const department = await Department.findOneAndUpdate(
+    { _id: departmentId, shop: shopId },
+    { $set: updateBody },
+    { new: true }
+  );
+  throwBadRequest(!department, 'Không tìm thấy bộ phận');
+  return department;
+};
+
+const deleteDepartment = async ({ shopId, departmentId }) => {
+  await Department.deleteOne({ _id: departmentId, shop: shopId });
 };
 
 module.exports = {
   getDepartment,
+  getDepartments,
   createDepartment,
   updateDepartment,
   deleteDepartment,

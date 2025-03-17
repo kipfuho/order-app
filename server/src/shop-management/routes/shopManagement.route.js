@@ -12,27 +12,27 @@ const router = express.Router();
 
 const defaultRoutes = [
   {
-    path: '/tables',
+    path: 'tables',
     route: tableRoute,
   },
   {
-    path: '/tablePositions',
+    path: 'tablePositions',
     route: tablePositionRoute,
   },
   {
-    path: '/employees',
+    path: 'employees',
     route: employeeRoute,
   },
   {
-    path: '/employeePositions',
+    path: 'employeePositions',
     route: employeePositionRoute,
   },
   {
-    path: '/departments',
+    path: 'departments',
     route: departmentRoute,
   },
   {
-    path: '/orders',
+    path: 'orders',
     route: orderRoute,
   },
 ];
@@ -49,7 +49,7 @@ defaultRoutes.forEach((route) => {
 });
 
 router.get('/:shopId', auth(), shopManagementController.getShop);
-router.get('/', auth(), shopManagementController.queryShop).post('/', auth(), shopManagementController.createShop);
+router.route('/').get(auth(), shopManagementController.queryShop).post(auth(), shopManagementController.createShop);
 router.patch('/:shopId', auth(), shopManagementController.updateShop);
 router.delete('/:shopId', auth(), shopManagementController.deleteShop);
 
