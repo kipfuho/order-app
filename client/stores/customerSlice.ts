@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import _ from "lodash";
 import { Cart, Customer, MenuItem } from "./state.interface";
+import { PURGE } from "redux-persist";
 
 interface CustomerState {
   user: Customer | null;
@@ -34,6 +35,11 @@ export const customerSlice = createSlice({
       if (!_.get(action, "payload")) return;
       state.user = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

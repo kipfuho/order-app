@@ -1,10 +1,11 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Tabs, useLocalSearchParams } from "expo-router";
+import { Link, Tabs, useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TouchableOpacity } from "react-native";
 import { styles } from "../../../../../../_layout";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TablesTabLayout() {
   const { shopId } = useLocalSearchParams();
@@ -13,7 +14,6 @@ export default function TablesTabLayout() {
   );
 
   if (!shop) {
-    console.log(shopId);
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.errorText}>Shop not found</Text>
@@ -26,8 +26,27 @@ export default function TablesTabLayout() {
     );
   }
 
+  const router = useRouter();
+  const goBack = () =>
+    router.navigate({
+      pathname: "/shop/[shopId]/settings",
+      params: {
+        shopId: shop.id,
+      },
+    });
+
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: "blue" }}>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: "blue",
+        lazy: true,
+        headerLeft: () => (
+          <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="black" />
+          </TouchableOpacity>
+        ),
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
@@ -66,6 +85,18 @@ export default function TablesTabLayout() {
       />
       <Tabs.Screen
         name="create-table"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="update-table/[tableId]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="update-table-position/[tablePositionId]"
         options={{
           href: null,
         }}

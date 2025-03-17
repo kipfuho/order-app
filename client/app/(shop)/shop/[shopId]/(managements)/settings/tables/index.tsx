@@ -1,18 +1,13 @@
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, FlatList } from "react-native";
-import {
-  Link,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from "expo-router";
-import { useDispatch, useSelector } from "react-redux";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "../../../../../../_layout";
 import { ActivityIndicator } from "react-native-paper";
 import { getTables } from "../../../../../../../api/api.service";
-import { Ionicons } from "@expo/vector-icons";
+import _ from "lodash";
 
 export default function TablesManagementPage() {
   const { shopId } = useLocalSearchParams();
@@ -21,7 +16,6 @@ export default function TablesManagementPage() {
   );
 
   if (!shop) {
-    console.log(shopId);
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.errorText}>Shop not found</Text>
@@ -34,38 +28,17 @@ export default function TablesManagementPage() {
     );
   }
 
-  const router = useRouter();
-  const navigation = useNavigation();
-
-  const goBack = () =>
-    router.navigate({
-      pathname: "/shop/[shopId]/settings",
-      params: {
-        shopId: shop.id,
-      },
-    });
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
-
   // Fetch table positions from Redux store
   const tables = useSelector((state: RootState) => state.shop.tables);
-  const [loading, setLoading] = useState(true);
-  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchTables = async () => {
       try {
+        setLoading(true);
         await getTables({
           shopId: shop.id,
-          dispatch,
         });
       } catch (error) {
         console.error("Error fetching tables:", error);
@@ -74,7 +47,9 @@ export default function TablesManagementPage() {
       }
     };
 
-    fetchTables();
+    if (_.isEmpty(tables)) {
+      fetchTables();
+    }
   }, []);
 
   if (loading) {
@@ -90,9 +65,17 @@ export default function TablesManagementPage() {
         data={tables}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text style={styles.itemText}>{item.name}</Text>
-          </View>
+          <Link
+            href={{
+              pathname: "/shop/[shopId]/settings/tables/update-table/[tableId]",
+              params: { shopId: shop.id, tableId: item.id },
+            }}
+            asChild
+          >
+            <TouchableOpacity style={styles.item}>
+              <Text style={styles.itemText}>{item.name}</Text>
+            </TouchableOpacity>
+          </Link>
         )}
       />
 

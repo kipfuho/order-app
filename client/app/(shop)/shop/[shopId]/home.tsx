@@ -41,7 +41,31 @@ export default function ShopPage() {
   const router = useRouter();
   const navigation = useNavigation();
 
+  const [modalVisible, setModalVisible] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+
+  const { width } = useWindowDimensions(); // Dynamically get the current width
+  const buttonSize = width / 3 - 20;
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: shop?.name || "Shop",
+      headerShown: true,
+      headerLeft: () => (
+        <TouchableOpacity
+          onPress={() => router.navigate("/")}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="black" />
+        </TouchableOpacity>
+      ),
+      headerRight: () => (
+        <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <Ionicons name="ellipsis-vertical" size={32} color="white" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, shop]);
 
   if (!shop) {
     return (
@@ -55,19 +79,6 @@ export default function ShopPage() {
       </SafeAreaView>
     );
   }
-
-  const [modalVisible, setModalVisible] = useState(false);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: shop?.name || "Shop",
-      headerRight: () => (
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Ionicons name="ellipsis-vertical" size={32} color="white" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation, shop]);
 
   const handleUpdate = () => {
     setModalVisible(false);
@@ -87,9 +98,6 @@ export default function ShopPage() {
     await deleteShopRequest({ shopId: shop.id });
     router.replace("/");
   };
-
-  const { width } = useWindowDimensions(); // Dynamically get the current width
-  const buttonSize = width / 3 - 20;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -218,13 +226,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   backButton: {
-    marginTop: 20,
     padding: 10,
     backgroundColor: "#007bff",
     borderRadius: 5,
     alignItems: "center",
     alignSelf: "center",
-    width: 150,
+    width: 50,
   },
   backButtonText: {
     color: "#fff",

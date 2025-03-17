@@ -20,19 +20,11 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [isRootReady, setIsRootReady] = useState(false);
 
   useEffect(() => {
     // Hide the splash screen and mark the root layout as ready
-    SplashScreen.hideAsync().then(() => {
-      setIsRootReady(true);
-    });
+    SplashScreen.hideAsync();
   }, []);
-
-  // Prevent rendering UserLayout until RootLayout is ready
-  if (!isRootReady) {
-    return null;
-  }
 
   return (
     <Provider store={store}>

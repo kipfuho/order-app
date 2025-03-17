@@ -10,6 +10,7 @@ import {
   TablePosition,
   Unit,
 } from "./state.interface";
+import { PURGE } from "redux-persist";
 
 interface ShopState {
   useCache: boolean;
@@ -196,6 +197,11 @@ export const userSlice = createSlice({
       if (!_.get(action, "payload")) return;
       state.tableWithActiveOrders = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

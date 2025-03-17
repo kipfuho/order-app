@@ -1,9 +1,4 @@
-import {
-  Link,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import {
   StyleSheet,
   Text,
@@ -14,8 +9,6 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLayoutEffect } from "react";
-import { Ionicons } from "@expo/vector-icons";
 
 interface Item {
   title: string;
@@ -29,6 +22,9 @@ export default function SettingManagementPage() {
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
   );
+  const router = useRouter();
+  const { width } = useWindowDimensions();
+  const buttonSize = width / 3 - 20;
 
   if (!shop) {
     return (
@@ -42,30 +38,6 @@ export default function SettingManagementPage() {
       </SafeAreaView>
     );
   }
-
-  const router = useRouter();
-  const navigation = useNavigation();
-
-  const goBack = () =>
-    router.navigate({
-      pathname: "/shop/[shopId]",
-      params: {
-        shopId: shop.id,
-      },
-    });
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
-
-  const { width } = useWindowDimensions();
-  const buttonSize = width / 3 - 20;
 
   return (
     <SafeAreaView style={styles.container}>

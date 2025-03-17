@@ -16,6 +16,8 @@ import {
 import { Dispatch } from "redux";
 import { getAccessToken } from "./utils.service";
 import { signIn } from "../stores/authSlice";
+import store from "../stores/store";
+import _ from "lodash";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -104,7 +106,6 @@ export const loginRequestProtobuf = async (email: string, password: string) => {
       new Uint8Array(responseBuffer)
     ).toJSON();
 
-    console.log(decodedResponse);
     return decodedResponse;
   } catch (err) {
     console.error(err);
@@ -303,21 +304,63 @@ export const createTablePositionRequest = async ({
     body.categories = categories;
   }
 
-  await apiRequest({
+  const result: { tablePosition: TablePosition } = await apiRequest({
     method: "POST",
     endpoint: `/v1/shops/${shopId}/tablePositions`,
     token: accessToken,
     data: body,
   });
+
+  const state = store.getState();
+  store.dispatch(
+    updateAllTablePositions([
+      ...state.shop.tablePositions,
+      result.tablePosition,
+    ])
+  );
 };
 
-export const getTablePositions = async ({
+export const updateTablePositionRequest = async ({
+  tablePositionId,
   shopId,
-  dispatch,
+  name,
+  categories,
 }: {
+  tablePositionId: string;
   shopId: string;
-  dispatch: Dispatch;
+  name: string;
+  categories: DishCategory[];
 }) => {
+  const accessToken = await getAccessToken();
+  const body: {
+    name: string;
+    categories?: DishCategory[];
+  } = { name };
+
+  if (categories) {
+    body.categories = categories;
+  }
+
+  const result: { tablePosition: TablePosition } = await apiRequest({
+    method: "PATCH",
+    endpoint: `/v1/shops/${shopId}/tablePositions/${tablePositionId}`,
+    token: accessToken,
+    data: body,
+  });
+
+  const state = store.getState();
+  store.dispatch(
+    updateAllTablePositions([
+      ..._.filter(
+        state.shop.tablePositions,
+        (tablePosition) => tablePosition.id !== tablePositionId
+      ),
+      result.tablePosition,
+    ])
+  );
+};
+
+export const getTablePositions = async ({ shopId }: { shopId: string }) => {
   const accessToken = await getAccessToken();
 
   const result: {
@@ -328,7 +371,7 @@ export const getTablePositions = async ({
     token: accessToken,
   });
 
-  dispatch(updateAllTablePositions(result.tablePositions));
+  store.dispatch(updateAllTablePositions(result.tablePositions));
 };
 
 export const createTableRequest = async ({
@@ -345,23 +388,52 @@ export const createTableRequest = async ({
     name: string;
     position: string;
   } = { name, position: tablePosition.id };
-  console.log(body);
 
-  await apiRequest({
+  const result: { table: Table } = await apiRequest({
     method: "POST",
     endpoint: `/v1/shops/${shopId}/tables`,
     token: accessToken,
     data: body,
   });
+
+  const state = store.getState();
+  store.dispatch(updateAllTables([...state.shop.tables, result.table]));
 };
 
-export const getTables = async ({
+export const updateTableRequest = async ({
+  tableId,
   shopId,
-  dispatch,
+  name,
+  tablePosition,
 }: {
+  tableId: string;
   shopId: string;
-  dispatch: Dispatch;
+  name: string;
+  tablePosition: TablePosition;
 }) => {
+  const accessToken = await getAccessToken();
+  const body: {
+    name: string;
+    position: string;
+  } = { name, position: tablePosition.id };
+
+  const result: { table: Table } = await apiRequest({
+    method: "PATCH",
+    endpoint: `/v1/shops/${shopId}/tables/${tableId}`,
+    token: accessToken,
+    data: body,
+  });
+
+  const state = store.getState();
+  store.dispatch(
+    updateAllTables([
+      ..._.filter(state.shop.tables, (table) => table.id !== tableId),
+      result.table,
+    ])
+  );
+};
+
+export const getTables = async ({ shopId }: { shopId: string }) => {
   const accessToken = await getAccessToken();
 
   const result: {
@@ -372,5 +444,5 @@ export const getTables = async ({
     token: accessToken,
   });
 
-  dispatch(updateAllTables(result.tables));
+  store.dispatch(updateAllTables(result.tables));
 };
