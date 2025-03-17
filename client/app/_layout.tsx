@@ -100,13 +100,12 @@ export const styles = StyleSheet.create({
   },
 
   backButton: {
-    marginTop: 20,
     padding: 10,
     backgroundColor: "#007bff",
     borderRadius: 5,
     alignItems: "center",
     alignSelf: "center",
-    width: 150,
+    width: 50,
   },
   backButtonText: { color: "#fff", fontWeight: "bold" },
   errorText: { color: "red", fontSize: 18, textAlign: "center" },

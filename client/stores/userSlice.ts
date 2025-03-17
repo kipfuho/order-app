@@ -12,6 +12,7 @@ import {
 } from "./state.interface";
 
 interface ShopState {
+  useCache: boolean;
   shops: Shop[];
   tables: Table[];
   tablePositions: TablePosition[];
@@ -25,6 +26,7 @@ interface ShopState {
 
 // Initial state
 const initialState: ShopState = {
+  useCache: false,
   shops: [],
   tables: [],
   tablePositions: [],

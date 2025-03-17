@@ -1,5 +1,6 @@
-import { Redirect } from "expo-router";
+import { Redirect, useLocalSearchParams } from "expo-router";
 
 export default function ShopRedirect() {
-  return <Redirect href="/shop/[shopId]/home" />;
+  const { shopId } = useLocalSearchParams();
+  return <Redirect href={`/shop/${shopId}/home`} />;
 }

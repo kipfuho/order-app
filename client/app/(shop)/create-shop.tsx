@@ -52,6 +52,8 @@ export default function CreateShopPage() {
       setPhone("");
       setEmail("");
       setTaxRate("");
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }

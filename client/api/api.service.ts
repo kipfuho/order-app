@@ -1,7 +1,18 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { DishCategory, Shop, Tokens, User } from "../stores/state.interface";
+import {
+  DishCategory,
+  Shop,
+  Table,
+  TablePosition,
+  Tokens,
+  User,
+} from "../stores/state.interface";
 import { auth } from "../generated/auth";
-import { updateAllShops } from "../stores/userSlice";
+import {
+  updateAllShops,
+  updateAllTablePositions,
+  updateAllTables,
+} from "../stores/userSlice";
 import { Dispatch } from "redux";
 import { getAccessToken } from "./utils.service";
 import { signIn } from "../stores/authSlice";
@@ -294,8 +305,72 @@ export const createTablePositionRequest = async ({
 
   await apiRequest({
     method: "POST",
-    endpoint: `/v1/shops/${shopId}/tablepositions`,
+    endpoint: `/v1/shops/${shopId}/tablePositions`,
     token: accessToken,
     data: body,
   });
+};
+
+export const getTablePositions = async ({
+  shopId,
+  dispatch,
+}: {
+  shopId: string;
+  dispatch: Dispatch;
+}) => {
+  const accessToken = await getAccessToken();
+
+  const result: {
+    tablePositions: TablePosition[];
+  } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/tablePositions`,
+    token: accessToken,
+  });
+
+  dispatch(updateAllTablePositions(result.tablePositions));
+};
+
+export const createTableRequest = async ({
+  shopId,
+  name,
+  tablePosition,
+}: {
+  shopId: string;
+  name: string;
+  tablePosition: TablePosition;
+}) => {
+  const accessToken = await getAccessToken();
+  const body: {
+    name: string;
+    position: string;
+  } = { name, position: tablePosition.id };
+  console.log(body);
+
+  await apiRequest({
+    method: "POST",
+    endpoint: `/v1/shops/${shopId}/tables`,
+    token: accessToken,
+    data: body,
+  });
+};
+
+export const getTables = async ({
+  shopId,
+  dispatch,
+}: {
+  shopId: string;
+  dispatch: Dispatch;
+}) => {
+  const accessToken = await getAccessToken();
+
+  const result: {
+    tables: Table[];
+  } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/tables`,
+    token: accessToken,
+  });
+
+  dispatch(updateAllTables(result.tables));
 };

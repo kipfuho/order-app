@@ -64,6 +64,12 @@ export default function TablesTabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="create-table"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
