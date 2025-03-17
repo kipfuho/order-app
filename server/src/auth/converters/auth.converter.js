@@ -42,7 +42,6 @@ const convertLoginResponse = async ({ user, tokens }) => {
     logger.error(`error convertLoginResponse. ${err}`);
     throwBadRequest(true, err);
   }
-  console.log(response.toJSON());
   return message.encode(response).finish();
 };
 
