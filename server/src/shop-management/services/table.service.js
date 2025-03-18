@@ -73,6 +73,11 @@ const createTablePosition = async ({ shopId, createBody }) => {
 };
 
 const updateTablePosition = async ({ shopId, tablePositionId, updateBody }) => {
+  const tablePostions = await getTablePositionsFromCache({ shopId });
+  throwBadRequest(
+    _.find(tablePostions, (tablePosition) => tablePosition.name === createBody.name && tablePosition.id !== tablePositionId),
+    'Khu vực đã tồn tại'
+  );
   const tablePosition = await TablePosition.findOneAndUpdate(
     { _id: tablePositionId, shop: shopId },
     { $set: updateBody },

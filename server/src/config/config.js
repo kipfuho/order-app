@@ -43,8 +43,7 @@ module.exports = {
   mongoose: {
     url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
     options: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      maxPoolSize: 100,
     },
   },
   redisHost: envVars.REDIS_HORT,

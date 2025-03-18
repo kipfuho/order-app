@@ -1,12 +1,15 @@
 const express = require('express');
-const dishController = require('../controllers/dish.controller');
+const dishCategoryController = require('../controllers/dishCategory.controller');
 const auth = require('../../middlewares/auth');
 
 const router = express.Router();
 
-router.get('/:dishId', auth(), dishController.getDish);
-router.post('/create', auth(), dishController.createDish);
-router.patch('/:dishId', auth(), dishController.updateDish);
-router.delete('/:dishId', auth(), dishController.deleteDish);
+router.get('/:dishCategoryId', auth(), dishCategoryController.getDishCategory);
+router
+  .route('/')
+  .get(auth(), dishCategoryController.getDishCategories)
+  .post(auth(), dishCategoryController.createDishCategory);
+router.patch('/:dishCategoryId', auth(), dishCategoryController.updateDishCategory);
+router.delete('/:dishCategoryId', auth(), dishCategoryController.deleteDishCategory);
 
 module.exports = router;

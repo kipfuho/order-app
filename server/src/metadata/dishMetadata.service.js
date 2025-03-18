@@ -37,7 +37,7 @@ const getDishFromCache = async ({ shopId, dishId }) => {
     }
   }
 
-  const dish = await Dish.findById(dishId).populate('category');
+  const dish = await Dish.findOne({ _id: dishId, shop: shopId, status: constant.Status.enabled }).populate('category');
   return dish.toJSON();
 };
 
@@ -56,7 +56,7 @@ const getDishesFromCache = async ({ shopId }) => {
       return dishes;
     }
 
-    const dishModels = await Dish.find({ shopId, status: constant.Status.enabled }).populate('category');
+    const dishModels = await Dish.find({ shop: shopId, status: constant.Status.enabled }).populate('category');
     const disheJsons = _.map(dishModels, (dish) => dish.toJSON());
     const newMenuVal = { ...menuVal, dishes: disheJsons };
     redisClient.putJson({ key, jsonVal: newMenuVal });
@@ -65,7 +65,7 @@ const getDishesFromCache = async ({ shopId }) => {
   }
 
   const currentClsHookedValue = getSession({ key });
-  const dishes = await Dish.find({ shopId, status: constant.Status.enabled }).populate('category');
+  const dishes = await Dish.find({ shop: shopId, status: constant.Status.enabled }).populate('category');
   const disheJsons = _.map(dishes, (dish) => dish.toJSON());
   setSession({ key, value: { ...currentClsHookedValue, dishes: disheJsons } });
   return disheJsons;
@@ -91,7 +91,7 @@ const getDishCategoryFromCache = async ({ shopId, dishCategoryId }) => {
     }
   }
 
-  const dishCategory = await DishCategory.findById(dishCategoryId);
+  const dishCategory = await DishCategory.findOne({ _id: dishCategoryId, shop: shopId, status: constant.Status.enabled });
   return dishCategory.toJSON();
 };
 
@@ -110,7 +110,7 @@ const getDishCategoriesFromCache = async ({ shopId }) => {
       return categories;
     }
 
-    const dishCategoryModels = await DishCategory.find({ shopId, status: constant.Status.enabled });
+    const dishCategoryModels = await DishCategory.find({ shop: shopId, status: constant.Status.enabled });
     const dishCategoryJsons = _.map(dishCategoryModels, (dishCategory) => dishCategory.toJSON());
     const newMenuVal = { ...menuVal, categories: dishCategoryJsons };
     redisClient.putJson({ key, jsonVal: newMenuVal });
@@ -119,7 +119,7 @@ const getDishCategoriesFromCache = async ({ shopId }) => {
   }
 
   const currentClsHookedValue = getSession({ key });
-  const dishCategories = await DishCategory.find({ shopId, status: constant.Status.enabled });
+  const dishCategories = await DishCategory.find({ shop: shopId, status: constant.Status.enabled });
   const dishCategoryJsons = _.map(dishCategories, (dish) => dish.toJSON());
   setSession({ key, value: { ...currentClsHookedValue, categories: dishCategoryJsons } });
   return dishCategoryJsons;

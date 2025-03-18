@@ -4,32 +4,43 @@ const catchAsync = require('../../utils/catchAsync');
 const dishCategoryService = require('../services/dishCategory.service');
 
 const getDishCategory = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
   const dishCategoryId = _.get(req, 'params.dishCategoryId');
-  const dishCategory = await dishCategoryService.getDishCategory(dishCategoryId);
+  const dishCategory = await dishCategoryService.getDishCategory({ shopId, dishCategoryId });
+  res.status(httpStatus.OK).send({ dishCategory });
+});
+
+const getDishCategories = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const dishCategory = await dishCategoryService.getDishCategory({ shopId });
   res.status(httpStatus.OK).send({ dishCategory });
 });
 
 const createDishCategory = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
   const createBody = req.body;
-  const dishCategory = await dishCategoryService.createDishCategory(createBody);
+  const dishCategory = await dishCategoryService.createDishCategory({ shopId, createBody });
   res.status(httpStatus.CREATED).send({ dishCategory });
 });
 
 const updateDishCategory = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
   const dishCategoryId = _.get(req, 'params.dishCategoryId');
   const updateBody = req.body;
-  await dishCategoryService.updateDishCategory(dishCategoryId, updateBody);
+  await dishCategoryService.updateDishCategory({ shopId, dishCategoryId, updateBody });
   res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteDishCategory = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
   const dishCategoryId = _.get(req, 'params.dishCategoryId');
-  await dishCategoryService.deleteDishCategory(dishCategoryId);
+  await dishCategoryService.deleteDishCategory({ shopId, dishCategoryId });
   res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
 });
 
 module.exports = {
   getDishCategory,
+  getDishCategories,
   createDishCategory,
   updateDishCategory,
   deleteDishCategory,
