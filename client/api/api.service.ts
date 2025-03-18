@@ -9,6 +9,7 @@ import {
 } from "../stores/state.interface";
 import { auth } from "../generated/auth";
 import {
+  updateAllDishCategories,
   updateAllShops,
   updateAllTablePositions,
   updateAllTables,
@@ -445,4 +446,29 @@ export const getTables = async ({ shopId }: { shopId: string }) => {
   });
 
   store.dispatch(updateAllTables(result.tables));
+};
+
+export const createDishCategoryRequest = async ({
+  shopId,
+  name,
+}: {
+  shopId: string;
+  name: string;
+}) => {
+  const accessToken = await getAccessToken();
+  const body: {
+    name: string;
+  } = { name };
+
+  const result: { dishCategory: DishCategory } = await apiRequest({
+    method: "POST",
+    endpoint: `/v1/shops/${shopId}/dishCategories`,
+    token: accessToken,
+    data: body,
+  });
+
+  const state = store.getState();
+  store.dispatch(
+    updateAllDishCategories([...state.shop.dishCategories, result.dishCategory])
+  );
 };

@@ -12,8 +12,8 @@ const getDishCategory = catchAsync(async (req, res) => {
 
 const getDishCategories = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const dishCategory = await dishCategoryService.getDishCategory({ shopId });
-  res.status(httpStatus.OK).send({ dishCategory });
+  const dishCategories = await dishCategoryService.getDishCategory({ shopId });
+  res.status(httpStatus.OK).send({ dishCategories });
 });
 
 const createDishCategory = catchAsync(async (req, res) => {
@@ -27,8 +27,8 @@ const updateDishCategory = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const dishCategoryId = _.get(req, 'params.dishCategoryId');
   const updateBody = req.body;
-  await dishCategoryService.updateDishCategory({ shopId, dishCategoryId, updateBody });
-  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
+  const dishCategory = await dishCategoryService.updateDishCategory({ shopId, dishCategoryId, updateBody });
+  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công', dishCategory });
 });
 
 const deleteDishCategory = catchAsync(async (req, res) => {

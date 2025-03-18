@@ -1,13 +1,13 @@
+import { Ionicons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Link, Tabs, useLocalSearchParams, useRouter } from "expo-router";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../stores/store";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TouchableOpacity } from "react-native";
-import { styles } from "../../../../../../_layout";
-import { Ionicons } from "@expo/vector-icons";
+import { styles } from "../../../../../_layout";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { RootState } from "../../../../../../stores/store";
+import { useSelector } from "react-redux";
 
-export default function TablesTabLayout() {
+export default function TabLayout() {
   const { shopId } = useLocalSearchParams();
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
@@ -29,7 +29,7 @@ export default function TablesTabLayout() {
   const router = useRouter();
   const goBack = () =>
     router.navigate({
-      pathname: "/shop/[shopId]/settings",
+      pathname: "/shop/[shopId]/home",
       params: {
         shopId: shop.id,
       },
@@ -48,9 +48,9 @@ export default function TablesTabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="dishes"
         options={{
-          title: "Bàn",
+          title: "Dish",
           tabBarIcon: ({ color }) => (
             <FontAwesome size={28} name="list" color={color} />
           ),
@@ -58,9 +58,9 @@ export default function TablesTabLayout() {
         initialParams={{ shopId }}
       />
       <Tabs.Screen
-        name="table-position"
+        name="categories"
         options={{
-          title: "Khu vực",
+          title: "Categories",
           tabBarIcon: ({ color }) => (
             <FontAwesome size={28} name="home" color={color} />
           ),
@@ -68,25 +68,19 @@ export default function TablesTabLayout() {
         initialParams={{ shopId }}
       />
       <Tabs.Screen
-        name="create-table-position"
+        name="index"
         options={{
           href: null,
         }}
       />
       <Tabs.Screen
-        name="create-table"
+        name="create-dish"
         options={{
           href: null,
         }}
       />
       <Tabs.Screen
-        name="update-table/[tableId]"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="update-table-position/[tablePositionId]"
+        name="create-dish-category"
         options={{
           href: null,
         }}

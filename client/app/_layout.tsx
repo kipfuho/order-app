@@ -116,4 +116,38 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     color: "#333",
   },
+  categoryContainer: {
+    marginBottom: 20,
+  },
+  categoryTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  dishItem: {
+    fontSize: 16,
+    paddingLeft: 10,
+  },
+  content: {
+    flexDirection: "row", // Sidebar on left, content on right
+    flex: 1,
+  },
+  sidebar: {
+    width: 100,
+    backgroundColor: "#f0f0f0",
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  categoryButton: {
+    padding: 10,
+    alignItems: "center",
+  },
+  categoryButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  dishList: {
+    flex: 1,
+    paddingLeft: 10,
+  },
 });

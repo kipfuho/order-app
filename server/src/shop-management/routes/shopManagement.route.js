@@ -5,6 +5,8 @@ const tablePositionRoute = require('./tablePosition.route');
 const employeeRoute = require('./employee.route');
 const employeePositionRoute = require('./employeePosition.route');
 const departmentRoute = require('./department.route');
+const dishRoute = require('../../dish-management/routes/dish.route');
+const dishCategoryRoute = require('../../dish-management/routes/dishCategory.route');
 const orderRoute = require('../../order-management/routes/orderManagement.route');
 const auth = require('../../middlewares/auth');
 
@@ -30,6 +32,14 @@ const defaultRoutes = [
   {
     path: 'departments',
     route: departmentRoute,
+  },
+  {
+    path: 'dishes',
+    route: dishRoute,
+  },
+  {
+    path: 'dishCategories',
+    route: dishCategoryRoute,
   },
   {
     path: 'orders',

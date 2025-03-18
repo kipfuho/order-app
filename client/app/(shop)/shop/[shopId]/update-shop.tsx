@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,12 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import {
+  Link,
+  useLocalSearchParams,
+  useNavigation,
+  useRouter,
+} from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
 import { ActivityIndicator } from "react-native-paper";
@@ -16,6 +21,7 @@ import { updateShopRequest } from "../../../../api/api.service";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores/store";
 import { Shop } from "../../../../stores/state.interface";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function UpdateShopPage() {
   const { shopId } = useLocalSearchParams(); // Get shop ID from URL
@@ -45,6 +51,27 @@ export default function UpdateShopPage() {
   const [email, setEmail] = useState(shop.email || "");
   const [taxRate, setTaxRate] = useState("");
   const router = useRouter();
+  const navigation = useNavigation();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: shop?.name || "Shop",
+      headerShown: true,
+      headerLeft: () => (
+        <TouchableOpacity
+          onPress={() =>
+            router.navigate({
+              pathname: "/shop/[shopId]",
+              params: { shopId: shop.id },
+            })
+          }
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="black" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, shop]);
 
   const handleUpdateShop = async () => {
     if (!name.trim() || !email.trim()) {

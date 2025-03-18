@@ -51,6 +51,12 @@ export default function ShopLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="menus"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }
