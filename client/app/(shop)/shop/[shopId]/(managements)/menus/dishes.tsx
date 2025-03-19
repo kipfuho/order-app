@@ -1,106 +1,29 @@
 import React, { useRef } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
-import { Shop } from "../../../../../../stores/state.interface";
-import { styles } from "../../../../../_layout";
+import { Dish, Shop } from "../../../../../../stores/state.interface";
 import { DishCard } from "../../../../../../components/ui/menus/DishCard";
+import { AppBar } from "../../../../../../components/AppBar";
+import { useTheme, Button, Text, Surface } from "react-native-paper";
+import { findNodeHandle, ScrollView, StyleSheet, View } from "react-native";
 
 export default function DishesManagementPage() {
   const { shopId } = useLocalSearchParams();
   const router = useRouter();
-
-  // Sample dishes
-  const dishes = [
-    { id: "1", name: "Pizza", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "2", name: "Pasta", category: "Italian" },
-    { id: "3", name: "Sushi", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "4", name: "Ramen", category: "Japanese" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-    { id: "5", name: "Burger", category: "American" },
-  ];
+  const theme = useTheme();
 
   // Get shop from Redux
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
   ) as Shop;
 
+  // Get shop dishes from Redux
+  const dishes = useSelector((state: RootState) => state.shop.dishes);
+
   // Group dishes by category
-  const groupByCategory = (dishes) => {
-    return dishes.reduce((acc, dish) => {
+  const groupByCategory = (dishes: Dish[]): Record<string, Dish[]> => {
+    return dishes.reduce<Record<string, Dish[]>>((acc, dish) => {
       if (!acc[dish.category]) {
         acc[dish.category] = [];
       }
@@ -112,64 +35,115 @@ export default function DishesManagementPage() {
   const groupedDishes = groupByCategory(dishes);
   const categories = Object.keys(groupedDishes);
 
-  // Create refs for each category
-  const categoryRefs = useRef({});
+  // Create refs
+  const scrollViewRef = useRef<ScrollView | null>(null);
+  const categoryRefs = useRef<Record<string, View | null>>({});
 
-  const scrollToCategory = (category) => {
-    if (categoryRefs.current[category]) {
-      categoryRefs.current[category].scrollIntoView({ behavior: "smooth" });
+  // Function to scroll to category
+  const scrollToCategory = (category: string) => {
+    const ref = categoryRefs.current[category];
+
+    if (ref && scrollViewRef.current) {
+      ref.measure((x, y) => {
+        scrollViewRef.current?.scrollTo({ y, animated: true });
+      });
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        {/* Left Sidebar for Categories */}
-        <View style={styles.sidebar}>
-          <FlatList
-            data={categories}
-            keyExtractor={(category) => category}
-            renderItem={({ item: category }) => (
-              <TouchableOpacity
-                style={styles.categoryButton}
-                onPress={() => scrollToCategory(category)}
-              >
-                <Text style={styles.categoryButtonText}>{category}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
+  const goBack = () =>
+    router.navigate({
+      pathname: "/shop/[shopId]/home",
+      params: { shopId: shop.id },
+    });
 
-        {/* Right Section for Dishes */}
-        <View style={styles.dishList}>
-          <ScrollView>
-            {categories.map((category) => (
-              <View
-                key={category}
-                ref={(el) => (categoryRefs.current[category] = el)}
-                style={styles.categoryContainer}
-              >
-                <Text style={styles.categoryTitle}>{category}</Text>
-                {groupedDishes[category].map((dish) => (
-                  <DishCard key={dish.id} dish={dish} />
-                ))}
-              </View>
-            ))}
-          </ScrollView>
-          {/* Create Dish Button */}
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={() =>
-              router.push({
-                pathname: "/shop/[shopId]/menus/create-dish",
-                params: { shopId: shop.id },
-              })
-            }
+  return (
+    <>
+      <AppBar title="Dishes" goBack={goBack} />
+      <Surface style={{ flex: 1, padding: 16 }}>
+        <Surface style={styles.content}>
+          {/* Left Sidebar for Categories */}
+          <Surface
+            style={[styles.sidebar, { backgroundColor: theme.colors.backdrop }]}
           >
-            <Text style={styles.createButtonText}>Create Dish</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {categories.map((category) => (
+                <Button
+                  key={category}
+                  mode="contained-tonal"
+                  onPress={() => scrollToCategory(category)}
+                  style={styles.categoryButton}
+                  labelStyle={{ color: theme.colors.onSurface }}
+                >
+                  {category}
+                </Button>
+              ))}
+            </ScrollView>
+          </Surface>
+
+          {/* Right Section for Dishes */}
+          <Surface style={{ flex: 1 }}>
+            <ScrollView ref={scrollViewRef} style={styles.dishList}>
+              {categories.map((category) => (
+                <View
+                  key={category}
+                  ref={(el) => (categoryRefs.current[category] = el)}
+                  style={styles.categoryContainer}
+                >
+                  <Text variant="titleMedium" style={styles.categoryTitle}>
+                    {category}
+                  </Text>
+                  {groupedDishes[category].map((dish) => (
+                    <DishCard key={dish.id} dish={dish} />
+                  ))}
+                </View>
+              ))}
+            </ScrollView>
+
+            {/* Create Dish Button */}
+            <Button
+              mode="contained-tonal"
+              onPress={() =>
+                router.push({
+                  pathname: "/shop/[shopId]/menus/create-dish",
+                  params: { shopId: shop.id },
+                })
+              }
+              style={styles.createButton}
+            >
+              Create Dish
+            </Button>
+          </Surface>
+        </Surface>
+      </Surface>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  content: {
+    flexDirection: "row",
+    flex: 1,
+  },
+  sidebar: {
+    width: 120,
+    paddingRight: 8,
+  },
+  categoryButton: {
+    padding: 0,
+    borderRadius: 0,
+    marginBottom: 1,
+  },
+  dishList: {
+    flex: 1,
+  },
+  categoryContainer: {
+    marginBottom: 24,
+  },
+  categoryTitle: {
+    marginBottom: 8,
+  },
+  createButton: {
+    marginTop: 16,
+    alignSelf: "center",
+  },
+});

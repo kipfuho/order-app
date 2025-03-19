@@ -53,7 +53,7 @@ export interface Unit {
 export interface Dish {
   id: string;
   name: string;
-  categoryId: string;
+  category: string;
 }
 
 export interface DishCategory {
