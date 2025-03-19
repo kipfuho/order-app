@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { getDishCategoryFromCache, getDishCategoriesFromCache } = require('../../metadata/dishMetadata.service');
 const { DishCategory } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
