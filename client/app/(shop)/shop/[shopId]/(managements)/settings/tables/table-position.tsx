@@ -1,49 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, FlatList } from "react-native";
+import { ScrollView } from "react-native";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { styles } from "../../../../../../_layout";
-import { ActivityIndicator } from "react-native-paper";
+import { ActivityIndicator, Button, List, useTheme } from "react-native-paper";
 import { getTablePositions } from "../../../../../../../api/api.service";
 import _ from "lodash";
+import { Shop } from "../../../../../../../stores/state.interface";
+import { AppBar } from "../../../../../../../components/AppBar";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TablePositionsManagementPage() {
   const { shopId } = useLocalSearchParams();
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
-  );
+  ) as Shop;
+  const router = useRouter();
+  const theme = useTheme();
 
-  if (!shop) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Shop not found</Text>
-        <Link href="/" asChild>
-          <TouchableOpacity style={styles.backButton}>
-            <Text style={styles.backButtonText}>Go Back</Text>
-          </TouchableOpacity>
-        </Link>
-      </SafeAreaView>
-    );
-  }
+  const goBack = () =>
+    router.navigate({
+      pathname: "/shop/[shopId]/settings",
+      params: { shopId: shop.id },
+    });
 
-  // Fetch table positions from Redux store
   const tablePositions = useSelector(
     (state: RootState) => state.shop.tablePositions
   );
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     const fetchTablePositions = async () => {
       try {
         setLoading(true);
-        await getTablePositions({
-          shopId: shop.id,
-        });
+        await getTablePositions({ shopId: shop.id });
       } catch (error) {
-        console.error("Error fetching shops:", error);
+        console.error("Error fetching table positions:", error);
       } finally {
         setLoading(false);
       }
@@ -55,47 +47,66 @@ export default function TablePositionsManagementPage() {
   }, []);
 
   if (loading) {
-    return <ActivityIndicator size="large" style={styles.loader} />;
+    return (
+      <ActivityIndicator
+        size="large"
+        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+      />
+    );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Table Positions</Text>
-
-      {/* List of Table Positions */}
-      <FlatList
-        data={tablePositions}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <Link
-            href={{
-              pathname:
-                "/shop/[shopId]/settings/tables/update-table-position/[tablePositionId]",
-              params: { shopId: shop.id, tablePositionId: item.id },
-            }}
-            asChild
-          >
-            <TouchableOpacity style={styles.item}>
-              <Text style={styles.itemText}>{item.name}</Text>
-            </TouchableOpacity>
-          </Link>
-        )}
-      />
-
-      {/* Create Table Position Button */}
-      <TouchableOpacity
-        style={styles.createButton}
-        onPress={() =>
-          router.push({
-            pathname: "/shop/[shopId]/settings/tables/create-table-position",
-            params: {
-              shopId: shop.id,
-            },
-          })
-        }
+    <>
+      <AppBar title="Table Positions" goBack={goBack} />
+      <SafeAreaView
+        style={{
+          flex: 1,
+          padding: 16,
+          backgroundColor: theme.colors.background,
+        }}
       >
-        <Text style={styles.createButtonText}>Create Table Position</Text>
-      </TouchableOpacity>
-    </View>
+        <ScrollView>
+          {/* List of Table Positions */}
+          <List.Section>
+            {tablePositions.map((item) => (
+              <Link
+                key={item.id}
+                href={{
+                  pathname:
+                    "/shop/[shopId]/settings/tables/update-table-position/[tablePositionId]",
+                  params: { shopId: shop.id, tablePositionId: item.id },
+                }}
+                asChild
+              >
+                <List.Item
+                  title={item.name}
+                  titleStyle={{ color: theme.colors.onSurface }}
+                  style={{
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 8,
+                    marginBottom: 8,
+                  }}
+                  left={(props) => <List.Icon {...props} icon="table" />}
+                />
+              </Link>
+            ))}
+          </List.Section>
+        </ScrollView>
+
+        {/* Create Table Position Button */}
+        <Button
+          mode="contained"
+          onPress={() =>
+            router.push({
+              pathname: "/shop/[shopId]/settings/tables/create-table-position",
+              params: { shopId: shop.id },
+            })
+          }
+          style={{ marginTop: 20 }}
+        >
+          Create Table Position
+        </Button>
+      </SafeAreaView>
+    </>
   );
 }

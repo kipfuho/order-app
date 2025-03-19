@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from "react";
+import { View, FlatList, StyleSheet } from "react-native";
 import {
-  View,
-  Text,
-  FlatList,
   ActivityIndicator,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+  Button,
+  Card,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { useSession } from "../../hooks/useSession";
 import { RootState } from "../../stores/store";
 import { queryShopsRequest } from "../../api/api.service";
 import { useRouter } from "expo-router";
-import { styles } from "../_layout";
 
 export default function ShopsPage() {
   const { session } = useSession();
@@ -20,6 +19,7 @@ export default function ShopsPage() {
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
   const router = useRouter();
+  const theme = useTheme(); // Get theme colors
 
   useEffect(() => {
     const fetchShops = async () => {
@@ -41,40 +41,81 @@ export default function ShopsPage() {
   }, []);
 
   if (loading) {
-    return <ActivityIndicator size="large" style={styles.loader} />;
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator
+          animating={true}
+          size="large"
+          color={theme.colors.primary}
+        />
+      </View>
+    );
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <View style={styles.header}>
-        <Text style={styles.title}>Shops</Text>
-        <TouchableOpacity
-          style={styles.createButton}
-          onPress={() => router.push("/create-shop")}
+        <Text
+          variant="headlineMedium"
+          style={{ color: theme.colors.onBackground }}
         >
-          <Text style={styles.createButtonText}>Create Shop</Text>
-        </TouchableOpacity>
+          Shops
+        </Text>
+        <Button
+          mode="contained"
+          onPress={() => router.push("/create-shop")}
+          buttonColor={theme.colors.primary}
+          textColor={theme.colors.onPrimary}
+        >
+          Create Shop
+        </Button>
       </View>
       <FlatList
         data={shops}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.shopItem}
+          <Card
+            style={[styles.shopItem, { backgroundColor: theme.colors.surface }]}
             onPress={() =>
               router.push({
                 pathname: "/shop/[shopId]/home",
-                params: {
-                  shopId: item.id,
-                },
+                params: { shopId: item.id },
               })
-            } // Navigate to shop details
+            }
           >
-            <Text style={styles.shopName}>{item.name}</Text>
-            <Text style={styles.shopDetails}>{item.location}</Text>
-          </TouchableOpacity>
+            <Card.Title
+              title={item.name}
+              titleStyle={{ color: theme.colors.onSurface }}
+              subtitle={item.location}
+              subtitleStyle={{ color: theme.colors.onSurfaceVariant }}
+            />
+          </Card>
         )}
       />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  shopItem: {
+    marginBottom: 10,
+    padding: 10,
+  },
+});

@@ -1,86 +1,76 @@
-import { Link, useLocalSearchParams, useRouter } from "expo-router";
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { StyleSheet, View, useWindowDimensions } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme, Button, Text } from "react-native-paper";
+import { Shop } from "../../../../../../stores/state.interface";
+import { AppBar } from "../../../../../../components/AppBar";
 
 interface Item {
   title: string;
   route: "tables";
 }
 
-const BUTTONS: Item[] = [{ title: "Tables", route: "tables" }];
+const BUTTONS: Item[] = [
+  { title: "Tables", route: "tables" },
+  { title: "Tables", route: "tables" },
+  { title: "Tables", route: "tables" },
+  { title: "Tables", route: "tables" },
+  { title: "Tables", route: "tables" },
+  { title: "Tables", route: "tables" },
+];
 
 export default function SettingManagementPage() {
   const { shopId } = useLocalSearchParams();
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
-  );
+  ) as Shop;
   const router = useRouter();
+  const theme = useTheme();
   const { width } = useWindowDimensions();
-  const buttonSize = width / 3 - 20;
+  const buttonSize = width / 3 - 30;
 
-  if (!shop) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Shop not found</Text>
-        <Link href="/" asChild>
-          <TouchableOpacity style={styles.backButton}>
-            <Text style={styles.backButtonText}>Go Back</Text>
-          </TouchableOpacity>
-        </Link>
-      </SafeAreaView>
-    );
-  }
+  const goBack = () => {
+    router.navigate({
+      pathname: "/shop/[shopId]/home",
+      params: { shopId: shop.id },
+    });
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.buttonGrid}>
-        {BUTTONS.map((item) => (
-          <TouchableOpacity
-            key={item.route}
-            style={[styles.button, { width: buttonSize }]}
-            onPress={() =>
-              router.push({
-                pathname: `/shop/[shopId]/settings/${item.route}`,
-                params: { shopId: shop.id },
-              })
-            }
-          >
-            <Text style={styles.buttonText}>{item.title}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </SafeAreaView>
+    <>
+      <AppBar title="Settings" goBack={goBack} />
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        {/* Buttons */}
+        <View style={styles.buttonGrid}>
+          {BUTTONS.map((item) => (
+            <Button
+              key={item.route}
+              mode="contained"
+              style={[styles.button, { width: buttonSize, backgroundColor: theme.colors.primary }]}
+              labelStyle={{ color: theme.colors.onPrimary }}
+              onPress={() =>
+                router.push({
+                  pathname: `/shop/[shopId]/settings/${item.route}`,
+                  params: { shopId: shop.id },
+                })
+              }
+            >
+              {item.title}
+            </Button>
+          ))}
+        </View>
+      </SafeAreaView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  details: {
-    fontSize: 18,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  errorText: {
-    color: "red",
-    fontSize: 18,
-    textAlign: "center",
+    padding: 20,
+    justifyContent: "center",
   },
   buttonGrid: {
     flexDirection: "row",
@@ -89,28 +79,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   button: {
-    height: 100,
     margin: 5,
-    backgroundColor: "#007bff",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  backButton: {
-    padding: 10,
-    backgroundColor: "#007bff",
-    borderRadius: 5,
-    alignItems: "center",
-    alignSelf: "center",
-    width: 50,
-  },
-  backButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    borderRadius: 8,
   },
 });
+

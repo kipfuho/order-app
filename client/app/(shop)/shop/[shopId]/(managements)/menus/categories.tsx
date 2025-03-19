@@ -53,8 +53,8 @@ export default function CategoriesManagementPage() {
           <Link
             href={{
               pathname:
-                "/shop/[shopId]/settings/tables/update-table-position/[tablePositionId]",
-              params: { shopId: shop.id, tablePositionId: item.id },
+                "/shop/[shopId]/menus/update-dish-category/[dishCategoryId]",
+              params: { shopId: shop.id, dishCategoryId: item.id },
             }}
             asChild
           >

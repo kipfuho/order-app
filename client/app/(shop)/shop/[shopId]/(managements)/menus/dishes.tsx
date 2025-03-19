@@ -123,19 +123,6 @@ export default function DishesManagementPage() {
 
   return (
     <View style={styles.container}>
-      {/* Create Dish Button */}
-      <TouchableOpacity
-        style={styles.createButton}
-        onPress={() =>
-          router.push({
-            pathname: "/shop/[shopId]/menus/create-dish",
-            params: { shopId: shop.id },
-          })
-        }
-      >
-        <Text style={styles.createButtonText}>Create Dish</Text>
-      </TouchableOpacity>
-
       <View style={styles.content}>
         {/* Left Sidebar for Categories */}
         <View style={styles.sidebar}>
@@ -154,20 +141,34 @@ export default function DishesManagementPage() {
         </View>
 
         {/* Right Section for Dishes */}
-        <ScrollView style={styles.dishList}>
-          {categories.map((category) => (
-            <View
-              key={category}
-              ref={(el) => (categoryRefs.current[category] = el)}
-              style={styles.categoryContainer}
-            >
-              <Text style={styles.categoryTitle}>{category}</Text>
-              {groupedDishes[category].map((dish) => (
-                <DishCard key={dish.id} dish={dish} />
-              ))}
-            </View>
-          ))}
-        </ScrollView>
+        <View style={styles.dishList}>
+          <ScrollView>
+            {categories.map((category) => (
+              <View
+                key={category}
+                ref={(el) => (categoryRefs.current[category] = el)}
+                style={styles.categoryContainer}
+              >
+                <Text style={styles.categoryTitle}>{category}</Text>
+                {groupedDishes[category].map((dish) => (
+                  <DishCard key={dish.id} dish={dish} />
+                ))}
+              </View>
+            ))}
+          </ScrollView>
+          {/* Create Dish Button */}
+          <TouchableOpacity
+            style={styles.createButton}
+            onPress={() =>
+              router.push({
+                pathname: "/shop/[shopId]/menus/create-dish",
+                params: { shopId: shop.id },
+              })
+            }
+          >
+            <Text style={styles.createButtonText}>Create Dish</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

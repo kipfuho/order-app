@@ -1,70 +1,54 @@
-import React, { useLayoutEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import {
-  Link,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from "expo-router";
-import _ from "lodash";
-import Toast from "react-native-toast-message";
-import { ActivityIndicator } from "react-native-paper";
-import { styles } from "../../../../../../_layout";
-import { createTablePositionRequest } from "../../../../../../../api/api.service";
-import { RootState } from "../../../../../../../stores/store";
+import React, { useState } from "react";
+import { ScrollView, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
+import { RootState } from "../../../../../../../stores/store";
+import { createTablePositionRequest } from "../../../../../../../api/api.service";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  ActivityIndicator,
+  Button,
+  Dialog,
+  Checkbox,
+  Portal,
+  Text,
+  TextInput,
+  useTheme,
+} from "react-native-paper";
+import { Shop } from "../../../../../../../stores/state.interface";
+import { AppBar } from "../../../../../../../components/AppBar";
+import Toast from "react-native-toast-message";
 
 export default function CreateTablePositionPage() {
   const { shopId } = useLocalSearchParams();
+  const theme = useTheme();
+  const router = useRouter();
+
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
+  ) as Shop;
+
+  const dishCategories = useSelector(
+    (state: RootState) => state.shop.dishCategories
   );
 
-  if (!shop) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Shop not found</Text>
-        <Link href="/" asChild>
-          <TouchableOpacity style={styles.backButton}>
-            <Text style={styles.backButtonText}>Go Back</Text>
-          </TouchableOpacity>
-        </Link>
-      </SafeAreaView>
-    );
-  }
-
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState("position");
-  const [categories, setCategories] = useState([]);
-  const router = useRouter();
-  const navigation = useNavigation();
+  const [name, setName] = useState("table position");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   const goBack = () =>
     router.navigate({
       pathname: "/shop/[shopId]/settings/tables/table-position",
-      params: {
-        shopId: shop.id,
-      },
+      params: { shopId: shop.id },
     });
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
-
-  const handleCreateShop = async () => {
-    if (!name.trim()) {
+  const handleCreateTable = async () => {
+    if (!name.trim() || selectedCategories.length === 0) {
       Toast.show({
         type: "error",
         text1: "Create Failed",
-        text2: "Please enter name",
+        text2: "Please enter a name and select at least one dish category",
       });
       return;
     }
@@ -74,56 +58,124 @@ export default function CreateTablePositionPage() {
       await createTablePositionRequest({
         shopId: shop.id,
         name,
-        categories,
+        categories: selectedCategories,
       });
-
-      // Navigate back to table position list
       goBack();
-
-      // Clear input fields
-      setName("");
-      setCategories([]);
     } catch (err) {
+      Toast.show({
+        type: "error",
+        text1: "Create Failed",
+        text2: "Failed to create table. Please try again.",
+      });
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  const toggleCategorySelection = (categoryId: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create a New Table position</Text>
+    <>
+      <AppBar title="Create Table Position" goBack={goBack} />
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: theme.colors.background,
+          padding: 16,
+        }}
+      >
+        <ScrollView>
+          {/* Table Name Input */}
+          <TextInput
+            label="Table Position Name"
+            mode="outlined"
+            placeholder="Enter table position name"
+            value={name}
+            onChangeText={setName}
+            style={{ marginBottom: 20 }}
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Table position Name"
-        value={name}
-        onChangeText={setName}
-      />
+          {/* Table Position Selection Label */}
+          <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
+            Select Table Categories
+          </Text>
 
-      {loading ? (
-        <ActivityIndicator
-          animating={true}
-          size="large"
-          style={styles.loader}
-        />
-      ) : (
-        <>
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={handleCreateShop}
+          {/* Open Dialog Button */}
+          <Button mode="outlined" onPress={() => setDialogVisible(true)}>
+            {selectedCategories.length > 0
+              ? `${selectedCategories.length} Selected`
+              : "Select Dish Categories"}
+          </Button>
+
+          {/* Selected Categories List */}
+          <View style={{ marginTop: 10 }}>
+            {selectedCategories.map((categoryId) => {
+              const category = dishCategories.find(
+                (cat) => cat.id === categoryId
+              );
+              return category ? (
+                <Text key={categoryId} style={{ marginVertical: 2 }}>
+                  ✅ {category.name}
+                </Text>
+              ) : null;
+            })}
+          </View>
+        </ScrollView>
+
+        {/* Dialog for selecting multiple categories */}
+        <Portal>
+          <Dialog
+            visible={dialogVisible}
+            onDismiss={() => setDialogVisible(false)}
           >
-            <Text style={styles.createButtonText}>Create Table position</Text>
-          </TouchableOpacity>
+            <Dialog.Title>Select Dish Categories</Dialog.Title>
+            <Dialog.ScrollArea>
+              <ScrollView>
+                {dishCategories.map((category) => (
+                  <Checkbox.Item
+                    key={category.id}
+                    label={category.name}
+                    status={
+                      selectedCategories.includes(category.id)
+                        ? "checked"
+                        : "unchecked"
+                    }
+                    onPress={() => toggleCategorySelection(category.id)}
+                  />
+                ))}
+              </ScrollView>
+            </Dialog.ScrollArea>
+            <Dialog.Actions>
+              <Button onPress={() => setDialogVisible(false)}>Done</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
 
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => goBack()}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </>
-      )}
-    </View>
+        {/* Loading or Action Buttons */}
+        {loading ? (
+          <ActivityIndicator size="large" />
+        ) : (
+          <>
+            <Button
+              mode="contained"
+              onPress={handleCreateTable}
+              style={{ marginTop: 20 }}
+            >
+              Create Table Position
+            </Button>
+            <Button mode="outlined" onPress={goBack} style={{ marginTop: 10 }}>
+              Cancel
+            </Button>
+          </>
+        )}
+      </SafeAreaView>
+    </>
   );
 }

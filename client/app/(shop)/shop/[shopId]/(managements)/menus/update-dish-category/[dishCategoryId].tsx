@@ -5,22 +5,25 @@ import _ from "lodash";
 import Toast from "react-native-toast-message";
 import { ActivityIndicator } from "react-native-paper";
 import { useSelector } from "react-redux";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { RootState } from "../../../../../../stores/store";
-import { Shop } from "../../../../../../stores/state.interface";
-import { styles } from "../../../../../_layout";
-import { createDishCategoryRequest } from "../../../../../../api/api.service";
+import { RootState } from "../../../../../../../stores/store";
+import { styles } from "../../../../../../_layout";
+import { Shop } from "../../../../../../../stores/state.interface";
+import { updateDishCategoryRequest } from "../../../../../../../api/api.service";
 
-export default function CreateDishCategoryPage() {
+export default function UpdateDishCategoryPage() {
   const { shopId } = useLocalSearchParams();
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
   ) as Shop;
 
-  const [loading, setLoading] = useState(false);
-  const [name, setName] = useState("category");
+  const { dishCategoryId } = useLocalSearchParams();
+  const dishCategory = useSelector((state: RootState) =>
+    state.shop.dishCategories.find((dc) => dc.id === dishCategoryId)
+  );
+
   const router = useRouter();
-  const navigation = useNavigation();
 
   const goBack = () =>
     router.navigate({
@@ -29,6 +32,21 @@ export default function CreateDishCategoryPage() {
         shopId: shop.id,
       },
     });
+
+  if (!dishCategory) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.errorText}>Dish Category not found</Text>
+        <TouchableOpacity style={styles.backButton} onPress={goBack}>
+          <Text style={styles.backButtonText}>Go Back</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
+  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState(dishCategory.name);
+  const navigation = useNavigation();
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -40,19 +58,20 @@ export default function CreateDishCategoryPage() {
     });
   }, [navigation]);
 
-  const handleCreateDishCategory = async () => {
+  const handleCreateShop = async () => {
     if (!name.trim()) {
       Toast.show({
         type: "error",
         text1: "Create Failed",
-        text2: "Please enter name and dish category",
+        text2: "Please enter name",
       });
       return;
     }
 
     try {
       setLoading(true);
-      await createDishCategoryRequest({
+      await updateDishCategoryRequest({
+        dishCategoryId: dishCategory.id,
         shopId: shop.id,
         name,
       });
@@ -71,11 +90,11 @@ export default function CreateDishCategoryPage() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create a New Dish Category</Text>
+      <Text style={styles.title}>Updare a Dish Category</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Dish category name"
+        placeholder="Dish Category Name"
         value={name}
         onChangeText={setName}
       />
@@ -90,9 +109,9 @@ export default function CreateDishCategoryPage() {
         <>
           <TouchableOpacity
             style={styles.createButton}
-            onPress={handleCreateDishCategory}
+            onPress={handleCreateShop}
           >
-            <Text style={styles.createButtonText}>Create Dish Category</Text>
+            <Text style={styles.createButtonText}>Update Dish Category</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

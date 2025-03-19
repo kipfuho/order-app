@@ -1,23 +1,18 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useState } from "react";
+import { View, StyleSheet, useWindowDimensions } from "react-native";
 import {
-  View,
+  Button,
+  Dialog,
+  Portal,
   Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  SafeAreaView,
-  useWindowDimensions,
-} from "react-native";
-import {
-  Link,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from "expo-router";
+  useTheme,
+  Appbar,
+} from "react-native-paper";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores/store";
 import { deleteShopRequest } from "../../../../api/api.service";
-import { Ionicons } from "@expo/vector-icons";
+import { AppBar } from "../../../../components/AppBar";
 
 interface Item {
   title: string;
@@ -39,44 +34,26 @@ export default function ShopPage() {
     state.shop.shops.find((s) => s.id.toString() === shopId)
   );
   const router = useRouter();
-  const navigation = useNavigation();
+  const theme = useTheme(); // Get theme colors
 
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
-  const { width } = useWindowDimensions(); // Dynamically get the current width
-  const buttonSize = width / 3 - 20;
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: shop?.name || "Shop",
-      headerShown: true,
-      headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => router.navigate("/")}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-      ),
-      headerRight: () => (
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Ionicons name="ellipsis-vertical" size={32} color="white" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation, shop]);
+  const { width } = useWindowDimensions();
+  const buttonSize = width / 3 - 30;
 
   if (!shop) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Shop not found</Text>
+      <View
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+      >
+        <Text variant="headlineMedium" style={{ color: theme.colors.error }}>
+          Shop not found
+        </Text>
         <Link href="/" asChild>
-          <TouchableOpacity style={styles.backButton}>
-            <Text style={styles.backButtonText}>Go Back</Text>
-          </TouchableOpacity>
+          <Button mode="contained">Go Back</Button>
         </Link>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -99,87 +76,109 @@ export default function ShopPage() {
     router.replace("/");
   };
 
+  const goBack = () => {
+    router.navigate("/");
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>{shop.name}</Text>
-      <Text style={styles.details}>Location: {shop.location}</Text>
+    <>
+      <AppBar title={shop.name} goBack={goBack}>
+        <Appbar.Action
+          icon="dots-vertical"
+          onPress={() => setModalVisible(true)}
+        />
+        ;
+      </AppBar>
+      <View
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+      >
+        <Text
+          variant="headlineLarge"
+          style={{ color: theme.colors.onBackground, textAlign: "center" }}
+        >
+          {shop.name}
+        </Text>
+        <Text
+          variant="bodyLarge"
+          style={{ color: theme.colors.onBackground, textAlign: "center" }}
+        >
+          Location: {shop.location}
+        </Text>
 
-      <View style={styles.buttonGrid}>
-        {BUTTONS.map((item) => (
-          <TouchableOpacity
-            key={item.route}
-            style={[styles.button, { width: buttonSize }]}
-            onPress={() =>
-              router.push({
-                pathname: `/shop/[shopId]/${item.route}`,
-                params: { shopId: shop.id },
-              })
-            }
+        <View style={styles.buttonGrid}>
+          {BUTTONS.map((item) => (
+            <Button
+              key={item.route}
+              mode="contained"
+              style={[styles.button, { width: buttonSize }]}
+              onPress={() =>
+                router.push({
+                  pathname: `/shop/[shopId]/${item.route}`,
+                  params: { shopId: shop.id },
+                })
+              }
+            >
+              {item.title}
+            </Button>
+          ))}
+        </View>
+
+        <Button mode="text" onPress={() => router.back()}>
+          Back
+        </Button>
+
+        {/* Update & Delete Modal */}
+        <Portal>
+          <Dialog
+            visible={modalVisible}
+            onDismiss={() => setModalVisible(false)}
           >
-            <Text style={styles.buttonText}>{item.title}</Text>
-          </TouchableOpacity>
-        ))}
+            <Dialog.Title>Actions</Dialog.Title>
+            <Dialog.Content>
+              <Button
+                mode="contained"
+                onPress={handleUpdate}
+                style={styles.modalButton}
+              >
+                Update
+              </Button>
+              <Button
+                mode="contained"
+                onPress={handleDelete}
+                style={[
+                  styles.modalButton,
+                  { backgroundColor: theme.colors.error },
+                ]}
+              >
+                Delete
+              </Button>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={() => setModalVisible(false)}>Cancel</Button>
+            </Dialog.Actions>
+          </Dialog>
+
+          {/* Confirm Delete Modal */}
+          <Dialog
+            visible={confirmModalVisible}
+            onDismiss={() => setConfirmModalVisible(false)}
+          >
+            <Dialog.Title>Confirm Deletion</Dialog.Title>
+            <Dialog.Content>
+              <Text>Are you sure you want to delete this shop?</Text>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={confirmDelete} textColor={theme.colors.error}>
+                Yes, Delete
+              </Button>
+              <Button onPress={() => setConfirmModalVisible(false)}>
+                Cancel
+              </Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
       </View>
-
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Text style={styles.backButtonText}>Back</Text>
-      </TouchableOpacity>
-
-      {/* Update & Delete Modal */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <TouchableOpacity onPress={handleUpdate} style={styles.modalButton}>
-              <Text style={styles.modalText}>Update</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleDelete}
-              style={[styles.modalButton, { backgroundColor: "red" }]}
-            >
-              <Text style={styles.modalText}>Delete</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
-              style={styles.modalCancel}
-            >
-              <Text style={styles.modalCancelText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Confirm Delete Modal */}
-      <Modal
-        visible={confirmModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setConfirmModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalHeader}>Confirm Deletion</Text>
-            <Text>Are you sure you want to delete this shop?</Text>
-            <TouchableOpacity
-              onPress={confirmDelete}
-              style={[styles.modalButton, { backgroundColor: "red" }]}
-            >
-              <Text style={styles.modalText}>Yes, Delete</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setConfirmModalVisible(false)}
-              style={styles.modalCancel}
-            >
-              <Text style={styles.modalCancelText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
+    </>
   );
 }
 
@@ -188,23 +187,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  details: {
-    fontSize: 18,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  errorText: {
-    color: "red",
-    fontSize: 18,
-    textAlign: "center",
   },
   buttonGrid: {
     flexDirection: "row",
@@ -213,65 +195,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   button: {
-    height: 100,
     margin: 5,
-    backgroundColor: "#007bff",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  backButton: {
-    padding: 10,
-    backgroundColor: "#007bff",
     borderRadius: 5,
-    alignItems: "center",
-    alignSelf: "center",
-    width: 50,
-  },
-  backButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 10,
-    width: 250,
-    alignItems: "center",
-  },
-  modalHeader: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
   },
   modalButton: {
-    padding: 15,
-    width: "100%",
-    alignItems: "center",
-    backgroundColor: "#007bff",
     marginVertical: 5,
-    borderRadius: 5,
-  },
-  modalText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  modalCancel: {
-    marginTop: 10,
-  },
-  modalCancelText: {
-    color: "#007bff",
-    fontWeight: "bold",
   },
 });

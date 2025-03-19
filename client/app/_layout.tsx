@@ -1,37 +1,31 @@
-import { useEffect, useState } from "react";
-import { Provider } from "react-redux";
+import { useEffect } from "react";
+import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
+import { PaperProvider, MD3DarkTheme, MD3LightTheme } from "react-native-paper";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import Toast from "react-native-toast-message";
 import store, { persistor } from "../stores/store";
-import _ from "lodash";
 import { StyleSheet } from "react-native";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+// Prevent splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const theme = colorScheme === "dark" ? MD3DarkTheme : MD3LightTheme;
 
   useEffect(() => {
-    // Hide the splash screen and mark the root layout as ready
+    // Hide splash screen once assets are loaded
     SplashScreen.hideAsync();
   }, []);
 
   return (
-    <Provider store={store}>
+    <ReduxProvider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
+        <PaperProvider theme={theme}>
           <Stack>
             <Stack.Screen name="(shop)" options={{ headerShown: false }} />
             <Stack.Screen
@@ -41,14 +35,14 @@ export default function RootLayout() {
             <Stack.Screen name="+not-found" />
           </Stack>
           <Toast />
-        </ThemeProvider>
+        </PaperProvider>
       </PersistGate>
-    </Provider>
+    </ReduxProvider>
   );
 }
 
 export const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
+  container: { flex: 1, padding: 20 },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -63,10 +57,10 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  createButtonText: { color: "#fff", fontWeight: "bold" },
+  createButtonText: { fontWeight: "bold" },
   loader: { flex: 1, justifyContent: "center" },
   shopItem: { padding: 15, borderBottomWidth: 1, borderColor: "#ddd" },
-  shopName: { fontSize: 18, fontWeight: "bold" },
+  shopName: { fontSize: 18, fontWeight: "bold", color: "#fff" },
   shopDetails: { fontSize: 14, color: "gray" },
   input: {
     borderWidth: 1,
@@ -99,7 +93,7 @@ export const styles = StyleSheet.create({
     alignSelf: "center",
     width: 50,
   },
-  backButtonText: { color: "#fff", fontWeight: "bold" },
+  backButtonText: { fontWeight: "bold" },
   errorText: { color: "red", fontSize: 18, textAlign: "center" },
   item: {
     padding: 15,

@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { RootState } from "../../../../../../stores/store";
 import { Shop } from "../../../../../../stores/state.interface";
 import { styles } from "../../../../../_layout";
+import { Collapsible } from "../../../../../../components/Collapsible";
 
 export default function CreateTablePage() {
   const { shopId } = useLocalSearchParams();
@@ -78,12 +79,15 @@ export default function CreateTablePage() {
     <View style={styles.container}>
       <Text style={styles.title}>Create a New Dish</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Table Name"
-        value={name}
-        onChangeText={setName}
-      />
+      <Collapsible title="General Infomation">
+        <TextInput
+          style={styles.input}
+          placeholder="Dish Name"
+          value={name}
+          onChangeText={setName}
+        />
+      </Collapsible>
+      <Collapsible title="Price">abc</Collapsible>
 
       {loading ? (
         <ActivityIndicator

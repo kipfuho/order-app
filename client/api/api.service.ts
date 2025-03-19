@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig } from "axios";
 import {
+  Dish,
   DishCategory,
   Shop,
   Table,
@@ -293,16 +294,16 @@ export const createTablePositionRequest = async ({
 }: {
   shopId: string;
   name: string;
-  categories: DishCategory[];
+  categories: string[];
 }) => {
   const accessToken = await getAccessToken();
   const body: {
     name: string;
-    categories?: DishCategory[];
+    categories?: string[];
   } = { name };
 
   if (categories) {
-    body.categories = categories;
+    body.categories = _.map(categories, "id");
   }
 
   const result: { tablePosition: TablePosition } = await apiRequest({
@@ -470,5 +471,68 @@ export const createDishCategoryRequest = async ({
   const state = store.getState();
   store.dispatch(
     updateAllDishCategories([...state.shop.dishCategories, result.dishCategory])
+  );
+};
+
+export const updateDishCategoryRequest = async ({
+  dishCategoryId,
+  shopId,
+  name,
+}: {
+  dishCategoryId: string;
+  shopId: string;
+  name: string;
+}) => {
+  const accessToken = await getAccessToken();
+  const body: {
+    name: string;
+  } = { name };
+
+  const result: { dishCategory: DishCategory } = await apiRequest({
+    method: "PATCH",
+    endpoint: `/v1/shops/${shopId}/dishCategories/${dishCategoryId}`,
+    token: accessToken,
+    data: body,
+  });
+
+  const state = store.getState();
+  store.dispatch(
+    updateAllDishCategories([
+      ..._.filter(state.shop.dishCategories, (dc) => dc.id !== dishCategoryId),
+      result.dishCategory,
+    ])
+  );
+};
+
+export const updateDishRequest = async ({
+  dishId,
+  shopId,
+  name,
+  dishCategory,
+}: {
+  dishId: string;
+  shopId: string;
+  name: string;
+  dishCategory: DishCategory;
+}) => {
+  const accessToken = await getAccessToken();
+  const body: {
+    name: string;
+    dishCategory: string;
+  } = { name, dishCategory: dishCategory.id };
+
+  const result: { dish: Dish } = await apiRequest({
+    method: "PATCH",
+    endpoint: `/v1/shops/${shopId}/dishes/${dishId}`,
+    token: accessToken,
+    data: body,
+  });
+
+  const state = store.getState();
+  store.dispatch(
+    updateAllDishCategories([
+      ..._.filter(state.shop.dishes, (d) => d.id !== dishId),
+      result.dish,
+    ])
   );
 };

@@ -85,6 +85,18 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="update-dish/[dishId]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="update-dish-category/[dishCategoryId]"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

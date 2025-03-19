@@ -5,30 +5,50 @@ import _ from "lodash";
 import Toast from "react-native-toast-message";
 import { ActivityIndicator } from "react-native-paper";
 import { useSelector } from "react-redux";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { RootState } from "../../../../../../stores/store";
-import { Shop } from "../../../../../../stores/state.interface";
-import { styles } from "../../../../../_layout";
-import { createDishCategoryRequest } from "../../../../../../api/api.service";
+import { RootState } from "../../../../../../../stores/store";
+import { Shop } from "../../../../../../../stores/state.interface";
+import { styles } from "../../../../../../_layout";
+import { updateDishRequest } from "../../../../../../../api/api.service";
 
-export default function CreateDishCategoryPage() {
+export default function UpdateDishPage() {
   const { shopId } = useLocalSearchParams();
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
   ) as Shop;
+  const { dishId } = useLocalSearchParams();
+  const dish = useSelector((state: RootState) =>
+    state.shop.dishes.find((d) => d.id === dishId)
+  );
 
-  const [loading, setLoading] = useState(false);
-  const [name, setName] = useState("category");
   const router = useRouter();
-  const navigation = useNavigation();
 
   const goBack = () =>
     router.navigate({
-      pathname: "/shop/[shopId]/menus/categories",
+      pathname: "/shop/[shopId]/settings/tables",
       params: {
         shopId: shop.id,
       },
     });
+
+  if (!dish) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.errorText}>Dish not found</Text>
+        <TouchableOpacity style={styles.backButton} onPress={goBack}>
+          <Text style={styles.backButtonText}>Go Back</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+  const dishCategories = useSelector(
+    (state: RootState) => state.shop.dishCategories
+  );
+  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState(dish.name);
+  const [dishCategory, setDishCategory] = useState(dishCategories[0]);
+  const navigation = useNavigation();
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -40,21 +60,23 @@ export default function CreateDishCategoryPage() {
     });
   }, [navigation]);
 
-  const handleCreateDishCategory = async () => {
-    if (!name.trim()) {
+  const handleCreateShop = async () => {
+    if (!name.trim() || !dishCategory) {
       Toast.show({
         type: "error",
         text1: "Create Failed",
-        text2: "Please enter name and dish category",
+        text2: "Please enter name and table position",
       });
       return;
     }
 
     try {
       setLoading(true);
-      await createDishCategoryRequest({
+      await updateDishRequest({
+        dishId: dish.id,
         shopId: shop.id,
         name,
+        dishCategory,
       });
 
       // Navigate back to table position list
@@ -62,6 +84,7 @@ export default function CreateDishCategoryPage() {
 
       // Clear input fields
       setName("");
+      setDishCategory(dishCategories[0]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -71,11 +94,11 @@ export default function CreateDishCategoryPage() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create a New Dish Category</Text>
+      <Text style={styles.title}>Update a Table</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Dish category name"
+        placeholder="Table Name"
         value={name}
         onChangeText={setName}
       />
@@ -90,9 +113,9 @@ export default function CreateDishCategoryPage() {
         <>
           <TouchableOpacity
             style={styles.createButton}
-            onPress={handleCreateDishCategory}
+            onPress={handleCreateShop}
           >
-            <Text style={styles.createButtonText}>Create Dish Category</Text>
+            <Text style={styles.createButtonText}>Update Table</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
