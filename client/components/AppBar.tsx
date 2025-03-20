@@ -11,9 +11,9 @@ export function AppBar({
   children?: ReactNode;
 }) {
   return (
-    <Appbar.Header>
-      <Appbar.BackAction onPress={() => goBack()} />
-      <Appbar.Content title={title} />
+    <Appbar.Header style={{ height: 60, paddingHorizontal: 8 }}>
+      <Appbar.BackAction onPress={goBack} size={20} />
+      <Appbar.Content title={title} titleStyle={{ fontSize: 16 }} />
       {children}
     </Appbar.Header>
   );

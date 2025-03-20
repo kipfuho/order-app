@@ -6,7 +6,7 @@ import { Dish, Shop } from "../../../../../../stores/state.interface";
 import { DishCard } from "../../../../../../components/ui/menus/DishCard";
 import { AppBar } from "../../../../../../components/AppBar";
 import { useTheme, Button, Text, Surface } from "react-native-paper";
-import { findNodeHandle, ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function DishesManagementPage() {
   const { shopId } = useLocalSearchParams();
@@ -59,7 +59,7 @@ export default function DishesManagementPage() {
   return (
     <>
       <AppBar title="Dishes" goBack={goBack} />
-      <Surface style={{ flex: 1, padding: 16 }}>
+      <Surface style={{ flex: 1 }}>
         <Surface style={styles.content}>
           {/* Left Sidebar for Categories */}
           <Surface

@@ -6,11 +6,13 @@ import {
   Table,
   TablePosition,
   Tokens,
+  Unit,
   User,
 } from "../stores/state.interface";
 import { auth } from "../generated/auth";
 import {
   updateAllDishCategories,
+  updateAllDishes,
   updateAllShops,
   updateAllTablePositions,
   updateAllTables,
@@ -504,22 +506,94 @@ export const updateDishCategoryRequest = async ({
   );
 };
 
-export const updateDishRequest = async ({
-  dishId,
+export const createDishRequest = async ({
   shopId,
   name,
-  dishCategory,
+  category,
+  dishType,
+  price,
+  taxRate = 0,
+  unit,
+  isTaxIncludedPrice = false,
 }: {
-  dishId: string;
   shopId: string;
   name: string;
-  dishCategory: DishCategory;
+  category: DishCategory;
+  dishType: string;
+  price: number;
+  taxRate: number;
+  unit: Unit;
+  isTaxIncludedPrice: boolean;
 }) => {
   const accessToken = await getAccessToken();
   const body: {
     name: string;
-    dishCategory: string;
-  } = { name, dishCategory: dishCategory.id };
+    category: string;
+    dishType: string;
+    price: number;
+    taxRate: number;
+    unit: string;
+    isTaxIncludedPrice: boolean;
+  } = {
+    name,
+    category: category.id,
+    dishType,
+    price,
+    taxRate,
+    unit: unit.id,
+    isTaxIncludedPrice,
+  };
+
+  const result: { dish: Dish } = await apiRequest({
+    method: "POST",
+    endpoint: `/v1/shops/${shopId}/dishes`,
+    token: accessToken,
+    data: body,
+  });
+
+  const state = store.getState();
+  store.dispatch(updateAllDishes([...state.shop.dishes, result.dish]));
+};
+
+export const updateDishRequest = async ({
+  shopId,
+  dishId,
+  name,
+  category,
+  dishType,
+  price,
+  taxRate = 0,
+  unit,
+  isTaxIncludedPrice = false,
+}: {
+  shopId: string;
+  dishId: string;
+  name: string;
+  category: DishCategory;
+  dishType: string;
+  price: number;
+  taxRate: number;
+  unit: Unit;
+  isTaxIncludedPrice: boolean;
+}) => {
+  const accessToken = await getAccessToken();
+  const body: {
+    name: string;
+    category: string;
+    dishType: string;
+    price: number;
+    taxRate: number;
+    unit: string;
+    isTaxIncludedPrice: boolean;
+  } = {
+    name,
+    category: category.id,
+    dishType,
+    price,
+    taxRate,
+    unit: unit.id,
+    isTaxIncludedPrice,
+  };
 
   const result: { dish: Dish } = await apiRequest({
     method: "PATCH",

@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
-import { ActivityIndicator } from "react-native-paper";
+import { ActivityIndicator, Button, Surface } from "react-native-paper";
 import _ from "lodash";
 import { RootState } from "../../../../../../stores/store";
-import { styles } from "../../../../../_layout";
 import { Shop } from "../../../../../../stores/state.interface";
+import { AppBar } from "../../../../../../components/AppBar";
 
 export default function CategoriesManagementPage() {
   const { shopId } = useLocalSearchParams();
@@ -41,44 +48,85 @@ export default function CategoriesManagementPage() {
   }, []);
 
   if (loading) {
-    return <ActivityIndicator size="large" style={styles.loader} />;
+    return <ActivityIndicator size="large" />;
   }
 
-  return (
-    <View style={styles.container}>
-      <FlatList
-        data={dishCategories}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <Link
-            href={{
-              pathname:
-                "/shop/[shopId]/menus/update-dish-category/[dishCategoryId]",
-              params: { shopId: shop.id, dishCategoryId: item.id },
-            }}
-            asChild
-          >
-            <TouchableOpacity style={styles.item}>
-              <Text style={styles.itemText}>{item.name}</Text>
-            </TouchableOpacity>
-          </Link>
-        )}
-      />
+  const goBack = () =>
+    router.navigate({
+      pathname: "/shop/[shopId]/home",
+      params: { shopId: shop.id },
+    });
 
-      {/* Create Table Position Button */}
-      <TouchableOpacity
-        style={styles.createButton}
-        onPress={() =>
-          router.push({
-            pathname: "/shop/[shopId]/menus/create-dish-category",
-            params: {
-              shopId: shop.id,
-            },
-          })
-        }
-      >
-        <Text style={styles.createButtonText}>Create Dish Category</Text>
-      </TouchableOpacity>
-    </View>
+  return (
+    <>
+      <AppBar title="Dish Categories" goBack={goBack} />
+      <Surface style={{ flex: 1 }}>
+        <ScrollView style={{ flex: 1 }}>
+          <FlatList
+            data={dishCategories}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <Link
+                href={{
+                  pathname:
+                    "/shop/[shopId]/menus/update-dish-category/[dishCategoryId]",
+                  params: { shopId: shop.id, dishCategoryId: item.id },
+                }}
+                asChild
+              >
+                <TouchableOpacity>
+                  <Text>{item.name}</Text>
+                </TouchableOpacity>
+              </Link>
+            )}
+          />
+        </ScrollView>
+
+        {/* Create Table Position Button */}
+        <Button
+          mode="contained"
+          style={styles.createButton}
+          onPress={() =>
+            router.push({
+              pathname: "/shop/[shopId]/menus/create-dish-category",
+              params: {
+                shopId: shop.id,
+              },
+            })
+          }
+        >
+          Create Dish Category
+        </Button>
+      </Surface>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  content: {
+    flexDirection: "row",
+    flex: 1,
+  },
+  sidebar: {
+    width: 120,
+    paddingRight: 8,
+  },
+  categoryButton: {
+    padding: 0,
+    borderRadius: 0,
+    marginBottom: 1,
+  },
+  dishList: {
+    flex: 1,
+  },
+  categoryContainer: {
+    marginBottom: 24,
+  },
+  categoryTitle: {
+    marginBottom: 8,
+  },
+  createButton: {
+    marginTop: 16,
+    alignSelf: "center",
+  },
+});

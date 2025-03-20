@@ -21,6 +21,7 @@ interface ShopState {
   departments: Department[];
   units: Unit[];
   dishes: Dish[];
+  dishTypes: String[];
   dishCategories: DishCategory[];
   tableWithActiveOrders: Table[];
 }
@@ -35,6 +36,7 @@ const initialState: ShopState = {
   departments: [],
   units: [],
   dishes: [],
+  dishTypes: [],
   dishCategories: [],
   tableWithActiveOrders: [],
 };
@@ -171,6 +173,12 @@ export const userSlice = createSlice({
           ...updatedData,
         };
       }
+    },
+
+    //
+    updateAllDisheTypes: (state, action: PayloadAction<string[]>) => {
+      if (!_.get(action, "payload")) return;
+      state.dishTypes = action.payload;
     },
 
     updateAllDishCategories: (state, action: PayloadAction<DishCategory[]>) => {

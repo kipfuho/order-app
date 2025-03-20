@@ -1,50 +1,22 @@
-import { Ionicons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Tabs, useLocalSearchParams, useRouter } from "expo-router";
-import { Text, TouchableOpacity } from "react-native";
-import { styles } from "../../../../../_layout";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { RootState } from "../../../../../../stores/store";
-import { useSelector } from "react-redux";
+import { Tabs, useLocalSearchParams } from "expo-router";
+import { useTheme } from "react-native-paper";
 
 export default function TabLayout() {
   const { shopId } = useLocalSearchParams();
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
-  );
-
-  if (!shop) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Shop not found</Text>
-        <Link href="/" asChild>
-          <TouchableOpacity style={styles.backButton}>
-            <Text style={styles.backButtonText}>Go Back</Text>
-          </TouchableOpacity>
-        </Link>
-      </SafeAreaView>
-    );
-  }
-
-  const router = useRouter();
-  const goBack = () =>
-    router.navigate({
-      pathname: "/shop/[shopId]/home",
-      params: {
-        shopId: shop.id,
-      },
-    });
+  const theme = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "blue",
-        lazy: true,
-        headerLeft: () => (
-          <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="black" />
-          </TouchableOpacity>
-        ),
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: theme.colors.surface, // Use theme surface color
+          borderTopWidth: 0, // Remove top border for a cleaner look
+          elevation: 4, // Add shadow for depth
+        },
+        tabBarActiveTintColor: theme.colors.primary, // Highlight active tab
+        tabBarInactiveTintColor: theme.colors.onSurfaceDisabled, // Subtle color for inactive tabs
       }}
     >
       <Tabs.Screen
@@ -67,36 +39,20 @@ export default function TabLayout() {
         }}
         initialParams={{ shopId }}
       />
-      <Tabs.Screen
-        name="index"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="create-dish"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="create-dish-category"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="update-dish/[dishId]"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="update-dish-category/[dishCategoryId]"
-        options={{
-          href: null,
-        }}
-      />
+      {/* Hidden Screens */}
+      {[
+        "index",
+        "create-dish",
+        "create-dish-category",
+        "update-dish/[dishId]",
+        "update-dish-category/[dishCategoryId]",
+      ].map((name) => (
+        <Tabs.Screen
+          key={name}
+          name={name}
+          options={{ href: null, tabBarStyle: { display: "none" } }}
+        />
+      ))}
     </Tabs>
   );
 }

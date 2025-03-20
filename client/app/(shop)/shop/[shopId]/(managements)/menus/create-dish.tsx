@@ -1,45 +1,71 @@
 import React, { useLayoutEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { StyleSheet, ScrollView } from "react-native";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import _ from "lodash";
-import Toast from "react-native-toast-message";
-import { ActivityIndicator } from "react-native-paper";
 import { useSelector } from "react-redux";
-import { Ionicons } from "@expo/vector-icons";
 import { RootState } from "../../../../../../stores/store";
-import { Shop } from "../../../../../../stores/state.interface";
-import { styles } from "../../../../../_layout";
+import {
+  DishCategory,
+  Shop,
+  Unit,
+} from "../../../../../../stores/state.interface";
+import {
+  Button,
+  TextInput,
+  useTheme,
+  ActivityIndicator,
+  Surface,
+} from "react-native-paper";
+import { Ionicons } from "@expo/vector-icons";
+import Toast from "react-native-toast-message";
 import { Collapsible } from "../../../../../../components/Collapsible";
+import { AppBar } from "../../../../../../components/AppBar";
+import { DropdownMenu } from "../../../../../../components/DropdownMenu";
 
 export default function CreateTablePage() {
   const { shopId } = useLocalSearchParams();
+  const theme = useTheme();
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
   ) as Shop;
 
+  const dishTypes = useSelector((state: RootState) => state.shop.dishTypes);
   const dishCategories = useSelector(
     (state: RootState) => state.shop.dishCategories
   );
+  const units = useSelector((state: RootState) => state.shop.units);
+
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState("dish");
+  const [name, setName] = useState("");
   const [category, setCategory] = useState(dishCategories[0]);
+  const [dishType, setDishType] = useState(dishTypes[0]);
+  const [price, setPrice] = useState("");
+  const [unit, setUnit] = useState(units[0]);
+  const [taxRate, setTaxRate] = useState("");
   const router = useRouter();
   const navigation = useNavigation();
 
   const goBack = () =>
     router.navigate({
       pathname: "/shop/[shopId]/menus/dishes",
-      params: {
-        shopId: shop.id,
-      },
+      params: { shopId: shop.id },
     });
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
-        <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
+        <Button
+          mode="text"
+          onPress={goBack}
+          icon={() => (
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color={theme.colors.primary}
+            />
+          )}
+        >
+          Back
+        </Button>
       ),
     });
   }, [navigation]);
@@ -53,19 +79,10 @@ export default function CreateTablePage() {
       });
       return;
     }
-
     try {
       setLoading(true);
-      //   await createTableRequest({
-      //     shopId: shop.id,
-      //     name,
-      //     tablePosition,
-      //   });
-
-      // Navigate back to table position list
+      // TODO: Implement API request to create a dish
       goBack();
-
-      // Clear input fields
       setName("");
       setCategory(dishCategories[0]);
     } catch (err) {
@@ -76,42 +93,105 @@ export default function CreateTablePage() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create a New Dish</Text>
+    <>
+      <AppBar title="Create Dish" goBack={goBack} />
+      <Surface style={[styles.container]}>
+        <ScrollView style={{ flex: 1 }}>
+          {/* General Information Collapsible */}
+          <Collapsible title="General Information">
+            <TextInput
+              mode="outlined"
+              label="Dish Name"
+              value={name}
+              onChangeText={setName}
+              style={styles.input}
+            />
 
-      <Collapsible title="General Infomation">
-        <TextInput
-          style={styles.input}
-          placeholder="Dish Name"
-          value={name}
-          onChangeText={setName}
-        />
-      </Collapsible>
-      <Collapsible title="Price">abc</Collapsible>
+            <DropdownMenu
+              item={dishType}
+              items={dishTypes}
+              label="Dish Type"
+              setItem={setDishType}
+              getItemValue={(item: string) => item}
+            />
 
-      {loading ? (
-        <ActivityIndicator
-          animating={true}
-          size="large"
-          style={styles.loader}
-        />
-      ) : (
-        <>
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={handleCreateDish}
-          >
-            <Text style={styles.createButtonText}>Create Dish</Text>
-          </TouchableOpacity>
+            <DropdownMenu
+              item={category}
+              items={dishCategories}
+              label="Dish Category"
+              setItem={setCategory}
+              getItemValue={(item: DishCategory) => item?.name}
+            />
+          </Collapsible>
 
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => goBack()}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </>
-      )}
-    </View>
+          {/* Price Collapsible */}
+          <Collapsible title="Price Information">
+            <TextInput
+              mode="outlined"
+              label="Price"
+              value={price}
+              style={styles.input}
+              keyboardType="numeric" // Shows numeric keyboard
+              onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
+            />
+            <DropdownMenu
+              item={unit}
+              items={units}
+              label="Unit"
+              setItem={setUnit}
+              getItemValue={(item: Unit) => item?.name}
+            />
+            <TextInput
+              mode="outlined"
+              label="Tax Rate"
+              value={taxRate}
+              style={styles.input}
+              keyboardType="numeric" // Shows numeric keyboard
+              onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
+            />
+          </Collapsible>
+        </ScrollView>
+        {loading ? (
+          <ActivityIndicator
+            animating={true}
+            size="large"
+            style={styles.loader}
+          />
+        ) : (
+          <>
+            <Button
+              mode="contained"
+              onPress={handleCreateDish}
+              style={styles.createButton}
+            >
+              Create Dish
+            </Button>
+          </>
+        )}
+      </Surface>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    justifyContent: "center",
+  },
+  input: {
+    marginBottom: 16,
+  },
+  createButton: {
+    marginTop: 16,
+    width: 200,
+    alignSelf: "center",
+  },
+  cancelButton: {
+    marginTop: 8,
+  },
+  loader: {
+    marginVertical: 16,
+  },
+});
