@@ -6,12 +6,15 @@ const dishSchema = mongoose.Schema(
   {
     shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     name: { type: String },
-    unit: { type: String },
+    unit: { type: mongoose.Types.ObjectId, ref: 'Unit' },
     price: {
       type: Number,
     },
     taxIncludedPrice: {
       type: Number,
+    },
+    isTaxIncludedPrice: {
+      type: Boolean,
     },
     category: {
       type: mongoose.Types.ObjectId,
