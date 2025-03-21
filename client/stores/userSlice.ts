@@ -21,7 +21,7 @@ interface ShopState {
   departments: Department[];
   units: Unit[];
   dishes: Dish[];
-  dishTypes: String[];
+  dishTypes: string[];
   dishCategories: DishCategory[];
   tableWithActiveOrders: Table[];
 }
@@ -228,6 +228,7 @@ export const {
   updateAllDishCategories,
   updateAllDishes,
   updateAllUnits,
+  updateAllDisheTypes,
   updateDish,
   updateDishCategory,
   updateTableWithActiveOrders,

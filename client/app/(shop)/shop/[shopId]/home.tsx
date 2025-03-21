@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, useWindowDimensions } from "react-native";
 import {
   Button,
@@ -11,7 +11,14 @@ import {
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores/store";
-import { deleteShopRequest } from "../../../../api/api.service";
+import {
+  createDefaultUnitsRequest,
+  deleteShopRequest,
+  getDishCategoriesRequest,
+  getDishTypesRequest,
+  getTablePositions,
+  getTables,
+} from "../../../../api/api.service";
 import { AppBar } from "../../../../components/AppBar";
 
 interface Item {
@@ -42,6 +49,20 @@ export default function ShopPage() {
   const { width } = useWindowDimensions();
   const buttonSize = width / 3 - 30;
 
+  useEffect(() => {
+    if (shop) {
+      // prefetch some data
+      const fetchShopDatas = async () => {
+        await getDishCategoriesRequest({ shopId: shop.id });
+        await getTables({ shopId: shop.id });
+        await getTablePositions({ shopId: shop.id });
+        await getDishTypesRequest({ shopId: shop.id });
+      };
+
+      fetchShopDatas();
+    }
+  }, [shop]);
+
   if (!shop) {
     return (
       <View
@@ -68,6 +89,11 @@ export default function ShopPage() {
   const handleDelete = () => {
     setModalVisible(false);
     setConfirmModalVisible(true);
+  };
+
+  const handleCreateDefaultUnits = async () => {
+    setModalVisible(false);
+    await createDefaultUnitsRequest({ shopId: shop.id });
   };
 
   const confirmDelete = async () => {
@@ -151,6 +177,16 @@ export default function ShopPage() {
                 ]}
               >
                 Delete
+              </Button>
+              <Button
+                mode="contained"
+                onPress={handleCreateDefaultUnits}
+                style={[
+                  styles.modalButton,
+                  { backgroundColor: theme.colors.tertiary },
+                ]}
+              >
+                Create Default Units
               </Button>
             </Dialog.Content>
             <Dialog.Actions>

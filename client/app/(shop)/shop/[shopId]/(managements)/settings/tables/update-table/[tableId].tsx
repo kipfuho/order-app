@@ -1,43 +1,35 @@
-import React, { useLayoutEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import {
-  Link,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from "expo-router";
+import React, { useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
-import { ActivityIndicator } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Button,
+  Divider,
+  Menu,
+  Surface,
+  Text,
+  TextInput,
+} from "react-native-paper";
 import { useSelector } from "react-redux";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { RootState } from "../../../../../../../../stores/store";
-import { styles } from "../../../../../../../_layout";
 import { updateTableRequest } from "../../../../../../../../api/api.service";
+import {
+  Shop,
+  TablePosition,
+} from "../../../../../../../../stores/state.interface";
+import { AppBar } from "../../../../../../../../components/AppBar";
+import { DropdownMenu } from "../../../../../../../../components/DropdownMenu";
 
 export default function UpdateTablePage() {
   const { shopId } = useLocalSearchParams();
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
-  );
+  ) as Shop;
   const { tableId } = useLocalSearchParams();
   const table = useSelector((state: RootState) =>
     state.shop.tables.find((t) => t.id === tableId)
   );
-
-  if (!shop) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Shop not found</Text>
-        <Link href="/" asChild>
-          <TouchableOpacity style={styles.backButton}>
-            <Text style={styles.backButtonText}>Go Back</Text>
-          </TouchableOpacity>
-        </Link>
-      </SafeAreaView>
-    );
-  }
 
   const router = useRouter();
 
@@ -51,33 +43,28 @@ export default function UpdateTablePage() {
 
   if (!table) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Table not found</Text>
-        <TouchableOpacity style={styles.backButton} onPress={goBack}>
-          <Text style={styles.backButtonText}>Go Back</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
+      <Surface style={{ flex: 1 }}>
+        <Text>Table not found</Text>
+        <Button mode="contained" onPress={goBack}>
+          Go Back
+        </Button>
+      </Surface>
     );
   }
+
   const tablePositions = useSelector(
     (state: RootState) => state.shop.tablePositions
   );
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState(table.name);
-  const [tablePosition, setTablePosition] = useState(tablePositions[0]);
-  const navigation = useNavigation();
+  const [name, setName] = useState("");
+  const [tablePosition, setTablePosition] = useState<TablePosition>();
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
+  useEffect(() => {
+    setName(table.name);
+    setTablePosition(table.position);
+  }, [table]);
 
-  const handleCreateShop = async () => {
+  const handleUpdateTable = async () => {
     if (!name.trim() || !tablePosition) {
       Toast.show({
         type: "error",
@@ -101,7 +88,7 @@ export default function UpdateTablePage() {
 
       // Clear input fields
       setName("");
-      setTablePosition(tablePositions[0]);
+      setTablePosition(undefined);
     } catch (err) {
       console.error(err);
     } finally {
@@ -110,39 +97,41 @@ export default function UpdateTablePage() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Update a Table</Text>
+    <>
+      <AppBar title="Update Table" goBack={goBack} />
+      <Surface style={{ flex: 1 }}>
+        <Surface style={{ flex: 1, padding: 16 }}>
+          <TextInput
+            label="Table Name"
+            mode="outlined"
+            placeholder="Enter table name"
+            value={name}
+            onChangeText={setName}
+            style={{ marginBottom: 20 }}
+          />
+          <DropdownMenu
+            label="Table Position"
+            item={tablePosition}
+            setItem={setTablePosition}
+            items={tablePositions}
+            getItemValue={(tp: TablePosition) => tp?.name}
+          />
+        </Surface>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Table Name"
-        value={name}
-        onChangeText={setName}
-      />
-
-      {loading ? (
-        <ActivityIndicator
-          animating={true}
-          size="large"
-          style={styles.loader}
-        />
-      ) : (
-        <>
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={handleCreateShop}
-          >
-            <Text style={styles.createButtonText}>Update Table</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => goBack()}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </>
-      )}
-    </View>
+        {loading ? (
+          <ActivityIndicator animating={true} size="large" />
+        ) : (
+          <>
+            <Button
+              mode="contained-tonal"
+              style={{ alignSelf: "center", marginBottom: 20, width: 200 }}
+              onPress={handleUpdateTable}
+            >
+              Update Table
+            </Button>
+          </>
+        )}
+      </Surface>
+    </>
   );
 }

@@ -72,9 +72,12 @@ export default function CreateDishCategoryPage() {
       <Surface style={{ flex: 1, padding: 16 }}>
         <ScrollView style={{ flex: 1 }}>
           <TextInput
-            placeholder="Dish category name"
+            label="Dish Category Name"
+            mode="outlined"
+            placeholder="Enter dish category name"
             value={name}
             onChangeText={setName}
+            style={{ marginBottom: 20 }}
           />
         </ScrollView>
 

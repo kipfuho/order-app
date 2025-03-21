@@ -1,28 +1,55 @@
-import React, { useLayoutEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import React, { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
-import { ActivityIndicator } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Button,
+  Surface,
+  Switch,
+  Text,
+  TextInput,
+} from "react-native-paper";
 import { useSelector } from "react-redux";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { RootState } from "../../../../../../../stores/store";
-import { Shop } from "../../../../../../../stores/state.interface";
-import { styles } from "../../../../../../_layout";
+import {
+  Dish,
+  DishCategory,
+  Shop,
+  Unit,
+} from "../../../../../../../stores/state.interface";
 import { updateDishRequest } from "../../../../../../../api/api.service";
+import { AppBar } from "../../../../../../../components/AppBar";
+import { ScrollView } from "react-native";
+import { Collapsible } from "../../../../../../../components/Collapsible";
+import { DropdownMenu } from "../../../../../../../components/DropdownMenu";
 
 export default function UpdateDishPage() {
-  const { shopId } = useLocalSearchParams();
+  const { shopId, dishId } = useLocalSearchParams();
+
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
   ) as Shop;
-  const { dishId } = useLocalSearchParams();
   const dish = useSelector((state: RootState) =>
     state.shop.dishes.find((d) => d.id === dishId)
+  ) as Dish;
+  const dishTypes = useSelector((state: RootState) => state.shop.dishTypes);
+  const dishCategories = useSelector(
+    (state: RootState) => state.shop.dishCategories
   );
+  const units = useSelector((state: RootState) => state.shop.units);
 
+  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState(dishCategories[0]);
+  const [dishType, setDishType] = useState(dishTypes[0]);
+  const [price, setPrice] = useState("");
+  const [unit, setUnit] = useState(units[0]);
+  const [taxRate, setTaxRate] = useState("");
   const router = useRouter();
+
+  const [isTaxIncludedPrice, setIsTaxIncludedPrice] = useState(false);
+  const onToggleSwitch = () => setIsTaxIncludedPrice(!isTaxIncludedPrice);
 
   const goBack = () =>
     router.navigate({
@@ -32,40 +59,13 @@ export default function UpdateDishPage() {
       },
     });
 
-  if (!dish) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Dish not found</Text>
-        <TouchableOpacity style={styles.backButton} onPress={goBack}>
-          <Text style={styles.backButtonText}>Go Back</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  }
-  const dishCategories = useSelector(
-    (state: RootState) => state.shop.dishCategories
-  );
-  const [loading, setLoading] = useState(false);
-  const [name, setName] = useState(dish.name);
-  const [dishCategory, setDishCategory] = useState(dishCategories[0]);
-  const navigation = useNavigation();
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
-
-  const handleCreateShop = async () => {
-    if (!name.trim() || !dishCategory) {
+  const handleUpdateDish = async () => {
+    if (!name.trim() || !category || !dishType || !unit || !price.trim()) {
       Toast.show({
         type: "error",
         text1: "Create Failed",
-        text2: "Please enter name and table position",
+        text2:
+          "Please enter name and category and dish type and unit and price",
       });
       return;
     }
@@ -73,18 +73,19 @@ export default function UpdateDishPage() {
     try {
       setLoading(true);
       await updateDishRequest({
-        dishId: dish.id,
         shopId: shop.id,
+        dishId: dish.id,
         name,
-        dishCategory,
+        category,
+        dishType,
+        price: parseFloat(price),
+        unit,
+        taxRate: parseFloat(taxRate),
+        isTaxIncludedPrice,
       });
 
       // Navigate back to table position list
       goBack();
-
-      // Clear input fields
-      setName("");
-      setDishCategory(dishCategories[0]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -93,39 +94,93 @@ export default function UpdateDishPage() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Update a Table</Text>
+    <>
+      <AppBar title="Update Dish" goBack={goBack} />
+      <Surface style={{ flex: 1 }}>
+        <ScrollView style={{ flex: 1, padding: 16 }}>
+          {/* General Information Collapsible */}
+          <Collapsible title="General Information">
+            <TextInput
+              label="Dish Name"
+              mode="outlined"
+              placeholder="Enter dish name"
+              value={name}
+              onChangeText={setName}
+              style={{ marginBottom: 20 }}
+            />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Table Name"
-        value={name}
-        onChangeText={setName}
-      />
+            <DropdownMenu
+              item={dishType}
+              items={dishTypes}
+              label="Dish Type"
+              setItem={setDishType}
+              getItemValue={(item: string) => item}
+            />
 
-      {loading ? (
-        <ActivityIndicator
-          animating={true}
-          size="large"
-          style={styles.loader}
-        />
-      ) : (
-        <>
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={handleCreateShop}
-          >
-            <Text style={styles.createButtonText}>Update Table</Text>
-          </TouchableOpacity>
+            <DropdownMenu
+              item={category}
+              items={dishCategories}
+              label="Dish Category"
+              setItem={setCategory}
+              getItemValue={(item: DishCategory) => item?.name}
+            />
+          </Collapsible>
 
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => goBack()}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </>
-      )}
-    </View>
+          {/* Price Collapsible */}
+          <Collapsible title="Price Information">
+            <TextInput
+              label="Price"
+              mode="outlined"
+              placeholder="Enter price"
+              value={price}
+              onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
+              keyboardType="numeric" // Shows numeric keyboard
+              style={{ marginBottom: 10 }}
+            />
+            <Surface
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 20,
+              }}
+            >
+              <Text style={{ marginRight: 16 }}>Price include tax</Text>
+              <Switch
+                value={isTaxIncludedPrice}
+                onValueChange={onToggleSwitch}
+              />
+            </Surface>
+            <DropdownMenu
+              item={unit}
+              items={units}
+              label="Unit"
+              setItem={setUnit}
+              getItemValue={(item: Unit) => item?.name}
+            />
+            <TextInput
+              mode="outlined"
+              label="Tax Rate"
+              placeholder="Enter tax rate"
+              value={taxRate}
+              keyboardType="numeric" // Shows numeric keyboard
+              onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
+            />
+          </Collapsible>
+        </ScrollView>
+        {loading ? (
+          <ActivityIndicator animating={true} size="large" />
+        ) : (
+          <>
+            <Button
+              mode="contained-tonal"
+              onPress={handleUpdateDish}
+              style={{ width: 200, alignSelf: "center", marginBottom: 20 }}
+            >
+              Create Dish
+            </Button>
+          </>
+        )}
+      </Surface>
+    </>
   );
 }

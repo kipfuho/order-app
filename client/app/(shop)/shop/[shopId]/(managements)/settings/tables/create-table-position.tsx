@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { ScrollView, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
@@ -13,7 +13,7 @@ import {
   Portal,
   Text,
   TextInput,
-  useTheme,
+  Surface,
 } from "react-native-paper";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
@@ -21,7 +21,6 @@ import Toast from "react-native-toast-message";
 
 export default function CreateTablePositionPage() {
   const { shopId } = useLocalSearchParams();
-  const theme = useTheme();
   const router = useRouter();
 
   const shop = useSelector((state: RootState) =>
@@ -43,7 +42,7 @@ export default function CreateTablePositionPage() {
       params: { shopId: shop.id },
     });
 
-  const handleCreateTable = async () => {
+  const handleCreateTablePosition = async () => {
     if (!name.trim() || selectedCategories.length === 0) {
       Toast.show({
         type: "error",
@@ -84,50 +83,55 @@ export default function CreateTablePositionPage() {
   return (
     <>
       <AppBar title="Create Table Position" goBack={goBack} />
-      <SafeAreaView
+      <Surface
         style={{
           flex: 1,
-          backgroundColor: theme.colors.background,
-          padding: 16,
         }}
       >
-        <ScrollView>
-          {/* Table Name Input */}
-          <TextInput
-            label="Table Position Name"
-            mode="outlined"
-            placeholder="Enter table position name"
-            value={name}
-            onChangeText={setName}
-            style={{ marginBottom: 20 }}
-          />
+        <Surface
+          style={{
+            flex: 1,
+            padding: 16,
+          }}
+        >
+          <ScrollView>
+            {/* Table Name Input */}
+            <TextInput
+              label="Table Position Name"
+              mode="outlined"
+              placeholder="Enter table position name"
+              value={name}
+              onChangeText={setName}
+              style={{ marginBottom: 20 }}
+            />
 
-          {/* Table Position Selection Label */}
-          <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
-            Select Table Categories
-          </Text>
+            {/* Table Position Selection Label */}
+            <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
+              Select Table Categories
+            </Text>
 
-          {/* Open Dialog Button */}
-          <Button mode="outlined" onPress={() => setDialogVisible(true)}>
-            {selectedCategories.length > 0
-              ? `${selectedCategories.length} Selected`
-              : "Select Dish Categories"}
-          </Button>
+            {/* Open Dialog Button */}
+            <Button mode="outlined" onPress={() => setDialogVisible(true)}>
+              {selectedCategories.length > 0
+                ? `${selectedCategories.length} Selected`
+                : "Select Dish Categories"}
+            </Button>
 
-          {/* Selected Categories List */}
-          <View style={{ marginTop: 10 }}>
-            {selectedCategories.map((categoryId) => {
-              const category = dishCategories.find(
-                (cat) => cat.id === categoryId
-              );
-              return category ? (
-                <Text key={categoryId} style={{ marginVertical: 2 }}>
-                  ✅ {category.name}
-                </Text>
-              ) : null;
-            })}
-          </View>
-        </ScrollView>
+            {/* Selected Categories List */}
+            <Surface style={{ marginTop: 10 }}>
+              {selectedCategories.map((categoryId) => {
+                const category = dishCategories.find(
+                  (cat) => cat.id === categoryId
+                );
+                return category ? (
+                  <Text key={categoryId} style={{ marginVertical: 2 }}>
+                    ✅ {category.name}
+                  </Text>
+                ) : null;
+              })}
+            </Surface>
+          </ScrollView>
+        </Surface>
 
         {/* Dialog for selecting multiple categories */}
         <Portal>
@@ -162,20 +166,15 @@ export default function CreateTablePositionPage() {
         {loading ? (
           <ActivityIndicator size="large" />
         ) : (
-          <>
-            <Button
-              mode="contained"
-              onPress={handleCreateTable}
-              style={{ marginTop: 20 }}
-            >
-              Create Table Position
-            </Button>
-            <Button mode="outlined" onPress={goBack} style={{ marginTop: 10 }}>
-              Cancel
-            </Button>
-          </>
+          <Button
+            mode="contained-tonal"
+            onPress={handleCreateTablePosition}
+            style={{ marginTop: 20, width: 200, alignSelf: "center" }}
+          >
+            Create Table Position
+          </Button>
         )}
-      </SafeAreaView>
+      </Surface>
     </>
   );
 }

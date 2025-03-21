@@ -1,16 +1,20 @@
-import React, { useLayoutEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
-import { ActivityIndicator } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Button,
+  Surface,
+  Text,
+  TextInput,
+} from "react-native-paper";
 import { useSelector } from "react-redux";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { RootState } from "../../../../../../../stores/store";
-import { styles } from "../../../../../../_layout";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { updateDishCategoryRequest } from "../../../../../../../api/api.service";
+import { AppBar } from "../../../../../../../components/AppBar";
 
 export default function UpdateDishCategoryPage() {
   const { shopId } = useLocalSearchParams();
@@ -35,30 +39,22 @@ export default function UpdateDishCategoryPage() {
 
   if (!dishCategory) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Dish Category not found</Text>
-        <TouchableOpacity style={styles.backButton} onPress={goBack}>
-          <Text style={styles.backButtonText}>Go Back</Text>
-        </TouchableOpacity>
+      <SafeAreaView>
+        <Text>Dish Category not found</Text>
+        <Button onPress={goBack}>Go Back</Button>
       </SafeAreaView>
     );
   }
 
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState(dishCategory.name);
-  const navigation = useNavigation();
+  const [name, setName] = useState("");
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
+  // when select different category
+  useEffect(() => {
+    setName(dishCategory.name);
+  }, [dishCategory]);
 
-  const handleCreateShop = async () => {
+  const handleUpdateDishCategory = async () => {
     if (!name.trim()) {
       Toast.show({
         type: "error",
@@ -89,39 +85,31 @@ export default function UpdateDishCategoryPage() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Updare a Dish Category</Text>
+    <>
+      <AppBar title="Update Dish Category" goBack={goBack} />
+      <Surface style={{ flex: 1 }}>
+        <Surface style={{ flex: 1, padding: 16 }}>
+          <TextInput
+            placeholder="Dish Category Name"
+            value={name}
+            onChangeText={setName}
+          />
+        </Surface>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Dish Category Name"
-        value={name}
-        onChangeText={setName}
-      />
-
-      {loading ? (
-        <ActivityIndicator
-          animating={true}
-          size="large"
-          style={styles.loader}
-        />
-      ) : (
-        <>
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={handleCreateShop}
-          >
-            <Text style={styles.createButtonText}>Update Dish Category</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => goBack()}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </>
-      )}
-    </View>
+        {loading ? (
+          <ActivityIndicator animating={true} size="large" />
+        ) : (
+          <>
+            <Button
+              mode="contained-tonal"
+              style={{ width: 200, alignSelf: "center", marginBottom: 16 }}
+              onPress={handleUpdateDishCategory}
+            >
+              Update Dish Category
+            </Button>
+          </>
+        )}
+      </Surface>
+    </>
   );
 }

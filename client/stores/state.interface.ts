@@ -26,12 +26,14 @@ export interface Shop {
 export interface Table {
   id: string;
   name: string;
-  position: string;
+  position: TablePosition;
 }
 
 export interface TablePosition {
   id: string;
   name: string;
+  shop: string;
+  dishCategories: string[];
 }
 
 export interface Employee {

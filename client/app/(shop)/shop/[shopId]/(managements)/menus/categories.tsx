@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import { StyleSheet, ScrollView } from "react-native";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
-import { ActivityIndicator, Button, Surface } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Button,
+  List,
+  Surface,
+  useTheme,
+} from "react-native-paper";
 import _ from "lodash";
 import { RootState } from "../../../../../../stores/store";
 import { Shop } from "../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../components/AppBar";
+import { getDishCategoriesRequest } from "../../../../../../api/api.service";
 
 export default function CategoriesManagementPage() {
   const { shopId } = useLocalSearchParams();
@@ -27,14 +27,15 @@ export default function CategoriesManagementPage() {
   );
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchDishCategories = async () => {
       try {
         setLoading(true);
-        // await getTablePositions({
-        //   shopId: shop.id,
-        // });
+        await getDishCategoriesRequest({
+          shopId: shop.id,
+        });
       } catch (error) {
         console.error("Error fetching dishCategories:", error);
       } finally {
@@ -61,12 +62,12 @@ export default function CategoriesManagementPage() {
     <>
       <AppBar title="Dish Categories" goBack={goBack} />
       <Surface style={{ flex: 1 }}>
-        <ScrollView style={{ flex: 1 }}>
-          <FlatList
-            data={dishCategories}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
+        <ScrollView>
+          {/* List of Table Positions */}
+          <List.Section>
+            {dishCategories.map((item) => (
               <Link
+                key={item.id}
                 href={{
                   pathname:
                     "/shop/[shopId]/menus/update-dish-category/[dishCategoryId]",
@@ -74,12 +75,18 @@ export default function CategoriesManagementPage() {
                 }}
                 asChild
               >
-                <TouchableOpacity>
-                  <Text>{item.name}</Text>
-                </TouchableOpacity>
+                <List.Item
+                  title={item.name}
+                  style={{
+                    backgroundColor: theme.colors.backdrop,
+                    borderRadius: 8,
+                    marginBottom: 8,
+                  }}
+                  left={(props) => <List.Icon {...props} icon="table" />}
+                />
               </Link>
-            )}
-          />
+            ))}
+          </List.Section>
         </ScrollView>
 
         {/* Create Table Position Button */}

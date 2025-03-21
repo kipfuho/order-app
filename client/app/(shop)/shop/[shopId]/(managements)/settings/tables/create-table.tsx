@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Button,
   Menu,
+  Surface,
   Text,
   TextInput,
   useTheme,
@@ -75,73 +76,73 @@ export default function CreateTablePage() {
   return (
     <>
       <AppBar title="Create Table" goBack={goBack} />
-      <SafeAreaView
+      <Surface
         style={{
           flex: 1,
-          backgroundColor: theme.colors.background,
-          padding: 16,
         }}
       >
-        <ScrollView>
-          {/* Table Name Input */}
-          <TextInput
-            label="Table Name"
-            mode="outlined"
-            placeholder="Enter table name"
-            value={name}
-            onChangeText={setName}
-            style={{ marginBottom: 20 }}
-          />
+        <Surface
+          style={{
+            flex: 1,
+            padding: 16,
+          }}
+        >
+          <ScrollView>
+            {/* Table Name Input */}
+            <TextInput
+              label="Table Name"
+              mode="outlined"
+              placeholder="Enter table name"
+              value={name}
+              onChangeText={setName}
+              style={{ marginBottom: 20 }}
+            />
 
-          {/* Table Position Dropdown Label */}
-          <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
-            Select Table Position
-          </Text>
-          {/* Table Position Dropdown */}
-          <Menu
-            visible={menuVisible}
-            onDismiss={closeMenu}
-            anchor={
-              <Button
-                mode="outlined"
-                onPress={openMenu}
-                style={{ marginBottom: 20 }}
-              >
-                {tablePosition?.name || "Select Table Position"}
-              </Button>
-            }
-          >
-            {tablePositions.map((position) => (
-              <Menu.Item
-                key={position.id}
-                onPress={() => {
-                  setTablePosition(position);
-                  closeMenu();
-                }}
-                title={position.name}
-              />
-            ))}
-          </Menu>
-        </ScrollView>
+            {/* Table Position Dropdown Label */}
+            <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
+              Select Table Position
+            </Text>
+            {/* Table Position Dropdown */}
+            <Menu
+              visible={menuVisible}
+              onDismiss={closeMenu}
+              anchor={
+                <Button
+                  mode="outlined"
+                  onPress={openMenu}
+                  style={{ marginBottom: 20 }}
+                >
+                  {tablePosition?.name || "Select Table Position"}
+                </Button>
+              }
+            >
+              {tablePositions.map((position) => (
+                <Menu.Item
+                  key={position.id}
+                  onPress={() => {
+                    setTablePosition(position);
+                    closeMenu();
+                  }}
+                  title={position.name}
+                />
+              ))}
+            </Menu>
+          </ScrollView>
+        </Surface>
 
         {/* Loading or Action Buttons */}
         {loading ? (
           <ActivityIndicator size="large" />
         ) : (
-          <>
-            <Button
-              mode="contained"
-              onPress={handleCreateTable}
-              style={{ marginBottom: 10 }}
-            >
-              Create Table
-            </Button>
-            <Button mode="outlined" onPress={goBack}>
-              Cancel
-            </Button>
-          </>
+          <Button
+            mode="contained"
+            onPress={handleCreateTable}
+            style={{ marginBottom: 10, alignSelf: "center", width: 200 }}
+          >
+            Create Table
+          </Button>
         )}
-      </SafeAreaView>
+      </Surface>
     </>
   );
 }

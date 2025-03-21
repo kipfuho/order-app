@@ -1,6 +1,6 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useState } from "react";
 import { StyleSheet, ScrollView } from "react-native";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
 import {
@@ -11,28 +11,30 @@ import {
 import {
   Button,
   TextInput,
-  useTheme,
   ActivityIndicator,
   Surface,
+  Switch,
+  Text,
 } from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 import { Collapsible } from "../../../../../../components/Collapsible";
 import { AppBar } from "../../../../../../components/AppBar";
 import { DropdownMenu } from "../../../../../../components/DropdownMenu";
+import { createDishRequest } from "../../../../../../api/api.service";
+import _ from "lodash";
 
 export default function CreateTablePage() {
   const { shopId } = useLocalSearchParams();
-  const theme = useTheme();
+
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
   ) as Shop;
-
   const dishTypes = useSelector((state: RootState) => state.shop.dishTypes);
   const dishCategories = useSelector(
     (state: RootState) => state.shop.dishCategories
   );
   const units = useSelector((state: RootState) => state.shop.units);
+  console.log(units);
 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
@@ -42,49 +44,43 @@ export default function CreateTablePage() {
   const [unit, setUnit] = useState(units[0]);
   const [taxRate, setTaxRate] = useState("");
   const router = useRouter();
-  const navigation = useNavigation();
 
-  const goBack = () =>
+  const [isTaxIncludedPrice, setIsTaxIncludedPrice] = useState(false);
+  const onToggleSwitch = () => setIsTaxIncludedPrice(!isTaxIncludedPrice);
+
+  const goBack = () => {
+    resetField();
     router.navigate({
       pathname: "/shop/[shopId]/menus/dishes",
       params: { shopId: shop.id },
     });
+  };
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <Button
-          mode="text"
-          onPress={goBack}
-          icon={() => (
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color={theme.colors.primary}
-            />
-          )}
-        >
-          Back
-        </Button>
-      ),
-    });
-  }, [navigation]);
+  const resetField = () => {};
 
   const handleCreateDish = async () => {
-    if (!name.trim() || !category) {
+    if (!name.trim() || !category || !dishType || !unit || !price.trim()) {
       Toast.show({
         type: "error",
         text1: "Create Failed",
-        text2: "Please enter name and dish category",
+        text2:
+          "Please enter name and category and dish type and unit and price",
       });
       return;
     }
     try {
       setLoading(true);
-      // TODO: Implement API request to create a dish
+      await createDishRequest({
+        shopId: shop.id,
+        name,
+        category,
+        dishType,
+        price: _.toNumber(price),
+        unit,
+        taxRate: _.toNumber(taxRate),
+        isTaxIncludedPrice,
+      });
       goBack();
-      setName("");
-      setCategory(dishCategories[0]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -95,16 +91,17 @@ export default function CreateTablePage() {
   return (
     <>
       <AppBar title="Create Dish" goBack={goBack} />
-      <Surface style={[styles.container]}>
-        <ScrollView style={{ flex: 1 }}>
+      <Surface style={{ flex: 1 }}>
+        <ScrollView style={{ flex: 1, padding: 16 }}>
           {/* General Information Collapsible */}
           <Collapsible title="General Information">
             <TextInput
-              mode="outlined"
               label="Dish Name"
+              mode="outlined"
+              placeholder="Enter dish name"
               value={name}
               onChangeText={setName}
-              style={styles.input}
+              style={{ marginBottom: 20 }}
             />
 
             <DropdownMenu
@@ -127,13 +124,27 @@ export default function CreateTablePage() {
           {/* Price Collapsible */}
           <Collapsible title="Price Information">
             <TextInput
-              mode="outlined"
               label="Price"
+              mode="outlined"
+              placeholder="Enter price"
               value={price}
-              style={styles.input}
-              keyboardType="numeric" // Shows numeric keyboard
               onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
+              keyboardType="numeric" // Shows numeric keyboard
+              style={{ marginBottom: 10 }}
             />
+            <Surface
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 20,
+              }}
+            >
+              <Text style={{ marginRight: 16 }}>Price include tax</Text>
+              <Switch
+                value={isTaxIncludedPrice}
+                onValueChange={onToggleSwitch}
+              />
+            </Surface>
             <DropdownMenu
               item={unit}
               items={units}
@@ -144,25 +155,21 @@ export default function CreateTablePage() {
             <TextInput
               mode="outlined"
               label="Tax Rate"
+              placeholder="Enter tax rate"
               value={taxRate}
-              style={styles.input}
               keyboardType="numeric" // Shows numeric keyboard
               onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
             />
           </Collapsible>
         </ScrollView>
         {loading ? (
-          <ActivityIndicator
-            animating={true}
-            size="large"
-            style={styles.loader}
-          />
+          <ActivityIndicator animating={true} size="large" />
         ) : (
           <>
             <Button
-              mode="contained"
+              mode="contained-tonal"
               onPress={handleCreateDish}
-              style={styles.createButton}
+              style={{ width: 200, alignSelf: "center", marginBottom: 20 }}
             >
               Create Dish
             </Button>
@@ -172,26 +179,3 @@ export default function CreateTablePage() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    justifyContent: "center",
-  },
-  input: {
-    marginBottom: 16,
-  },
-  createButton: {
-    marginTop: 16,
-    width: 200,
-    alignSelf: "center",
-  },
-  cancelButton: {
-    marginTop: 8,
-  },
-  loader: {
-    marginVertical: 16,
-  },
-});

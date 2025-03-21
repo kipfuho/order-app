@@ -13,9 +13,11 @@ import { auth } from "../generated/auth";
 import {
   updateAllDishCategories,
   updateAllDishes,
+  updateAllDisheTypes,
   updateAllShops,
   updateAllTablePositions,
   updateAllTables,
+  updateAllUnits,
 } from "../stores/userSlice";
 import { Dispatch } from "redux";
 import { getAccessToken } from "./utils.service";
@@ -301,11 +303,11 @@ export const createTablePositionRequest = async ({
   const accessToken = await getAccessToken();
   const body: {
     name: string;
-    categories?: string[];
+    dishCategories?: string[];
   } = { name };
 
   if (categories) {
-    body.categories = _.map(categories, "id");
+    body.dishCategories = _.map(categories, "id");
   }
 
   const result: { tablePosition: TablePosition } = await apiRequest({
@@ -333,16 +335,16 @@ export const updateTablePositionRequest = async ({
   tablePositionId: string;
   shopId: string;
   name: string;
-  categories: DishCategory[];
+  categories: string[];
 }) => {
   const accessToken = await getAccessToken();
   const body: {
     name: string;
-    categories?: DishCategory[];
+    dishCategories?: string[];
   } = { name };
 
   if (categories) {
-    body.categories = categories;
+    body.dishCategories = categories;
   }
 
   const result: { tablePosition: TablePosition } = await apiRequest({
@@ -476,6 +478,22 @@ export const createDishCategoryRequest = async ({
   );
 };
 
+export const getDishCategoriesRequest = async ({
+  shopId,
+}: {
+  shopId: string;
+}) => {
+  const accessToken = await getAccessToken();
+
+  const result: { dishCategories: DishCategory[] } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/dishCategories`,
+    token: accessToken,
+  });
+
+  store.dispatch(updateAllDishCategories(result.dishCategories));
+};
+
 export const updateDishCategoryRequest = async ({
   dishCategoryId,
   shopId,
@@ -529,7 +547,7 @@ export const createDishRequest = async ({
   const body: {
     name: string;
     category: string;
-    dishType: string;
+    type: string;
     price: number;
     taxRate: number;
     unit: string;
@@ -537,7 +555,7 @@ export const createDishRequest = async ({
   } = {
     name,
     category: category.id,
-    dishType,
+    type: dishType,
     price,
     taxRate,
     unit: unit.id,
@@ -580,7 +598,7 @@ export const updateDishRequest = async ({
   const body: {
     name: string;
     category: string;
-    dishType: string;
+    type: string;
     price: number;
     taxRate: number;
     unit: string;
@@ -588,7 +606,7 @@ export const updateDishRequest = async ({
   } = {
     name,
     category: category.id,
-    dishType,
+    type: dishType,
     price,
     taxRate,
     unit: unit.id,
@@ -609,4 +627,43 @@ export const updateDishRequest = async ({
       result.dish,
     ])
   );
+};
+
+export const getDishTypesRequest = async ({ shopId }: { shopId: string }) => {
+  const accessToken = await getAccessToken();
+
+  const result: { dishTypes: string[] } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/dishes/dishTypes`,
+    token: accessToken,
+  });
+
+  store.dispatch(updateAllDisheTypes(result.dishTypes));
+};
+
+export const getUnitsRequest = async ({ shopId }: { shopId: string }) => {
+  const accessToken = await getAccessToken();
+  store;
+  const result: { units: Unit[] } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/units/`,
+    token: accessToken,
+  });
+
+  store.dispatch(updateAllUnits(result.units));
+};
+
+export const createDefaultUnitsRequest = async ({
+  shopId,
+}: {
+  shopId: string;
+}) => {
+  const accessToken = await getAccessToken();
+  const result: { units: Unit[] } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/units/create-default`,
+    token: accessToken,
+  });
+
+  store.dispatch(updateAllUnits(result.units));
 };

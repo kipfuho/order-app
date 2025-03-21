@@ -1,43 +1,37 @@
-import React, { useLayoutEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import {
-  Link,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from "expo-router";
+import React, { useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
-import { ActivityIndicator } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Button,
+  Checkbox,
+  Dialog,
+  Portal,
+  Surface,
+  Text,
+  TextInput,
+} from "react-native-paper";
 import { useSelector } from "react-redux";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { RootState } from "../../../../../../../../stores/store";
-import { styles } from "../../../../../../../_layout";
 import { updateTablePositionRequest } from "../../../../../../../../api/api.service";
+import { Shop } from "../../../../../../../../stores/state.interface";
+import { AppBar } from "../../../../../../../../components/AppBar";
+import { ScrollView } from "react-native";
 
 export default function UpdateTablePositionPage() {
   const { shopId } = useLocalSearchParams();
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)
-  );
-
-  if (!shop) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Shop not found</Text>
-        <Link href="/" asChild>
-          <TouchableOpacity style={styles.backButton}>
-            <Text style={styles.backButtonText}>Go Back</Text>
-          </TouchableOpacity>
-        </Link>
-      </SafeAreaView>
-    );
-  }
+  ) as Shop;
 
   const { tablePositionId } = useLocalSearchParams();
   const tablePosition = useSelector((state: RootState) =>
     state.shop.tablePositions.find((tp) => tp.id === tablePositionId)
+  );
+
+  const dishCategories = useSelector(
+    (state: RootState) => state.shop.dishCategories
   );
 
   const router = useRouter();
@@ -52,29 +46,19 @@ export default function UpdateTablePositionPage() {
 
   if (!tablePosition) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Table position not found</Text>
-        <TouchableOpacity style={styles.backButton} onPress={goBack}>
-          <Text style={styles.backButtonText}>Go Back</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
+      <Surface style={{ flex: 1 }}>
+        <Text>Table position not found</Text>
+        <Button onPress={goBack}>
+          <Text>Go Back</Text>
+        </Button>
+      </Surface>
     );
   }
 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState(tablePosition.name);
-  const [categories, setCategories] = useState([]);
-  const navigation = useNavigation();
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   const handleCreateShop = async () => {
     if (!name.trim()) {
@@ -92,7 +76,7 @@ export default function UpdateTablePositionPage() {
         tablePositionId: tablePosition.id,
         shopId: shop.id,
         name,
-        categories,
+        categories: selectedCategories,
       });
 
       // Navigate back to table position list
@@ -100,7 +84,7 @@ export default function UpdateTablePositionPage() {
 
       // Clear input fields
       setName("");
-      setCategories([]);
+      setSelectedCategories([]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -108,40 +92,102 @@ export default function UpdateTablePositionPage() {
     }
   };
 
+  useEffect(() => {
+    setName(tablePosition.name);
+    setSelectedCategories(tablePosition.dishCategories);
+  }, [tablePosition]);
+
+  const toggleCategorySelection = (categoryId: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Updare a Table position</Text>
+    <>
+      <AppBar title="Update Table Position" goBack={goBack} />
+      <Surface style={{ flex: 1 }}>
+        <Surface style={{ flex: 1, padding: 16 }}>
+          <TextInput
+            label="Table Position Name"
+            mode="outlined"
+            placeholder="Enter table position name"
+            value={name}
+            onChangeText={setName}
+            style={{ marginBottom: 20 }}
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Table position Name"
-        value={name}
-        onChangeText={setName}
-      />
+          {/* Table Position Selection Label */}
+          <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
+            Select Table Categories
+          </Text>
 
-      {loading ? (
-        <ActivityIndicator
-          animating={true}
-          size="large"
-          style={styles.loader}
-        />
-      ) : (
-        <>
-          <TouchableOpacity
-            style={styles.createButton}
+          {/* Open Dialog Button */}
+          <Button mode="outlined" onPress={() => setDialogVisible(true)}>
+            {selectedCategories.length > 0
+              ? `${selectedCategories.length} Selected`
+              : "Select Dish Categories"}
+          </Button>
+
+          {/* Selected Categories List */}
+          <Surface style={{ marginTop: 10 }}>
+            {selectedCategories.map((categoryId) => {
+              console.log(categoryId);
+              const category = dishCategories.find(
+                (cat) => cat.id === categoryId
+              );
+              return category ? (
+                <Text key={categoryId} style={{ marginVertical: 2 }}>
+                  ✅ {category.name}
+                </Text>
+              ) : null;
+            })}
+          </Surface>
+        </Surface>
+
+        {/* Dialog for selecting multiple categories */}
+        <Portal>
+          <Dialog
+            visible={dialogVisible}
+            onDismiss={() => setDialogVisible(false)}
+          >
+            <Dialog.Title>Select Dish Categories</Dialog.Title>
+            <Dialog.ScrollArea>
+              <ScrollView>
+                {dishCategories.map((category) => (
+                  <Checkbox.Item
+                    key={category.id}
+                    label={category.name}
+                    status={
+                      selectedCategories.includes(category.id)
+                        ? "checked"
+                        : "unchecked"
+                    }
+                    onPress={() => toggleCategorySelection(category.id)}
+                  />
+                ))}
+              </ScrollView>
+            </Dialog.ScrollArea>
+            <Dialog.Actions>
+              <Button onPress={() => setDialogVisible(false)}>Done</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
+
+        {loading ? (
+          <ActivityIndicator animating={true} size="large" />
+        ) : (
+          <Button
+            mode="contained-tonal"
+            style={{ alignSelf: "center", width: 200, marginBottom: 16 }}
             onPress={handleCreateShop}
           >
-            <Text style={styles.createButtonText}>Update Table position</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => goBack()}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </>
-      )}
-    </View>
+            Update Table Position
+          </Button>
+        )}
+      </Surface>
+    </>
   );
 }
