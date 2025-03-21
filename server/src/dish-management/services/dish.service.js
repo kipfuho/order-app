@@ -2,6 +2,7 @@ const _ = require('lodash');
 const { Dish } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getDishFromCache, getDishesFromCache } = require('../../metadata/dishMetadata.service');
+const { DishTypes } = require('../../utils/constant');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -42,10 +43,15 @@ const deleteDish = async (dishId) => {
   await Dish.deleteOne({ _id: dishId });
 };
 
+const getDishTypes = (shopId) => {
+  return Object.values(DishTypes);
+};
+
 module.exports = {
   getDish,
   createDish,
   updateDish,
   deleteDish,
   getDishes,
+  getDishTypes,
 };

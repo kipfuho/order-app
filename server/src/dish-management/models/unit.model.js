@@ -25,7 +25,7 @@ const unitSchema = mongoose.Schema(
 );
 
 const defaultUnitList = {
-  VietNam: [
+  'Việt Nam': [
     { unitName: 'Ấm', unitCode: 'am' },
     { unitName: 'Bánh', unitCode: 'banh' },
     { unitName: 'Bao', unitCode: 'bao' },
@@ -170,7 +170,7 @@ unitSchema.statics.createDefaultUnits = async function (shopId) {
   const units = defaultUnitList[shopCountry];
   const bulkOps = _.map(units, (unit) => ({
     updateOne: {
-      filter: { shopId },
+      filter: { shop: shopId, code: unit.unitCode },
       update: { $set: { name: unit.unitName, code: unit.unitCode } },
       upsert: true,
     },

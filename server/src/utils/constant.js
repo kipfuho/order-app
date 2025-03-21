@@ -101,6 +101,11 @@ const CashierDepartmentPermissions = [
   PermissionType.CANCEL_ORDER_PAID_STATUS,
 ];
 
+const DishTypes = {
+  FOOD: 'FOOD',
+  DRINK: 'DRINK',
+};
+
 module.exports = {
   SESSION_NAME_SPACE,
   Language,
@@ -115,4 +120,5 @@ module.exports = {
   PermissionType,
   TableDepartmentPermissions,
   CashierDepartmentPermissions,
+  DishTypes,
 };
