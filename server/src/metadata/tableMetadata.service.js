@@ -84,7 +84,7 @@ const getTablePositionFromCache = async ({ shopId, tablePositionId }) => {
     }
   }
 
-  const tablePostion = await TablePosition.findOne({ _id: tablePositionId, shop: shopId }).populate('category');
+  const tablePostion = await TablePosition.findOne({ _id: tablePositionId, shop: shopId });
   return tablePostion.toJSON();
 };
 
@@ -102,18 +102,14 @@ const getTablePositionsFromCache = async ({ shopId }) => {
       return tablePostions;
     }
 
-    const tablePostionModels = await TablePosition.find({ shop: shopId, status: constant.Status.enabled })
-      .populate('dishCategories')
-      .populate('tables');
+    const tablePostionModels = await TablePosition.find({ shop: shopId, status: constant.Status.enabled });
     const tablePostionJsons = _.map(tablePostionModels, (tablePostion) => tablePostion.toJSON());
     redisClient.putJson({ key, jsonVal: tablePostionJsons });
     setSession({ key, value: tablePostionJsons });
     return tablePostionJsons;
   }
 
-  const tablePostions = await TablePosition.find({ shop: shopId, status: constant.Status.enabled })
-    .populate('dishCategories')
-    .populate('tables');
+  const tablePostions = await TablePosition.find({ shop: shopId, status: constant.Status.enabled });
   const tablePostionJsons = _.map(tablePostions, (tablePostion) => tablePostion.toJSON());
   setSession({ key, value: tablePostionJsons });
   return tablePostionJsons;

@@ -12,7 +12,7 @@ const getDishCategory = catchAsync(async (req, res) => {
 
 const getDishCategories = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const dishCategories = await dishCategoryService.getDishCategory({ shopId });
+  const dishCategories = await dishCategoryService.getDishCategories({ shopId });
   res.status(httpStatus.OK).send({ dishCategories });
 });
 
