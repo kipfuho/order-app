@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
@@ -7,6 +7,7 @@ import { DishCard } from "../../../../../../components/ui/menus/DishCard";
 import { AppBar } from "../../../../../../components/AppBar";
 import { useTheme, Button, Text, Surface } from "react-native-paper";
 import { ScrollView, StyleSheet, View } from "react-native";
+import { getDishesRequest } from "../../../../../../api/api.service";
 
 export default function DishesManagementPage() {
   const { shopId } = useLocalSearchParams();
@@ -24,10 +25,10 @@ export default function DishesManagementPage() {
   // Group dishes by category
   const groupByCategory = (dishes: Dish[]): Record<string, Dish[]> => {
     return dishes.reduce<Record<string, Dish[]>>((acc, dish) => {
-      if (!acc[dish.category]) {
-        acc[dish.category] = [];
+      if (!acc[dish.category?.name]) {
+        acc[dish.category?.name] = [];
       }
-      acc[dish.category].push(dish);
+      acc[dish.category?.name].push(dish);
       return acc;
     }, {});
   };
@@ -56,6 +57,16 @@ export default function DishesManagementPage() {
       params: { shopId: shop.id },
     });
 
+  useEffect(() => {
+    const fetchDishes = async () => {
+      await getDishesRequest({
+        shopId: shop.id,
+      });
+    };
+
+    fetchDishes();
+  }, [shopId]);
+
   return (
     <>
       <AppBar title="Dishes" goBack={goBack} />
@@ -72,7 +83,10 @@ export default function DishesManagementPage() {
                   mode="contained-tonal"
                   onPress={() => scrollToCategory(category)}
                   style={styles.categoryButton}
-                  labelStyle={{ color: theme.colors.onSurface }}
+                  labelStyle={{
+                    color: theme.colors.onSurface,
+                    marginHorizontal: 0,
+                  }}
                 >
                   {category}
                 </Button>
@@ -92,9 +106,17 @@ export default function DishesManagementPage() {
                   <Text variant="titleMedium" style={styles.categoryTitle}>
                     {category}
                   </Text>
-                  {groupedDishes[category].map((dish) => (
-                    <DishCard key={dish.id} dish={dish} />
-                  ))}
+                  <Surface
+                    style={{
+                      flexDirection: "row",
+                      flexWrap: "wrap",
+                      boxShadow: "0 0 0",
+                    }}
+                  >
+                    {groupedDishes[category].map((dish) => (
+                      <DishCard key={dish.id} dish={dish} />
+                    ))}
+                  </Surface>
                 </View>
               ))}
             </ScrollView>
@@ -137,7 +159,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   categoryContainer: {
-    marginBottom: 24,
+    marginBottom: 12,
   },
   categoryTitle: {
     marginBottom: 8,

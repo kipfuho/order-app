@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { View, StyleSheet } from "react-native";
-import { TextInput, Button, Text, ActivityIndicator } from "react-native-paper";
+import React, { useState } from "react";
+import {
+  TextInput,
+  Button,
+  Text,
+  ActivityIndicator,
+  Surface,
+} from "react-native-paper";
 import { loginRequest } from "../../api/api.service";
 import Toast from "react-native-toast-message";
 import { router } from "expo-router";
-import { useDispatch } from "react-redux";
-import { styles } from "../_layout";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("ctcakip@gmail.com");
   const [password, setPassword] = useState("1234567q");
   const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch();
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -25,7 +27,7 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      const result = await loginRequest({ email, password, dispatch });
+      const result = await loginRequest({ email, password });
       // go home page
       if (result) {
         router.replace("/");
@@ -42,42 +44,31 @@ const LoginScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text variant="headlineLarge" style={styles.title}>
-        Login
-      </Text>
+    <Surface style={{ flex: 1 }}>
+      <Text variant="headlineLarge">Login</Text>
       <TextInput
         label="Email"
         value={email}
+        mode="outlined"
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
-        style={styles.input}
       />
       <TextInput
         label="Password"
         value={password}
+        mode="outlined"
         onChangeText={setPassword}
         secureTextEntry
-        style={styles.input}
       />
       {loading ? (
-        <ActivityIndicator
-          animating={true}
-          size="large"
-          style={styles.loader}
-        />
+        <ActivityIndicator animating={true} size="large" />
       ) : (
-        <Button
-          mode="contained"
-          onPress={handleLogin}
-          style={styles.button}
-          disabled={loading}
-        >
+        <Button mode="contained-tonal" onPress={handleLogin} disabled={loading}>
           Login
         </Button>
       )}
-    </View>
+    </Surface>
   );
 };
 

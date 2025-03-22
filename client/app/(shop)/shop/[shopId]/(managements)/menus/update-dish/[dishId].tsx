@@ -93,6 +93,17 @@ export default function UpdateDishPage() {
     }
   };
 
+  if (!dish) {
+    return (
+      <Surface style={{ flex: 1 }}>
+        <Text>Dish not found</Text>
+        <Button onPress={goBack}>
+          <Text>Go Back</Text>
+        </Button>
+      </Surface>
+    );
+  }
+
   return (
     <>
       <AppBar title="Update Dish" goBack={goBack} />

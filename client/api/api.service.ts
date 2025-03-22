@@ -19,7 +19,6 @@ import {
   updateAllTables,
   updateAllUnits,
 } from "../stores/userSlice";
-import { Dispatch } from "redux";
 import { getAccessToken } from "./utils.service";
 import { signIn } from "../stores/authSlice";
 import store from "../stores/store";
@@ -121,11 +120,9 @@ export const loginRequestProtobuf = async (email: string, password: string) => {
 export const loginRequest = async ({
   email,
   password,
-  dispatch,
 }: {
   email: string;
   password: string;
-  dispatch: Dispatch;
 }): Promise<boolean> => {
   const {
     user,
@@ -142,7 +139,7 @@ export const loginRequest = async ({
     },
   });
 
-  dispatch(signIn({ ...user, tokens }));
+  store.dispatch(signIn({ ...user, tokens }));
   return true;
 };
 
@@ -204,14 +201,12 @@ export const queryShopsRequest = async ({
   sortBy = "createdAt",
   page = 1,
   limit = 10,
-  dispatch,
 }: {
   user: User | null;
   searchName?: string;
   sortBy?: string;
   page: number;
   limit: number;
-  dispatch: Dispatch;
 }) => {
   if (!user) return [];
   const accessToken = await getAccessToken();
@@ -236,7 +231,7 @@ export const queryShopsRequest = async ({
     token: accessToken,
   });
 
-  dispatch(updateAllShops(shops.results));
+  store.dispatch(updateAllShops(shops.results));
 };
 
 export const updateShopRequest = async ({
@@ -492,6 +487,18 @@ export const getDishCategoriesRequest = async ({
   });
 
   store.dispatch(updateAllDishCategories(result.dishCategories));
+};
+
+export const getDishesRequest = async ({ shopId }: { shopId: string }) => {
+  const accessToken = await getAccessToken();
+
+  const result: { dishes: Dish[] } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/dishes`,
+    token: accessToken,
+  });
+
+  store.dispatch(updateAllDishes(result.dishes));
 };
 
 export const updateDishCategoryRequest = async ({

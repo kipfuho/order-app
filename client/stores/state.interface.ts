@@ -50,12 +50,18 @@ export interface Department {
 export interface Unit {
   id: string;
   name: string;
+  code: string;
 }
 
 export interface Dish {
   id: string;
   name: string;
-  category: string;
+  category: DishCategory;
+  unit: Unit;
+  price: number;
+  isTaxIncludedPrice: boolean;
+  type: string;
+  taxRate: number;
 }
 
 export interface DishCategory {

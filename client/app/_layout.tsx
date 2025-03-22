@@ -28,6 +28,7 @@ export default function RootLayout() {
         <PaperProvider theme={theme}>
           <Stack>
             <Stack.Screen name="(shop)" options={{ headerShown: false }} />
+            <Stack.Screen name="login" options={{ headerShown: false }} />
             <Stack.Screen
               name="(shop)/shop/[shopId]"
               options={{ headerShown: false }}

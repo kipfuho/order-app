@@ -1,12 +1,12 @@
-import { Text } from "react-native";
 import { Redirect, Stack } from "expo-router";
 import { useSession } from "../../hooks/useSession";
+import { ActivityIndicator } from "react-native-paper";
 
 export default function AppLayout() {
   const { session, isLoading } = useSession();
 
   if (isLoading) {
-    return <Text>Loading...</Text>;
+    return <ActivityIndicator size="large" />;
   }
 
   if (session) {

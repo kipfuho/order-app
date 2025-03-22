@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import _ from "lodash";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Cart, Customer, MenuItem } from "./state.interface";
 import { PURGE } from "redux-persist";
 
