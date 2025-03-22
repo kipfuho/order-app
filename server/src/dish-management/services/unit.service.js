@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const { Unit } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getUnitFromCache, getUnitsFromCache } = require('../../metadata/unitMetadata.service');
@@ -10,10 +9,12 @@ const getUnit = async ({ shopId, unitId }) => {
 };
 
 const getUnits = async ({ shopId }) => {
-  return getUnitsFromCache({ shopId });
+  const units = await getUnitsFromCache({ shopId });
+  return units;
 };
 
 const createUnit = async ({ shopId, createBody }) => {
+  // eslint-disable-next-line no-param-reassign
   createBody.shop = shopId;
   const unit = await Unit.create(createBody);
   return unit;
@@ -26,6 +27,7 @@ const createDefaultUnits = async ({ shopId }) => {
 };
 
 const updateUnit = async ({ shopId, unitId, updateBody }) => {
+  // eslint-disable-next-line no-param-reassign
   updateBody.shop = shopId;
   const unit = await Unit.findByIdAndUpdate({ unitId, shop: shopId }, { $set: updateBody }, { new: true });
   throwBadRequest(!unit, 'Không tìm thấy đơn vị');

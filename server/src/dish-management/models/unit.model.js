@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 const { toJSON } = require('../../utils/plugins');
 const { Status, Countries } = require('../../utils/constant');
 const { getShopCountry } = require('../../middlewares/clsHooked');
+const { getStringId } = require('../../utils/common');
+const { deleteUnitCache } = require('../../metadata/common');
+const logger = require('../../config/logger');
 
 const unitSchema = mongoose.Schema(
   {
@@ -177,6 +180,33 @@ unitSchema.statics.createDefaultUnits = async function (shopId) {
   }));
   return this.bulkWrite(bulkOps);
 };
+
+unitSchema.post('save', async function (doc) {
+  try {
+    const shopId = getStringId({ object: doc, key: 'shop' });
+    await deleteUnitCache({ shopId });
+  } catch (err) {
+    logger.error(`error running post hook save of unit model`);
+  }
+});
+
+unitSchema.post(new RegExp('.*update.*', 'i'), async function () {
+  try {
+    const filter = this.getFilter();
+    let shopId = _.get(filter, 'shop');
+    const unitId = _.get(filter, '_id');
+    if (!shopId) {
+      const unit = await this.model.findById(unitId);
+      shopId = _.get(unit, 'shop');
+    }
+    if (!shopId) {
+      return;
+    }
+    await deleteUnitCache({ shopId });
+  } catch (err) {
+    logger.error(`error running post hook update of unit model`);
+  }
+});
 
 // add plugin that converts mongoose to json
 unitSchema.plugin(toJSON);

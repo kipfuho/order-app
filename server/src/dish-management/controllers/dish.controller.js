@@ -12,8 +12,8 @@ const getDish = catchAsync(async (req, res) => {
 
 const getDishes = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const dish = await dishService.getDishes({ shopId });
-  res.status(httpStatus.OK).send({ dish });
+  const dishes = await dishService.getDishes({ shopId });
+  res.status(httpStatus.OK).send({ dishes });
 });
 
 const createDish = catchAsync(async (req, res) => {

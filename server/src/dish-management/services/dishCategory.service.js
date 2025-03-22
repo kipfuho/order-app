@@ -28,7 +28,7 @@ const createDishCategory = async ({ shopId, createBody }) => {
 const updateDishCategory = async ({ shopId, dishCategoryId, updateBody }) => {
   const dishCategories = await getDishCategoriesFromCache({ shopId });
   throwBadRequest(
-    _.find(dishCategories, (dishCategory) => dishCategory.name === createBody.name && dishCategory.id !== dishCategoryId),
+    _.find(dishCategories, (dishCategory) => dishCategory.name === updateBody.name && dishCategory.id !== dishCategoryId),
     'Danh mục đã tồn tại'
   );
   const dishCategory = await DishCategory.findOneAndUpdate(

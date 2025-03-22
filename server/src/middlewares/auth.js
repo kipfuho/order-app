@@ -69,8 +69,8 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
     }
 
     resolve();
-  } catch (err) {
-    reject(err);
+  } catch (error) {
+    reject(error);
   }
 };
 

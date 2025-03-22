@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const { Dish } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
-const { getDishFromCache, getDishesFromCache } = require('../../metadata/dishMetadata.service');
+const { getDishFromCache, getDishesFromCache, getDishCategoryFromCache } = require('../../metadata/dishMetadata.service');
 const { DishTypes } = require('../../utils/constant');
 
 const getDish = async ({ shopId, dishId }) => {
@@ -11,7 +11,8 @@ const getDish = async ({ shopId, dishId }) => {
 };
 
 const getDishes = async ({ shopId }) => {
-  return getDishesFromCache({ shopId });
+  const dishes = await getDishesFromCache({ shopId });
+  return dishes;
 };
 
 const _validateDish = (dish) => {
@@ -22,12 +23,15 @@ const _validateDish = (dish) => {
   );
   throwBadRequest(price < 0, 'Giá món ăn không được nhỏ hơn 0');
 };
+
 const createDish = async ({ shopId, createBody }) => {
   _validateDish(createBody);
   // eslint-disable-next-line no-param-reassign
   createBody.shop = shopId;
   const dish = await Dish.create(createBody);
-  return dish;
+  const dishJson = dish.toJSON();
+  dishJson.category = await getDishCategoryFromCache({ shopId, categoryId: dish.category });
+  return dishJson;
 };
 
 const updateDish = async ({ shopId, dishId, updateBody }) => {
@@ -43,6 +47,7 @@ const deleteDish = async (dishId) => {
   await Dish.deleteOne({ _id: dishId });
 };
 
+// eslint-disable-next-line no-unused-vars
 const getDishTypes = (shopId) => {
   return Object.values(DishTypes);
 };
