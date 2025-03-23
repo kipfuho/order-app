@@ -73,6 +73,16 @@ const getStringId = ({ object, key }) => {
   return _.toString(value);
 };
 
+const refineFileNameForUploading = (fileName) => {
+  const splits = (fileName || '').split('.');
+  const ext = splits.pop();
+  const baseName = splits.join('.').replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>{}[\]\\/]/gi, '_');
+  if (ext) {
+    return `${baseName}.${ext}`;
+  }
+  return baseName;
+};
+
 module.exports = {
   sleep,
   getStartTimeOfToday,
@@ -81,4 +91,5 @@ module.exports = {
   getRoundDiscountAmount,
   getRoundTaxAmount,
   getStringId,
+  refineFileNameForUploading,
 };

@@ -44,6 +44,16 @@ const getDishTypes = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ dishTypes });
 });
 
+const uploadImage = catchAsync(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No file uploaded');
+  }
+
+  const shopId = _.get(req, 'shop.id');
+  const url = await dishService.uploadImage({ shopId, image: req.file });
+  res.status(httpStatus.OK).send({ url });
+});
+
 module.exports = {
   getDish,
   getDishes,
@@ -51,4 +61,5 @@ module.exports = {
   updateDish,
   deleteDish,
   getDishTypes,
+  uploadImage,
 };

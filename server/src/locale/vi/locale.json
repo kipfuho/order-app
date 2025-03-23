@@ -1,5 +1,7 @@
 {
   "department.table": "Chạy bàn",
   "department.cashier": "Thu ngân",
-  "department.owner": "Chủ nhà hàng"
+  "department.owner": "Chủ nhà hàng",
+  "notImage": "Vui lòng upload ảnh",
+  "fileTooLarge": "Vui lòng upload file nhỏ hơn 5MB"
 }

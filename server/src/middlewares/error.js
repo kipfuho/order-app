@@ -3,10 +3,14 @@ const httpStatus = require('http-status');
 const config = require('../config/config');
 const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
+const { getMessageByLocale } = require('../locale');
 
 const errorConverter = (err, req, res, next) => {
   let error = err;
   if (!(error instanceof ApiError)) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      next(new ApiError(httpStatus.BAD_REQUEST, getMessageByLocale('fileTooLarge'), true, err.stack));
+    }
     const statusCode =
       error.statusCode || error instanceof mongoose.Error ? httpStatus.BAD_REQUEST : httpStatus.INTERNAL_SERVER_ERROR;
     const message = error.message || httpStatus[statusCode];

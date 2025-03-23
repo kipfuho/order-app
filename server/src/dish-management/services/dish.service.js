@@ -1,8 +1,10 @@
 const _ = require('lodash');
+const aws = require('../../utils/aws');
 const { Dish } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getDishFromCache, getDishesFromCache, getDishCategoryFromCache } = require('../../metadata/dishMetadata.service');
 const { DishTypes } = require('../../utils/constant');
+const { refineFileNameForUploading } = require('../../utils/common');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -52,6 +54,16 @@ const getDishTypes = (shopId) => {
   return Object.values(DishTypes);
 };
 
+const uploadImage = async ({ shopId, image }) => {
+  const fileName = `${Date.now()}_${refineFileNameForUploading(image.name)}`;
+  const url = await aws.uploadFileBufferToS3({
+    fileBuffer: image.buffer,
+    targetFilePath: `shops/${shopId}/dishes/${fileName}`,
+    mimeType: image.mimetype,
+  });
+  return url;
+};
+
 module.exports = {
   getDish,
   createDish,
@@ -59,4 +71,5 @@ module.exports = {
   deleteDish,
   getDishes,
   getDishTypes,
+  uploadImage,
 };

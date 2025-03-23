@@ -28,6 +28,10 @@ const envVarsSchema = Joi.object()
     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
     CUSTOMER_APPID: Joi.string().description('appid for customer request'),
     SHOP_APPID: Joi.string().description('appid for shop request'),
+    AWS_REGION: Joi.string().description('aws region'),
+    AWS_ACCESS_KEY_ID: Joi.string().description('aws access key id'),
+    AWS_SECRET_ACCESS_KEY: Joi.string().description('aws secret access key'),
+    AWS_S3_BUCKET_NAME: Joi.string().description('aws s3 bucket name'),
   })
   .unknown();
 
@@ -70,5 +74,11 @@ module.exports = {
   appid: {
     customer: envVars.CUSTOMER_APPID,
     shop: envVars.SHOP_APPID,
+  },
+  aws: {
+    region: envVars.AWS_REGION,
+    accessKeyId: envVars.AWS_ACCESS_KEY_ID,
+    secretAccessKey: envVars.AWS_SECRET_ACCESS_KEY,
+    s3BucketName: envVars.AWS_S3_BUCKET_NAME,
   },
 };
