@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { createShopRequest } from "../../api/api.service";
+import { createShopRequest } from "../../apis/api.service";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
 import { styles } from "../_layout";

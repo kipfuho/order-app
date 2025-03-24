@@ -18,7 +18,7 @@ import {
   Shop,
   Unit,
 } from "../../../../../../../stores/state.interface";
-import { updateDishRequest } from "../../../../../../../api/api.service";
+import { updateDishRequest } from "../../../../../../../apis/api.service";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { ScrollView } from "react-native";
 import { Collapsible } from "../../../../../../../components/Collapsible";

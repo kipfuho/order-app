@@ -13,7 +13,7 @@ import { useSelector } from "react-redux";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { RootState } from "../../../../../../../stores/store";
 import { Shop } from "../../../../../../../stores/state.interface";
-import { updateDishCategoryRequest } from "../../../../../../../api/api.service";
+import { updateDishCategoryRequest } from "../../../../../../../apis/api.service";
 import { AppBar } from "../../../../../../../components/AppBar";
 
 export default function UpdateDishCategoryPage() {

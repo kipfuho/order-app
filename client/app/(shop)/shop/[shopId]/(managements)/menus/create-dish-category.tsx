@@ -13,7 +13,7 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
 import { Shop } from "../../../../../../stores/state.interface";
-import { createDishCategoryRequest } from "../../../../../../api/api.service";
+import { createDishCategoryRequest } from "../../../../../../apis/api.service";
 import { AppBar } from "../../../../../../components/AppBar";
 import { ScrollView, StyleSheet } from "react-native";
 

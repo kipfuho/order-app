@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   Surface,
 } from "react-native-paper";
-import { loginRequest } from "../../api/api.service";
+import { loginRequest } from "../../apis/api.service";
 import Toast from "react-native-toast-message";
 import { router } from "expo-router";
 

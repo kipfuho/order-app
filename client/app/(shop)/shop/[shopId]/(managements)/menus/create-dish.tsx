@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { StyleSheet, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
+import * as ImagePicker from "expo-image-picker";
+import { Image } from "expo-image";
 import { RootState } from "../../../../../../stores/store";
 import {
   DishCategory,
@@ -15,15 +17,21 @@ import {
   Surface,
   Switch,
   Text,
+  IconButton,
 } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import { Collapsible } from "../../../../../../components/Collapsible";
 import { AppBar } from "../../../../../../components/AppBar";
 import { DropdownMenu } from "../../../../../../components/DropdownMenu";
-import { createDishRequest } from "../../../../../../api/api.service";
 import _ from "lodash";
+import { BLURHASH } from "../../../../../../constants/common";
+import {
+  createDishRequest,
+  removeImageRequest,
+  uploadImageRequest,
+} from "../../../../../../apis/dish.api.service";
 
-export default function CreateTablePage() {
+export default function CreateDishPage() {
   const { shopId } = useLocalSearchParams();
 
   const shop = useSelector((state: RootState) =>
@@ -34,7 +42,6 @@ export default function CreateTablePage() {
     (state: RootState) => state.shop.dishCategories
   );
   const units = useSelector((state: RootState) => state.shop.units);
-  console.log(units);
 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
@@ -43,6 +50,7 @@ export default function CreateTablePage() {
   const [price, setPrice] = useState("");
   const [unit, setUnit] = useState(units[0]);
   const [taxRate, setTaxRate] = useState("");
+  const [images, setImages] = useState<{ uri: string; loading: boolean }[]>([]);
   const router = useRouter();
 
   const [isTaxIncludedPrice, setIsTaxIncludedPrice] = useState(false);
@@ -56,7 +64,74 @@ export default function CreateTablePage() {
     });
   };
 
-  const resetField = () => {};
+  const resetField = () => {
+    setName("");
+    setCategory(dishCategories[0]);
+    setDishType(dishTypes[0]);
+    setPrice("");
+    setUnit(units[0]);
+    setTaxRate("");
+    setImages([]);
+  };
+
+  const uploadImageToServer = async (uri: string, index: number) => {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob(); // Convert URI to Blob
+
+      let formData = new FormData();
+      formData.append("image", blob, `image_${Date.now()}.jpg`); // Properly append file
+
+      // Replace with your server URL
+      const imageUrl = await uploadImageRequest({
+        shopId: shop.id,
+        formData,
+      });
+
+      console.log(imageUrl);
+
+      if (imageUrl) {
+        setImages((prev) =>
+          prev.map((img, i) =>
+            i === index ? { loading: false, uri: imageUrl } : img
+          )
+        );
+      } else {
+        throw new Error("Upload failed, no URL returned.");
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      // Optionally, you can remove the failed image or show an error state
+      setImages((prev) => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const pickImages = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: "images",
+      allowsMultipleSelection: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const newImages = result.assets.map((asset) => ({
+        uri: asset.uri,
+        loading: true, // Mark as loading initially
+      }));
+      setImages((prev) => [...prev, ...newImages]);
+
+      // Start uploading each image
+      newImages.forEach((image, index) =>
+        uploadImageToServer(image.uri, index)
+      );
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const image = _.find(images, (_, i) => i === index);
+    setImages(_.filter(images, (_, i) => i !== index));
+    removeImageRequest({ shopId: shop.id, url: image!.uri });
+  };
 
   const handleCreateDish = async () => {
     if (!name.trim() || !category || !dishType || !unit || !price.trim()) {
@@ -93,6 +168,57 @@ export default function CreateTablePage() {
       <AppBar title="Create Dish" goBack={goBack} />
       <Surface style={{ flex: 1 }}>
         <ScrollView style={{ flex: 1, padding: 16 }}>
+          <Surface style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
+            {images.map((image, index) => {
+              if (image.loading) {
+                <ActivityIndicator
+                  size="small"
+                  color="blue"
+                  style={{ position: "absolute", top: 50, left: 90, zIndex: 1 }}
+                />;
+              }
+
+              return (
+                <Surface
+                  key={index}
+                  style={{
+                    position: "relative",
+                    marginRight: 10,
+                  }}
+                >
+                  <Image
+                    source={{ uri: image.uri }}
+                    style={{ width: 200, height: 150, borderRadius: 10 }}
+                    placeholder={{ blurhash: BLURHASH }}
+                    contentFit="cover"
+                    transition={1000}
+                  />
+                  <IconButton
+                    mode="contained"
+                    icon="close-circle"
+                    size={20}
+                    onPress={() => removeImage(index)}
+                    style={{
+                      position: "absolute",
+                      margin: 0,
+                      padding: 0,
+                      top: 5,
+                      right: 5,
+                      width: 24,
+                      height: 24,
+                    }}
+                  />
+                </Surface>
+              );
+            })}
+          </Surface>
+          <Button
+            mode="contained-tonal"
+            onPress={pickImages}
+            style={{ marginVertical: 10, width: 200, alignSelf: "center" }}
+          >
+            {"Upload Images (< 5MB)"}
+          </Button>
           {/* General Information Collapsible */}
           <Collapsible title="General Information">
             <TextInput

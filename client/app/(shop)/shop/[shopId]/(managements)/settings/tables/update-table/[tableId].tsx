@@ -13,7 +13,7 @@ import {
 } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../../stores/store";
-import { updateTableRequest } from "../../../../../../../../api/api.service";
+import { updateTableRequest } from "../../../../../../../../apis/api.service";
 import {
   Shop,
   TablePosition,

@@ -10,7 +10,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useSession } from "../../hooks/useSession";
 import { RootState } from "../../stores/store";
-import { queryShopsRequest } from "../../api/api.service";
+import { queryShopsRequest } from "../../apis/api.service";
 import { useRouter } from "expo-router";
 
 export default function ShopsPage() {

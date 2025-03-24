@@ -3,7 +3,7 @@ import { ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
-import { createTablePositionRequest } from "../../../../../../../api/api.service";
+import { createTablePositionRequest } from "../../../../../../../apis/api.service";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ActivityIndicator,

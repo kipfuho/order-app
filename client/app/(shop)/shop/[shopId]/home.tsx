@@ -18,7 +18,7 @@ import {
   getDishTypesRequest,
   getTablePositions,
   getTables,
-} from "../../../../api/api.service";
+} from "../../../../apis/api.service";
 import { AppBar } from "../../../../components/AppBar";
 
 interface Item {

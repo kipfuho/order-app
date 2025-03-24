@@ -7,7 +7,7 @@ import { DishCard } from "../../../../../../components/ui/menus/DishCard";
 import { AppBar } from "../../../../../../components/AppBar";
 import { useTheme, Button, Text, Surface } from "react-native-paper";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { getDishesRequest } from "../../../../../../api/api.service";
+import { getDishesRequest } from "../../../../../../apis/dish.api.service";
 
 export default function DishesManagementPage() {
   const { shopId } = useLocalSearchParams();

@@ -1,7 +1,5 @@
 import axios, { AxiosRequestConfig } from "axios";
 import {
-  Dish,
-  DishCategory,
   Shop,
   Table,
   TablePosition,
@@ -11,9 +9,6 @@ import {
 } from "../stores/state.interface";
 import { auth } from "../generated/auth";
 import {
-  updateAllDishCategories,
-  updateAllDishes,
-  updateAllDisheTypes,
   updateAllShops,
   updateAllTablePositions,
   updateAllTables,
@@ -31,6 +26,14 @@ const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
+  },
+});
+
+// Create an Axios formData instance
+const apiFormDataClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "multipart/form-data",
   },
 });
 
@@ -85,6 +88,31 @@ export const apiRequest = async <T>({
     };
 
     const response = await apiClient.request<T>(config);
+    return response.data;
+  } catch (error: any) {
+    console.error("API Request Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Something went wrong");
+  }
+};
+
+export const apiFormDataRequest = async <T>({
+  endpoint,
+  formData,
+  token,
+}: {
+  endpoint: string;
+  formData?: object;
+  token?: string;
+}): Promise<T> => {
+  try {
+    const config: AxiosRequestConfig = {
+      method: "POST",
+      url: endpoint,
+      data: formData,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    };
+
+    const response = await apiFormDataClient.request<T>(config);
     return response.data;
   } catch (error: any) {
     console.error("API Request Error:", error.response?.data || error.message);
@@ -446,206 +474,6 @@ export const getTables = async ({ shopId }: { shopId: string }) => {
   });
 
   store.dispatch(updateAllTables(result.tables));
-};
-
-export const createDishCategoryRequest = async ({
-  shopId,
-  name,
-}: {
-  shopId: string;
-  name: string;
-}) => {
-  const accessToken = await getAccessToken();
-  const body: {
-    name: string;
-  } = { name };
-
-  const result: { dishCategory: DishCategory } = await apiRequest({
-    method: "POST",
-    endpoint: `/v1/shops/${shopId}/dishCategories`,
-    token: accessToken,
-    data: body,
-  });
-
-  const state = store.getState();
-  store.dispatch(
-    updateAllDishCategories([...state.shop.dishCategories, result.dishCategory])
-  );
-};
-
-export const getDishCategoriesRequest = async ({
-  shopId,
-}: {
-  shopId: string;
-}) => {
-  const accessToken = await getAccessToken();
-
-  const result: { dishCategories: DishCategory[] } = await apiRequest({
-    method: "GET",
-    endpoint: `/v1/shops/${shopId}/dishCategories`,
-    token: accessToken,
-  });
-
-  store.dispatch(updateAllDishCategories(result.dishCategories));
-};
-
-export const getDishesRequest = async ({ shopId }: { shopId: string }) => {
-  const accessToken = await getAccessToken();
-
-  const result: { dishes: Dish[] } = await apiRequest({
-    method: "GET",
-    endpoint: `/v1/shops/${shopId}/dishes`,
-    token: accessToken,
-  });
-
-  store.dispatch(updateAllDishes(result.dishes));
-};
-
-export const updateDishCategoryRequest = async ({
-  dishCategoryId,
-  shopId,
-  name,
-}: {
-  dishCategoryId: string;
-  shopId: string;
-  name: string;
-}) => {
-  const accessToken = await getAccessToken();
-  const body: {
-    name: string;
-  } = { name };
-
-  const result: { dishCategory: DishCategory } = await apiRequest({
-    method: "PATCH",
-    endpoint: `/v1/shops/${shopId}/dishCategories/${dishCategoryId}`,
-    token: accessToken,
-    data: body,
-  });
-
-  const state = store.getState();
-  store.dispatch(
-    updateAllDishCategories([
-      ..._.filter(state.shop.dishCategories, (dc) => dc.id !== dishCategoryId),
-      result.dishCategory,
-    ])
-  );
-};
-
-export const createDishRequest = async ({
-  shopId,
-  name,
-  category,
-  dishType,
-  price,
-  taxRate = 0,
-  unit,
-  isTaxIncludedPrice = false,
-}: {
-  shopId: string;
-  name: string;
-  category: DishCategory;
-  dishType: string;
-  price: number;
-  taxRate: number;
-  unit: Unit;
-  isTaxIncludedPrice: boolean;
-}) => {
-  const accessToken = await getAccessToken();
-  const body: {
-    name: string;
-    category: string;
-    type: string;
-    price: number;
-    taxRate: number;
-    unit: string;
-    isTaxIncludedPrice: boolean;
-  } = {
-    name,
-    category: category.id,
-    type: dishType,
-    price,
-    taxRate,
-    unit: unit.id,
-    isTaxIncludedPrice,
-  };
-
-  const result: { dish: Dish } = await apiRequest({
-    method: "POST",
-    endpoint: `/v1/shops/${shopId}/dishes`,
-    token: accessToken,
-    data: body,
-  });
-
-  const state = store.getState();
-  store.dispatch(updateAllDishes([...state.shop.dishes, result.dish]));
-};
-
-export const updateDishRequest = async ({
-  shopId,
-  dishId,
-  name,
-  category,
-  dishType,
-  price,
-  taxRate = 0,
-  unit,
-  isTaxIncludedPrice = false,
-}: {
-  shopId: string;
-  dishId: string;
-  name: string;
-  category: DishCategory;
-  dishType: string;
-  price: number;
-  taxRate: number;
-  unit: Unit;
-  isTaxIncludedPrice: boolean;
-}) => {
-  const accessToken = await getAccessToken();
-  const body: {
-    name: string;
-    category: string;
-    type: string;
-    price: number;
-    taxRate: number;
-    unit: string;
-    isTaxIncludedPrice: boolean;
-  } = {
-    name,
-    category: category.id,
-    type: dishType,
-    price,
-    taxRate,
-    unit: unit.id,
-    isTaxIncludedPrice,
-  };
-
-  const result: { dish: Dish } = await apiRequest({
-    method: "PATCH",
-    endpoint: `/v1/shops/${shopId}/dishes/${dishId}`,
-    token: accessToken,
-    data: body,
-  });
-
-  const state = store.getState();
-  store.dispatch(
-    updateAllDishCategories([
-      ..._.filter(state.shop.dishes, (d) => d.id !== dishId),
-      result.dish,
-    ])
-  );
-};
-
-export const getDishTypesRequest = async ({ shopId }: { shopId: string }) => {
-  const accessToken = await getAccessToken();
-
-  const result: { dishTypes: string[] } = await apiRequest({
-    method: "GET",
-    endpoint: `/v1/shops/${shopId}/dishes/dishTypes`,
-    token: accessToken,
-  });
-
-  store.dispatch(updateAllDisheTypes(result.dishTypes));
 };
 
 export const getUnitsRequest = async ({ shopId }: { shopId: string }) => {

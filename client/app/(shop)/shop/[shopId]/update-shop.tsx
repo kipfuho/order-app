@@ -17,7 +17,7 @@ import _ from "lodash";
 import Toast from "react-native-toast-message";
 import { ActivityIndicator } from "react-native-paper";
 import { styles } from "../../../_layout";
-import { updateShopRequest } from "../../../../api/api.service";
+import { updateShopRequest } from "../../../../apis/api.service";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores/store";
 import { Shop } from "../../../../stores/state.interface";

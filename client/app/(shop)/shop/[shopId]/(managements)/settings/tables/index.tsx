@@ -4,7 +4,7 @@ import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import { ActivityIndicator, Button, useTheme, List } from "react-native-paper";
-import { getTables } from "../../../../../../../api/api.service";
+import { getTables } from "../../../../../../../apis/api.service";
 import _ from "lodash";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
