@@ -56,7 +56,7 @@ const uploadImage = catchAsync(async (req, res) => {
 
 const removeImage = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const url = await dishService.uploadImage({ shopId, ...req.body });
+  const url = await dishService.removeImage({ shopId, ...req.body });
   res.status(httpStatus.OK).send({ url });
 });
 

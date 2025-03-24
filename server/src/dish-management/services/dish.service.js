@@ -1,11 +1,11 @@
 const _ = require('lodash');
+const crypto = require('crypto');
 const aws = require('../../utils/aws');
 const { Dish } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getDishFromCache, getDishesFromCache, getDishCategoryFromCache } = require('../../metadata/dishMetadata.service');
 const { DishTypes } = require('../../utils/constant');
 const { refineFileNameForUploading } = require('../../utils/common');
-const { getMessageByLocale } = require('../../locale');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -56,7 +56,7 @@ const getDishTypes = (shopId) => {
 };
 
 const uploadImage = async ({ shopId, image }) => {
-  const fileName = `${Date.now()}_${refineFileNameForUploading(image.name)}`;
+  const fileName = `${crypto.randomBytes(3).toString('hex')}_${refineFileNameForUploading(image.originalname)}`;
   const url = await aws.uploadFileBufferToS3({
     fileBuffer: image.buffer,
     targetFilePath: `shops/${shopId}/dishes/${fileName}`,
@@ -65,13 +65,7 @@ const uploadImage = async ({ shopId, image }) => {
   return url;
 };
 
-const removeImage = async ({ shopId, dishId, url }) => {
-  const dish = await getDishFromCache({ dishId, shopId });
-  throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
-  throwBadRequest(
-    !_.find(dish.imageUrls, (imageUrl) => imageUrl === url),
-    getMessageByLocale({ key: 'dish.imageNotFound' })
-  );
+const removeImage = async ({ url }) => {
   await aws.deleteObjectFromS3(url);
 };
 
