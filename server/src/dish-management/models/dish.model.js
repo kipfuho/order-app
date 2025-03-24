@@ -27,6 +27,7 @@ const dishSchema = mongoose.Schema(
     type: { type: String },
     taxRate: { type: Number },
     status: { type: String, enum: [Status.activated, Status.deactivated, Status.disabled], default: Status.activated },
+    imageUrls: [String],
   },
   {
     timestamps: true,

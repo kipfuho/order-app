@@ -5,6 +5,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { getDishFromCache, getDishesFromCache, getDishCategoryFromCache } = require('../../metadata/dishMetadata.service');
 const { DishTypes } = require('../../utils/constant');
 const { refineFileNameForUploading } = require('../../utils/common');
+const { getMessageByLocale } = require('../../locale');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -64,6 +65,16 @@ const uploadImage = async ({ shopId, image }) => {
   return url;
 };
 
+const removeImage = async ({ shopId, dishId, url }) => {
+  const dish = await getDishFromCache({ dishId, shopId });
+  throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
+  throwBadRequest(
+    !_.find(dish.imageUrls, (imageUrl) => imageUrl === url),
+    getMessageByLocale({ key: 'dish.imageNotFound' })
+  );
+  await aws.deleteObjectFromS3(url);
+};
+
 module.exports = {
   getDish,
   createDish,
@@ -72,4 +83,5 @@ module.exports = {
   getDishes,
   getDishTypes,
   uploadImage,
+  removeImage,
 };

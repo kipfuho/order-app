@@ -7,8 +7,8 @@ const { throwBadRequest } = require('./errorHandling');
 const { getMessageByLocale } = require('../locale');
 
 const { region, accessKeyId, secretAccessKey, s3BucketName } = config.aws;
-const s3BaseUrl = `https://${config}.s3.${region}.amazonaws.com`;
-const s3 = new AWS.S3Client({
+const s3BaseUrl = `https://${s3BucketName}.s3.${region}.amazonaws.com`;
+const s3 = new AWS.S3({
   region,
   credentials: {
     accessKeyId,
@@ -31,12 +31,12 @@ const _reziseImageBuffer = async (imageBuffer) => {
 };
 
 const uploadFileBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType }) => {
-  throwBadRequest(fileBuffer.length > MAX_FILE_SIZE, getMessageByLocale('fileTooLarge'));
-  throwBadRequest(!ALLOWED_IMAGE_MIME_TYPES.includes(mimeType), getMessageByLocale('notImage'));
-  // Read content from the file
-  const resizeContent = await _reziseImageBuffer(fileBuffer);
+  try {
+    throwBadRequest(fileBuffer.length > MAX_FILE_SIZE, getMessageByLocale('fileTooLarge'));
+    throwBadRequest(!ALLOWED_IMAGE_MIME_TYPES.includes(mimeType), getMessageByLocale('notImage'));
+    // Read content from the file
+    const resizeContent = await _reziseImageBuffer(fileBuffer);
 
-  return new Promise((resolve, reject) => {
     const params = {
       Bucket: s3BucketName,
       Key: targetFilePath,
@@ -44,17 +44,38 @@ const uploadFileBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType }) =>
       ContentType: mimeType,
     };
     // Uploading files to the bucket
-    s3.putObject(params, (err) => {
-      if (err) {
-        reject(err);
-      }
-      const resultUrl = `${s3BaseUrl}/${targetFilePath}`;
-      logger.debug(`upload file to ${resultUrl}`);
-      resolve(resultUrl);
-    });
-  });
+    await s3.putObject(params);
+
+    const resultUrl = `${s3BaseUrl}/${targetFilePath}`;
+    logger.debug(`upload file to ${resultUrl}`);
+    return resultUrl;
+  } catch (err) {
+    logger.error(`Error deleting file: ${err.message}`);
+    throw err;
+  }
+};
+
+const deleteObjectFromS3 = async (fileUrl) => {
+  try {
+    // Extract file key from URL
+    const key = fileUrl.replace(`${s3BaseUrl}/`, '');
+
+    const params = {
+      Bucket: s3BucketName,
+      Key: key,
+    };
+
+    await s3.deleteObject(params);
+
+    logger.debug(`Deleted file: ${key}`);
+    return true;
+  } catch (err) {
+    logger.error(`Error deleting file: ${err.message}`);
+    throw err;
+  }
 };
 
 module.exports = {
   uploadFileBufferToS3,
+  deleteObjectFromS3,
 };

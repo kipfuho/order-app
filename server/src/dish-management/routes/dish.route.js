@@ -24,5 +24,6 @@ router.route('/').get(auth(), dishController.getDishes).post(auth(), dishControl
 router.patch('/:dishId', auth(), dishController.updateDish);
 router.delete('/:dishId', auth(), dishController.deleteDish);
 router.post('/upload', auth(), upload.single('image'), dishController.uploadImage);
+router.post('/remove', auth(), dishController.removeImage);
 
 module.exports = router;
