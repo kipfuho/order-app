@@ -64,6 +64,15 @@ const orderSessionSchema = mongoose.Schema(
       },
     ],
     paymentAmount: { type: Number },
+    paidByEmployee: {
+      id: { type: mongoose.Types.ObjectId },
+      name: { type: String },
+    },
+    cancelledByEmployee: {
+      uid: { type: mongoose.Types.ObjectId },
+      name: { type: String },
+      reason: { type: String },
+    },
   },
   {
     timestamps: true,

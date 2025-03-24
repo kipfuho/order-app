@@ -7,6 +7,7 @@ const { Order, OrderSession } = require('../../models');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const { OrderSessionDiscountType, DiscountValueType, OrderSessionStatus } = require('../../utils/constant');
 const { throwBadRequest } = require('../../utils/errorHandling');
+const { getMessageByLocale } = require('../../locale');
 
 const formatDateTimeToISOStringRegardingReportTime = ({ dateTime, reportTime }) => {
   try {
@@ -129,12 +130,15 @@ const createNewOrder = async ({ tableId, shopId, orderSessionId, dishOrders, ord
 /**
  * Get order session json with populated datas
  */
-const _getOrderSessionJson = async (orderSessionId) => {
+const _getOrderSessionJson = async ({ orderSessionId, shopId }) => {
   const orderSession = await OrderSession.findById(orderSessionId);
+  throwBadRequest(!orderSession, 'orderSession.notFound');
+  throwBadRequest(shopId && orderSession.shop !== shopId, 'orderSession.notFound');
   const orderSessionJson = orderSession.toJSON();
   const orders = await Order.find({ orderSessionId });
 
-  const shopId = orderSession.shop;
+  // eslint-disable-next-line no-param-reassign
+  shopId = orderSession.shop;
   const shop = await getShopFromCache({ shopId });
   const tables = await getTablesFromCache({ shopId });
   const tableById = _.keyBy(tables, 'id');
@@ -260,8 +264,8 @@ const calculateDiscount = async ({ orderSessionJson, pretaxPaymentAmount, totalT
   return totalDiscountAmountAfterTax;
 };
 
-const getOrderSessionById = async (orderSessionId) => {
-  const { orderSession, orderSessionJson } = await _getOrderSessionJson({ orderSessionId });
+const getOrderSessionById = async (orderSessionId, shopId) => {
+  const { orderSession, orderSessionJson } = await _getOrderSessionJson({ orderSessionId, shopId });
   const dishOrders = _.flatMap(orderSessionJson.orders, 'dishOrders');
 
   const pretaxPaymentAmount = _.sumBy(dishOrders, (dishOrder) => dishOrder.price * dishOrder.quantity);
@@ -288,28 +292,10 @@ const getOrderSessionById = async (orderSessionId) => {
   return orderSessionJson;
 };
 
-const _validateBeforePayment = (orderSession, paymentDetails) => {
-  throwBadRequest(
-    orderSession.paymentAmount !== _.sumBy(paymentDetails, 'paymentAmount'),
-    'Số tiền thanh toán không khớp số tiền đơn'
-  );
-};
+const updateOrderSession = async ({ orderSessionId, shopId, updateBody }) => {
+  const orderSession = await OrderSession.updateOne({ _id: orderSessionId, shop: shopId }, updateBody);
 
-const confirmPaymentOrderSession = async ({ orderSessionId, paymentDetails }) => {
-  const orderSession = await getOrderSessionById(orderSessionId);
-
-  _validateBeforePayment(orderSession);
-
-  await OrderSession.updateOne(
-    { _id: orderSessionId },
-    {
-      $set: {
-        paymentDetails,
-        status: OrderSessionStatus.paid,
-      },
-    }
-  );
-
+  throwBadRequest(!orderSession, getMessageByLocale({ key: 'orderSession.notFound' }));
   return getOrderSessionById(orderSessionId);
 };
 
@@ -317,5 +303,5 @@ module.exports = {
   createNewOrder,
   getOrCreateOrderSession,
   getOrderSessionById,
-  confirmPaymentOrderSession,
+  updateOrderSession,
 };

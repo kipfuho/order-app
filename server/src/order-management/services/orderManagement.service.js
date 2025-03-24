@@ -3,16 +3,21 @@ const { Order, OrderSession, Cart } = require('../../models');
 const orderUtilService = require('./orderUtils.service');
 const { getTablesFromCache } = require('../../metadata/shopMetadata.service');
 const { throwBadRequest } = require('../../utils/errorHandling');
+const { getMessageByLocale } = require('../../locale');
+const { OrderSessionStatus } = require('../../utils/constant');
 
-const createOrder = async ({ tableId, shopId, orderSessionId, dishOrders }) => {
+const createOrder = async ({ shopId, requestBody }) => {
+  const { tableId, orderSessionId, dishOrders } = requestBody;
   const orderSession = await orderUtilService.getOrCreateOrderSession({ orderSessionId, tableId, shopId });
   const order = await orderUtilService.createNewOrder({ tableId, shopId, orderSessionId, dishOrders });
   orderSession.orders = [order];
   return orderSession;
 };
 
-const increaseDishQuantity = async ({ orderId, dishId, newQuantity }) => {
-  const order = await Order.findById(orderId);
+const increaseDishQuantity = async ({ shopId, requestBody }) => {
+  const { orderId, dishId, newQuantity } = requestBody;
+  const order = await Order.findOne({ shop: shopId, _id: orderId });
+  throwBadRequest(!order, getMessageByLocale({ key: 'order.notFound' }));
   const dishOrder = _.find(order.dishOrders, { dishId });
   if (dishOrder) {
     dishOrder.quantity = newQuantity;
@@ -21,8 +26,9 @@ const increaseDishQuantity = async ({ orderId, dishId, newQuantity }) => {
   return order.toJSON();
 };
 
-const decreaseDishQuantity = async ({ orderId, dishId, newQuantity }) => {
-  const order = await Order.findById(orderId);
+const decreaseDishQuantity = async ({ shopId, requestBody }) => {
+  const { orderId, dishId, newQuantity } = requestBody;
+  const order = await Order.findOne({ shop: shopId, _id: orderId });
   const dishOrder = _.find(order.dishOrders, { dishId });
   if (dishOrder) {
     dishOrder.quantity = newQuantity;
@@ -31,9 +37,10 @@ const decreaseDishQuantity = async ({ orderId, dishId, newQuantity }) => {
   return order.toJSON();
 };
 
-const updateOrder = async ({ orderUpdates }) => {
+const updateOrder = async ({ shopId, requestBody }) => {
+  const { orderUpdates } = requestBody;
   const orderIds = _.map(orderUpdates, 'orderId');
-  const orders = await Order.find({ _id: { $in: orderIds } });
+  const orders = await Order.find({ _id: { $in: orderIds }, shop: shopId });
   const orderById = _.keyBy(
     _.map(orders, (order) => order.toJSON()),
     'id'
@@ -67,7 +74,7 @@ const updateOrder = async ({ orderUpdates }) => {
   await Order.bulkWrite(bulkOps);
 };
 
-const getOrderSessions = async ({ shopId }) => {
+const getTableForOrder = async ({ shopId }) => {
   const tables = await getTablesFromCache({ shopId });
   const orderSessions = await OrderSession.find({ shopId });
   const tableById = _.keyBy(tables, 'id');
@@ -89,23 +96,65 @@ const getOrderSessions = async ({ shopId }) => {
   return tables;
 };
 
-const getOrderSessionDetail = async ({ orderSessionId }) => {
-  const orderSessionJson = await orderUtilService.getOrderSessionById({ orderSessionId });
+const getOrderSessionDetail = async ({ shopId, orderSessionId }) => {
+  const orderSessionJson = await orderUtilService.getOrderSessionById(orderSessionId, shopId);
   return orderSessionJson;
 };
 
-const payOrderSession = async ({ orderSessionId }) => {
-  const orderSessionJson = await orderUtilService.confirmPaymentOrderSession({ orderSessionId });
-  return orderSessionJson;
+const _validateBeforePayment = (orderSession, paymentDetails) => {
+  throwBadRequest(
+    orderSession.paymentAmount !== _.sumBy(paymentDetails, 'paymentAmount'),
+    'Số tiền thanh toán không khớp số tiền đơn'
+  );
 };
 
-const cancelOrder = async ({ orderSessionId }) => {
-  const orderSessionJson = await orderUtilService.updateOrderSession({ orderSessionId });
-  return orderSessionJson;
+const payOrderSession = async ({ shopId, orderSessionId, requestBody }) => {
+  const { paymentDetails } = requestBody;
+  const orderSessionJson = await orderUtilService.getOrderSessionById(orderSessionId, shopId);
+  _validateBeforePayment(orderSessionJson, paymentDetails);
+
+  const updatedOrderSession = await orderUtilService.updateOrderSession({
+    orderSessionId,
+    updateBody: {
+      $set: {
+        status: OrderSessionStatus.paid,
+        paymentDetails,
+      },
+      $unset: {},
+    },
+  });
+
+  return updatedOrderSession;
 };
 
-const cancelPaidStatus = async ({ orderSessionId }) => {
-  const orderSessionJson = await orderUtilService.updateOrderSession({ orderSessionId });
+const cancelOrder = async ({ orderSessionId, shopId, user, reason }) => {
+  throwBadRequest(!reason, getMessageByLocale({ key: 'reason.empty' }));
+  const updatedOrderSession = await orderUtilService.updateOrderSession({
+    orderSessionId,
+    shopId,
+    updateBody: {
+      $set: {
+        status: OrderSessionStatus.cancelled,
+        cancelledByEmployee: { uid: user.id, name: user.name || user.email, reason },
+      },
+    },
+  });
+  return updatedOrderSession;
+};
+
+const cancelPaidStatus = async ({ orderSessionId, shopId }) => {
+  const orderSessionJson = await orderUtilService.updateOrderSession({
+    orderSessionId,
+    shopId,
+    updateBody: {
+      $set: {
+        status: OrderSessionStatus.unpaid,
+      },
+      $unset: {
+        paymentDetails: 1,
+      },
+    },
+  });
   return orderSessionJson;
 };
 
@@ -157,7 +206,7 @@ module.exports = {
   increaseDishQuantity,
   decreaseDishQuantity,
   updateOrder,
-  getOrderSessions,
+  getTableForOrder,
   getOrderSessionDetail,
   payOrderSession,
   cancelOrder,
