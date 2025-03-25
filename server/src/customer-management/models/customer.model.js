@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { toJSON } = require('../../utils/plugins');
 
-const customerSchema = mongoose.Schema(
+const customerSchema = new mongoose.Schema(
   {
     name: { type: String },
     phone: { type: String },

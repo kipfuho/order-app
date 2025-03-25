@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { toJSON } = require('../../utils/plugins');
 const { Status } = require('../../utils/constant');
 
-const cartItemSchema = mongoose.Schema(
+const cartItemSchema = new mongoose.Schema(
   {
     dish: {
       type: mongoose.Schema.Types.ObjectId,
@@ -15,7 +15,7 @@ const cartItemSchema = mongoose.Schema(
   }
 );
 
-const cartSchema = mongoose.Schema(
+const cartSchema = new mongoose.Schema(
   {
     shop: {
       type: mongoose.Schema.Types.ObjectId,

@@ -23,7 +23,7 @@ const createDish = async ({ shopId, createBody }) => {
   createBody.shop = shopId;
   const dish = await Dish.create(createBody);
   const dishJson = dish.toJSON();
-  dishJson.category = await getDishCategoryFromCache({ shopId, categoryId: dish.category });
+  dishJson.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.category });
   return dishJson;
 };
 

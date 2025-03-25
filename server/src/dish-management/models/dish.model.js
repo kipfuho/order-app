@@ -6,7 +6,7 @@ const { getStringId } = require('../../utils/common');
 const { deleteMenuCache } = require('../../metadata/common');
 const logger = require('../../config/logger');
 
-const dishSchema = mongoose.Schema(
+const dishSchema = new mongoose.Schema(
   {
     shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     name: { type: String },

@@ -7,7 +7,7 @@ const { PaymentMethod, OrderSessionStatus } = require('../../utils/constant');
 const StatusEnum = Object.values(OrderSessionStatus);
 const PaymentMethodEnum = Object.values(PaymentMethod);
 
-const discountProductSchema = mongoose.Schema(
+const discountProductSchema = new mongoose.Schema(
   {
     dishOrderId: { type: String },
     dishName: { type: String },
@@ -23,7 +23,7 @@ const discountProductSchema = mongoose.Schema(
   }
 );
 
-const discountSchema = mongoose.Schema(
+const discountSchema = new mongoose.Schema(
   {
     name: { type: String },
     discountType: { type: String }, // discount invoice, discount product
@@ -39,7 +39,7 @@ const discountSchema = mongoose.Schema(
   }
 );
 
-const orderSessionSchema = mongoose.Schema(
+const orderSessionSchema = new mongoose.Schema(
   {
     shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     tables: [{ type: mongoose.Types.ObjectId, ref: 'Table' }],

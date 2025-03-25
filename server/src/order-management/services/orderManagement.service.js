@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const { Order, OrderSession, Cart } = require('../../models');
+const { Order, OrderSession, Cart, OrderSessionReport } = require('../../models');
 const orderUtilService = require('./orderUtils.service');
 const { getTablesFromCache } = require('../../metadata/shopMetadata.service');
 const { throwBadRequest } = require('../../utils/errorHandling');
@@ -158,9 +158,9 @@ const cancelPaidStatus = async ({ orderSessionId, shopId }) => {
   return orderSessionJson;
 };
 
-const getOrderHistory = async ({ from, to }) => {
+const getOrderHistory = async ({ shopId, from, to }) => {
   // replace with order session report
-  const orderSessions = await OrderSession.find({ createdAt: { $gte: from, $lt: to } });
+  const orderSessions = await OrderSessionReport.find({ shop: shopId, createdAt: { $gte: from, $lt: to } });
   return _.map(orderSessions, (orderSession) => orderSession.toJSON());
 };
 

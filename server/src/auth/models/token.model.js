@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { toJSON } = require('../../utils/plugins');
 const { tokenTypes } = require('../../config/tokens');
 
-const tokenSchema = mongoose.Schema(
+const tokenSchema = new mongoose.Schema(
   {
     token: {
       type: String,

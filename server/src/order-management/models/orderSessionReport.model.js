@@ -7,7 +7,7 @@ const { OrderSessionStatus, PaymentMethod } = require('../../utils/constant');
 const StatusEnum = Object.values(OrderSessionStatus);
 const PaymentMethodEnum = Object.values(PaymentMethod);
 
-const orderSessionReportSchema = mongoose.Schema(
+const orderSessionReportSchema = new mongoose.Schema(
   {
     shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     table: [{ type: mongoose.Types.ObjectId, ref: 'Table' }],

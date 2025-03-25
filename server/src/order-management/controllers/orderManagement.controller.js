@@ -44,7 +44,7 @@ const getOrderSessionDetail = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
-const payOrder = catchAsync(async (req, res) => {
+const payOrderSession = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const orderSessionId = _.get(req, 'params.orderSessionId');
   const requestBody = req.body;
@@ -52,7 +52,7 @@ const payOrder = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
-const cancelOrder = catchAsync(async (req, res) => {
+const cancelOrderSession = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const orderSessionId = _.get(req, 'params.orderSessionId');
   const requestBody = req.body;
@@ -60,17 +60,17 @@ const cancelOrder = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
-const cancelPaidStatus = catchAsync(async (req, res) => {
+const cancelOrderSessionPaidStatus = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const orderSessionId = _.get(req, 'params.orderSessionId');
   await orderManagementService.cancelPaidStatus({ shopId, orderSessionId });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
-const getOrderHistory = catchAsync(async (req, res) => {
+const getOrderSessionHistory = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const requestBody = req.body;
-  await orderManagementService.getOrderHistory();
+  const { from, to } = _.get(req, 'params');
+  await orderManagementService.getOrderHistory({ from, shopId, to });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
@@ -109,10 +109,10 @@ module.exports = {
   updateOrder,
   getTableForOrder,
   getOrderSessionDetail,
-  payOrder,
-  cancelOrder,
-  cancelPaidStatus,
-  getOrderHistory,
+  payOrderSession,
+  cancelOrderSession,
+  cancelOrderSessionPaidStatus,
+  getOrderSessionHistory,
   updateCart,
   checkoutCart,
   discountDish,

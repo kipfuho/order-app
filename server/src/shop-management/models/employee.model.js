@@ -6,7 +6,7 @@ const { getStringId } = require('../../utils/common');
 const { deleteEmployeeCache } = require('../../metadata/common');
 const logger = require('../../config/logger');
 
-const employeeSchema = mongoose.Schema(
+const employeeSchema = new mongoose.Schema(
   {
     shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     user: { type: mongoose.Types.ObjectId, ref: 'User' },

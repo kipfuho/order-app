@@ -7,7 +7,7 @@ const logger = require('../../config/logger');
 
 const RoundingPaymentTypeEnum = Object.values(RoundingPaymentType);
 
-const shopSchema = mongoose.Schema(
+const shopSchema = new mongoose.Schema(
   {
     status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
     name: { type: String },

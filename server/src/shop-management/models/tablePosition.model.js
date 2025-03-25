@@ -6,7 +6,7 @@ const { getStringId } = require('../../utils/common');
 const logger = require('../../config/logger');
 const { deleteTableCache, deleteTablePositionCache } = require('../../metadata/common');
 
-const tablePositionSchema = mongoose.Schema(
+const tablePositionSchema = new mongoose.Schema(
   {
     shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     name: { type: String },

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { toJSON } = require('../../utils/plugins');
 const { Status } = require('../../utils/constant');
 
-const dishOrderSchema = mongoose.Schema(
+const dishOrderSchema = new mongoose.Schema(
   {
     dish: { type: mongoose.Types.ObjectId, ref: 'Dish' },
     name: { type: String },
@@ -25,7 +25,7 @@ const dishOrderSchema = mongoose.Schema(
   }
 );
 
-const orderSchema = mongoose.Schema(
+const orderSchema = new mongoose.Schema(
   {
     shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     table: { type: mongoose.Types.ObjectId, ref: 'Table' },

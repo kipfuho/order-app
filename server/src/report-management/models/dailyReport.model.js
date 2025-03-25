@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { toJSON } = require('../../utils/plugins');
 
-const dailyReportSchema = mongoose.Schema(
+const dailyReportSchema = new mongoose.Schema(
   {
     name: { type: String },
     phone: { type: String },

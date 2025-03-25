@@ -7,7 +7,7 @@ const { getStringId } = require('../../utils/common');
 const { deleteUnitCache } = require('../../metadata/common');
 const logger = require('../../config/logger');
 
-const unitSchema = mongoose.Schema(
+const unitSchema = new mongoose.Schema(
   {
     shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     name: { type: String, trim: true },
