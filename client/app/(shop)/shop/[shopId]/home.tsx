@@ -14,12 +14,14 @@ import { RootState } from "../../../../stores/store";
 import {
   createDefaultUnitsRequest,
   deleteShopRequest,
-  getDishCategoriesRequest,
-  getDishTypesRequest,
   getTablePositions,
   getTables,
 } from "../../../../apis/api.service";
 import { AppBar } from "../../../../components/AppBar";
+import {
+  getDishCategoriesRequest,
+  getDishTypesRequest,
+} from "../../../../apis/dish.api.service";
 
 interface Item {
   title: string;

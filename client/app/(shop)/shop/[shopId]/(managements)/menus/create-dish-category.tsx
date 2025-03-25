@@ -6,20 +6,17 @@ import {
   ActivityIndicator,
   Button,
   Surface,
-  Text,
   TextInput,
-  useTheme,
 } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
 import { Shop } from "../../../../../../stores/state.interface";
-import { createDishCategoryRequest } from "../../../../../../apis/api.service";
 import { AppBar } from "../../../../../../components/AppBar";
 import { ScrollView, StyleSheet } from "react-native";
+import { createDishCategoryRequest } from "../../../../../../apis/dish.api.service";
 
 export default function CreateDishCategoryPage() {
   const { shopId } = useLocalSearchParams();
-  const theme = useTheme();
 
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((s) => s.id.toString() === shopId)

@@ -1,4 +1,4 @@
-import { SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { Button, Menu, Text } from "react-native-paper";
 
 export const DropdownMenu = ({
@@ -11,7 +11,7 @@ export const DropdownMenu = ({
   label: string;
   item: any;
   items: any[];
-  setItem: SetStateAction<any>;
+  setItem: Dispatch<SetStateAction<any>>;
   getItemValue: (item: any) => string;
 }) => {
   // Menu state for dropdown

@@ -18,11 +18,12 @@ import {
   Shop,
   Unit,
 } from "../../../../../../../stores/state.interface";
-import { updateDishRequest } from "../../../../../../../apis/api.service";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { ScrollView } from "react-native";
 import { Collapsible } from "../../../../../../../components/Collapsible";
 import { DropdownMenu } from "../../../../../../../components/DropdownMenu";
+import { updateDishRequest } from "../../../../../../../apis/dish.api.service";
+import UploadImages from "../../../../../../../components/ui/UploadImage";
 
 export default function UpdateDishPage() {
   const { shopId, dishId } = useLocalSearchParams();
@@ -46,6 +47,7 @@ export default function UpdateDishPage() {
   const [price, setPrice] = useState("");
   const [unit, setUnit] = useState(units[0]);
   const [taxRate, setTaxRate] = useState("");
+  const [images, setImages] = useState<{ uri: string; loading: boolean }[]>([]);
   const router = useRouter();
 
   const [isTaxIncludedPrice, setIsTaxIncludedPrice] = useState(false);
@@ -82,6 +84,7 @@ export default function UpdateDishPage() {
         unit,
         taxRate: parseFloat(taxRate),
         isTaxIncludedPrice,
+        imageUrls: _.map(images, "uri"),
       });
 
       // Navigate back to table position list
@@ -109,6 +112,11 @@ export default function UpdateDishPage() {
       <AppBar title="Update Dish" goBack={goBack} />
       <Surface style={{ flex: 1 }}>
         <ScrollView style={{ flex: 1, padding: 16 }}>
+          <UploadImages
+            images={images}
+            setImages={setImages}
+            shopId={shop.id}
+          />
           {/* General Information Collapsible */}
           <Collapsible title="General Information">
             <TextInput

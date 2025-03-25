@@ -13,7 +13,7 @@ import _ from "lodash";
 import { RootState } from "../../../../../../stores/store";
 import { Shop } from "../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../components/AppBar";
-import { getDishCategoriesRequest } from "../../../../../../apis/api.service";
+import { getDishCategoriesRequest } from "../../../../../../apis/dish.api.service";
 
 export default function CategoriesManagementPage() {
   const { shopId } = useLocalSearchParams();

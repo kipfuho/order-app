@@ -140,6 +140,7 @@ export const createDishRequest = async ({
   taxRate = 0,
   unit,
   isTaxIncludedPrice = false,
+  imageUrls = [],
 }: {
   shopId: string;
   name: string;
@@ -149,6 +150,7 @@ export const createDishRequest = async ({
   taxRate: number;
   unit: Unit;
   isTaxIncludedPrice: boolean;
+  imageUrls: string[];
 }) => {
   const accessToken = await getAccessToken();
   const body: {
@@ -159,6 +161,7 @@ export const createDishRequest = async ({
     taxRate: number;
     unit: string;
     isTaxIncludedPrice: boolean;
+    imageUrls: string[];
   } = {
     name,
     category: category.id,
@@ -167,6 +170,7 @@ export const createDishRequest = async ({
     taxRate,
     unit: unit.id,
     isTaxIncludedPrice,
+    imageUrls,
   };
 
   const result: { dish: Dish } = await apiRequest({
@@ -210,6 +214,7 @@ export const updateDishRequest = async ({
   taxRate = 0,
   unit,
   isTaxIncludedPrice = false,
+  imageUrls = [],
 }: {
   shopId: string;
   dishId: string;
@@ -220,6 +225,7 @@ export const updateDishRequest = async ({
   taxRate: number;
   unit: Unit;
   isTaxIncludedPrice: boolean;
+  imageUrls: string[];
 }) => {
   const accessToken = await getAccessToken();
   const body: {
@@ -230,6 +236,7 @@ export const updateDishRequest = async ({
     taxRate: number;
     unit: string;
     isTaxIncludedPrice: boolean;
+    imageUrls: string[];
   } = {
     name,
     category: category.id,
@@ -238,6 +245,7 @@ export const updateDishRequest = async ({
     taxRate,
     unit: unit.id,
     isTaxIncludedPrice,
+    imageUrls,
   };
 
   const result: { dish: Dish } = await apiRequest({

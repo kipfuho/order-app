@@ -7,7 +7,7 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useSession } from "../../hooks/useSession";
 import { RootState } from "../../stores/store";
 import { queryShopsRequest } from "../../apis/api.service";
@@ -17,7 +17,6 @@ export default function ShopsPage() {
   const { session } = useSession();
   const shops = useSelector((state: RootState) => state.shop.shops);
   const [loading, setLoading] = useState(true);
-  const dispatch = useDispatch();
   const router = useRouter();
   const theme = useTheme(); // Get theme colors
 
@@ -26,7 +25,6 @@ export default function ShopsPage() {
       try {
         await queryShopsRequest({
           user: session,
-          dispatch,
           limit: 1000,
           page: 1,
         });
