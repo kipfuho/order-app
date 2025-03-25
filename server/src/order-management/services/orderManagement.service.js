@@ -76,7 +76,7 @@ const updateOrder = async ({ shopId, requestBody }) => {
 
 const getTableForOrder = async ({ shopId }) => {
   const tables = await getTablesFromCache({ shopId });
-  const orderSessions = await OrderSession.find({ shopId });
+  const orderSessions = await OrderSession.find({ shop: shopId });
   const tableById = _.keyBy(tables, 'id');
 
   _.forEach(tables, (table) => {
