@@ -6,6 +6,8 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { getDishFromCache, getDishesFromCache, getDishCategoryFromCache } = require('../../metadata/dishMetadata.service');
 const { DishTypes } = require('../../utils/constant');
 const { refineFileNameForUploading } = require('../../utils/common');
+const { registerJob } = require('../../jobs/jobUtils');
+const { JobTypes } = require('../../jobs/constant');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -30,13 +32,23 @@ const createDish = async ({ shopId, createBody }) => {
 const updateDish = async ({ shopId, dishId, updateBody }) => {
   // eslint-disable-next-line no-param-reassign
   updateBody.shop = shopId;
-  const dish = await Dish.findByIdAndUpdate({ dishId, shopId }, { $set: updateBody }, { new: true });
+  const dish = await Dish.findOneAndUpdate({ _id: dishId, shop: shopId }, { $set: updateBody }, { new: true });
   throwBadRequest(!dish, 'Không tìm thấy món ăn');
-  return dish;
+  const dishJson = dish.toJSON();
+  dishJson.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.category });
+
+  // job to update s3 logs -> inUse = true
+  registerJob({
+    type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
+    data: {
+      keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
+    },
+  });
+  return dishJson;
 };
 
-const deleteDish = async (dishId) => {
-  await Dish.deleteOne({ _id: dishId });
+const deleteDish = async ({ shopId, dishId }) => {
+  await Dish.deleteOne({ _id: dishId, shopId });
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -55,7 +67,7 @@ const uploadImage = async ({ shopId, image }) => {
 };
 
 const removeImage = async ({ url }) => {
-  await aws.deleteObjectFromS3(url);
+  await aws.deleteObjectFromS3(aws.getS3ObjectKey(url));
 };
 
 module.exports = {

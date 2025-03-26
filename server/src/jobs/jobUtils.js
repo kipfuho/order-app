@@ -40,12 +40,17 @@ const _registerJob = async (jobData) => {
   }
 };
 
-const registerJob = async () => {
+/**
+ *
+ * @param {*} jobData
+ * @returns
+ */
+const registerJob = async (jobData) => {
   if (config.env === 'test') {
-    await _registerJob();
+    await _registerJob(jobData);
     return;
   }
-  setTimeout(() => _registerJob(), 1000);
+  setTimeout(() => _registerJob(jobData), 1000);
 };
 
 module.exports = {

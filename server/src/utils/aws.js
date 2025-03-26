@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const sharp = require('sharp');
 const AWS = require('@aws-sdk/client-s3');
 const logger = require('../config/logger');
@@ -31,6 +32,15 @@ const _reziseImageBuffer = async (imageBuffer) => {
   }
 };
 
+const getS3ObjectKey = (url) => {
+  try {
+    const key = _.replace(url, `${s3BaseUrl}/`, '');
+    return key;
+  } catch (err) {
+    return url;
+  }
+};
+
 const uploadFileBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType }) => {
   try {
     throwBadRequest(fileBuffer.length > MAX_FILE_SIZE, getMessageByLocale('fileTooLarge'));
@@ -58,11 +68,8 @@ const uploadFileBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType }) =>
   }
 };
 
-const deleteObjectFromS3 = async (fileUrl) => {
+const deleteObjectFromS3 = async (key) => {
   try {
-    // Extract file key from URL
-    const key = fileUrl.replace(`${s3BaseUrl}/`, '');
-
     const params = {
       Bucket: s3BucketName,
       Key: key,
@@ -80,6 +87,7 @@ const deleteObjectFromS3 = async (fileUrl) => {
 };
 
 module.exports = {
+  getS3ObjectKey,
   uploadFileBufferToS3,
   deleteObjectFromS3,
 };

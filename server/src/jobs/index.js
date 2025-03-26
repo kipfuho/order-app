@@ -6,6 +6,8 @@ const config = require('../config/config');
 const { receiveJobMessage } = require('./jobUtils');
 const { SESSION_NAME_SPACE } = require('../utils/constant');
 const common = require('../utils/common');
+const { JobTypes } = require('./constant');
+const S3Log = require('../models/s3.model');
 
 // initial setup
 let retry = 0;
@@ -20,7 +22,13 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
 
 // end initial setup
 
-const _processJob = async (jobPayload) => {};
+const _processJob = async (jobPayload) => {
+  const { type, data } = jobPayload;
+
+  if (type === JobTypes.CONFIRM_S3_OBJECT_USAGE) {
+    await S3Log.updateInUseKeys(data);
+  }
+};
 
 const fetchJobAndExecute = async () => {
   // neu co mot job nao do dang chay thi ko chay job nay
