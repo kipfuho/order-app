@@ -115,7 +115,6 @@ export default function ShopPage() {
           icon="dots-vertical"
           onPress={() => setModalVisible(true)}
         />
-        ;
       </AppBar>
       <View
         style={[styles.container, { backgroundColor: theme.colors.background }]}

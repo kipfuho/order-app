@@ -62,6 +62,7 @@ export interface Dish {
   isTaxIncludedPrice: boolean;
   type: string;
   taxRate: number;
+  imageUrls: string[];
 }
 
 export interface DishCategory {

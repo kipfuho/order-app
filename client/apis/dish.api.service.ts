@@ -257,10 +257,35 @@ export const updateDishRequest = async ({
 
   const state = store.getState();
   store.dispatch(
-    updateAllDishCategories([
+    updateAllDishes([
       ..._.filter(state.shop.dishes, (d) => d.id !== dishId),
       result.dish,
     ])
+  );
+};
+
+/**
+ * Delete dish
+ * @param param0
+ */
+export const deleteDishRequest = async ({
+  shopId,
+  dishId,
+}: {
+  shopId: string;
+  dishId: string;
+}) => {
+  const accessToken = await getAccessToken();
+
+  await apiRequest({
+    method: "DELETE",
+    endpoint: `/v1/shops/${shopId}/dishes/${dishId}`,
+    token: accessToken,
+  });
+
+  const state = store.getState();
+  store.dispatch(
+    updateAllDishes(_.filter(state.shop.dishes, (d) => d.id !== dishId))
   );
 };
 

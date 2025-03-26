@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
@@ -55,7 +55,7 @@ export default function UpdateDishPage() {
 
   const goBack = () =>
     router.navigate({
-      pathname: "/shop/[shopId]/settings/tables",
+      pathname: "/shop/[shopId]/menus/dishes",
       params: {
         shopId: shop.id,
       },
@@ -95,6 +95,16 @@ export default function UpdateDishPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    setName(dish.name);
+    setCategory(dish.category);
+    setDishType(dish.type);
+    setPrice(_.toString(dish.price));
+    setUnit(dish.unit);
+    setTaxRate(_.toString(dish.taxRate));
+    setImages(_.map(dish.imageUrls, (url) => ({ uri: url, loading: false })));
+  }, [dish]);
 
   if (!dish) {
     return (
@@ -195,7 +205,7 @@ export default function UpdateDishPage() {
               onPress={handleUpdateDish}
               style={{ width: 200, alignSelf: "center", marginBottom: 20 }}
             >
-              Create Dish
+              Update Dish
             </Button>
           </>
         )}
