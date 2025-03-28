@@ -1,10 +1,10 @@
 const _ = require('lodash');
 const { Order, OrderSession, Cart, OrderSessionReport } = require('../../models');
 const orderUtilService = require('./orderUtils.service');
-const { getTablesFromCache } = require('../../metadata/shopMetadata.service');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { OrderSessionStatus } = require('../../utils/constant');
+const { getTablesFromCache } = require('../../metadata/tableMetadata.service');
 
 const createOrder = async ({ shopId, requestBody }) => {
   const { tableId, orderSessionId, dishOrders } = requestBody;
@@ -74,6 +74,15 @@ const updateOrder = async ({ shopId, requestBody }) => {
   await Order.bulkWrite(bulkOps);
 };
 
+const _getOrderSessionPreview = (orderSessionJson) => {
+  const numberOfCustomer = _.get(orderSessionJson, 'customerInfo.numberOfCustomer', 1);
+  const orderSessionPreview = _.pick(orderSessionJson, ['paymentAmount', 'status', 'createdAt']);
+  orderSessionPreview.numberOfCustomer = numberOfCustomer;
+  orderSessionPreview.averagePaymentAmount = orderSessionPreview.paymentAmount / numberOfCustomer;
+
+  return orderSessionPreview;
+};
+
 const getTableForOrder = async ({ shopId }) => {
   const tables = await getTablesFromCache({ shopId });
   const orderSessions = await OrderSession.find({ shop: shopId });
@@ -88,7 +97,8 @@ const getTableForOrder = async ({ shopId }) => {
     const orderSessionJson = orderSession.toJSON();
     _.forEach(orderSessionJson.tables, (tableId) => {
       if (tableById[tableId]) {
-        tableById[tableId].activeOrderSessions.push(orderSessionJson);
+        const orderSessionPreview = _getOrderSessionPreview(orderSessionJson);
+        tableById[tableId].activeOrderSessions.push(orderSessionPreview);
       }
     });
   });

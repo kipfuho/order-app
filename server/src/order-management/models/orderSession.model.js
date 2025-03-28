@@ -73,6 +73,9 @@ const orderSessionSchema = new mongoose.Schema(
       name: { type: String },
       reason: { type: String },
     },
+    customerInfo: {
+      numberOfCustomer: { type: Number },
+    },
   },
   {
     timestamps: true,
