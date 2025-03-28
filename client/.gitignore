@@ -39,4 +39,4 @@ yarn-error.*
 app-example
 
 # aws
-amplify_outputs.json
+amplify_outputs.ts
