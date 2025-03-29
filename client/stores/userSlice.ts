@@ -7,6 +7,7 @@ import {
   Employee,
   Shop,
   Table,
+  TableForOrder,
   TablePosition,
   Unit,
 } from "./state.interface";
@@ -23,7 +24,7 @@ interface ShopState {
   dishes: Dish[];
   dishTypes: string[];
   dishCategories: DishCategory[];
-  tableWithActiveOrders: Table[];
+  tablesForOrder: TableForOrder[];
 }
 
 // Initial state
@@ -38,7 +39,7 @@ const initialState: ShopState = {
   dishes: [],
   dishTypes: [],
   dishCategories: [],
-  tableWithActiveOrders: [],
+  tablesForOrder: [],
 };
 
 // Create Slice
@@ -201,9 +202,9 @@ export const userSlice = createSlice({
       }
     },
 
-    updateTableWithActiveOrders: (state, action: PayloadAction<Table[]>) => {
+    updateTablesForOrder: (state, action: PayloadAction<TableForOrder[]>) => {
       if (!_.get(action, "payload")) return;
-      state.tableWithActiveOrders = action.payload;
+      state.tablesForOrder = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -231,7 +232,7 @@ export const {
   updateAllDisheTypes,
   updateDish,
   updateDishCategory,
-  updateTableWithActiveOrders,
+  updateTablesForOrder,
   updateUnit,
 } = userSlice.actions;
 

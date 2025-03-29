@@ -19,14 +19,21 @@ export interface User {
 export interface Shop {
   id: string;
   name: string;
+  phone?: string;
   email: string;
   location?: string;
+  imageUrls?: string[];
+  country: string;
 }
 
 export interface Table {
   id: string;
   name: string;
   position: TablePosition;
+}
+
+export interface TableForOrder extends Table {
+  activeOrderSessions: OrderSessionPreview[];
 }
 
 export interface TablePosition {
@@ -83,6 +90,23 @@ export interface Cart {
 }
 
 export interface MenuItem {
+  id: string;
+  name: string;
+  price: number;
+}
+
+// contain less information, for display only
+export interface OrderSessionPreview {
+  id: string;
+  createdAt: Date;
+  numberOfCustomer: number;
+  status: string;
+  statusColorCode?: number;
+  paymentAmount: number;
+  averagePaymentAmount: number;
+}
+
+export interface OrderSession {
   id: string;
   name: string;
   price: number;
