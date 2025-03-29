@@ -7,12 +7,12 @@ export function AppBar({
   children,
 }: {
   title: string;
-  goBack: () => void;
+  goBack?: () => void;
   children?: ReactNode;
 }) {
   return (
     <Appbar.Header style={{ height: 60, paddingHorizontal: 8 }}>
-      <Appbar.BackAction onPress={goBack} size={20} />
+      {goBack && <Appbar.BackAction onPress={goBack} size={20} />}
       <Appbar.Content title={title} titleStyle={{ fontSize: 16 }} />
       {children}
     </Appbar.Header>
