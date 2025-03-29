@@ -4,11 +4,11 @@ import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import { ActivityIndicator, Button, List, useTheme } from "react-native-paper";
-import { getTablePositions } from "../../../../../../../apis/api.service";
 import _ from "lodash";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getTablePositionsRequest } from "../../../../../../../apis/api.service";
 
 export default function TablePositionsManagementPage() {
   const { shopId } = useLocalSearchParams();
@@ -33,7 +33,7 @@ export default function TablePositionsManagementPage() {
     const fetchTablePositions = async () => {
       try {
         setLoading(true);
-        await getTablePositions({ shopId: shop.id });
+        await getTablePositionsRequest({ shopId: shop.id });
       } catch (error) {
         console.error("Error fetching table positions:", error);
       } finally {

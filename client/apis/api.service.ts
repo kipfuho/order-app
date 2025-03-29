@@ -389,7 +389,7 @@ export const updateTablePositionRequest = async ({
   );
 };
 
-export const getTablePositions = async ({ shopId }: { shopId: string }) => {
+export const getTablePositionsRequest = async ({ shopId }: { shopId: string }) => {
   const accessToken = await getAccessToken();
 
   const result: {
@@ -462,7 +462,7 @@ export const updateTableRequest = async ({
   );
 };
 
-export const getTables = async ({ shopId }: { shopId: string }) => {
+export const getTablesRequest = async ({ shopId }: { shopId: string }) => {
   const accessToken = await getAccessToken();
 
   const result: {

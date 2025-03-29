@@ -8,8 +8,12 @@ import {
   getDishesRequest,
   getDishTypesRequest,
 } from "../../../../apis/dish.api.service";
-import { getTablePositions, getTables } from "../../../../apis/api.service";
 import { styles } from "../../../_layout";
+import {
+  getTablePositionsRequest,
+  getTablesRequest,
+} from "../../../../apis/api.service";
+import { connectAppSyncForShop } from "../../../../apis/aws.service";
 
 export default function AppLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };
@@ -24,8 +28,8 @@ export default function AppLayout() {
 
     try {
       await Promise.all([
-        getTables({ shopId: shop.id }),
-        getTablePositions({ shopId: shop.id }),
+        getTablesRequest({ shopId: shop.id }),
+        getTablePositionsRequest({ shopId: shop.id }),
         getDishesRequest({ shopId: shop.id }),
         getDishCategoriesRequest({ shopId: shop.id }),
         getDishTypesRequest({ shopId: shop.id }),
@@ -38,6 +42,13 @@ export default function AppLayout() {
   useEffect(() => {
     fetchShopData();
   }, [fetchShopData]);
+
+  // 🔹 Subscribe to AppSync updates for the current shop
+  useEffect(() => {
+    if (!shop) return;
+
+    connectAppSyncForShop(shopId);
+  }, [shopId]);
 
   if (!shop) {
     return (

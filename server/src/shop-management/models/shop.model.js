@@ -36,6 +36,7 @@ const shopSchema = new mongoose.Schema(
       default: 'Asia/Ho_Chi_Minh',
     },
     reportTime: { type: Number, default: 0 },
+    imageUrls: [String],
   },
   {
     timestamps: true,

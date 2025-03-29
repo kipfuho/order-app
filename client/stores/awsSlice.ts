@@ -2,71 +2,128 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { PURGE } from "redux-persist";
 import { EventsChannel } from "aws-amplify/api";
 import { Subscription } from "rxjs";
-import _ from "lodash";
-
-interface ConnectionDetail {
-  connection: EventsChannel;
-  timestamp: Date;
-}
 
 interface SubscriptionDetail {
-  channelId: string;
+  type: string; // event type
   subscription: Subscription;
   timestamp: Date;
 }
 
-interface AppSyncConnectionState {
-  connectionDetail: ConnectionDetail | null;
+interface ConnectionDetail {
+  channelId: string;
+  connection: EventsChannel;
   subscriptionDetails: SubscriptionDetail[];
+  timestamp: Date;
 }
 
-const initialState: AppSyncConnectionState = {
-  connectionDetail: null,
-  subscriptionDetails: [],
+interface AppSyncEventState {
+  connectionDetails: ConnectionDetail[];
+}
+
+const initialState: AppSyncEventState = {
+  connectionDetails: [],
 };
 
 const awsSlice = createSlice({
   name: "aws",
   initialState,
   reducers: {
-    // add a connection
-    addConnectionAppSync: (state, action: PayloadAction<EventsChannel>) => {
-      if (!action.payload) return;
-      state.connectionDetail = {
-        connection: action.payload,
-        timestamp: new Date(),
-      };
-    },
-    // close connection and all subscriptions
-    closeConnectionAppSync: (state) => {
-      if (!state.connectionDetail) return;
-      state.connectionDetail.connection.close();
-      state.connectionDetail = null;
-    },
-    subscribeChannel: (
+    // Add a connection
+    connectAppSyncChannel: (
       state,
-      action: PayloadAction<{ channelId: string; subscription: Subscription }>
+      action: PayloadAction<{
+        channelId: string;
+        channel: EventsChannel;
+        subscription: Subscription;
+      }>
     ) => {
       if (!action.payload) return;
-      state.subscriptionDetails = [
-        ...state.subscriptionDetails,
-        {
-          ...action.payload,
-          timestamp: new Date(),
-        },
-      ];
+      const existingConnection = state.connectionDetails.find(
+        (conn) => conn.channelId === action.payload.channelId
+      );
+      if (!existingConnection) {
+        const currentTime = new Date();
+        state.connectionDetails.push({
+          channelId: action.payload.channelId,
+          connection: action.payload.channel,
+          subscriptionDetails: [
+            {
+              subscription: action.payload.subscription,
+              timestamp: currentTime,
+              type: "ALL",
+            },
+          ],
+          timestamp: currentTime,
+        });
+      } else {
+        action.payload.channel.close();
+      }
     },
-    unsubscribeChannel: (state, action: PayloadAction<string>) => {
+
+    // Close connection and remove all subscriptions
+    closeAppSyncChannel: (
+      state,
+      action: PayloadAction<{ channelId: string }>
+    ) => {
       if (!action.payload) return;
-      const subscriptionDetail = _.find(
-        state.subscriptionDetails,
-        (subscriptionDetail) => subscriptionDetail.channelId === action.payload
+      const index = state.connectionDetails.findIndex(
+        (conn) => conn.channelId === action.payload.channelId
       );
-      subscriptionDetail?.subscription.unsubscribe();
-      state.subscriptionDetails = _.filter(
-        state.subscriptionDetails,
-        (subscriptionDetail) => !subscriptionDetail.subscription.closed
+      if (index !== -1) {
+        // Unsubscribe from all subscriptions in this connection
+        state.connectionDetails[index].subscriptionDetails.forEach((sub) => {
+          sub.subscription.unsubscribe();
+        });
+        // Remove the connection from the state
+        state.connectionDetails.splice(index, 1);
+      }
+    },
+
+    // Subscribe to an event type
+    subscribeEventType: (
+      state,
+      action: PayloadAction<{
+        channelId: string;
+        type: string;
+        subscription: Subscription;
+      }>
+    ) => {
+      if (!action.payload) return;
+      const connection = state.connectionDetails.find(
+        (conn) => conn.channelId === action.payload.channelId
       );
+      if (connection) {
+        const existingSubscription = connection.subscriptionDetails.find(
+          (sub) => sub.type === action.payload.type
+        );
+        if (!existingSubscription) {
+          connection.subscriptionDetails.push({
+            type: action.payload.type,
+            subscription: action.payload.subscription,
+            timestamp: new Date(),
+          });
+        }
+      }
+    },
+
+    // Unsubscribe from a specific event type
+    unsubscribeEventType: (
+      state,
+      action: PayloadAction<{ channelId: string; type: string }>
+    ) => {
+      if (!action.payload) return;
+      const connection = state.connectionDetails.find(
+        (conn) => conn.channelId === action.payload.channelId
+      );
+      if (connection) {
+        const subIndex = connection.subscriptionDetails.findIndex(
+          (sub) => sub.type === action.payload.type
+        );
+        if (subIndex !== -1) {
+          connection.subscriptionDetails[subIndex].subscription.unsubscribe();
+          connection.subscriptionDetails.splice(subIndex, 1);
+        }
+      }
     },
   },
   extraReducers: (builder) => {
@@ -77,10 +134,10 @@ const awsSlice = createSlice({
 });
 
 export const {
-  addConnectionAppSync,
-  closeConnectionAppSync,
-  subscribeChannel,
-  unsubscribeChannel,
+  connectAppSyncChannel,
+  closeAppSyncChannel,
+  subscribeEventType,
+  unsubscribeEventType,
 } = awsSlice.actions;
 
 export default awsSlice.reducer;

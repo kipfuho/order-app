@@ -4,11 +4,11 @@ import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import { ActivityIndicator, Button, useTheme, List } from "react-native-paper";
-import { getTables } from "../../../../../../../apis/api.service";
 import _ from "lodash";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getTablesRequest } from "../../../../../../../apis/api.service";
 
 export default function TablesManagementPage() {
   const { shopId } = useLocalSearchParams();
@@ -30,7 +30,7 @@ export default function TablesManagementPage() {
     const fetchTables = async () => {
       try {
         setLoading(true);
-        await getTables({ shopId: shop.id });
+        await getTablesRequest({ shopId: shop.id });
       } catch (error) {
         console.error("Error fetching tables:", error);
       } finally {
