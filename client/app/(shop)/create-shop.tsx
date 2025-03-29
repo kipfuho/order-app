@@ -1,27 +1,35 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from "react-native";
+import React, { useCallback, useState } from "react";
 import { useRouter } from "expo-router";
 import { createShopRequest } from "../../apis/api.service";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
+import {
+  ActivityIndicator,
+  Button,
+  Surface,
+  TextInput,
+} from "react-native-paper";
+import { AppBar } from "../../components/AppBar";
 import { styles } from "../_layout";
-import { ActivityIndicator } from "react-native-paper";
+import { ScrollView } from "react-native";
+import { goBackShopList } from "../../apis/navigate.service";
 
 export default function CreateShopPage() {
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState("shop");
+  const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("ctcakip@gmail.com");
+  const [email, setEmail] = useState("");
   const [taxRate, setTaxRate] = useState("");
   const router = useRouter();
+
+  const resetField = useCallback(async () => {
+    setName("");
+    setLocation("");
+    setPhone("");
+    setEmail("");
+    setTaxRate("");
+  }, []);
 
   const handleCreateShop = async () => {
     if (!name.trim() || !email.trim()) {
@@ -43,15 +51,8 @@ export default function CreateShopPage() {
         location,
       });
 
-      // Navigate back to shops list
-      router.push("/");
-
-      // Clear input fields
-      setName("");
-      setLocation("");
-      setPhone("");
-      setEmail("");
-      setTaxRate("");
+      goBackShopList({ router });
+      resetField();
     } catch (err) {
       console.error(err);
     } finally {
@@ -60,68 +61,59 @@ export default function CreateShopPage() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create a New Shop</Text>
+    <>
+      <AppBar title="Create Shop" goBack={() => goBackShopList({ router })} />
+      <Surface style={styles.baseContainer}>
+        <ScrollView>
+          <TextInput
+            mode="outlined"
+            label="Shop Name"
+            value={name}
+            onChangeText={setName}
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Shop Name"
-        value={name}
-        onChangeText={setName}
-      />
+          <TextInput
+            mode="outlined"
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-      />
+          <TextInput
+            mode="outlined"
+            label="Phone"
+            value={phone}
+            onChangeText={setPhone}
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Phone"
-        value={phone}
-        onChangeText={setPhone}
-      />
+          <TextInput
+            mode="outlined"
+            label="Location"
+            value={location}
+            onChangeText={setLocation}
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Location"
-        value={location}
-        onChangeText={setLocation}
-      />
+          <TextInput
+            mode="outlined"
+            label="Tax Rate"
+            value={taxRate}
+            keyboardType="numeric" // Shows numeric keyboard
+            onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Tax Rate"
-        value={taxRate}
-        keyboardType="numeric" // Shows numeric keyboard
-        onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
-      />
-
-      {loading ? (
-        <ActivityIndicator
-          animating={true}
-          size="large"
-          style={styles.loader}
-        />
-      ) : (
-        <>
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={handleCreateShop}
-          >
-            <Text style={styles.createButtonText}>Create Shop</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </>
-      )}
-    </View>
+          {loading ? (
+            <ActivityIndicator animating={true} size="large" />
+          ) : (
+            <Button
+              mode="contained"
+              onPress={handleCreateShop}
+              style={styles.baseButton}
+            >
+              Create Shop
+            </Button>
+          )}
+        </ScrollView>
+      </Surface>
+    </>
   );
 }

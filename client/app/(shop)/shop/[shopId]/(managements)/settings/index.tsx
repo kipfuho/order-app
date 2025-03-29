@@ -1,25 +1,34 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { StyleSheet, View, useWindowDimensions } from "react-native";
+import { ScrollView, View, useWindowDimensions } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useTheme, Button, Text } from "react-native-paper";
+import { useTheme, Button, Surface, Icon, Text } from "react-native-paper";
 import { Shop } from "../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../components/AppBar";
+import { styles } from "../../../../../_layout";
+import { goBackShopMenu } from "../../../../../../apis/navigate.service";
 
 interface Item {
+  key: string;
   title: string;
   route: "tables";
+  icon: string;
 }
 
 const BUTTONS: Item[] = [
-  { title: "Tables", route: "tables" },
-  { title: "Tables", route: "tables" },
-  { title: "Tables", route: "tables" },
-  { title: "Tables", route: "tables" },
-  { title: "Tables", route: "tables" },
-  { title: "Tables", route: "tables" },
+  { key: "table1", title: "Tables", route: "tables", icon: "table-furniture" },
+  { key: "table2", title: "Tables", route: "tables", icon: "table-furniture" },
+  { key: "table3", title: "Tables", route: "tables", icon: "table-furniture" },
+  { key: "table4", title: "Tables", route: "tables", icon: "table-furniture" },
+  { key: "table5", title: "Tables", route: "tables", icon: "table-furniture" },
+  { key: "table6", title: "Tables", route: "tables", icon: "table-furniture" },
 ];
+
+const getButtonSize = (width: number) => {
+  if (width > 600) return width / 3 - 30;
+  if (width > 380) return width / 2 - 30;
+  return width - 30;
+};
 
 export default function SettingManagementPage() {
   const { shopId } = useLocalSearchParams();
@@ -29,58 +38,39 @@ export default function SettingManagementPage() {
   const router = useRouter();
   const theme = useTheme();
   const { width } = useWindowDimensions();
-  const buttonSize = width / 3 - 30;
-
-  const goBack = () => {
-    router.navigate({
-      pathname: "/shop/[shopId]/home",
-      params: { shopId: shop.id },
-    });
-  };
+  const buttonSize = getButtonSize(width);
 
   return (
     <>
-      <AppBar title="Settings" goBack={goBack} />
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-        {/* Buttons */}
-        <View style={styles.buttonGrid}>
-          {BUTTONS.map((item) => (
-            <Button
-              key={item.route}
-              mode="contained"
-              style={[styles.button, { width: buttonSize, backgroundColor: theme.colors.primary }]}
-              labelStyle={{ color: theme.colors.onPrimary }}
-              onPress={() =>
-                router.push({
-                  pathname: `/shop/[shopId]/settings/${item.route}`,
-                  params: { shopId: shop.id },
-                })
-              }
-            >
-              {item.title}
-            </Button>
-          ))}
-        </View>
-      </SafeAreaView>
+      <AppBar
+        title="Settings"
+        goBack={() => goBackShopMenu({ router, shopId: shop.id })}
+      />
+      <Surface style={styles.baseContainer}>
+        <ScrollView>
+          {/* Buttons */}
+          <View style={styles.baseGrid}>
+            {BUTTONS.map((item) => (
+              <Button
+                key={item.key}
+                mode="contained-tonal"
+                style={{ width: buttonSize, height: 100, borderRadius: 10 }}
+                onPress={() =>
+                  router.push({
+                    pathname: `/shop/[shopId]/settings/${item.route}`,
+                    params: { shopId: shop.id },
+                  })
+                }
+              >
+                <View style={{ flex: 1, gap: 5 }}>
+                  <Icon source={item.icon} size={50} />
+                  <Text variant="bodyLarge">{item.title}</Text>
+                </View>
+              </Button>
+            ))}
+          </View>
+        </ScrollView>
+      </Surface>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
-  },
-  buttonGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    paddingVertical: 10,
-  },
-  button: {
-    margin: 5,
-    borderRadius: 8,
-  },
-});
-

@@ -1,6 +1,6 @@
-import { View } from "react-native";
 import { styles } from "../../../../_layout";
+import { Surface } from "react-native-paper";
 
 export default function AnalyticManagementPage() {
-  return <View style={styles.container}>analytics</View>;
+  return <Surface style={styles.baseContainer}>analytics</Surface>;
 }

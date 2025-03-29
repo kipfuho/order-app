@@ -1,6 +1,6 @@
-import { View } from "react-native";
 import { styles } from "../../../../_layout";
+import { Surface } from "react-native-paper";
 
 export default function CustomerManagementPage() {
-  return <View style={styles.container}>customer</View>;
+  return <Surface style={styles.baseContainer}>customer</Surface>;
 }

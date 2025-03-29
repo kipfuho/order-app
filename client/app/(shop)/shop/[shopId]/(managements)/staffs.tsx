@@ -1,6 +1,6 @@
-import { View } from "react-native";
 import { styles } from "../../../../_layout";
+import { Surface } from "react-native-paper";
 
 export default function StaffManagementPage() {
-  return <View style={styles.container}>staff</View>;
+  return <Surface style={styles.baseContainer}>staff</Surface>;
 }

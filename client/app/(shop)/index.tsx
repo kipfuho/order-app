@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { View, FlatList, StyleSheet } from "react-native";
+import { ScrollView } from "react-native";
 import {
   ActivityIndicator,
   Button,
-  Card,
-  Text,
+  List,
+  Surface,
   useTheme,
 } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { useSession } from "../../hooks/useSession";
 import { RootState } from "../../stores/store";
 import { queryShopsRequest } from "../../apis/api.service";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import { AppBar } from "../../components/AppBar";
+import { styles } from "../_layout";
 
 export default function ShopsPage() {
   const { session } = useSession();
@@ -40,80 +42,54 @@ export default function ShopsPage() {
 
   if (loading) {
     return (
-      <View style={styles.loaderContainer}>
+      <Surface style={styles.baseContainer}>
         <ActivityIndicator
           animating={true}
           size="large"
           color={theme.colors.primary}
+          style={styles.baseLoader}
         />
-      </View>
+      </Surface>
     );
   }
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <View style={styles.header}>
-        <Text
-          variant="headlineMedium"
-          style={{ color: theme.colors.onBackground }}
-        >
-          Shops
-        </Text>
+    <>
+      <AppBar title="Shops">
         <Button
-          mode="contained"
+          mode="contained-tonal"
           onPress={() => router.push("/create-shop")}
-          buttonColor={theme.colors.primary}
-          textColor={theme.colors.onPrimary}
         >
           Create Shop
         </Button>
-      </View>
-      <FlatList
-        data={shops}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <Card
-            style={[styles.shopItem, { backgroundColor: theme.colors.surface }]}
-            onPress={() =>
-              router.push({
-                pathname: "/shop/[shopId]/home",
-                params: { shopId: item.id },
-              })
-            }
-          >
-            <Card.Title
-              title={item.name}
-              titleStyle={{ color: theme.colors.onSurface }}
-              subtitle={item.location}
-              subtitleStyle={{ color: theme.colors.onSurfaceVariant }}
-            />
-          </Card>
-        )}
-      />
-    </View>
+      </AppBar>
+      <Surface style={{ flex: 1, padding: 16 }}>
+        <ScrollView>
+          {/* List of Table Positions */}
+          <List.Section>
+            {shops.map((item) => (
+              <Link
+                key={item.id}
+                href={{
+                  pathname: "/shop/[shopId]/home",
+                  params: { shopId: item.id },
+                }}
+                asChild
+              >
+                <List.Item
+                  title={item.name}
+                  style={{
+                    backgroundColor: theme.colors.backdrop,
+                    borderRadius: 8,
+                    marginBottom: 8,
+                  }}
+                  left={(props) => <List.Icon {...props} icon="store" />}
+                />
+              </Link>
+            ))}
+          </List.Section>
+        </ScrollView>
+      </Surface>
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  shopItem: {
-    marginBottom: 10,
-    padding: 10,
-  },
-});
