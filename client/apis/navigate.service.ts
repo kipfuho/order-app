@@ -23,3 +23,18 @@ export const goBack = (
 
   router.navigate(path);
 };
+
+export const goBackShopList = ({ router }: { router: Router }) =>
+  router.navigate("/");
+
+export const goBackShopMenu = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) =>
+  router.navigate({
+    pathname: "/shop/[shopId]/home",
+    params: { shopId },
+  });
