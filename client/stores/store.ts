@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 import userReducer from "./userSlice";
 import customerReducer from "./customerSlice";
+import awsReducer from "./awsSlice";
 import { persistStore, persistReducer } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -13,19 +14,20 @@ const persistConfig = {
   storage: AsyncStorage, // Stores data in AsyncStorage (React Native) or localStorage (Web)
 };
 
+// Create a persisted reducer
+const persistedAuthReducer = persistReducer(persistConfig, authReducer);
+
 // Combine reducers
 const rootReducer = combineReducers({
-  auth: authReducer,
-  shop: userReducer,
-  customer: customerReducer,
+  auth: persistedAuthReducer, // Persistent
+  shop: userReducer, // Non-persistent
+  customer: customerReducer, // Non-persistent
+  aws: awsReducer, // Non-persistent
 });
-
-// Create a persisted reducer
-const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 // Create the store
 const store = configureStore({
-  reducer: persistedReducer,
+  reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false, // Ignore serialization warnings
