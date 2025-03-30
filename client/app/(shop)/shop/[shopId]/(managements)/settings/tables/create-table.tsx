@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
-import { createTableRequest } from "../../../../../../../apis/api.service";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
   Button,
@@ -17,6 +15,7 @@ import {
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import Toast from "react-native-toast-message";
+import { createTableRequest } from "../../../../../../../apis/table.api.service";
 
 export default function CreateTablePage() {
   const { shopId } = useLocalSearchParams();

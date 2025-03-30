@@ -2,7 +2,10 @@ import { events } from "aws-amplify/api";
 import store from "../stores/store";
 import { connectAppSyncChannel, subscribeEventType } from "../stores/awsSlice";
 import { getDishCategoriesRequest, getDishesRequest } from "./dish.api.service";
-import { getTablePositionsRequest, getTablesRequest } from "./api.service";
+import {
+  getTablePositionsRequest,
+  getTablesRequest,
+} from "./table.api.service";
 
 const namespace = "default";
 const useappsync = false;

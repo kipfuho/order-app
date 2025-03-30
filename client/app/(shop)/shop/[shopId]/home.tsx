@@ -14,15 +14,13 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores/store";
-import {
-  createDefaultUnitsRequest,
-  deleteShopRequest,
-} from "../../../../apis/api.service";
+import { createDefaultUnitsRequest } from "../../../../apis/api.service";
 import { AppBar } from "../../../../components/AppBar";
 import { Shop } from "../../../../stores/state.interface";
 import { goBackShopList } from "../../../../apis/navigate.service";
 import { View } from "react-native";
 import { styles } from "../../../_layout";
+import { deleteShopRequest } from "../../../../apis/shop.api.service";
 
 interface Item {
   title: string;

@@ -14,10 +14,10 @@ import {
 } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../../stores/store";
-import { updateTablePositionRequest } from "../../../../../../../../apis/api.service";
 import { Shop } from "../../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../../components/AppBar";
 import { ScrollView } from "react-native";
+import { updateTablePositionRequest } from "../../../../../../../../apis/table.api.service";
 
 export default function UpdateTablePositionPage() {
   const { shopId } = useLocalSearchParams();

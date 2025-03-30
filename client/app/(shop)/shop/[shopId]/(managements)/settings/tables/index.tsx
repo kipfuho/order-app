@@ -8,7 +8,7 @@ import _ from "lodash";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getTablesRequest } from "../../../../../../../apis/api.service";
+import { getTablesRequest } from "../../../../../../../apis/table.api.service";
 
 export default function TablesManagementPage() {
   const { shopId } = useLocalSearchParams();

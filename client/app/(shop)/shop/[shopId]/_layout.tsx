@@ -8,16 +8,16 @@ import {
   getDishTypesRequest,
 } from "../../../../apis/dish.api.service";
 import { styles } from "../../../_layout";
-import {
-  getTablePositionsRequest,
-  getTablesRequest,
-} from "../../../../apis/api.service";
 import { connectAppSyncForShop } from "../../../../apis/aws.service";
 import { useGetShopsQuery } from "../../../../stores/apiSlices/shopApi.slice";
 import _ from "lodash";
 import { updateCurrentShop } from "../../../../stores/shop.slice";
 import { RootState } from "../../../../stores/store";
 import { LoaderBasic } from "../../../../components/ui/Loader";
+import {
+  getTablePositionsRequest,
+  getTablesRequest,
+} from "../../../../apis/table.api.service";
 
 export default function AppLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };

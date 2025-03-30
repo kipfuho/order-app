@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from "react";
 import { useRouter } from "expo-router";
-import { createShopRequest } from "../../apis/api.service";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
 import {
@@ -13,6 +12,7 @@ import { AppBar } from "../../components/AppBar";
 import { styles } from "../_layout";
 import { ScrollView } from "react-native";
 import { goBackShopList } from "../../apis/navigate.service";
+import { createShopRequest } from "../../apis/shop.api.service";
 
 export default function CreateShopPage() {
   const [loading, setLoading] = useState(false);

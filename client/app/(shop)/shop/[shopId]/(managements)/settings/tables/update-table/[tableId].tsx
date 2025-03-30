@@ -5,21 +5,19 @@ import Toast from "react-native-toast-message";
 import {
   ActivityIndicator,
   Button,
-  Divider,
-  Menu,
   Surface,
   Text,
   TextInput,
 } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../../stores/store";
-import { updateTableRequest } from "../../../../../../../../apis/api.service";
 import {
   Shop,
   TablePosition,
 } from "../../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../../components/AppBar";
 import { DropdownMenu } from "../../../../../../../../components/DropdownMenu";
+import { updateTableRequest } from "../../../../../../../../apis/table.api.service";
 
 export default function UpdateTablePage() {
   const { shopId } = useLocalSearchParams();
