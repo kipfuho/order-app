@@ -70,10 +70,7 @@ const getButtonSize = (width: number) => {
 };
 
 export default function ShopPage() {
-  const { shopId } = useLocalSearchParams();
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
-  ) as Shop;
+  const shop = useSelector((state: RootState) => state.shop2.shop) as Shop;
   const router = useRouter();
   const theme = useTheme(); // Get theme colors
 

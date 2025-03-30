@@ -59,6 +59,14 @@ export default function TabLayout() {
           }}
           initialParams={{ shopId }}
         />
+
+        {["create-order"].map((name) => (
+          <Tabs.Screen
+            key={name}
+            name={name}
+            options={{ href: null, tabBarStyle: { display: "none" } }}
+          />
+        ))}
       </Tabs>
     </>
   );

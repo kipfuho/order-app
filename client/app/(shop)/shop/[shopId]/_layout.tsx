@@ -1,7 +1,6 @@
 import { Link, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect } from "react";
-import { RootState } from "../../../../stores/store";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
 import {
   getDishCategoriesRequest,
@@ -14,25 +13,33 @@ import {
   getTablesRequest,
 } from "../../../../apis/api.service";
 import { connectAppSyncForShop } from "../../../../apis/aws.service";
+import { useGetShopsQuery } from "../../../../stores/apiSlices/shopApi.slice";
+import _ from "lodash";
+import { updateCurrentShop } from "../../../../stores/shop.slice";
+import { RootState } from "../../../../stores/store";
+import { LoaderBasic } from "../../../../components/ui/Loader";
 
 export default function AppLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
-  );
+  const { data: shops, isLoading } = useGetShopsQuery({});
+  const shop = _.find(shops, (s) => s.id.toString() === shopId);
+  const currentShop = useSelector((state: RootState) => state.shop2.shop);
 
+  const dispatch = useDispatch();
   const theme = useTheme();
 
-  const fetchShopData = useCallback(async () => {
+  const handleShopChange = useCallback(async () => {
     if (!shop) return;
 
     try {
+      dispatch(updateCurrentShop(shop));
       await Promise.all([
         getTablesRequest({ shopId: shop.id }),
         getTablePositionsRequest({ shopId: shop.id }),
         getDishesRequest({ shopId: shop.id }),
         getDishCategoriesRequest({ shopId: shop.id }),
         getDishTypesRequest({ shopId: shop.id }),
+        connectAppSyncForShop({ shopId: shop.id }),
       ]);
     } catch (error) {
       console.error("Error fetching shop data:", error);
@@ -40,15 +47,12 @@ export default function AppLayout() {
   }, [shop]);
 
   useEffect(() => {
-    fetchShopData();
-  }, [fetchShopData]);
+    handleShopChange();
+  }, [handleShopChange]);
 
-  // 🔹 Subscribe to AppSync updates for the current shop
-  useEffect(() => {
-    if (!shop) return;
-
-    connectAppSyncForShop(shopId);
-  }, [shopId]);
+  if (isLoading) {
+    return <LoaderBasic />;
+  }
 
   if (!shop) {
     return (
@@ -66,6 +70,10 @@ export default function AppLayout() {
         </Link>
       </Surface>
     );
+  }
+
+  if (!currentShop) {
+    return <LoaderBasic />;
   }
 
   return <Stack screenOptions={{ headerShown: false }} />;

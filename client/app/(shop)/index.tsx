@@ -1,56 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ScrollView } from "react-native";
-import {
-  ActivityIndicator,
-  Button,
-  List,
-  Surface,
-  useTheme,
-} from "react-native-paper";
-import { useSelector } from "react-redux";
-import { useSession } from "../../hooks/useSession";
-import { RootState } from "../../stores/store";
-import { queryShopsRequest } from "../../apis/api.service";
+import { Button, List, Surface, useTheme } from "react-native-paper";
 import { Link, useRouter } from "expo-router";
 import { AppBar } from "../../components/AppBar";
-import { styles } from "../_layout";
+import { useGetShopsQuery } from "../../stores/apiSlices/shopApi.slice";
+import { LoaderBasic } from "../../components/ui/Loader";
 
 export default function ShopsPage() {
-  const { session } = useSession();
-  const shops = useSelector((state: RootState) => state.shop.shops);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const theme = useTheme(); // Get theme colors
 
-  useEffect(() => {
-    const fetchShops = async () => {
-      try {
-        await queryShopsRequest({
-          user: session,
-          limit: 1000,
-          page: 1,
-        });
-      } catch (error) {
-        console.error("Error fetching shops:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: shops = [], isLoading, isError, error } = useGetShopsQuery({});
 
-    fetchShops();
-  }, []);
-
-  if (loading) {
-    return (
-      <Surface style={styles.baseContainer}>
-        <ActivityIndicator
-          animating={true}
-          size="large"
-          color={theme.colors.primary}
-          style={styles.baseLoader}
-        />
-      </Surface>
-    );
+  if (isLoading) {
+    return <LoaderBasic />;
   }
 
   return (
