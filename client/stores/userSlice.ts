@@ -14,7 +14,6 @@ import {
 import { PURGE } from "redux-persist";
 
 interface ShopState {
-  useCache: boolean;
   shops: Shop[];
   tables: Table[];
   tablePositions: TablePosition[];
@@ -29,7 +28,6 @@ interface ShopState {
 
 // Initial state
 const initialState: ShopState = {
-  useCache: false,
   shops: [],
   tables: [],
   tablePositions: [],
