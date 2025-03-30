@@ -4,14 +4,21 @@ import { apiRequest } from "./api.service";
 import { getAccessToken } from "./utils.service";
 import store from "../stores/store";
 import { updateAllTablePositions, updateAllTables } from "../stores/userSlice";
+import {
+  CreateTablePositionRequest,
+  CreateTableRequest,
+  DeleteTablePositionRequest,
+  DeleteTableRequest,
+  GetTablePositionsRequest,
+  GetTablesRequest,
+  UpdateTablePositionRequest,
+  UpdateTableRequest,
+} from "./table.api.interface";
 
 const getTablePositionsRequest = async ({
   shopId,
   rtk = false,
-}: {
-  shopId: string;
-  rtk?: boolean;
-}) => {
+}: GetTablePositionsRequest) => {
   const accessToken = await getAccessToken();
 
   const result: {
@@ -34,12 +41,7 @@ const createTablePositionRequest = async ({
   name,
   categories,
   rtk = false,
-}: {
-  shopId: string;
-  name: string;
-  categories: string[];
-  rtk?: boolean;
-}) => {
+}: CreateTablePositionRequest) => {
   const accessToken = await getAccessToken();
   const body: {
     name: string;
@@ -76,13 +78,7 @@ const updateTablePositionRequest = async ({
   name,
   categories,
   rtk = false,
-}: {
-  tablePositionId: string;
-  shopId: string;
-  name: string;
-  categories: string[];
-  rtk?: boolean;
-}) => {
+}: UpdateTablePositionRequest) => {
   const accessToken = await getAccessToken();
   const body: {
     name: string;
@@ -120,11 +116,7 @@ const deleteTablePositionRequest = async ({
   tablePositionId,
   shopId,
   rtk = false,
-}: {
-  tablePositionId: string;
-  shopId: string;
-  rtk?: boolean;
-}) => {
+}: DeleteTablePositionRequest) => {
   const accessToken = await getAccessToken();
 
   const result: { tablePosition: TablePosition } = await apiRequest({
@@ -148,13 +140,7 @@ const deleteTablePositionRequest = async ({
   return result.tablePosition;
 };
 
-const getTablesRequest = async ({
-  shopId,
-  rtk = false,
-}: {
-  shopId: string;
-  rtk?: boolean;
-}) => {
+const getTablesRequest = async ({ shopId, rtk = false }: GetTablesRequest) => {
   const accessToken = await getAccessToken();
 
   const result: {
@@ -177,12 +163,7 @@ const createTableRequest = async ({
   name,
   tablePosition,
   rtk = false,
-}: {
-  shopId: string;
-  name: string;
-  tablePosition: TablePosition;
-  rtk?: boolean;
-}) => {
+}: CreateTableRequest) => {
   const accessToken = await getAccessToken();
   const body: {
     name: string;
@@ -210,13 +191,7 @@ const updateTableRequest = async ({
   name,
   tablePosition,
   rtk = false,
-}: {
-  tableId: string;
-  shopId: string;
-  name: string;
-  tablePosition: TablePosition;
-  rtk?: boolean;
-}) => {
+}: UpdateTableRequest) => {
   const accessToken = await getAccessToken();
   const body: {
     name: string;
@@ -247,11 +222,7 @@ const deleteTableRequest = async ({
   tableId,
   shopId,
   rtk = false,
-}: {
-  tableId: string;
-  shopId: string;
-  rtk?: boolean;
-}) => {
+}: DeleteTableRequest) => {
   const accessToken = await getAccessToken();
 
   const result: { table: Table } = await apiRequest({

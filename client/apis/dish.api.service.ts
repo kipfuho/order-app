@@ -8,14 +8,21 @@ import { apiFormDataRequest, apiRequest } from "./api.service";
 import { getAccessToken } from "./utils.service";
 import store from "../stores/store";
 import { Dish, DishCategory, Unit } from "../stores/state.interface";
+import {
+  CreateDishCategoryRequest,
+  CreateDishRequest,
+  DeleteDishCategoryRequest,
+  DeleteDishRequest,
+  GetDishCategoriesRequest,
+  GetDishesRequest,
+  GetDishTypesRequest,
+  RemoveImageRequest,
+  UpdateDishCategoryRequest,
+  UpdateDishRequest,
+  UploadImageRequest,
+} from "./dish.api.interface";
 
-export const uploadImageRequest = async ({
-  shopId,
-  formData,
-}: {
-  shopId: string;
-  formData: FormData;
-}) => {
+const uploadImageRequest = async ({ shopId, formData }: UploadImageRequest) => {
   const accessToken = await getAccessToken();
   const result: { url: string } = await apiFormDataRequest({
     endpoint: `/v1/shops/${shopId}/dishes/upload`,
@@ -26,13 +33,7 @@ export const uploadImageRequest = async ({
   return result.url;
 };
 
-export const removeImageRequest = async ({
-  shopId,
-  url,
-}: {
-  shopId: string;
-  url: string;
-}) => {
+const removeImageRequest = async ({ shopId, url }: RemoveImageRequest) => {
   const accessToken = await getAccessToken();
   await apiRequest({
     method: "POST",
@@ -48,13 +49,11 @@ export const removeImageRequest = async ({
  * Create dish category
  * @param param0
  */
-export const createDishCategoryRequest = async ({
+const createDishCategoryRequest = async ({
   shopId,
   name,
-}: {
-  shopId: string;
-  name: string;
-}) => {
+  rtk = false,
+}: CreateDishCategoryRequest) => {
   const accessToken = await getAccessToken();
   const body: {
     name: string;
@@ -67,21 +66,26 @@ export const createDishCategoryRequest = async ({
     data: body,
   });
 
-  const state = store.getState();
-  store.dispatch(
-    updateAllDishCategories([...state.shop.dishCategories, result.dishCategory])
-  );
+  if (!rtk) {
+    const state = store.getState();
+    store.dispatch(
+      updateAllDishCategories([
+        ...state.shop.dishCategories,
+        result.dishCategory,
+      ])
+    );
+  }
+  return result.dishCategory;
 };
 
 /**
  * Get dish category
  * @param param0
  */
-export const getDishCategoriesRequest = async ({
+const getDishCategoriesRequest = async ({
   shopId,
-}: {
-  shopId: string;
-}) => {
+  rtk = false,
+}: GetDishCategoriesRequest) => {
   const accessToken = await getAccessToken();
 
   const result: { dishCategories: DishCategory[] } = await apiRequest({
@@ -90,22 +94,23 @@ export const getDishCategoriesRequest = async ({
     token: accessToken,
   });
 
-  store.dispatch(updateAllDishCategories(result.dishCategories));
+  if (!rtk) {
+    store.dispatch(updateAllDishCategories(result.dishCategories));
+  }
+
+  return result.dishCategories;
 };
 
 /**
  * Update dish category
  * @param param0
  */
-export const updateDishCategoryRequest = async ({
+const updateDishCategoryRequest = async ({
   dishCategoryId,
   shopId,
   name,
-}: {
-  dishCategoryId: string;
-  shopId: string;
-  name: string;
-}) => {
+  rtk = false,
+}: UpdateDishCategoryRequest) => {
   const accessToken = await getAccessToken();
   const body: {
     name: string;
@@ -118,20 +123,54 @@ export const updateDishCategoryRequest = async ({
     data: body,
   });
 
-  const state = store.getState();
-  store.dispatch(
-    updateAllDishCategories([
-      ..._.filter(state.shop.dishCategories, (dc) => dc.id !== dishCategoryId),
-      result.dishCategory,
-    ])
-  );
+  if (!rtk) {
+    const state = store.getState();
+    store.dispatch(
+      updateAllDishCategories([
+        ..._.filter(
+          state.shop.dishCategories,
+          (dc) => dc.id !== dishCategoryId
+        ),
+        result.dishCategory,
+      ])
+    );
+  }
+
+  return result.dishCategory;
+};
+
+/**
+ * Delete dish category
+ * @param param0
+ */
+const deleteDishCategoryRequest = async ({
+  shopId,
+  dishCategoryId,
+  rtk = false,
+}: DeleteDishCategoryRequest) => {
+  const accessToken = await getAccessToken();
+
+  await apiRequest({
+    method: "DELETE",
+    endpoint: `/v1/shops/${shopId}/dishCategories/${dishCategoryId}`,
+    token: accessToken,
+  });
+
+  if (!rtk) {
+    const state = store.getState();
+    store.dispatch(
+      updateAllDishCategories(
+        _.filter(state.shop.dishCategories, (dc) => dc.id !== dishCategoryId)
+      )
+    );
+  }
 };
 
 /**
  * Create dish
  * @param param0
  */
-export const createDishRequest = async ({
+const createDishRequest = async ({
   shopId,
   name,
   category,
@@ -141,17 +180,8 @@ export const createDishRequest = async ({
   unit,
   isTaxIncludedPrice = false,
   imageUrls = [],
-}: {
-  shopId: string;
-  name: string;
-  category: DishCategory;
-  dishType: string;
-  price: number;
-  taxRate: number;
-  unit: Unit;
-  isTaxIncludedPrice: boolean;
-  imageUrls: string[];
-}) => {
+  rtk = false,
+}: CreateDishRequest) => {
   const accessToken = await getAccessToken();
   const body: {
     name: string;
@@ -180,15 +210,19 @@ export const createDishRequest = async ({
     data: body,
   });
 
-  const state = store.getState();
-  store.dispatch(updateAllDishes([...state.shop.dishes, result.dish]));
+  if (!rtk) {
+    const state = store.getState();
+    store.dispatch(updateAllDishes([...state.shop.dishes, result.dish]));
+  }
+
+  return result.dish;
 };
 
 /**
  * Get dish
  * @param param0
  */
-export const getDishesRequest = async ({ shopId }: { shopId: string }) => {
+const getDishesRequest = async ({ shopId, rtk = false }: GetDishesRequest) => {
   const accessToken = await getAccessToken();
 
   const result: { dishes: Dish[] } = await apiRequest({
@@ -197,14 +231,18 @@ export const getDishesRequest = async ({ shopId }: { shopId: string }) => {
     token: accessToken,
   });
 
-  store.dispatch(updateAllDishes(result.dishes));
+  if (!rtk) {
+    store.dispatch(updateAllDishes(result.dishes));
+  }
+
+  return result.dishes;
 };
 
 /**
  * Update dish
  * @param param0
  */
-export const updateDishRequest = async ({
+const updateDishRequest = async ({
   shopId,
   dishId,
   name,
@@ -215,18 +253,8 @@ export const updateDishRequest = async ({
   unit,
   isTaxIncludedPrice = false,
   imageUrls = [],
-}: {
-  shopId: string;
-  dishId: string;
-  name: string;
-  category: DishCategory;
-  dishType: string;
-  price: number;
-  taxRate: number;
-  unit: Unit;
-  isTaxIncludedPrice: boolean;
-  imageUrls: string[];
-}) => {
+  rtk = false,
+}: UpdateDishRequest) => {
   const accessToken = await getAccessToken();
   const body: {
     name: string;
@@ -255,26 +283,28 @@ export const updateDishRequest = async ({
     data: body,
   });
 
-  const state = store.getState();
-  store.dispatch(
-    updateAllDishes([
-      ..._.filter(state.shop.dishes, (d) => d.id !== dishId),
-      result.dish,
-    ])
-  );
+  if (!rtk) {
+    const state = store.getState();
+    store.dispatch(
+      updateAllDishes([
+        ..._.filter(state.shop.dishes, (d) => d.id !== dishId),
+        result.dish,
+      ])
+    );
+  }
+
+  return result.dish;
 };
 
 /**
  * Delete dish
  * @param param0
  */
-export const deleteDishRequest = async ({
+const deleteDishRequest = async ({
   shopId,
   dishId,
-}: {
-  shopId: string;
-  dishId: string;
-}) => {
+  rtk = false,
+}: DeleteDishRequest) => {
   const accessToken = await getAccessToken();
 
   await apiRequest({
@@ -283,17 +313,22 @@ export const deleteDishRequest = async ({
     token: accessToken,
   });
 
-  const state = store.getState();
-  store.dispatch(
-    updateAllDishes(_.filter(state.shop.dishes, (d) => d.id !== dishId))
-  );
+  if (!rtk) {
+    const state = store.getState();
+    store.dispatch(
+      updateAllDishes(_.filter(state.shop.dishes, (d) => d.id !== dishId))
+    );
+  }
 };
 
 /**
  * Get dish types
  * @param param0
  */
-export const getDishTypesRequest = async ({ shopId }: { shopId: string }) => {
+const getDishTypesRequest = async ({
+  shopId,
+  rtk = false,
+}: GetDishTypesRequest) => {
   const accessToken = await getAccessToken();
 
   const result: { dishTypes: string[] } = await apiRequest({
@@ -302,5 +337,23 @@ export const getDishTypesRequest = async ({ shopId }: { shopId: string }) => {
     token: accessToken,
   });
 
-  store.dispatch(updateAllDisheTypes(result.dishTypes));
+  if (!rtk) {
+    store.dispatch(updateAllDisheTypes(result.dishTypes));
+  }
+
+  return result.dishTypes;
+};
+
+export {
+  uploadImageRequest,
+  removeImageRequest,
+  createDishCategoryRequest,
+  getDishCategoriesRequest,
+  updateDishCategoryRequest,
+  deleteDishCategoryRequest,
+  createDishRequest,
+  getDishesRequest,
+  updateDishRequest,
+  deleteDishRequest,
+  getDishTypesRequest,
 };
