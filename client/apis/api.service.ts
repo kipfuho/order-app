@@ -19,7 +19,7 @@ import { signIn } from "../stores/authSlice";
 import store from "../stores/store";
 import _ from "lodash";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 // Create an Axios instance
 const apiClient = axios.create({
@@ -229,12 +229,14 @@ export const queryShopsRequest = async ({
   sortBy = "createdAt",
   page = 1,
   limit = 10,
+  rtk = false,
 }: {
   user: User | null;
   searchName?: string;
   sortBy?: string;
   page: number;
   limit: number;
+  rtk: boolean;
 }) => {
   if (!user) return [];
   const accessToken = await getAccessToken();
@@ -253,13 +255,17 @@ export const queryShopsRequest = async ({
     queryParams.append("userId", user.id);
   }
 
-  const shops: { results: Shop[] } = await apiRequest({
+  const response: { results: Shop[] } = await apiRequest({
     method: "GET",
     endpoint: `/v1/shops?${queryParams.toString()}`,
     token: accessToken,
   });
 
-  store.dispatch(updateAllShops(shops.results));
+  if (!rtk) {
+    store.dispatch(updateAllShops(response.results));
+  }
+
+  return response.results;
 };
 
 export const updateShopRequest = async ({
@@ -389,7 +395,11 @@ export const updateTablePositionRequest = async ({
   );
 };
 
-export const getTablePositionsRequest = async ({ shopId }: { shopId: string }) => {
+export const getTablePositionsRequest = async ({
+  shopId,
+}: {
+  shopId: string;
+}) => {
   const accessToken = await getAccessToken();
 
   const result: {

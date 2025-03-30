@@ -5,6 +5,7 @@ import { getDishCategoriesRequest, getDishesRequest } from "./dish.api.service";
 import { getTablePositionsRequest, getTablesRequest } from "./api.service";
 
 const namespace = "default";
+const useappsync = false;
 
 export const AppSyncChannel = {
   TEST: () => `${namespace}/test`,
@@ -31,7 +32,9 @@ const _getConnectionWithChannelId = (channelId: string) => {
 /**
  * Ket noi den channel shop
  */
-export const connectAppSyncForShop = async (shopId: string) => {
+export const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
+  if (!useappsync) return;
+
   try {
     const channelId = AppSyncChannel.SHOP(shopId);
     const previousConnection = _getConnectionWithChannelId(channelId);
