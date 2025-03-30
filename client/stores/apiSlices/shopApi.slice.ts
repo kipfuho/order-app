@@ -1,33 +1,34 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Shop, User } from "../state.interface";
-import { API_BASE_URL, queryShopsRequest } from "../../apis/api.service";
-import store from "../store";
+import { Shop } from "../state.interface";
+import { API_BASE_URL } from "../../apis/api.service";
+import { RootState } from "../store";
+import {
+  createShopRequest,
+  deleteShopRequest,
+  queryShopsRequest,
+  updateShopRequest,
+} from "../../apis/shop.api.service";
 
 export const shopApiSlice = createApi({
   reducerPath: "shopApi",
   baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
   tagTypes: ["Shops"],
+  // keepUnusedDataFor: 600,
   endpoints: (builder) => ({
     getShops: builder.query<
       Shop[],
       {
-        user?: User | null;
         searchName?: string;
         sortBy?: string;
         page?: number;
         limit?: number;
       }
     >({
-      queryFn: async ({
-        user,
-        searchName,
-        sortBy = "createdAt",
-        page = 1,
-        limit = 1000,
-      }) => {
-        if (!user) {
-          user = store.getState().auth.session;
-        }
+      queryFn: async (
+        { searchName, sortBy = "createdAt", page = 1, limit = 1000 },
+        api
+      ) => {
+        const user = (api.getState() as RootState).auth.session;
         if (!user) {
           return { error: { status: 400, data: "User is required" } };
         }
@@ -48,18 +49,80 @@ export const shopApiSlice = createApi({
         }
       },
       providesTags: ["Shops"], // Enables cache invalidation
-      keepUnusedDataFor: 300,
     }),
 
-    updateShop: builder.mutation<Shop, Partial<Shop>>({
-      query: ({ id, ...updatedData }) => ({
-        url: `/shops/${id}`,
-        method: "PATCH",
-        body: updatedData,
-      }),
+    createShop: builder.mutation<
+      Shop,
+      {
+        name: string;
+        email: string;
+        phone?: string;
+        taxRate?: number;
+        location?: string;
+      }
+    >({
+      queryFn: async (args) => {
+        try {
+          const shop = await createShopRequest({
+            ...args,
+            rtk: true,
+          });
+
+          return { data: shop };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      invalidatesTags: ["Shops"],
+    }),
+
+    updateShop: builder.mutation<
+      Shop,
+      {
+        shopId: string;
+        name: string;
+        email: string;
+        phone?: string;
+        taxRate?: number;
+        location?: string;
+      }
+    >({
+      queryFn: async (args) => {
+        try {
+          const shop = await updateShopRequest({
+            ...args,
+            rtk: true,
+          });
+
+          return { data: shop };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      invalidatesTags: ["Shops"],
+    }),
+
+    deleteShop: builder.mutation<undefined, string>({
+      queryFn: async (shopId: string) => {
+        try {
+          await deleteShopRequest({
+            shopId,
+            rtk: true,
+          });
+
+          return { data: undefined };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
       invalidatesTags: ["Shops"],
     }),
   }),
 });
 
-export const { useGetShopsQuery } = shopApiSlice;
+export const {
+  useGetShopsQuery,
+  useCreateShopMutation,
+  useUpdateShopMutation,
+  useDeleteShopMutation,
+} = shopApiSlice;
