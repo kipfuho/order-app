@@ -32,7 +32,6 @@ export const tableApiSlice = createApi({
         try {
           const tablePositions = await getTablePositionsRequest({
             shopId,
-            rtk: true,
           });
 
           return { data: tablePositions };
@@ -49,10 +48,7 @@ export const tableApiSlice = createApi({
     >({
       queryFn: async (args) => {
         try {
-          const tablePosition = await createTablePositionRequest({
-            ...args,
-            rtk: true,
-          });
+          const tablePosition = await createTablePositionRequest(args);
 
           return { data: tablePosition };
         } catch (error) {
@@ -68,17 +64,40 @@ export const tableApiSlice = createApi({
     >({
       queryFn: async (args) => {
         try {
-          const tablePosition = await updateTablePositionRequest({
-            ...args,
-            rtk: true,
-          });
+          const tablePosition = await updateTablePositionRequest(args);
 
           return { data: tablePosition };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-      invalidatesTags: ["TablePositions"],
+
+      invalidatesTags: (result, error, args) =>
+        error ? ["TablePositions"] : [],
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          tableApiSlice.util.updateQueryData(
+            "getTablePositions",
+            args.shopId,
+            (draft) => {
+              const index = draft.findIndex(
+                (tp) => tp.id === args.tablePositionId
+              );
+              if (index !== -1) {
+                draft[index] = { ...draft[index], ...args };
+              }
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
     }),
 
     deleteTablePosition: builder.mutation<
@@ -87,14 +106,35 @@ export const tableApiSlice = createApi({
     >({
       queryFn: async (args) => {
         try {
-          await deleteTablePositionRequest({ ...args, rtk: true });
+          await deleteTablePositionRequest(args);
 
           return { data: undefined };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-      invalidatesTags: ["TablePositions"],
+
+      invalidatesTags: (result, error, args) =>
+        error ? ["TablePositions"] : [],
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          tableApiSlice.util.updateQueryData(
+            "getTablePositions",
+            args.shopId,
+            (draft) => {
+              return draft.filter((tp) => tp.id !== args.tablePositionId);
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
     }),
 
     /** Tables */
@@ -103,7 +143,6 @@ export const tableApiSlice = createApi({
         try {
           const tables = await getTablesRequest({
             shopId,
-            rtk: true,
           });
 
           return { data: tables };
@@ -117,10 +156,7 @@ export const tableApiSlice = createApi({
     createTable: builder.mutation<Table, CreateTableRequest>({
       queryFn: async (args) => {
         try {
-          const table = await createTableRequest({
-            ...args,
-            rtk: true,
-          });
+          const table = await createTableRequest(args);
 
           return { data: table };
         } catch (error) {
@@ -133,30 +169,70 @@ export const tableApiSlice = createApi({
     updateTable: builder.mutation<Table, UpdateTableRequest>({
       queryFn: async (args) => {
         try {
-          const table = await updateTableRequest({
-            ...args,
-            rtk: true,
-          });
+          const table = await updateTableRequest(args);
 
           return { data: table };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-      invalidatesTags: ["Tables"],
+
+      invalidatesTags: (result, error, args) => (error ? ["Tables"] : []),
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          tableApiSlice.util.updateQueryData(
+            "getTables",
+            args.shopId,
+            (draft) => {
+              const index = draft.findIndex((tp) => tp.id === args.tableId);
+              if (index !== -1) {
+                draft[index] = { ...draft[index], ...args };
+              }
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
     }),
 
     deleteTable: builder.mutation<undefined, DeleteTableRequest>({
       queryFn: async (args) => {
         try {
-          await deleteTableRequest({ ...args, rtk: true });
+          await deleteTableRequest(args);
 
           return { data: undefined };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-      invalidatesTags: ["Tables"],
+
+      invalidatesTags: (result, error, args) => (error ? ["Tables"] : []),
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          tableApiSlice.util.updateQueryData(
+            "getTables",
+            args.shopId,
+            (draft) => {
+              return draft.filter((t) => t.id !== args.tableId);
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
     }),
   }),
 });

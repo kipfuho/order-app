@@ -2,14 +2,12 @@ import { TablePosition } from "../stores/state.interface";
 
 interface GetTablePositionsRequest {
   shopId: string;
-  rtk?: boolean;
 }
 
 interface CreateTablePositionRequest {
   shopId: string;
   name: string;
   categories: string[];
-  rtk?: boolean;
 }
 
 interface UpdateTablePositionRequest {
@@ -17,25 +15,21 @@ interface UpdateTablePositionRequest {
   shopId: string;
   name: string;
   categories: string[];
-  rtk?: boolean;
 }
 
 interface DeleteTablePositionRequest {
   tablePositionId: string;
   shopId: string;
-  rtk?: boolean;
 }
 
 interface GetTablesRequest {
   shopId: string;
-  rtk?: boolean;
 }
 
 interface CreateTableRequest {
   shopId: string;
   name: string;
   tablePosition: TablePosition;
-  rtk?: boolean;
 }
 
 interface UpdateTableRequest {
@@ -43,13 +37,11 @@ interface UpdateTableRequest {
   shopId: string;
   name: string;
   tablePosition: TablePosition;
-  rtk?: boolean;
 }
 
 interface DeleteTableRequest {
   tableId: string;
   shopId: string;
-  rtk?: boolean;
 }
 
 export {

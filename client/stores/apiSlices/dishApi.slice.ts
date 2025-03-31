@@ -51,9 +51,7 @@ export const dishApiSlice = createApi({
     >({
       queryFn: async (args) => {
         try {
-          const dishCategory = await createDishCategoryRequest({
-            ...args,
-          });
+          const dishCategory = await createDishCategoryRequest(args);
 
           return { data: dishCategory };
         } catch (error) {
@@ -69,9 +67,7 @@ export const dishApiSlice = createApi({
     >({
       queryFn: async (args) => {
         try {
-          const dishCategory = await updateDishCategoryRequest({
-            ...args,
-          });
+          const dishCategory = await updateDishCategoryRequest(args);
 
           return { data: dishCategory };
         } catch (error) {
@@ -109,7 +105,7 @@ export const dishApiSlice = createApi({
     deleteDishCategory: builder.mutation<undefined, DeleteDishCategoryRequest>({
       queryFn: async (args) => {
         try {
-          await deleteDishCategoryRequest({ ...args });
+          await deleteDishCategoryRequest(args);
 
           return { data: undefined };
         } catch (error) {
@@ -158,9 +154,7 @@ export const dishApiSlice = createApi({
     createDish: builder.mutation<Dish, CreateDishRequest>({
       queryFn: async (args) => {
         try {
-          const dish = await createDishRequest({
-            ...args,
-          });
+          const dish = await createDishRequest(args);
 
           return { data: dish };
         } catch (error) {
@@ -173,9 +167,7 @@ export const dishApiSlice = createApi({
     updateDish: builder.mutation<Dish, UpdateDishRequest>({
       queryFn: async (args) => {
         try {
-          const dish = await updateDishRequest({
-            ...args,
-          });
+          const dish = await updateDishRequest(args);
 
           return { data: dish };
         } catch (error) {
@@ -192,7 +184,10 @@ export const dishApiSlice = createApi({
             "getDishes",
             args.shopId,
             (draft) => {
-              return draft.filter((d) => d.id !== args.dishId);
+              const index = draft.findIndex((d) => d.id === args.dishId);
+              if (index !== -1) {
+                draft[index] = { ...draft[index], ...args };
+              }
             }
           )
         );
@@ -208,7 +203,7 @@ export const dishApiSlice = createApi({
     deleteDish: builder.mutation<undefined, DeleteDishRequest>({
       queryFn: async (args) => {
         try {
-          await deleteDishRequest({ ...args });
+          await deleteDishRequest(args);
 
           return { data: undefined };
         } catch (error) {

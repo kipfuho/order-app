@@ -74,7 +74,26 @@ export const shopApiSlice = createApi({
           return { error: { status: 500, data: error } };
         }
       },
-      invalidatesTags: ["Shops"],
+
+      invalidatesTags: (result, error, args) => (error ? ["Shops"] : []),
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          shopApiSlice.util.updateQueryData("getShops", {}, (draft) => {
+            const index = draft.findIndex((s) => s.id === args.shopId);
+            if (index !== -1) {
+              draft[index] = { ...draft[index], ...args };
+            }
+          })
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
     }),
 
     deleteShop: builder.mutation<undefined, string>({
@@ -89,7 +108,23 @@ export const shopApiSlice = createApi({
           return { error: { status: 500, data: error } };
         }
       },
-      invalidatesTags: ["Shops"],
+
+      invalidatesTags: (result, error, args) => (error ? ["Shops"] : []),
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (shopId, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          shopApiSlice.util.updateQueryData("getShops", {}, (draft) => {
+            return draft.filter((s) => s.id !== shopId);
+          })
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
     }),
   }),
 });
