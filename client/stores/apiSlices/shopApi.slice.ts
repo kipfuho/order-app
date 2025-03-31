@@ -1,6 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { Shop } from "../state.interface";
-import { API_BASE_URL } from "../../apis/api.service";
 import { RootState } from "../store";
 import {
   createShopRequest,
@@ -8,6 +7,12 @@ import {
   queryShopsRequest,
   updateShopRequest,
 } from "../../apis/shop.api.service";
+import { API_BASE_URL } from "../../apis/api.service";
+import {
+  CreateShopRequest,
+  QueryShopsRequest,
+  UpdateShopRequest,
+} from "../../apis/shop.api.interface";
 
 export const shopApiSlice = createApi({
   reducerPath: "shopApi",
@@ -15,15 +20,7 @@ export const shopApiSlice = createApi({
   tagTypes: ["Shops"],
   // keepUnusedDataFor: 600,
   endpoints: (builder) => ({
-    getShops: builder.query<
-      Shop[],
-      {
-        searchName?: string;
-        sortBy?: string;
-        page?: number;
-        limit?: number;
-      }
-    >({
+    getShops: builder.query<Shop[], QueryShopsRequest>({
       queryFn: async (
         { searchName, sortBy = "createdAt", page = 1, limit = 1000 },
         api
@@ -38,7 +35,6 @@ export const shopApiSlice = createApi({
             user,
             limit,
             page,
-            rtk: true,
             searchName,
             sortBy,
           });
@@ -51,21 +47,11 @@ export const shopApiSlice = createApi({
       providesTags: ["Shops"], // Enables cache invalidation
     }),
 
-    createShop: builder.mutation<
-      Shop,
-      {
-        name: string;
-        email: string;
-        phone?: string;
-        taxRate?: number;
-        location?: string;
-      }
-    >({
+    createShop: builder.mutation<Shop, CreateShopRequest>({
       queryFn: async (args) => {
         try {
           const shop = await createShopRequest({
             ...args,
-            rtk: true,
           });
 
           return { data: shop };
@@ -76,22 +62,11 @@ export const shopApiSlice = createApi({
       invalidatesTags: ["Shops"],
     }),
 
-    updateShop: builder.mutation<
-      Shop,
-      {
-        shopId: string;
-        name: string;
-        email: string;
-        phone?: string;
-        taxRate?: number;
-        location?: string;
-      }
-    >({
+    updateShop: builder.mutation<Shop, UpdateShopRequest>({
       queryFn: async (args) => {
         try {
           const shop = await updateShopRequest({
             ...args,
-            rtk: true,
           });
 
           return { data: shop };
@@ -107,7 +82,6 @@ export const shopApiSlice = createApi({
         try {
           await deleteShopRequest({
             shopId,
-            rtk: true,
           });
 
           return { data: undefined };

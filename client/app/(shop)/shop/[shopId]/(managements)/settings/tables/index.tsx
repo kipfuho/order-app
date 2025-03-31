@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ScrollView } from "react-native";
-import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import { ActivityIndicator, Button, useTheme, List } from "react-native-paper";
@@ -8,48 +8,29 @@ import _ from "lodash";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getTablesRequest } from "../../../../../../../apis/table.api.service";
+import { useGetTablesQuery } from "../../../../../../../stores/apiSlices/tableApi.slice";
+import { goBackShopSetting } from "../../../../../../../apis/navigate.service";
 
 export default function TablesManagementPage() {
-  const { shopId } = useLocalSearchParams();
   const theme = useTheme();
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
   ) as Shop;
-  const tables = useSelector((state: RootState) => state.shop.tables);
-  const [loading, setLoading] = useState(false);
+  const { data: tables = [], isLoading: tableLoading } = useGetTablesQuery(
+    shop.id
+  );
   const router = useRouter();
 
-  const goBack = () =>
-    router.navigate({
-      pathname: "/shop/[shopId]/settings",
-      params: { shopId: shop.id },
-    });
-
-  useEffect(() => {
-    const fetchTables = async () => {
-      try {
-        setLoading(true);
-        await getTablesRequest({ shopId: shop.id });
-      } catch (error) {
-        console.error("Error fetching tables:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (_.isEmpty(tables)) {
-      fetchTables();
-    }
-  }, []);
-
-  if (loading) {
+  if (tableLoading) {
     return <ActivityIndicator size="large" style={{ marginTop: 20 }} />;
   }
 
   return (
     <>
-      <AppBar title="Tables" goBack={goBack} />
+      <AppBar
+        title="Tables"
+        goBack={() => goBackShopSetting({ router, shopId: shop.id })}
+      />
 
       <SafeAreaView
         style={{
@@ -69,7 +50,7 @@ export default function TablesManagementPage() {
                     "/shop/[shopId]/settings/tables/update-table/[tableId]",
                   params: { shopId: shop.id, tableId: item.id },
                 }}
-                asChild
+                replace
               >
                 <List.Item
                   title={item.name}
@@ -89,7 +70,7 @@ export default function TablesManagementPage() {
         <Button
           mode="contained"
           onPress={() =>
-            router.push({
+            router.replace({
               pathname: "/shop/[shopId]/settings/tables/create-table",
               params: { shopId: shop.id },
             })

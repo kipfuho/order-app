@@ -34,8 +34,8 @@ const updateShop = catchAsync(async (req, res) => {
 
 const deleteShop = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  await shopManagementService.deleteShop(shopId);
-  res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
+  const shop = await shopManagementService.deleteShop(shopId);
+  res.status(httpStatus.OK).send({ message: 'Xoá thành công', shop });
 });
 
 const getTable = catchAsync(async (req, res) => {

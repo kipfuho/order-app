@@ -1,6 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { Table, TablePosition } from "../state.interface";
-import { API_BASE_URL } from "../../apis/api.service";
 import {
   createTablePositionRequest,
   createTableRequest,
@@ -19,6 +18,7 @@ import {
   UpdateTablePositionRequest,
   UpdateTableRequest,
 } from "../../apis/table.api.interface";
+import { API_BASE_URL } from "../../apis/api.service";
 
 export const tableApiSlice = createApi({
   reducerPath: "tableApi",

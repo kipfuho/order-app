@@ -7,7 +7,6 @@ import {
   Text,
   TextInput,
 } from "react-native-paper";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { getTablesForOrderRequest } from "../../../../../../apis/order.api.service";
 import { useSelector } from "react-redux";
@@ -17,16 +16,19 @@ import { ScrollView, View } from "react-native";
 import { TableForOrderCard } from "../../../../../../components/ui/menus/TableForOrderCard";
 import { AppBar } from "../../../../../../components/AppBar";
 import { styles } from "../../../../../_layout";
-import { TableForOrder } from "../../../../../../stores/state.interface";
+import { Shop, TableForOrder } from "../../../../../../stores/state.interface";
+import { useGetTablePositionsQuery } from "../../../../../../stores/apiSlices/tableApi.slice";
+import { useGetTablesForOrderQuery } from "../../../../../../stores/apiSlices/orderApi.slice";
+import { LoaderBasic } from "../../../../../../components/ui/Loader";
 
 export default function OrderManagementOrderPage() {
-  const { shopId } = useLocalSearchParams() as { shopId: string };
-  const tablesForOrder = useSelector(
-    (state: RootState) => state.shop.tablesForOrder
-  );
-  const tablePositions = useSelector(
-    (state: RootState) => state.shop.tablePositions
-  );
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
+  ) as Shop;
+  const { data: tablesForOrder = [], isLoading: tableForOrderLoading } =
+    useGetTablesForOrderQuery(shop.id);
+  const { data: tablePositions = [], isLoading: tablePositionLoading } =
+    useGetTablePositionsQuery(shop.id);
 
   const tablesGroupByPosition = _.groupBy(tablesForOrder, "position.id");
   const tablePositionById = _.keyBy(tablePositions, "id");
@@ -70,12 +72,16 @@ export default function OrderManagementOrderPage() {
   };
 
   useEffect(() => {
-    getTablesForOrderRequest({ shopId });
+    getTablesForOrderRequest({ shopId: shop.id });
   }, []);
 
   useEffect(() => {
     setFilteredTables(tablesGroupByPosition);
   }, [tablesGroupByPosition]);
+
+  if (tableForOrderLoading || tablePositionLoading) {
+    return <LoaderBasic />;
+  }
 
   return (
     <>

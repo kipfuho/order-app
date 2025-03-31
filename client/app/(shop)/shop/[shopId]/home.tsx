@@ -82,7 +82,7 @@ export default function ShopPage() {
 
   const handleUpdate = () => {
     setModalVisible(false);
-    router.push({
+    router.replace({
       pathname: "/shop/[shopId]/update-shop",
       params: { shopId: shop.id },
     });
@@ -175,7 +175,7 @@ export default function ShopPage() {
                 key={item.route}
                 mode="contained-tonal"
                 onPress={() =>
-                  router.push({
+                  router.replace({
                     pathname: `/shop/[shopId]/${item.route}`,
                     params: { shopId: shop.id },
                   })

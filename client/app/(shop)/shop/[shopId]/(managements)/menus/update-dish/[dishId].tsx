@@ -64,7 +64,7 @@ export default function UpdateDishPage() {
   const onToggleSwitch = () => setIsTaxIncludedPrice(!isTaxIncludedPrice);
 
   const goBack = () =>
-    router.navigate({
+    router.replace({
       pathname: "/shop/[shopId]/menus/dishes",
       params: {
         shopId: shop.id,

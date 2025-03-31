@@ -19,7 +19,7 @@ export default function TablePositionsManagementPage() {
   const theme = useTheme();
 
   const goBack = () =>
-    router.navigate({
+    router.replace({
       pathname: "/shop/[shopId]/settings",
       params: { shopId: shop.id },
     });
@@ -52,7 +52,7 @@ export default function TablePositionsManagementPage() {
                     "/shop/[shopId]/settings/tables/update-table-position/[tablePositionId]",
                   params: { shopId: shop.id, tablePositionId: item.id },
                 }}
-                asChild
+                replace
               >
                 <List.Item
                   title={item.name}
@@ -73,7 +73,7 @@ export default function TablePositionsManagementPage() {
         <Button
           mode="contained"
           onPress={() =>
-            router.push({
+            router.replace({
               pathname: "/shop/[shopId]/settings/tables/create-table-position",
               params: { shopId: shop.id },
             })

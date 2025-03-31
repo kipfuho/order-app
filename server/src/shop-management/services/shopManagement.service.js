@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const mongoose = require('mongoose');
 const { Shop, Unit, Department, Employee } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
@@ -80,7 +79,8 @@ const updateShop = async ({ shopId, updateBody }) => {
 };
 
 const deleteShop = async (shopId) => {
-  await Shop.deleteOne({ _id: shopId });
+  const shop = await Shop.findByIdAndDelete({ _id: shopId });
+  return shop;
 };
 
 module.exports = {

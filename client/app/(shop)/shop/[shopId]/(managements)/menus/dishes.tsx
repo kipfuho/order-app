@@ -224,7 +224,7 @@ export default function DishesManagementPage() {
             <Button
               mode="contained-tonal"
               onPress={() =>
-                router.push({
+                router.replace({
                   pathname: "/shop/[shopId]/menus/create-dish",
                   params: { shopId: shop.id },
                 })

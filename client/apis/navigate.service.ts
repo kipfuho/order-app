@@ -14,17 +14,17 @@ export const goBack = (
   }
 ) => {
   if (params) {
-    router.navigate({
+    router.replace({
       pathname: path,
       params,
     });
     return;
   }
 
-  router.navigate(path);
+  router.replace(path);
 };
 
-const goBackShopList = ({ router }: { router: Router }) => router.navigate("/");
+const goBackShopList = ({ router }: { router: Router }) => router.replace("/");
 
 const goBackShopHome = ({
   router,
@@ -33,7 +33,7 @@ const goBackShopHome = ({
   router: Router;
   shopId: string;
 }) =>
-  router.navigate({
+  router.replace({
     pathname: "/shop/[shopId]/home",
     params: { shopId },
   });
@@ -45,7 +45,7 @@ const goBackShopDishList = ({
   router: Router;
   shopId: string;
 }) =>
-  router.navigate({
+  router.replace({
     pathname: "/shop/[shopId]/menus/dishes",
     params: { shopId },
   });
@@ -57,7 +57,7 @@ const goBackShopSetting = ({
   router: Router;
   shopId: string;
 }) =>
-  router.navigate({
+  router.replace({
     pathname: "/shop/[shopId]/settings",
     params: { shopId },
   });
@@ -70,11 +70,66 @@ const goToDishUpdatePage = ({
   router: Router;
   shopId: string;
   dishId: string;
-}) =>
-  router.navigate({
+}) => {
+  router.replace({
     pathname: "/shop/[shopId]/menus/update-dish/[dishId]",
     params: { shopId, dishId },
   });
+};
+
+const goToTableList = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/settings/tables",
+    params: { shopId },
+  });
+};
+
+const goToTablePositionList = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/settings/tables/table-position",
+    params: { shopId },
+  });
+};
+
+const goToUpdateDishCategory = ({
+  router,
+  shopId,
+  dishCategoryId,
+}: {
+  router: Router;
+  shopId: string;
+  dishCategoryId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/menus/update-dish-category/[dishCategoryId]",
+    params: { shopId, dishCategoryId },
+  });
+};
+
+const goToDishCategoryList = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/menus/categories",
+    params: { shopId },
+  });
+};
 
 export {
   goBackShopList,
@@ -82,4 +137,8 @@ export {
   goBackShopDishList,
   goBackShopSetting,
   goToDishUpdatePage,
+  goToTableList,
+  goToTablePositionList,
+  goToUpdateDishCategory,
+  goToDishCategoryList,
 };

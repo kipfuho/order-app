@@ -5,6 +5,7 @@ import { Link, useRouter } from "expo-router";
 import { AppBar } from "../../components/AppBar";
 import { useGetShopsQuery } from "../../stores/apiSlices/shopApi.slice";
 import { LoaderBasic } from "../../components/ui/Loader";
+import { goBackShopHome } from "../../apis/navigate.service";
 
 export default function ShopsPage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function ShopsPage() {
       <AppBar title="Shops">
         <Button
           mode="contained-tonal"
-          onPress={() => router.push("/create-shop")}
+          onPress={() => router.replace("/create-shop")}
         >
           Create Shop
         </Button>
@@ -31,24 +32,17 @@ export default function ShopsPage() {
           {/* List of Table Positions */}
           <List.Section>
             {shops.map((item) => (
-              <Link
+              <List.Item
                 key={item.id}
-                href={{
-                  pathname: "/shop/[shopId]/home",
-                  params: { shopId: item.id },
+                title={item.name}
+                style={{
+                  backgroundColor: theme.colors.backdrop,
+                  borderRadius: 8,
+                  marginBottom: 8,
                 }}
-                asChild
-              >
-                <List.Item
-                  title={item.name}
-                  style={{
-                    backgroundColor: theme.colors.backdrop,
-                    borderRadius: 8,
-                    marginBottom: 8,
-                  }}
-                  left={(props) => <List.Icon {...props} icon="store" />}
-                />
-              </Link>
+                left={(props) => <List.Icon {...props} icon="store" />}
+                onPress={() => goBackShopHome({ router, shopId: item.id })}
+              />
             ))}
           </List.Section>
         </ScrollView>

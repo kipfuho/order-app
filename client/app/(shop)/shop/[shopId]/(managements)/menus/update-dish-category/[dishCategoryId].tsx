@@ -13,48 +13,39 @@ import { useSelector } from "react-redux";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { RootState } from "../../../../../../../stores/store";
 import { Shop } from "../../../../../../../stores/state.interface";
-import { updateDishCategoryRequest } from "../../../../../../../apis/api.service";
 import { AppBar } from "../../../../../../../components/AppBar";
+import { useGetDishCategoriesQuery } from "../../../../../../../stores/apiSlices/dishApi.slice";
+import { goToDishCategoryList } from "../../../../../../../apis/navigate.service";
+import { LoaderBasic } from "../../../../../../../components/ui/Loader";
+import { updateDishCategoryRequest } from "../../../../../../../apis/dish.api.service";
 
 export default function UpdateDishCategoryPage() {
-  const { shopId } = useLocalSearchParams();
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
-  ) as Shop;
-
   const { dishCategoryId } = useLocalSearchParams();
-  const dishCategory = useSelector((state: RootState) =>
-    state.shop.dishCategories.find((dc) => dc.id === dishCategoryId)
-  );
-
   const router = useRouter();
 
-  const goBack = () =>
-    router.navigate({
-      pathname: "/shop/[shopId]/menus/categories",
-      params: {
-        shopId: shop.id,
-      },
-    });
-
-  if (!dishCategory) {
-    return (
-      <SafeAreaView>
-        <Text>Dish Category not found</Text>
-        <Button onPress={goBack}>Go Back</Button>
-      </SafeAreaView>
-    );
-  }
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
+  ) as Shop;
+  const { data: dishCategories, isLoading } = useGetDishCategoriesQuery(
+    shop.id
+  );
+  const dishCategory = _.find(dishCategories, (dc) => dc.id === dishCategoryId);
 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
 
   // when select different category
   useEffect(() => {
+    if (!dishCategory) return;
+
     setName(dishCategory.name);
   }, [dishCategory]);
 
   const handleUpdateDishCategory = async () => {
+    if (!dishCategory) {
+      return;
+    }
+
     if (!name.trim()) {
       Toast.show({
         type: "error",
@@ -73,10 +64,7 @@ export default function UpdateDishCategoryPage() {
       });
 
       // Navigate back to table position list
-      goBack();
-
-      // Clear input fields
-      setName("");
+      goToDishCategoryList({ router, shopId: shop.id });
     } catch (err) {
       console.error(err);
     } finally {
@@ -84,9 +72,29 @@ export default function UpdateDishCategoryPage() {
     }
   };
 
+  if (isLoading) {
+    return <LoaderBasic />;
+  }
+
+  if (!dishCategory) {
+    return (
+      <SafeAreaView>
+        <Text>Dish Category not found</Text>
+        <Button
+          onPress={() => goToDishCategoryList({ router, shopId: shop.id })}
+        >
+          Go Back
+        </Button>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <>
-      <AppBar title="Update Dish Category" goBack={goBack} />
+      <AppBar
+        title="Update Dish Category"
+        goBack={() => goToDishCategoryList({ router, shopId: shop.id })}
+      />
       <Surface style={{ flex: 1 }}>
         <Surface style={{ flex: 1, padding: 16 }}>
           <TextInput

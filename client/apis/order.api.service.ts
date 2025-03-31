@@ -1,6 +1,4 @@
 import { TableForOrder } from "../stores/state.interface";
-import store from "../stores/store";
-import { updateTablesForOrder } from "../stores/userSlice";
 import { apiRequest } from "./api.service";
 import { getAccessToken } from "./utils.service";
 
@@ -21,5 +19,5 @@ export const getTablesForOrderRequest = async ({
     token: accessToken,
   });
 
-  store.dispatch(updateTablesForOrder(result.tables));
+  return result.tables;
 };

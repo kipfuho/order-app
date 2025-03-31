@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ScrollView } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import {
@@ -10,41 +10,31 @@ import {
   Surface,
   Text,
   TextInput,
-  useTheme,
 } from "react-native-paper";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import Toast from "react-native-toast-message";
 import { createTableRequest } from "../../../../../../../apis/table.api.service";
+import { useGetTablePositionsQuery } from "../../../../../../../stores/apiSlices/tableApi.slice";
+import { LoaderBasic } from "../../../../../../../components/ui/Loader";
+import { goToTableList } from "../../../../../../../apis/navigate.service";
 
 export default function CreateTablePage() {
-  const { shopId } = useLocalSearchParams();
-  const theme = useTheme();
   const router = useRouter();
 
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
   ) as Shop;
-
-  const tablePositions = useSelector(
-    (state: RootState) => state.shop.tablePositions
-  );
+  const { data: tablePositions = [], isLoading: tablePositionLoading } =
+    useGetTablePositionsQuery(shop.id);
 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("table");
   const [tablePosition, setTablePosition] = useState(tablePositions[0]);
-
-  // Menu state for dropdown
   const [menuVisible, setMenuVisible] = useState(false);
 
   const openMenu = () => setMenuVisible(true);
   const closeMenu = () => setMenuVisible(false);
-
-  const goBack = () =>
-    router.navigate({
-      pathname: "/shop/[shopId]/settings/tables",
-      params: { shopId: shop.id },
-    });
 
   const handleCreateTable = async () => {
     if (!name.trim() || !tablePosition) {
@@ -59,7 +49,7 @@ export default function CreateTablePage() {
     try {
       setLoading(true);
       await createTableRequest({ shopId: shop.id, name, tablePosition });
-      goBack();
+      goToTableList({ router, shopId: shop.id });
     } catch (err) {
       Toast.show({
         type: "error",
@@ -72,9 +62,16 @@ export default function CreateTablePage() {
     }
   };
 
+  if (tablePositionLoading) {
+    return <LoaderBasic />;
+  }
+
   return (
     <>
-      <AppBar title="Create Table" goBack={goBack} />
+      <AppBar
+        title="Create Table"
+        goBack={() => goToTableList({ router, shopId: shop.id })}
+      />
       <Surface
         style={{
           flex: 1,

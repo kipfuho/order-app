@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ScrollView } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import {
@@ -17,29 +17,24 @@ import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import Toast from "react-native-toast-message";
 import { createTablePositionRequest } from "../../../../../../../apis/table.api.service";
+import { useGetDishCategoriesQuery } from "../../../../../../../stores/apiSlices/dishApi.slice";
+import { goToTablePositionList } from "../../../../../../../apis/navigate.service";
+import { LoaderBasic } from "../../../../../../../components/ui/Loader";
+import _ from "lodash";
 
 export default function CreateTablePositionPage() {
-  const { shopId } = useLocalSearchParams();
   const router = useRouter();
 
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
   ) as Shop;
-
-  const dishCategories = useSelector(
-    (state: RootState) => state.shop.dishCategories
-  );
+  const { data: dishCategories = [], isLoading: dishCategoryLoading } =
+    useGetDishCategoriesQuery(shop.id);
 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("table position");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [dialogVisible, setDialogVisible] = useState(false);
-
-  const goBack = () =>
-    router.navigate({
-      pathname: "/shop/[shopId]/settings/tables/table-position",
-      params: { shopId: shop.id },
-    });
 
   const handleCreateTablePosition = async () => {
     if (!name.trim() || selectedCategories.length === 0) {
@@ -58,7 +53,8 @@ export default function CreateTablePositionPage() {
         name,
         categories: selectedCategories,
       });
-      goBack();
+
+      goToTablePositionList({ router, shopId: shop.id });
     } catch (err) {
       Toast.show({
         type: "error",
@@ -79,9 +75,16 @@ export default function CreateTablePositionPage() {
     );
   };
 
+  if (dishCategoryLoading) {
+    return <LoaderBasic />;
+  }
+
   return (
     <>
-      <AppBar title="Create Table Position" goBack={goBack} />
+      <AppBar
+        title="Create Table Position"
+        goBack={() => goToTablePositionList({ router, shopId: shop.id })}
+      />
       <Surface
         style={{
           flex: 1,
@@ -119,7 +122,8 @@ export default function CreateTablePositionPage() {
             {/* Selected Categories List */}
             <Surface style={{ marginTop: 10 }}>
               {selectedCategories.map((categoryId) => {
-                const category = dishCategories.find(
+                const category = _.find(
+                  dishCategories,
                   (cat) => cat.id === categoryId
                 );
                 return category ? (

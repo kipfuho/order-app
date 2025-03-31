@@ -1,13 +1,6 @@
 import _ from "lodash";
-import {
-  updateAllDishCategories,
-  updateAllDishes,
-  updateAllDisheTypes,
-  updateAllUnits,
-} from "../stores/userSlice";
 import { apiFormDataRequest, apiRequest } from "./api.service";
 import { getAccessToken } from "./utils.service";
-import store from "../stores/store";
 import { Dish, DishCategory, Unit } from "../stores/state.interface";
 import {
   CreateDefaultUnitsRequest,
@@ -55,7 +48,6 @@ const removeImageRequest = async ({ shopId, url }: RemoveImageRequest) => {
 const createDishCategoryRequest = async ({
   shopId,
   name,
-  rtk = false,
 }: CreateDishCategoryRequest) => {
   const accessToken = await getAccessToken();
   const body: {
@@ -69,10 +61,6 @@ const createDishCategoryRequest = async ({
     data: body,
   });
 
-  if (!rtk) {
-    const state = store.getState();
-    // store.dispatch();
-  }
   return result.dishCategory;
 };
 
@@ -82,7 +70,6 @@ const createDishCategoryRequest = async ({
  */
 const getDishCategoriesRequest = async ({
   shopId,
-  rtk = false,
 }: GetDishCategoriesRequest) => {
   const accessToken = await getAccessToken();
 
@@ -91,10 +78,6 @@ const getDishCategoriesRequest = async ({
     endpoint: `/v1/shops/${shopId}/dishCategories`,
     token: accessToken,
   });
-
-  if (!rtk) {
-    // store.dispatch();
-  }
 
   return result.dishCategories;
 };
@@ -107,7 +90,6 @@ const updateDishCategoryRequest = async ({
   dishCategoryId,
   shopId,
   name,
-  rtk = false,
 }: UpdateDishCategoryRequest) => {
   const accessToken = await getAccessToken();
   const body: {
@@ -121,11 +103,6 @@ const updateDishCategoryRequest = async ({
     data: body,
   });
 
-  if (!rtk) {
-    const state = store.getState();
-    // store.dispatch();
-  }
-
   return result.dishCategory;
 };
 
@@ -136,7 +113,6 @@ const updateDishCategoryRequest = async ({
 const deleteDishCategoryRequest = async ({
   shopId,
   dishCategoryId,
-  rtk = false,
 }: DeleteDishCategoryRequest) => {
   const accessToken = await getAccessToken();
 
@@ -145,11 +121,6 @@ const deleteDishCategoryRequest = async ({
     endpoint: `/v1/shops/${shopId}/dishCategories/${dishCategoryId}`,
     token: accessToken,
   });
-
-  if (!rtk) {
-    const state = store.getState();
-    // store.dispatch();
-  }
 };
 
 /**
@@ -166,7 +137,6 @@ const createDishRequest = async ({
   unit,
   isTaxIncludedPrice = false,
   imageUrls = [],
-  rtk = false,
 }: CreateDishRequest) => {
   const accessToken = await getAccessToken();
   const body: {
@@ -196,11 +166,6 @@ const createDishRequest = async ({
     data: body,
   });
 
-  if (!rtk) {
-    const state = store.getState();
-    // store.dispatch();
-  }
-
   return result.dish;
 };
 
@@ -208,7 +173,7 @@ const createDishRequest = async ({
  * Get dish
  * @param param0
  */
-const getDishesRequest = async ({ shopId, rtk = false }: GetDishesRequest) => {
+const getDishesRequest = async ({ shopId }: GetDishesRequest) => {
   const accessToken = await getAccessToken();
 
   const result: { dishes: Dish[] } = await apiRequest({
@@ -216,10 +181,6 @@ const getDishesRequest = async ({ shopId, rtk = false }: GetDishesRequest) => {
     endpoint: `/v1/shops/${shopId}/dishes`,
     token: accessToken,
   });
-
-  if (!rtk) {
-    // store.dispatch();
-  }
 
   return result.dishes;
 };
@@ -239,7 +200,6 @@ const updateDishRequest = async ({
   unit,
   isTaxIncludedPrice = false,
   imageUrls = [],
-  rtk = false,
 }: UpdateDishRequest) => {
   const accessToken = await getAccessToken();
   const body: {
@@ -269,11 +229,6 @@ const updateDishRequest = async ({
     data: body,
   });
 
-  if (!rtk) {
-    const state = store.getState();
-    // store.dispatch();
-  }
-
   return result.dish;
 };
 
@@ -281,11 +236,7 @@ const updateDishRequest = async ({
  * Delete dish
  * @param param0
  */
-const deleteDishRequest = async ({
-  shopId,
-  dishId,
-  rtk = false,
-}: DeleteDishRequest) => {
+const deleteDishRequest = async ({ shopId, dishId }: DeleteDishRequest) => {
   const accessToken = await getAccessToken();
 
   await apiRequest({
@@ -293,21 +244,13 @@ const deleteDishRequest = async ({
     endpoint: `/v1/shops/${shopId}/dishes/${dishId}`,
     token: accessToken,
   });
-
-  if (!rtk) {
-    const state = store.getState();
-    // store.dispatch();
-  }
 };
 
 /**
  * Get dish types
  * @param param0
  */
-const getDishTypesRequest = async ({
-  shopId,
-  rtk = false,
-}: GetDishTypesRequest) => {
+const getDishTypesRequest = async ({ shopId }: GetDishTypesRequest) => {
   const accessToken = await getAccessToken();
 
   const result: { dishTypes: string[] } = await apiRequest({
@@ -316,10 +259,6 @@ const getDishTypesRequest = async ({
     token: accessToken,
   });
 
-  if (!rtk) {
-    // store.dispatch();
-  }
-
   return result.dishTypes;
 };
 
@@ -327,25 +266,19 @@ const getDishTypesRequest = async ({
  * Get units
  * @param param0
  */
-const getUnitsRequest = async ({ shopId, rtk = false }: GetUnitsRequest) => {
+const getUnitsRequest = async ({ shopId }: GetUnitsRequest) => {
   const accessToken = await getAccessToken();
-  store;
   const result: { units: Unit[] } = await apiRequest({
     method: "GET",
     endpoint: `/v1/shops/${shopId}/units/`,
     token: accessToken,
   });
 
-  if (!rtk) {
-    // store.dispatch();
-  }
-
   return result.units;
 };
 
 const createDefaultUnitsRequest = async ({
   shopId,
-  rtk = false,
 }: CreateDefaultUnitsRequest) => {
   const accessToken = await getAccessToken();
   const result: { units: Unit[] } = await apiRequest({
@@ -353,10 +286,6 @@ const createDefaultUnitsRequest = async ({
     endpoint: `/v1/shops/${shopId}/units/create-default`,
     token: accessToken,
   });
-
-  if (!rtk) {
-    // store.dispatch();
-  }
 
   return result.units;
 };

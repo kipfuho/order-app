@@ -18,49 +18,37 @@ import { Shop } from "../../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../../components/AppBar";
 import { ScrollView } from "react-native";
 import { updateTablePositionRequest } from "../../../../../../../../apis/table.api.service";
+import { useGetTablePositionsQuery } from "../../../../../../../../stores/apiSlices/tableApi.slice";
+import { useGetDishCategoriesQuery } from "../../../../../../../../stores/apiSlices/dishApi.slice";
+import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
+import { goToTablePositionList } from "../../../../../../../../apis/navigate.service";
 
 export default function UpdateTablePositionPage() {
-  const { shopId } = useLocalSearchParams();
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
-  ) as Shop;
-
   const { tablePositionId } = useLocalSearchParams();
-  const tablePosition = useSelector((state: RootState) =>
-    state.shop.tablePositions.find((tp) => tp.id === tablePositionId)
-  );
-
-  const dishCategories = useSelector(
-    (state: RootState) => state.shop.dishCategories
-  );
-
   const router = useRouter();
 
-  const goBack = () =>
-    router.navigate({
-      pathname: "/shop/[shopId]/settings/tables/table-position",
-      params: {
-        shopId: shop.id,
-      },
-    });
-
-  if (!tablePosition) {
-    return (
-      <Surface style={{ flex: 1 }}>
-        <Text>Table position not found</Text>
-        <Button onPress={goBack}>
-          <Text>Go Back</Text>
-        </Button>
-      </Surface>
-    );
-  }
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
+  ) as Shop;
+  const { data: tablePositions = [], isLoading: tablePositionLoading } =
+    useGetTablePositionsQuery(shop.id);
+  const { data: dishCategories = [], isLoading: dishCategoryLoading } =
+    useGetDishCategoriesQuery(shop.id);
+  const tablePosition = _.find(
+    tablePositions,
+    (tp) => tp.id === tablePositionId
+  );
 
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState(tablePosition.name);
+  const [name, setName] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [dialogVisible, setDialogVisible] = useState(false);
 
   const handleCreateShop = async () => {
+    if (!tablePosition) {
+      return;
+    }
+
     if (!name.trim()) {
       Toast.show({
         type: "error",
@@ -80,11 +68,7 @@ export default function UpdateTablePositionPage() {
       });
 
       // Navigate back to table position list
-      goBack();
-
-      // Clear input fields
-      setName("");
-      setSelectedCategories([]);
+      goToTablePositionList({ router, shopId: shop.id });
     } catch (err) {
       console.error(err);
     } finally {
@@ -93,6 +77,8 @@ export default function UpdateTablePositionPage() {
   };
 
   useEffect(() => {
+    if (!tablePosition) return;
+
     setName(tablePosition.name);
     setSelectedCategories(tablePosition.dishCategories);
   }, [tablePosition]);
@@ -105,9 +91,29 @@ export default function UpdateTablePositionPage() {
     );
   };
 
+  if (tablePositionLoading || dishCategoryLoading) {
+    return <LoaderBasic />;
+  }
+
+  if (!tablePosition) {
+    return (
+      <Surface style={{ flex: 1 }}>
+        <Text>Table position not found</Text>
+        <Button
+          onPress={() => goToTablePositionList({ router, shopId: shop.id })}
+        >
+          <Text>Go Back</Text>
+        </Button>
+      </Surface>
+    );
+  }
+
   return (
     <>
-      <AppBar title="Update Table Position" goBack={goBack} />
+      <AppBar
+        title="Update Table Position"
+        goBack={() => goToTablePositionList({ router, shopId: shop.id })}
+      />
       <Surface style={{ flex: 1 }}>
         <Surface style={{ flex: 1, padding: 16 }}>
           <TextInput
@@ -134,8 +140,8 @@ export default function UpdateTablePositionPage() {
           {/* Selected Categories List */}
           <Surface style={{ marginTop: 10 }}>
             {selectedCategories.map((categoryId) => {
-              console.log(categoryId);
-              const category = dishCategories.find(
+              const category = _.find(
+                dishCategories,
                 (cat) => cat.id === categoryId
               );
               return category ? (

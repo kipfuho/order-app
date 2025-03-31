@@ -25,7 +25,7 @@ export default function CreateDishCategoryPage() {
   const router = useRouter();
 
   const goBack = () =>
-    router.navigate({
+    router.replace({
       pathname: "/shop/[shopId]/menus/categories",
       params: {
         shopId: shop.id,

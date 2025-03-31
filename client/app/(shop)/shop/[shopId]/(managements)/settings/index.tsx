@@ -1,8 +1,8 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { ScrollView, View, useWindowDimensions } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
-import { useTheme, Button, Surface, Icon, Text } from "react-native-paper";
+import { Button, Surface, Icon, Text } from "react-native-paper";
 import { Shop } from "../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../components/AppBar";
 import { styles } from "../../../../../_layout";
@@ -31,12 +31,11 @@ const getButtonSize = (width: number) => {
 };
 
 export default function SettingManagementPage() {
-  const { shopId } = useLocalSearchParams();
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
   ) as Shop;
   const router = useRouter();
-  const theme = useTheme();
+
   const { width } = useWindowDimensions();
   const buttonSize = getButtonSize(width);
 
@@ -56,7 +55,7 @@ export default function SettingManagementPage() {
                 mode="contained-tonal"
                 style={{ width: buttonSize, height: 100, borderRadius: 10 }}
                 onPress={() =>
-                  router.push({
+                  router.replace({
                     pathname: `/shop/[shopId]/settings/${item.route}`,
                     params: { shopId: shop.id },
                   })

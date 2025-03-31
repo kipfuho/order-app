@@ -1,6 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { Dish, DishCategory, Unit } from "../state.interface";
-import { API_BASE_URL } from "../../apis/api.service";
 import {
   createDefaultUnitsRequest,
   createDishCategoryRequest,
@@ -22,6 +21,7 @@ import {
   UpdateDishCategoryRequest,
   UpdateDishRequest,
 } from "../../apis/dish.api.interface";
+import { API_BASE_URL } from "../../apis/api.service";
 
 export const dishApiSlice = createApi({
   reducerPath: "dishApi",

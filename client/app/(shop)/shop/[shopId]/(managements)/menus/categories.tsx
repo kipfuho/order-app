@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, ScrollView } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { Button, List, Surface, useTheme } from "react-native-paper";
 import _ from "lodash";
@@ -9,7 +9,10 @@ import { Shop } from "../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../components/AppBar";
 import { useGetDishCategoriesQuery } from "../../../../../../stores/apiSlices/dishApi.slice";
 import { LoaderBasic } from "../../../../../../components/ui/Loader";
-import { goBackShopHome } from "../../../../../../apis/navigate.service";
+import {
+  goBackShopHome,
+  goToUpdateDishCategory,
+} from "../../../../../../apis/navigate.service";
 
 export default function CategoriesManagementPage() {
   const router = useRouter();
@@ -31,30 +34,28 @@ export default function CategoriesManagementPage() {
         title="Dish Categories"
         goBack={() => goBackShopHome({ router, shopId: shop.id })}
       />
-      <Surface style={{ flex: 1 }}>
+      <Surface style={{ flex: 1, padding: 16 }}>
         <ScrollView>
           {/* List of Table Positions */}
           <List.Section>
             {dishCategories.map((item) => (
-              <Link
+              <List.Item
                 key={item.id}
-                href={{
-                  pathname:
-                    "/shop/[shopId]/menus/update-dish-category/[dishCategoryId]",
-                  params: { shopId: shop.id, dishCategoryId: item.id },
+                title={item.name}
+                style={{
+                  backgroundColor: theme.colors.backdrop,
+                  borderRadius: 8,
+                  marginBottom: 8,
                 }}
-                asChild
-              >
-                <List.Item
-                  title={item.name}
-                  style={{
-                    backgroundColor: theme.colors.backdrop,
-                    borderRadius: 8,
-                    marginBottom: 8,
-                  }}
-                  left={(props) => <List.Icon {...props} icon="table" />}
-                />
-              </Link>
+                left={(props) => <List.Icon {...props} icon="table" />}
+                onPress={() =>
+                  goToUpdateDishCategory({
+                    router,
+                    shopId: shop.id,
+                    dishCategoryId: item.id,
+                  })
+                }
+              />
             ))}
           </List.Section>
         </ScrollView>
@@ -64,7 +65,7 @@ export default function CategoriesManagementPage() {
           mode="contained"
           style={styles.createButton}
           onPress={() =>
-            router.push({
+            router.replace({
               pathname: "/shop/[shopId]/menus/create-dish-category",
               params: {
                 shopId: shop.id,

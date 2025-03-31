@@ -1,21 +1,9 @@
 import axios, { AxiosRequestConfig } from "axios";
-import {
-  Table,
-  TablePosition,
-  Tokens,
-  Unit,
-  User,
-} from "../stores/state.interface";
+import { Tokens, User } from "../stores/state.interface";
 import { auth } from "../generated/auth";
-import {
-  updateAllTablePositions,
-  updateAllTables,
-  updateAllUnits,
-} from "../stores/userSlice";
-import { getAccessToken } from "./utils.service";
 import { signIn } from "../stores/authSlice";
-import store from "../stores/store";
 import _ from "lodash";
+import store from "../stores/store";
 
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 

@@ -18,51 +18,43 @@ import {
 import { AppBar } from "../../../../../../../../components/AppBar";
 import { DropdownMenu } from "../../../../../../../../components/DropdownMenu";
 import { updateTableRequest } from "../../../../../../../../apis/table.api.service";
+import {
+  useGetTablePositionsQuery,
+  useGetTablesQuery,
+} from "../../../../../../../../stores/apiSlices/tableApi.slice";
+import { goToTableList } from "../../../../../../../../apis/navigate.service";
+import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
 
 export default function UpdateTablePage() {
-  const { shopId } = useLocalSearchParams();
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
-  ) as Shop;
   const { tableId } = useLocalSearchParams();
-  const table = useSelector((state: RootState) =>
-    state.shop.tables.find((t) => t.id === tableId)
-  );
-
   const router = useRouter();
 
-  const goBack = () =>
-    router.navigate({
-      pathname: "/shop/[shopId]/settings/tables",
-      params: {
-        shopId: shop.id,
-      },
-    });
-
-  if (!table) {
-    return (
-      <Surface style={{ flex: 1 }}>
-        <Text>Table not found</Text>
-        <Button mode="contained" onPress={goBack}>
-          Go Back
-        </Button>
-      </Surface>
-    );
-  }
-
-  const tablePositions = useSelector(
-    (state: RootState) => state.shop.tablePositions
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
+  ) as Shop;
+  const { data: tables = [], isLoading: tableLoading } = useGetTablesQuery(
+    shop.id
   );
+  const { data: tablePositions = [], isLoading: tablePositionLoading } =
+    useGetTablePositionsQuery(shop.id);
+  const table = _.find(tables, (t) => t.id === tableId);
+
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [tablePosition, setTablePosition] = useState<TablePosition>();
 
   useEffect(() => {
+    if (!table) return;
+
     setName(table.name);
     setTablePosition(table.position);
   }, [table]);
 
   const handleUpdateTable = async () => {
+    if (!table) {
+      return;
+    }
+
     if (!name.trim() || !tablePosition) {
       Toast.show({
         type: "error",
@@ -82,7 +74,7 @@ export default function UpdateTablePage() {
       });
 
       // Navigate back to table position list
-      goBack();
+      goToTableList({ router, shopId: shop.id });
 
       // Clear input fields
       setName("");
@@ -94,9 +86,30 @@ export default function UpdateTablePage() {
     }
   };
 
+  if (tableLoading || tablePositionLoading) {
+    return <LoaderBasic />;
+  }
+
+  if (!table) {
+    return (
+      <Surface style={{ flex: 1 }}>
+        <Text>Table not found</Text>
+        <Button
+          mode="contained"
+          onPress={() => goToTableList({ router, shopId: shop.id })}
+        >
+          Go Back
+        </Button>
+      </Surface>
+    );
+  }
+
   return (
     <>
-      <AppBar title="Update Table" goBack={goBack} />
+      <AppBar
+        title="Update Table"
+        goBack={() => goToTableList({ router, shopId: shop.id })}
+      />
       <Surface style={{ flex: 1 }}>
         <Surface style={{ flex: 1, padding: 16 }}>
           <TextInput
