@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ScrollView } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
 import {
@@ -23,38 +23,41 @@ import { DropdownMenu } from "../../../../../../components/DropdownMenu";
 import _ from "lodash";
 import { createDishRequest } from "../../../../../../apis/dish.api.service";
 import UploadImages from "../../../../../../components/ui/UploadImage";
+import {
+  useGetDishCategoriesQuery,
+  useGetDishTypesQuery,
+  useGetUnitsQuery,
+} from "../../../../../../stores/apiSlices/dishApi.slice";
+import { LoaderBasic } from "../../../../../../components/ui/Loader";
+import { goBackShopDishList } from "../../../../../../apis/navigate.service";
 
 export default function CreateDishPage() {
-  const { shopId } = useLocalSearchParams();
+  const router = useRouter();
 
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
   ) as Shop;
-  const dishTypes = useSelector((state: RootState) => state.shop.dishTypes);
-  const dishCategories = useSelector(
-    (state: RootState) => state.shop.dishCategories
+  const { data: dishTypes = [], isLoading: dishTypeLoading } =
+    useGetDishTypesQuery(shop.id);
+  const { data: dishCategories = [], isLoading: dishCategoryLoading } =
+    useGetDishCategoriesQuery(shop.id);
+  const { data: units = [], isLoading: unitLoading } = useGetUnitsQuery(
+    shop.id
   );
-  const units = useSelector((state: RootState) => state.shop.units);
 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
-  const [category, setCategory] = useState(dishCategories[0]);
-  const [dishType, setDishType] = useState(dishTypes[0]);
+  const [category, setCategory] = useState<DishCategory>();
+  const [dishType, setDishType] = useState("");
   const [price, setPrice] = useState("");
-  const [unit, setUnit] = useState(units[0]);
+  const [unit, setUnit] = useState<Unit>();
   const [taxRate, setTaxRate] = useState("");
   const [images, setImages] = useState<{ uri: string; loading: boolean }[]>([]);
-  const router = useRouter();
-
   const [isTaxIncludedPrice, setIsTaxIncludedPrice] = useState(false);
-  const onToggleSwitch = () => setIsTaxIncludedPrice(!isTaxIncludedPrice);
 
   const goBack = () => {
     resetField();
-    router.navigate({
-      pathname: "/shop/[shopId]/menus/dishes",
-      params: { shopId: shop.id },
-    });
+    goBackShopDishList({ router, shopId: shop.id });
   };
 
   const resetField = () => {
@@ -105,6 +108,10 @@ export default function CreateDishPage() {
       setLoading(false);
     }
   };
+
+  if (dishTypeLoading || dishCategoryLoading || unitLoading) {
+    return <LoaderBasic />;
+  }
 
   return (
     <>
@@ -165,7 +172,7 @@ export default function CreateDishPage() {
               <Text style={{ marginRight: 16 }}>Price include tax</Text>
               <Switch
                 value={isTaxIncludedPrice}
-                onValueChange={onToggleSwitch}
+                onValueChange={() => setIsTaxIncludedPrice(!isTaxIncludedPrice)}
               />
             </Surface>
             <DropdownMenu

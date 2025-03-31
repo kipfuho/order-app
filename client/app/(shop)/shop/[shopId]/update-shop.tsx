@@ -8,19 +8,18 @@ import {
   Surface,
   TextInput,
 } from "react-native-paper";
-import { updateShopRequest } from "../../../../apis/api.service";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores/store";
 import { Shop } from "../../../../stores/state.interface";
 import { AppBar } from "../../../../components/AppBar";
-import { goBackShopMenu } from "../../../../apis/navigate.service";
+import { goBackShopHome } from "../../../../apis/navigate.service";
 import { ScrollView } from "react-native";
 import { styles } from "../../../_layout";
+import { updateShopRequest } from "../../../../apis/shop.api.service";
 
 export default function UpdateShopPage() {
-  const { shopId } = useLocalSearchParams(); // Get shop ID from URL
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
   ) as Shop;
 
   const [loading, setLoading] = useState(false);
@@ -61,7 +60,7 @@ export default function UpdateShopPage() {
         taxRate: _.toNumber(taxRate),
       });
 
-      goBackShopMenu({ router, shopId: shop.id });
+      goBackShopHome({ router, shopId: shop.id });
       resetField();
     } catch (err) {
       console.error(err);
@@ -74,7 +73,7 @@ export default function UpdateShopPage() {
     <>
       <AppBar
         title="Update shop"
-        goBack={() => goBackShopMenu({ router, shopId: shop.id })}
+        goBack={() => goBackShopHome({ router, shopId: shop.id })}
       />
       <Surface style={styles.baseContainer}>
         <ScrollView>

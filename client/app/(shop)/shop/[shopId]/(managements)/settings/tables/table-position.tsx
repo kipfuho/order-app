@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ScrollView } from "react-native";
-import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
-import { ActivityIndicator, Button, List, useTheme } from "react-native-paper";
+import { Button, List, useTheme } from "react-native-paper";
 import _ from "lodash";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getTablePositionsRequest } from "../../../../../../../apis/table.api.service";
+import { useGetTablePositionsQuery } from "../../../../../../../stores/apiSlices/tableApi.slice";
+import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 
 export default function TablePositionsManagementPage() {
-  const { shopId } = useLocalSearchParams();
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
   ) as Shop;
   const router = useRouter();
   const theme = useTheme();
@@ -24,35 +24,11 @@ export default function TablePositionsManagementPage() {
       params: { shopId: shop.id },
     });
 
-  const tablePositions = useSelector(
-    (state: RootState) => state.shop.tablePositions
-  );
-  const [loading, setLoading] = useState(false);
+  const { data: tablePositions = [], isLoading: tablePositionLoading } =
+    useGetTablePositionsQuery(shop.id);
 
-  useEffect(() => {
-    const fetchTablePositions = async () => {
-      try {
-        setLoading(true);
-        await getTablePositionsRequest({ shopId: shop.id });
-      } catch (error) {
-        console.error("Error fetching table positions:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (_.isEmpty(tablePositions)) {
-      fetchTablePositions();
-    }
-  }, []);
-
-  if (loading) {
-    return (
-      <ActivityIndicator
-        size="large"
-        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-      />
-    );
+  if (tablePositionLoading) {
+    return <LoaderBasic />;
   }
 
   return (

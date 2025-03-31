@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { goBackShopMenu } from "../../../../../../apis/navigate.service";
+import { goBackShopHome } from "../../../../../../apis/navigate.service";
 import { AppBar } from "../../../../../../components/AppBar";
 import { Surface, Text } from "react-native-paper";
 import { useEffect } from "react";
@@ -9,10 +9,8 @@ export default function OrderManagementApprovePage() {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchTablesForOrder = async () => {
-      
-    }
-  })
+    const fetchTablesForOrder = async () => {};
+  });
 
   return (
     <Surface style={{ flex: 1, padding: 16 }}>

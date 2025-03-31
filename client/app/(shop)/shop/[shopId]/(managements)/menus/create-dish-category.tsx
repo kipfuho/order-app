@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
 import {
@@ -16,10 +16,8 @@ import { ScrollView, StyleSheet } from "react-native";
 import { createDishCategoryRequest } from "../../../../../../apis/dish.api.service";
 
 export default function CreateDishCategoryPage() {
-  const { shopId } = useLocalSearchParams();
-
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
   ) as Shop;
 
   const [loading, setLoading] = useState(false);

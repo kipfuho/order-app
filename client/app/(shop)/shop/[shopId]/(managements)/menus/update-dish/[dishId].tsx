@@ -24,21 +24,32 @@ import { Collapsible } from "../../../../../../../components/Collapsible";
 import { DropdownMenu } from "../../../../../../../components/DropdownMenu";
 import { updateDishRequest } from "../../../../../../../apis/dish.api.service";
 import UploadImages from "../../../../../../../components/ui/UploadImage";
+import {
+  useGetDishCategoriesQuery,
+  useGetDishesQuery,
+  useGetDishTypesQuery,
+  useGetUnitsQuery,
+} from "../../../../../../../stores/apiSlices/dishApi.slice";
+import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 
 export default function UpdateDishPage() {
-  const { shopId, dishId } = useLocalSearchParams();
+  const { dishId } = useLocalSearchParams();
+  const router = useRouter();
 
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
   ) as Shop;
-  const dish = useSelector((state: RootState) =>
-    state.shop.dishes.find((d) => d.id === dishId)
-  ) as Dish;
-  const dishTypes = useSelector((state: RootState) => state.shop.dishTypes);
-  const dishCategories = useSelector(
-    (state: RootState) => state.shop.dishCategories
+  const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery(
+    shop.id
   );
-  const units = useSelector((state: RootState) => state.shop.units);
+  const { data: dishTypes = [], isLoading: dishTypeLoading } =
+    useGetDishTypesQuery(shop.id);
+  const { data: dishCategories = [], isLoading: dishCategoryLoading } =
+    useGetDishCategoriesQuery(shop.id);
+  const { data: units = [], isLoading: unitLoading } = useGetUnitsQuery(
+    shop.id
+  );
+  const dish = _.find(dishes, (d) => d.id === dishId);
 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
@@ -48,7 +59,6 @@ export default function UpdateDishPage() {
   const [unit, setUnit] = useState(units[0]);
   const [taxRate, setTaxRate] = useState("");
   const [images, setImages] = useState<{ uri: string; loading: boolean }[]>([]);
-  const router = useRouter();
 
   const [isTaxIncludedPrice, setIsTaxIncludedPrice] = useState(false);
   const onToggleSwitch = () => setIsTaxIncludedPrice(!isTaxIncludedPrice);
@@ -62,6 +72,10 @@ export default function UpdateDishPage() {
     });
 
   const handleUpdateDish = async () => {
+    if (!dish) {
+      return;
+    }
+
     if (!name.trim() || !category || !dishType || !unit || !price.trim()) {
       Toast.show({
         type: "error",
@@ -97,6 +111,10 @@ export default function UpdateDishPage() {
   };
 
   useEffect(() => {
+    if (!dish) {
+      return;
+    }
+
     setName(dish.name);
     setCategory(dish.category);
     setDishType(dish.type);
@@ -105,6 +123,10 @@ export default function UpdateDishPage() {
     setTaxRate(_.toString(dish.taxRate));
     setImages(_.map(dish.imageUrls, (url) => ({ uri: url, loading: false })));
   }, [dish]);
+
+  if (dishLoading || dishCategoryLoading || dishTypeLoading || unitLoading) {
+    return <LoaderBasic />;
+  }
 
   if (!dish) {
     return (

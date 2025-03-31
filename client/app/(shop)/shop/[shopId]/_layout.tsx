@@ -2,11 +2,6 @@ import { Link, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
-import {
-  getDishCategoriesRequest,
-  getDishesRequest,
-  getDishTypesRequest,
-} from "../../../../apis/dish.api.service";
 import { styles } from "../../../_layout";
 import { connectAppSyncForShop } from "../../../../apis/aws.service";
 import { useGetShopsQuery } from "../../../../stores/apiSlices/shopApi.slice";
@@ -14,16 +9,12 @@ import _ from "lodash";
 import { updateCurrentShop } from "../../../../stores/shop.slice";
 import { RootState } from "../../../../stores/store";
 import { LoaderBasic } from "../../../../components/ui/Loader";
-import {
-  getTablePositionsRequest,
-  getTablesRequest,
-} from "../../../../apis/table.api.service";
 
 export default function AppLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };
-  const { data: shops, isLoading } = useGetShopsQuery({});
-  const shop = _.find(shops, (s) => s.id.toString() === shopId);
-  const currentShop = useSelector((state: RootState) => state.shop2.shop);
+  const { data: shops = [], isLoading } = useGetShopsQuery({});
+  const shop = shops.find((s) => s.id.toString() === shopId);
+  const currentShop = useSelector((state: RootState) => state.shop.currentShop);
 
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -33,14 +24,7 @@ export default function AppLayout() {
 
     try {
       dispatch(updateCurrentShop(shop));
-      await Promise.all([
-        getTablesRequest({ shopId: shop.id }),
-        getTablePositionsRequest({ shopId: shop.id }),
-        getDishesRequest({ shopId: shop.id }),
-        getDishCategoriesRequest({ shopId: shop.id }),
-        getDishTypesRequest({ shopId: shop.id }),
-        connectAppSyncForShop({ shopId: shop.id }),
-      ]);
+      connectAppSyncForShop({ shopId: shop.id });
     } catch (error) {
       console.error("Error fetching shop data:", error);
     }

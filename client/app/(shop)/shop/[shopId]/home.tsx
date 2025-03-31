@@ -14,13 +14,13 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores/store";
-import { createDefaultUnitsRequest } from "../../../../apis/api.service";
 import { AppBar } from "../../../../components/AppBar";
 import { Shop } from "../../../../stores/state.interface";
 import { goBackShopList } from "../../../../apis/navigate.service";
 import { View } from "react-native";
 import { styles } from "../../../_layout";
 import { deleteShopRequest } from "../../../../apis/shop.api.service";
+import { createDefaultUnitsRequest } from "../../../../apis/dish.api.service";
 
 interface Item {
   title: string;
@@ -68,7 +68,9 @@ const getButtonSize = (width: number) => {
 };
 
 export default function ShopPage() {
-  const shop = useSelector((state: RootState) => state.shop2.shop) as Shop;
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
+  ) as Shop;
   const router = useRouter();
   const theme = useTheme(); // Get theme colors
 

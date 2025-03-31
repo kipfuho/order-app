@@ -6,7 +6,7 @@ import { useTheme, Button, Surface, Icon, Text } from "react-native-paper";
 import { Shop } from "../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../components/AppBar";
 import { styles } from "../../../../../_layout";
-import { goBackShopMenu } from "../../../../../../apis/navigate.service";
+import { goBackShopHome } from "../../../../../../apis/navigate.service";
 
 interface Item {
   key: string;
@@ -44,7 +44,7 @@ export default function SettingManagementPage() {
     <>
       <AppBar
         title="Settings"
-        goBack={() => goBackShopMenu({ router, shopId: shop.id })}
+        goBack={() => goBackShopHome({ router, shopId: shop.id })}
       />
       <Surface style={styles.baseContainer}>
         <ScrollView>

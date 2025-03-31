@@ -1,7 +1,7 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs, useLocalSearchParams, useRouter } from "expo-router";
 import { useTheme } from "react-native-paper";
-import { goBackShopMenu } from "../../../../../../apis/navigate.service";
+import { goBackShopHome } from "../../../../../../apis/navigate.service";
 import { AppBar } from "../../../../../../components/AppBar";
 
 export default function TabLayout() {
@@ -14,7 +14,7 @@ export default function TabLayout() {
       <AppBar
         title="Order Management"
         goBack={() => {
-          goBackShopMenu({ router, shopId });
+          goBackShopHome({ router, shopId });
         }}
       />
       <Tabs

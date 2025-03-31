@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { AppBar } from "../../../../../../components/AppBar";
-import { goBackShopMenu } from "../../../../../../apis/navigate.service";
+import { goBackShopHome } from "../../../../../../apis/navigate.service";
 import { Surface, Text } from "react-native-paper";
 
 export default function OrderManagementHistoryPage() {

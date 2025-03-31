@@ -1,66 +1,36 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { StyleSheet, ScrollView } from "react-native";
-import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
-import {
-  ActivityIndicator,
-  Button,
-  List,
-  Surface,
-  useTheme,
-} from "react-native-paper";
+import { Button, List, Surface, useTheme } from "react-native-paper";
 import _ from "lodash";
 import { RootState } from "../../../../../../stores/store";
 import { Shop } from "../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../components/AppBar";
-import { getDishCategoriesRequest } from "../../../../../../apis/dish.api.service";
+import { useGetDishCategoriesQuery } from "../../../../../../stores/apiSlices/dishApi.slice";
+import { LoaderBasic } from "../../../../../../components/ui/Loader";
+import { goBackShopHome } from "../../../../../../apis/navigate.service";
 
 export default function CategoriesManagementPage() {
-  const { shopId } = useLocalSearchParams();
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
-  ) as Shop;
-
-  // Fetch table positions from Redux store
-  const dishCategories = useSelector(
-    (state: RootState) => state.shop.dishCategories
-  );
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const theme = useTheme();
 
-  useEffect(() => {
-    const fetchDishCategories = async () => {
-      try {
-        setLoading(true);
-        await getDishCategoriesRequest({
-          shopId: shop.id,
-        });
-      } catch (error) {
-        console.error("Error fetching dishCategories:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
+  ) as Shop;
+  const { data: dishCategories = [], isLoading: dishCategoryLoading } =
+    useGetDishCategoriesQuery(shop.id);
 
-    if (_.isEmpty(dishCategories)) {
-      fetchDishCategories();
-    }
-  }, []);
-
-  if (loading) {
-    return <ActivityIndicator size="large" />;
+  if (dishCategoryLoading) {
+    return <LoaderBasic />;
   }
-
-  const goBack = () =>
-    router.navigate({
-      pathname: "/shop/[shopId]/home",
-      params: { shopId: shop.id },
-    });
 
   return (
     <>
-      <AppBar title="Dish Categories" goBack={goBack} />
+      <AppBar
+        title="Dish Categories"
+        goBack={() => goBackShopHome({ router, shopId: shop.id })}
+      />
       <Surface style={{ flex: 1 }}>
         <ScrollView>
           {/* List of Table Positions */}

@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useRef, useState } from "react";
+import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
 import { Dish, Shop } from "../../../../../../stores/state.interface";
@@ -21,35 +21,30 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import {
-  deleteDishRequest,
-  getDishesRequest,
-} from "../../../../../../apis/dish.api.service";
+import { deleteDishRequest } from "../../../../../../apis/dish.api.service";
 import Toast from "react-native-toast-message";
-
-// Group dishes by category
-const groupByCategory = (dishes: Dish[]): Record<string, Dish[]> => {
-  return dishes.reduce<Record<string, Dish[]>>((acc, dish) => {
-    if (!acc[dish.category?.name]) {
-      acc[dish.category?.name] = [];
-    }
-    acc[dish.category?.name].push(dish);
-    return acc;
-  }, {});
-};
+import {
+  useGetDishCategoriesQuery,
+  useGetDishesQuery,
+} from "../../../../../../stores/apiSlices/dishApi.slice";
+import { LoaderBasic } from "../../../../../../components/ui/Loader";
+import {
+  goBackShopHome,
+  goToDishUpdatePage,
+} from "../../../../../../apis/navigate.service";
+import _ from "lodash";
 
 export default function DishesManagementPage() {
-  const { shopId } = useLocalSearchParams();
   const router = useRouter();
   const theme = useTheme();
 
-  // Get shop from Redux
-  const shop = useSelector((state: RootState) =>
-    state.shop.shops.find((s) => s.id.toString() === shopId)
+  const shop = useSelector(
+    (state: RootState) => state.shop.currentShop
   ) as Shop;
-
-  // Get shop dishes from Redux
-  const dishes = useSelector((state: RootState) => state.shop.dishes);
+  const { data: dishes, isLoading: dishLoading } = useGetDishesQuery(shop.id);
+  const { data: dishCategories = [], isLoading: categoryLoading } =
+    useGetDishCategoriesQuery(shop.id);
+  const dishesGroupByCategoryId = _.groupBy(dishes, "category.id");
 
   const [loading, setLoading] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -87,9 +82,6 @@ export default function DishesManagementPage() {
     }
   };
 
-  const groupedDishes = groupByCategory(dishes);
-  const categories = Object.keys(groupedDishes);
-
   // Create refs
   const scrollViewRef = useRef<ScrollView | null>(null);
   const categoryRefs = useRef<Record<string, View | null>>({});
@@ -105,38 +97,23 @@ export default function DishesManagementPage() {
     }
   };
 
-  const goBack = () =>
-    router.navigate({
-      pathname: "/shop/[shopId]/home",
-      params: { shopId: shop.id },
-    });
-
   const goEditDish = () => {
     setMenuVisible(false);
     if (selectedDish) {
-      router.navigate({
-        pathname: "/shop/[shopId]/menus/update-dish/[dishId]",
-        params: {
-          shopId: shop.id,
-          dishId: selectedDish.id,
-        },
-      });
+      goToDishUpdatePage({ router, shopId: shop.id, dishId: selectedDish.id });
     }
   };
 
-  useEffect(() => {
-    const fetchDishes = async () => {
-      await getDishesRequest({
-        shopId: shop.id,
-      });
-    };
-
-    fetchDishes();
-  }, [shopId]);
+  if (dishLoading || categoryLoading) {
+    return <LoaderBasic />;
+  }
 
   return (
     <>
-      <AppBar title="Dishes" goBack={goBack} />
+      <AppBar
+        title="Dishes"
+        goBack={() => goBackShopHome({ router, shopId: shop.id })}
+      />
       <Menu
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
@@ -193,18 +170,18 @@ export default function DishesManagementPage() {
             style={[styles.sidebar, { backgroundColor: theme.colors.backdrop }]}
           >
             <ScrollView showsVerticalScrollIndicator={false}>
-              {categories.map((category) => (
+              {dishCategories.map((category) => (
                 <Button
-                  key={category}
+                  key={category.id}
                   mode="contained-tonal"
-                  onPress={() => scrollToCategory(category)}
+                  onPress={() => scrollToCategory(category.id)}
                   style={styles.categoryButton}
                   labelStyle={{
                     color: theme.colors.onSurface,
                     marginHorizontal: 0,
                   }}
                 >
-                  {category}
+                  {category.name}
                 </Button>
               ))}
             </ScrollView>
@@ -213,14 +190,14 @@ export default function DishesManagementPage() {
           {/* Right Section for Dishes */}
           <Surface style={{ flex: 1 }}>
             <ScrollView ref={scrollViewRef} style={styles.dishList}>
-              {categories.map((category) => (
+              {dishCategories.map((category) => (
                 <View
-                  key={category}
-                  ref={(el) => (categoryRefs.current[category] = el)}
+                  key={category.id}
+                  ref={(el) => (categoryRefs.current[category.id] = el)}
                   style={styles.categoryContainer}
                 >
                   <Text variant="titleMedium" style={styles.categoryTitle}>
-                    {category}
+                    {category.name}
                   </Text>
                   <Surface
                     style={{
@@ -229,9 +206,15 @@ export default function DishesManagementPage() {
                       boxShadow: "0 0 0",
                     }}
                   >
-                    {groupedDishes[category].map((dish) => (
-                      <DishCard key={dish.id} dish={dish} openMenu={openMenu} />
-                    ))}
+                    {_.get(dishesGroupByCategoryId, category.id, []).map(
+                      (dish) => (
+                        <DishCard
+                          key={dish.id}
+                          dish={dish}
+                          openMenu={openMenu}
+                        />
+                      )
+                    )}
                   </Surface>
                 </View>
               ))}
