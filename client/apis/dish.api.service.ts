@@ -3,12 +3,14 @@ import {
   updateAllDishCategories,
   updateAllDishes,
   updateAllDisheTypes,
+  updateAllUnits,
 } from "../stores/userSlice";
 import { apiFormDataRequest, apiRequest } from "./api.service";
 import { getAccessToken } from "./utils.service";
 import store from "../stores/store";
 import { Dish, DishCategory, Unit } from "../stores/state.interface";
 import {
+  CreateDefaultUnitsRequest,
   CreateDishCategoryRequest,
   CreateDishRequest,
   DeleteDishCategoryRequest,
@@ -16,6 +18,7 @@ import {
   GetDishCategoriesRequest,
   GetDishesRequest,
   GetDishTypesRequest,
+  GetUnitsRequest,
   RemoveImageRequest,
   UpdateDishCategoryRequest,
   UpdateDishRequest,
@@ -68,12 +71,7 @@ const createDishCategoryRequest = async ({
 
   if (!rtk) {
     const state = store.getState();
-    store.dispatch(
-      updateAllDishCategories([
-        ...state.shop.dishCategories,
-        result.dishCategory,
-      ])
-    );
+    // store.dispatch();
   }
   return result.dishCategory;
 };
@@ -95,7 +93,7 @@ const getDishCategoriesRequest = async ({
   });
 
   if (!rtk) {
-    store.dispatch(updateAllDishCategories(result.dishCategories));
+    // store.dispatch();
   }
 
   return result.dishCategories;
@@ -125,15 +123,7 @@ const updateDishCategoryRequest = async ({
 
   if (!rtk) {
     const state = store.getState();
-    store.dispatch(
-      updateAllDishCategories([
-        ..._.filter(
-          state.shop.dishCategories,
-          (dc) => dc.id !== dishCategoryId
-        ),
-        result.dishCategory,
-      ])
-    );
+    // store.dispatch();
   }
 
   return result.dishCategory;
@@ -158,11 +148,7 @@ const deleteDishCategoryRequest = async ({
 
   if (!rtk) {
     const state = store.getState();
-    store.dispatch(
-      updateAllDishCategories(
-        _.filter(state.shop.dishCategories, (dc) => dc.id !== dishCategoryId)
-      )
-    );
+    // store.dispatch();
   }
 };
 
@@ -212,7 +198,7 @@ const createDishRequest = async ({
 
   if (!rtk) {
     const state = store.getState();
-    store.dispatch(updateAllDishes([...state.shop.dishes, result.dish]));
+    // store.dispatch();
   }
 
   return result.dish;
@@ -232,7 +218,7 @@ const getDishesRequest = async ({ shopId, rtk = false }: GetDishesRequest) => {
   });
 
   if (!rtk) {
-    store.dispatch(updateAllDishes(result.dishes));
+    // store.dispatch();
   }
 
   return result.dishes;
@@ -285,12 +271,7 @@ const updateDishRequest = async ({
 
   if (!rtk) {
     const state = store.getState();
-    store.dispatch(
-      updateAllDishes([
-        ..._.filter(state.shop.dishes, (d) => d.id !== dishId),
-        result.dish,
-      ])
-    );
+    // store.dispatch();
   }
 
   return result.dish;
@@ -315,9 +296,7 @@ const deleteDishRequest = async ({
 
   if (!rtk) {
     const state = store.getState();
-    store.dispatch(
-      updateAllDishes(_.filter(state.shop.dishes, (d) => d.id !== dishId))
-    );
+    // store.dispatch();
   }
 };
 
@@ -338,10 +317,48 @@ const getDishTypesRequest = async ({
   });
 
   if (!rtk) {
-    store.dispatch(updateAllDisheTypes(result.dishTypes));
+    // store.dispatch();
   }
 
   return result.dishTypes;
+};
+
+/**
+ * Get units
+ * @param param0
+ */
+const getUnitsRequest = async ({ shopId, rtk = false }: GetUnitsRequest) => {
+  const accessToken = await getAccessToken();
+  store;
+  const result: { units: Unit[] } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/units/`,
+    token: accessToken,
+  });
+
+  if (!rtk) {
+    // store.dispatch();
+  }
+
+  return result.units;
+};
+
+const createDefaultUnitsRequest = async ({
+  shopId,
+  rtk = false,
+}: CreateDefaultUnitsRequest) => {
+  const accessToken = await getAccessToken();
+  const result: { units: Unit[] } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/units/create-default`,
+    token: accessToken,
+  });
+
+  if (!rtk) {
+    // store.dispatch();
+  }
+
+  return result.units;
 };
 
 export {
@@ -356,4 +373,6 @@ export {
   updateDishRequest,
   deleteDishRequest,
   getDishTypesRequest,
+  getUnitsRequest,
+  createDefaultUnitsRequest,
 };

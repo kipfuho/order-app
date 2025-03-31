@@ -24,10 +24,9 @@ export const goBack = (
   router.navigate(path);
 };
 
-export const goBackShopList = ({ router }: { router: Router }) =>
-  router.navigate("/");
+const goBackShopList = ({ router }: { router: Router }) => router.navigate("/");
 
-export const goBackShopMenu = ({
+const goBackShopHome = ({
   router,
   shopId,
 }: {
@@ -38,3 +37,49 @@ export const goBackShopMenu = ({
     pathname: "/shop/[shopId]/home",
     params: { shopId },
   });
+
+const goBackShopDishList = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) =>
+  router.navigate({
+    pathname: "/shop/[shopId]/menus/dishes",
+    params: { shopId },
+  });
+
+const goBackShopSetting = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) =>
+  router.navigate({
+    pathname: "/shop/[shopId]/settings",
+    params: { shopId },
+  });
+
+const goToDishUpdatePage = ({
+  router,
+  shopId,
+  dishId,
+}: {
+  router: Router;
+  shopId: string;
+  dishId: string;
+}) =>
+  router.navigate({
+    pathname: "/shop/[shopId]/menus/update-dish/[dishId]",
+    params: { shopId, dishId },
+  });
+
+export {
+  goBackShopList,
+  goBackShopHome,
+  goBackShopDishList,
+  goBackShopSetting,
+  goToDishUpdatePage,
+};

@@ -18,7 +18,7 @@ interface CreateDishCategoryRequest {
 
 interface GetDishCategoriesRequest {
   shopId: string;
-  rtk: boolean;
+  rtk?: boolean;
 }
 
 interface UpdateDishCategoryRequest {
@@ -77,6 +77,16 @@ interface GetDishTypesRequest {
   rtk?: boolean;
 }
 
+interface GetUnitsRequest {
+  shopId: string;
+  rtk?: boolean;
+}
+
+interface CreateDefaultUnitsRequest {
+  shopId: string;
+  rtk?: boolean;
+}
+
 export {
   UploadImageRequest,
   RemoveImageRequest,
@@ -89,4 +99,6 @@ export {
   UpdateDishRequest,
   DeleteDishRequest,
   GetDishTypesRequest,
+  GetUnitsRequest,
+  CreateDefaultUnitsRequest,
 };

@@ -180,30 +180,3 @@ export const refreshTokensRequest = async (refreshToken: string) => {
 
   return tokens;
 };
-
-export const getUnitsRequest = async ({ shopId }: { shopId: string }) => {
-  const accessToken = await getAccessToken();
-  store;
-  const result: { units: Unit[] } = await apiRequest({
-    method: "GET",
-    endpoint: `/v1/shops/${shopId}/units/`,
-    token: accessToken,
-  });
-
-  store.dispatch(updateAllUnits(result.units));
-};
-
-export const createDefaultUnitsRequest = async ({
-  shopId,
-}: {
-  shopId: string;
-}) => {
-  const accessToken = await getAccessToken();
-  const result: { units: Unit[] } = await apiRequest({
-    method: "GET",
-    endpoint: `/v1/shops/${shopId}/units/create-default`,
-    token: accessToken,
-  });
-
-  store.dispatch(updateAllUnits(result.units));
-};
