@@ -21,6 +21,7 @@ import { updateTableRequest } from "../../../../../../../../apis/table.api.servi
 import {
   useGetTablePositionsQuery,
   useGetTablesQuery,
+  useUpdateTableMutation,
 } from "../../../../../../../../stores/apiSlices/tableApi.slice";
 import { goToTableList } from "../../../../../../../../apis/navigate.service";
 import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
@@ -38,8 +39,9 @@ export default function UpdateTablePage() {
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
     useGetTablePositionsQuery(shop.id);
   const table = _.find(tables, (t) => t.id === tableId);
+  const [updateTable, { isLoading: updateTableLoading }] =
+    useUpdateTableMutation();
 
-  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [tablePosition, setTablePosition] = useState<TablePosition>();
 
@@ -65,13 +67,12 @@ export default function UpdateTablePage() {
     }
 
     try {
-      setLoading(true);
-      await updateTableRequest({
+      await updateTable({
         tableId: table.id,
         shopId: shop.id,
         name,
         tablePosition,
-      });
+      }).unwrap();
 
       // Navigate back to table position list
       goToTableList({ router, shopId: shop.id });
@@ -81,8 +82,6 @@ export default function UpdateTablePage() {
       setTablePosition(undefined);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -129,7 +128,7 @@ export default function UpdateTablePage() {
           />
         </Surface>
 
-        {loading ? (
+        {updateTableLoading ? (
           <ActivityIndicator animating={true} size="large" />
         ) : (
           <>

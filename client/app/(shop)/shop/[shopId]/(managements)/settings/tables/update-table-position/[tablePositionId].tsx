@@ -17,8 +17,10 @@ import { RootState } from "../../../../../../../../stores/store";
 import { Shop } from "../../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../../components/AppBar";
 import { ScrollView } from "react-native";
-import { updateTablePositionRequest } from "../../../../../../../../apis/table.api.service";
-import { useGetTablePositionsQuery } from "../../../../../../../../stores/apiSlices/tableApi.slice";
+import {
+  useGetTablePositionsQuery,
+  useUpdateTablePositionMutation,
+} from "../../../../../../../../stores/apiSlices/tableApi.slice";
 import { useGetDishCategoriesQuery } from "../../../../../../../../stores/apiSlices/dishApi.slice";
 import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
 import { goToTablePositionList } from "../../../../../../../../apis/navigate.service";
@@ -38,8 +40,9 @@ export default function UpdateTablePositionPage() {
     tablePositions,
     (tp) => tp.id === tablePositionId
   );
+  const [updateTablePosition, { isLoading: updateTablePositionLoading }] =
+    useUpdateTablePositionMutation();
 
-  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -59,20 +62,17 @@ export default function UpdateTablePositionPage() {
     }
 
     try {
-      setLoading(true);
-      await updateTablePositionRequest({
+      await updateTablePosition({
         tablePositionId: tablePosition.id,
         shopId: shop.id,
         name,
         categories: selectedCategories,
-      });
+      }).unwrap();
 
       // Navigate back to table position list
       goToTablePositionList({ router, shopId: shop.id });
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -182,7 +182,7 @@ export default function UpdateTablePositionPage() {
           </Dialog>
         </Portal>
 
-        {loading ? (
+        {updateTablePositionLoading ? (
           <ActivityIndicator animating={true} size="large" />
         ) : (
           <Button

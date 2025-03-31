@@ -12,16 +12,18 @@ import { AppBar } from "../../components/AppBar";
 import { styles } from "../_layout";
 import { ScrollView } from "react-native";
 import { goBackShopList } from "../../apis/navigate.service";
-import { createShopRequest } from "../../apis/shop.api.service";
+import { useCreateShopMutation } from "../../stores/apiSlices/shopApi.slice";
 
 export default function CreateShopPage() {
-  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [createNewShop, { isLoading: createShopLoading }] =
+    useCreateShopMutation();
+
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [taxRate, setTaxRate] = useState("");
-  const router = useRouter();
 
   const resetField = useCallback(async () => {
     setName("");
@@ -42,21 +44,18 @@ export default function CreateShopPage() {
     }
 
     try {
-      setLoading(true);
-      await createShopRequest({
+      await createNewShop({
         email,
         name,
         phone,
         taxRate: _.toNumber(taxRate),
         location,
-      });
+      }).unwrap();
 
       goBackShopList({ router });
       resetField();
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -101,7 +100,7 @@ export default function CreateShopPage() {
             onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
           />
 
-          {loading ? (
+          {createShopLoading ? (
             <ActivityIndicator animating={true} size="large" />
           ) : (
             <Button

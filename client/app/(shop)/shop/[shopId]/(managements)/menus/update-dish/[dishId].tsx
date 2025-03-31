@@ -13,7 +13,6 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import {
-  Dish,
   DishCategory,
   Shop,
   Unit,
@@ -22,15 +21,16 @@ import { AppBar } from "../../../../../../../components/AppBar";
 import { ScrollView } from "react-native";
 import { Collapsible } from "../../../../../../../components/Collapsible";
 import { DropdownMenu } from "../../../../../../../components/DropdownMenu";
-import { updateDishRequest } from "../../../../../../../apis/dish.api.service";
 import UploadImages from "../../../../../../../components/ui/UploadImage";
 import {
   useGetDishCategoriesQuery,
   useGetDishesQuery,
   useGetDishTypesQuery,
   useGetUnitsQuery,
+  useUpdateDishMutation,
 } from "../../../../../../../stores/apiSlices/dishApi.slice";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
+import { goBackShopDishList } from "../../../../../../../apis/navigate.service";
 
 export default function UpdateDishPage() {
   const { dishId } = useLocalSearchParams();
@@ -50,8 +50,9 @@ export default function UpdateDishPage() {
     shop.id
   );
   const dish = _.find(dishes, (d) => d.id === dishId);
+  const [updateDish, { isLoading: updateDishLoading }] =
+    useUpdateDishMutation();
 
-  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [category, setCategory] = useState(dishCategories[0]);
   const [dishType, setDishType] = useState(dishTypes[0]);
@@ -62,14 +63,6 @@ export default function UpdateDishPage() {
 
   const [isTaxIncludedPrice, setIsTaxIncludedPrice] = useState(false);
   const onToggleSwitch = () => setIsTaxIncludedPrice(!isTaxIncludedPrice);
-
-  const goBack = () =>
-    router.replace({
-      pathname: "/shop/[shopId]/menus/dishes",
-      params: {
-        shopId: shop.id,
-      },
-    });
 
   const handleUpdateDish = async () => {
     if (!dish) {
@@ -87,8 +80,7 @@ export default function UpdateDishPage() {
     }
 
     try {
-      setLoading(true);
-      await updateDishRequest({
+      await updateDish({
         shopId: shop.id,
         dishId: dish.id,
         name,
@@ -99,14 +91,12 @@ export default function UpdateDishPage() {
         taxRate: parseFloat(taxRate),
         isTaxIncludedPrice,
         imageUrls: _.map(images, "uri"),
-      });
+      }).unwrap();
 
       // Navigate back to table position list
-      goBack();
+      goBackShopDishList({ router, shopId: shop.id });
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -132,7 +122,7 @@ export default function UpdateDishPage() {
     return (
       <Surface style={{ flex: 1 }}>
         <Text>Dish not found</Text>
-        <Button onPress={goBack}>
+        <Button onPress={() => goBackShopDishList({ router, shopId: shop.id })}>
           <Text>Go Back</Text>
         </Button>
       </Surface>
@@ -141,7 +131,10 @@ export default function UpdateDishPage() {
 
   return (
     <>
-      <AppBar title="Update Dish" goBack={goBack} />
+      <AppBar
+        title="Update Dish"
+        goBack={() => goBackShopDishList({ router, shopId: shop.id })}
+      />
       <Surface style={{ flex: 1 }}>
         <ScrollView style={{ flex: 1, padding: 16 }}>
           <UploadImages
@@ -218,7 +211,7 @@ export default function UpdateDishPage() {
             />
           </Collapsible>
         </ScrollView>
-        {loading ? (
+        {updateDishLoading ? (
           <ActivityIndicator animating={true} size="large" />
         ) : (
           <>

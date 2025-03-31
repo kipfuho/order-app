@@ -11,7 +11,7 @@ import {
   Icon,
   Card,
 } from "react-native-paper";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores/store";
 import { AppBar } from "../../../../components/AppBar";
@@ -19,8 +19,9 @@ import { Shop } from "../../../../stores/state.interface";
 import { goBackShopList } from "../../../../apis/navigate.service";
 import { View } from "react-native";
 import { styles } from "../../../_layout";
-import { deleteShopRequest } from "../../../../apis/shop.api.service";
 import { createDefaultUnitsRequest } from "../../../../apis/dish.api.service";
+import { useDeleteShopMutation } from "../../../../stores/apiSlices/shopApi.slice";
+import { LoaderBasic } from "../../../../components/ui/Loader";
 
 interface Item {
   title: string;
@@ -68,11 +69,14 @@ const getButtonSize = (width: number) => {
 };
 
 export default function ShopPage() {
+  const router = useRouter();
+  const theme = useTheme();
+
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
   ) as Shop;
-  const router = useRouter();
-  const theme = useTheme(); // Get theme colors
+  const [deleteShop, { isLoading: deleteShopLoading }] =
+    useDeleteShopMutation();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
@@ -99,8 +103,8 @@ export default function ShopPage() {
   };
 
   const confirmDelete = async () => {
+    await deleteShop(shop.id).unwrap();
     setConfirmModalVisible(false);
-    await deleteShopRequest({ shopId: shop.id });
     router.replace("/");
   };
 
@@ -224,7 +228,7 @@ export default function ShopPage() {
 
         {/* Confirm Delete Modal */}
         <Dialog
-          visible={confirmModalVisible}
+          visible={confirmModalVisible || deleteShopLoading}
           onDismiss={() => setConfirmModalVisible(false)}
         >
           <Dialog.Title>Confirm Deletion</Dialog.Title>
@@ -232,12 +236,18 @@ export default function ShopPage() {
             <Text>Are you sure you want to delete this shop?</Text>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={confirmDelete} textColor={theme.colors.error}>
-              Yes, Delete
-            </Button>
-            <Button onPress={() => setConfirmModalVisible(false)}>
-              Cancel
-            </Button>
+            {deleteShopLoading ? (
+              <LoaderBasic />
+            ) : (
+              <>
+                <Button onPress={confirmDelete} textColor={theme.colors.error}>
+                  Yes, Delete
+                </Button>
+                <Button onPress={() => setConfirmModalVisible(false)}>
+                  Cancel
+                </Button>
+              </>
+            )}
           </Dialog.Actions>
         </Dialog>
       </Portal>

@@ -131,6 +131,63 @@ const goToDishCategoryList = ({
   });
 };
 
+const goToCreateTablePosition = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/settings/tables/create-table-position",
+    params: { shopId },
+  });
+};
+
+const goToUpdateTablePosition = ({
+  router,
+  shopId,
+  tablePositionId,
+}: {
+  router: Router;
+  shopId: string;
+  tablePositionId: string;
+}) => {
+  router.replace({
+    pathname:
+      "/shop/[shopId]/settings/tables/update-table-position/[tablePositionId]",
+    params: { shopId, tablePositionId },
+  });
+};
+
+const goToCreateTable = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/settings/tables/create-table",
+    params: { shopId },
+  });
+};
+
+const goToUpdateTable = ({
+  router,
+  shopId,
+  tableId,
+}: {
+  router: Router;
+  shopId: string;
+  tableId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/settings/tables/update-table/[tableId]",
+    params: { shopId, tableId },
+  });
+};
+
 export {
   goBackShopList,
   goBackShopHome,
@@ -141,4 +198,8 @@ export {
   goToTablePositionList,
   goToUpdateDishCategory,
   goToDishCategoryList,
+  goToCreateTablePosition,
+  goToUpdateTablePosition,
+  goToCreateTable,
+  goToUpdateTable,
 };

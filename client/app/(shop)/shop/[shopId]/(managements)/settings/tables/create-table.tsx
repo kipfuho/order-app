@@ -14,8 +14,10 @@ import {
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import Toast from "react-native-toast-message";
-import { createTableRequest } from "../../../../../../../apis/table.api.service";
-import { useGetTablePositionsQuery } from "../../../../../../../stores/apiSlices/tableApi.slice";
+import {
+  useCreateTableMutation,
+  useGetTablePositionsQuery,
+} from "../../../../../../../stores/apiSlices/tableApi.slice";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import { goToTableList } from "../../../../../../../apis/navigate.service";
 
@@ -27,8 +29,9 @@ export default function CreateTablePage() {
   ) as Shop;
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
     useGetTablePositionsQuery(shop.id);
+  const [createTable, { isLoading: createTableLoading }] =
+    useCreateTableMutation();
 
-  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("table");
   const [tablePosition, setTablePosition] = useState(tablePositions[0]);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -47,8 +50,7 @@ export default function CreateTablePage() {
     }
 
     try {
-      setLoading(true);
-      await createTableRequest({ shopId: shop.id, name, tablePosition });
+      await createTable({ shopId: shop.id, name, tablePosition }).unwrap();
       goToTableList({ router, shopId: shop.id });
     } catch (err) {
       Toast.show({
@@ -57,8 +59,6 @@ export default function CreateTablePage() {
         text2: "Failed to create table. Please try again.",
       });
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -127,7 +127,7 @@ export default function CreateTablePage() {
         </Surface>
 
         {/* Loading or Action Buttons */}
-        {loading ? (
+        {createTableLoading ? (
           <ActivityIndicator size="large" />
         ) : (
           <Button

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
 import {
@@ -15,14 +15,15 @@ import { AppBar } from "../../../../components/AppBar";
 import { goBackShopHome } from "../../../../apis/navigate.service";
 import { ScrollView } from "react-native";
 import { styles } from "../../../_layout";
-import { updateShopRequest } from "../../../../apis/shop.api.service";
+import { useUpdateShopMutation } from "../../../../stores/apiSlices/shopApi.slice";
 
 export default function UpdateShopPage() {
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
   ) as Shop;
+  const [updateShop, { isLoading: updateShopLoading }] =
+    useUpdateShopMutation();
 
-  const [loading, setLoading] = useState(false);
   const [name, setName] = useState(shop.name || "");
   const [location, setLocation] = useState(shop.location || "");
   const [phone, setPhone] = useState("");
@@ -49,23 +50,19 @@ export default function UpdateShopPage() {
     }
 
     try {
-      setLoading(true);
-
-      await updateShopRequest({
+      await updateShop({
         email,
         name,
         shopId: shop?.id,
         location,
         phone,
         taxRate: _.toNumber(taxRate),
-      });
+      }).unwrap();
 
       goBackShopHome({ router, shopId: shop.id });
       resetField();
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -113,7 +110,7 @@ export default function UpdateShopPage() {
             onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
           />
 
-          {loading ? (
+          {updateShopLoading ? (
             <ActivityIndicator
               animating={true}
               size="large"

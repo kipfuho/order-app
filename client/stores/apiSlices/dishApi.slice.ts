@@ -35,7 +35,6 @@ export const dishApiSlice = createApi({
         try {
           const dishCategories = await getDishCategoriesRequest({
             shopId,
-            rtk: true,
           });
 
           return { data: dishCategories };
@@ -54,7 +53,6 @@ export const dishApiSlice = createApi({
         try {
           const dishCategory = await createDishCategoryRequest({
             ...args,
-            rtk: true,
           });
 
           return { data: dishCategory };
@@ -73,7 +71,6 @@ export const dishApiSlice = createApi({
         try {
           const dishCategory = await updateDishCategoryRequest({
             ...args,
-            rtk: true,
           });
 
           return { data: dishCategory };
@@ -81,20 +78,65 @@ export const dishApiSlice = createApi({
           return { error: { status: 500, data: error } };
         }
       },
-      invalidatesTags: ["DishCategories"],
+      invalidatesTags: (result, error, args) =>
+        error ? ["DishCategories"] : [],
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          dishApiSlice.util.updateQueryData(
+            "getDishCategories",
+            args.shopId,
+            (draft) => {
+              const index = draft.findIndex(
+                (dc) => dc.id === args.dishCategoryId
+              );
+              if (index !== -1) {
+                draft[index] = { ...draft[index], ...args };
+              }
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
     }),
 
     deleteDishCategory: builder.mutation<undefined, DeleteDishCategoryRequest>({
       queryFn: async (args) => {
         try {
-          await deleteDishCategoryRequest({ ...args, rtk: true });
+          await deleteDishCategoryRequest({ ...args });
 
           return { data: undefined };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-      invalidatesTags: ["DishCategories"],
+      invalidatesTags: (result, error, args) =>
+        error ? ["DishCategories"] : [],
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          dishApiSlice.util.updateQueryData(
+            "getDishCategories",
+            args.shopId,
+            (draft) => {
+              return draft.filter((dc) => dc.id !== args.dishCategoryId);
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
     }),
 
     /** Dishes */
@@ -103,7 +145,6 @@ export const dishApiSlice = createApi({
         try {
           const dishes = await getDishesRequest({
             shopId,
-            rtk: true,
           });
 
           return { data: dishes };
@@ -119,7 +160,6 @@ export const dishApiSlice = createApi({
         try {
           const dish = await createDishRequest({
             ...args,
-            rtk: true,
           });
 
           return { data: dish };
@@ -135,7 +175,6 @@ export const dishApiSlice = createApi({
         try {
           const dish = await updateDishRequest({
             ...args,
-            rtk: true,
           });
 
           return { data: dish };
@@ -143,20 +182,60 @@ export const dishApiSlice = createApi({
           return { error: { status: 500, data: error } };
         }
       },
-      invalidatesTags: ["Dishes"],
+
+      invalidatesTags: (result, error, args) => (error ? ["Dishes"] : []),
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          dishApiSlice.util.updateQueryData(
+            "getDishes",
+            args.shopId,
+            (draft) => {
+              return draft.filter((d) => d.id !== args.dishId);
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
     }),
 
     deleteDish: builder.mutation<undefined, DeleteDishRequest>({
       queryFn: async (args) => {
         try {
-          await deleteDishRequest({ ...args, rtk: true });
+          await deleteDishRequest({ ...args });
 
           return { data: undefined };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-      invalidatesTags: ["Dishes"],
+
+      invalidatesTags: (result, error, args) => (error ? ["Dishes"] : []),
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          dishApiSlice.util.updateQueryData(
+            "getDishes",
+            args.shopId,
+            (draft) => {
+              return draft.filter((d) => d.id !== args.dishId);
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
     }),
 
     /** Dish Types */
@@ -165,7 +244,6 @@ export const dishApiSlice = createApi({
         try {
           const dishTypes = await getDishTypesRequest({
             shopId,
-            rtk: true,
           });
 
           return { data: dishTypes };
@@ -183,7 +261,6 @@ export const dishApiSlice = createApi({
         try {
           const units = await getUnitsRequest({
             shopId,
-            rtk: true,
           });
 
           return { data: units };
@@ -200,7 +277,6 @@ export const dishApiSlice = createApi({
         try {
           const units = await createDefaultUnitsRequest({
             shopId,
-            rtk: true,
           });
 
           return { data: units };

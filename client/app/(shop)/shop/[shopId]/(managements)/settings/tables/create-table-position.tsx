@@ -16,11 +16,11 @@ import {
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import Toast from "react-native-toast-message";
-import { createTablePositionRequest } from "../../../../../../../apis/table.api.service";
 import { useGetDishCategoriesQuery } from "../../../../../../../stores/apiSlices/dishApi.slice";
 import { goToTablePositionList } from "../../../../../../../apis/navigate.service";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import _ from "lodash";
+import { useCreateTablePositionMutation } from "../../../../../../../stores/apiSlices/tableApi.slice";
 
 export default function CreateTablePositionPage() {
   const router = useRouter();
@@ -30,8 +30,9 @@ export default function CreateTablePositionPage() {
   ) as Shop;
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
     useGetDishCategoriesQuery(shop.id);
+  const [createTablePosition, { isLoading: createTablePositionLoading }] =
+    useCreateTablePositionMutation();
 
-  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("table position");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -47,12 +48,11 @@ export default function CreateTablePositionPage() {
     }
 
     try {
-      setLoading(true);
-      await createTablePositionRequest({
+      await createTablePosition({
         shopId: shop.id,
         name,
         categories: selectedCategories,
-      });
+      }).unwrap();
 
       goToTablePositionList({ router, shopId: shop.id });
     } catch (err) {
@@ -62,8 +62,6 @@ export default function CreateTablePositionPage() {
         text2: "Failed to create table. Please try again.",
       });
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -166,7 +164,7 @@ export default function CreateTablePositionPage() {
         </Portal>
 
         {/* Loading or Action Buttons */}
-        {loading ? (
+        {createTablePositionLoading ? (
           <ActivityIndicator size="large" />
         ) : (
           <Button
