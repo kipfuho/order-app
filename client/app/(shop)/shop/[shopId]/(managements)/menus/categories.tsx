@@ -11,6 +11,7 @@ import { useGetDishCategoriesQuery } from "../../../../../../stores/apiSlices/di
 import { LoaderBasic } from "../../../../../../components/ui/Loader";
 import {
   goBackShopHome,
+  goToCreateDishCategory,
   goToUpdateDishCategory,
 } from "../../../../../../apis/navigate.service";
 
@@ -64,14 +65,7 @@ export default function CategoriesManagementPage() {
         <Button
           mode="contained"
           style={styles.createButton}
-          onPress={() =>
-            router.replace({
-              pathname: "/shop/[shopId]/menus/create-dish-category",
-              params: {
-                shopId: shop.id,
-              },
-            })
-          }
+          onPress={() => goToCreateDishCategory({ router, shopId: shop.id })}
         >
           Create Dish Category
         </Button>

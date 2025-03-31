@@ -20,6 +20,7 @@ import { Shop, TableForOrder } from "../../../../../../stores/state.interface";
 import { useGetTablePositionsQuery } from "../../../../../../stores/apiSlices/tableApi.slice";
 import { useGetTablesForOrderQuery } from "../../../../../../stores/apiSlices/orderApi.slice";
 import { LoaderBasic } from "../../../../../../components/ui/Loader";
+import CreateOrder from "../../../../../../components/ui/CreateOrderView";
 
 export default function OrderManagementOrderPage() {
   const shop = useSelector(
@@ -48,6 +49,7 @@ export default function OrderManagementOrderPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [numberOfCustomer, setNumberOfCustomer] = useState("");
+  const [selectedTableId, setTableId] = useState("");
 
   const setDefaultModalInfo = () => {
     setCustomerName("");
@@ -68,16 +70,18 @@ export default function OrderManagementOrderPage() {
 
   const onTableClick = (tableId: string) => {
     setDefaultModalInfo();
+    setCustomerDialogVisible(true);
+    setTableId(tableId);
+  };
+
+  const onCustomerInfoConfirmClick = () => {
+    setCustomerDialogVisible(false);
     setCreateOrderVisible(true);
   };
 
   useEffect(() => {
-    getTablesForOrderRequest({ shopId: shop.id });
-  }, []);
-
-  useEffect(() => {
     setFilteredTables(tablesGroupByPosition);
-  }, [tablesGroupByPosition]);
+  }, [tablesForOrder]);
 
   if (tableForOrderLoading || tablePositionLoading) {
     return <LoaderBasic />;
@@ -129,7 +133,7 @@ export default function OrderManagementOrderPage() {
           <Dialog.Actions style={{ justifyContent: "center" }}>
             <Button
               mode="contained"
-              onPress={() => setCustomerDialogVisible(false)}
+              onPress={onCustomerInfoConfirmClick}
               style={{ width: 150 }}
             >
               Confirm
@@ -148,16 +152,7 @@ export default function OrderManagementOrderPage() {
             title="Create order"
             goBack={() => setCreateOrderVisible(false)}
           />
-          <Surface style={styles.baseContainer}>
-            <Text variant="headlineMedium">This is a new page!</Text>
-            <Button
-              mode="contained"
-              onPress={() => setCreateOrderVisible(false)}
-              style={{ marginTop: 10 }}
-            >
-              Close
-            </Button>
-          </Surface>
+          <CreateOrder setCreateOrderVisible={setCreateOrderVisible} />
         </Modal>
       </Portal>
 

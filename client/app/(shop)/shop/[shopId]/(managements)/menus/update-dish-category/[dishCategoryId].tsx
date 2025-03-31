@@ -14,10 +14,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { RootState } from "../../../../../../../stores/store";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
-import { useGetDishCategoriesQuery } from "../../../../../../../stores/apiSlices/dishApi.slice";
+import {
+  useGetDishCategoriesQuery,
+  useUpdateDishCategoryMutation,
+} from "../../../../../../../stores/apiSlices/dishApi.slice";
 import { goToDishCategoryList } from "../../../../../../../apis/navigate.service";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
-import { updateDishCategoryRequest } from "../../../../../../../apis/dish.api.service";
 
 export default function UpdateDishCategoryPage() {
   const { dishCategoryId } = useLocalSearchParams();
@@ -30,8 +32,9 @@ export default function UpdateDishCategoryPage() {
     shop.id
   );
   const dishCategory = _.find(dishCategories, (dc) => dc.id === dishCategoryId);
+  const [updateDishCategory, { isLoading: updateDishCategoryLoading }] =
+    useUpdateDishCategoryMutation();
 
-  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
 
   // when select different category
@@ -56,19 +59,16 @@ export default function UpdateDishCategoryPage() {
     }
 
     try {
-      setLoading(true);
-      await updateDishCategoryRequest({
+      await updateDishCategory({
         dishCategoryId: dishCategory.id,
         shopId: shop.id,
         name,
-      });
+      }).unwrap();
 
       // Navigate back to table position list
       goToDishCategoryList({ router, shopId: shop.id });
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -104,7 +104,7 @@ export default function UpdateDishCategoryPage() {
           />
         </Surface>
 
-        {loading ? (
+        {updateDishCategoryLoading ? (
           <ActivityIndicator animating={true} size="large" />
         ) : (
           <>

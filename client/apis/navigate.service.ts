@@ -188,6 +188,32 @@ const goToUpdateTable = ({
   });
 };
 
+const goToCreateDish = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/menus/create-dish",
+    params: { shopId },
+  });
+};
+
+const goToCreateDishCategory = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/menus/create-dish-category",
+    params: { shopId },
+  });
+};
+
 export {
   goBackShopList,
   goBackShopHome,
@@ -202,4 +228,6 @@ export {
   goToUpdateTablePosition,
   goToCreateTable,
   goToUpdateTable,
+  goToCreateDish,
+  goToCreateDishCategory,
 };

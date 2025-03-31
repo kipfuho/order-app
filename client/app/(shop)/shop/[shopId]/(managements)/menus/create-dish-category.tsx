@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
@@ -13,24 +13,19 @@ import { RootState } from "../../../../../../stores/store";
 import { Shop } from "../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../components/AppBar";
 import { ScrollView, StyleSheet } from "react-native";
-import { createDishCategoryRequest } from "../../../../../../apis/dish.api.service";
+import { goToDishCategoryList } from "../../../../../../apis/navigate.service";
+import { useCreateDishCategoryMutation } from "../../../../../../stores/apiSlices/dishApi.slice";
 
 export default function CreateDishCategoryPage() {
+  const router = useRouter();
+
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
   ) as Shop;
+  const [createDishCategory, { isLoading: createDishCategoryLoading }] =
+    useCreateDishCategoryMutation();
 
-  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("category");
-  const router = useRouter();
-
-  const goBack = () =>
-    router.replace({
-      pathname: "/shop/[shopId]/menus/categories",
-      params: {
-        shopId: shop.id,
-      },
-    });
 
   const handleCreateDishCategory = async () => {
     if (!name.trim()) {
@@ -43,27 +38,28 @@ export default function CreateDishCategoryPage() {
     }
 
     try {
-      setLoading(true);
-      await createDishCategoryRequest({
+      await createDishCategory({
         shopId: shop.id,
         name,
-      });
+      }).unwrap();
 
       // Navigate back to table position list
-      goBack();
-
-      // Clear input fields
-      setName("");
+      goToDishCategoryList({ router, shopId: shop.id });
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    setName("");
+  }, []);
+
   return (
     <>
-      <AppBar title="Create Dish Category" goBack={goBack} />
+      <AppBar
+        title="Create Dish Category"
+        goBack={() => goToDishCategoryList({ router, shopId: shop.id })}
+      />
       <Surface style={{ flex: 1, padding: 16 }}>
         <ScrollView style={{ flex: 1 }}>
           <TextInput
@@ -76,7 +72,7 @@ export default function CreateDishCategoryPage() {
           />
         </ScrollView>
 
-        {loading ? (
+        {createDishCategoryLoading ? (
           <ActivityIndicator animating={true} size="large" />
         ) : (
           <Button

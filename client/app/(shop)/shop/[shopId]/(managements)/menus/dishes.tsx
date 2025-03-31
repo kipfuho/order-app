@@ -30,6 +30,7 @@ import {
 import { LoaderBasic } from "../../../../../../components/ui/Loader";
 import {
   goBackShopHome,
+  goToCreateDish,
   goToDishUpdatePage,
 } from "../../../../../../apis/navigate.service";
 import _ from "lodash";
@@ -223,12 +224,7 @@ export default function DishesManagementPage() {
             {/* Create Dish Button */}
             <Button
               mode="contained-tonal"
-              onPress={() =>
-                router.replace({
-                  pathname: "/shop/[shopId]/menus/create-dish",
-                  params: { shopId: shop.id },
-                })
-              }
+              onPress={() => goToCreateDish({ router, shopId: shop.id })}
               style={styles.createButton}
             >
               Create Dish

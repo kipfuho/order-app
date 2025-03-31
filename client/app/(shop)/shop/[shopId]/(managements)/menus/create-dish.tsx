@@ -21,9 +21,9 @@ import { Collapsible } from "../../../../../../components/Collapsible";
 import { AppBar } from "../../../../../../components/AppBar";
 import { DropdownMenu } from "../../../../../../components/DropdownMenu";
 import _ from "lodash";
-import { createDishRequest } from "../../../../../../apis/dish.api.service";
 import UploadImages from "../../../../../../components/ui/UploadImage";
 import {
+  useCreateDishMutation,
   useGetDishCategoriesQuery,
   useGetDishTypesQuery,
   useGetUnitsQuery,
@@ -44,8 +44,9 @@ export default function CreateDishPage() {
   const { data: units = [], isLoading: unitLoading } = useGetUnitsQuery(
     shop.id
   );
+  const [createDish, { isLoading: createDishLoading }] =
+    useCreateDishMutation();
 
-  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [category, setCategory] = useState<DishCategory>();
   const [dishType, setDishType] = useState("");
@@ -89,8 +90,7 @@ export default function CreateDishPage() {
       return;
     }
     try {
-      setLoading(true);
-      await createDishRequest({
+      await createDish({
         shopId: shop.id,
         name,
         category,
@@ -100,12 +100,10 @@ export default function CreateDishPage() {
         taxRate: _.toNumber(taxRate),
         isTaxIncludedPrice,
         imageUrls: _.map(images, "uri"),
-      });
+      }).unwrap();
       goBack();
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -192,7 +190,7 @@ export default function CreateDishPage() {
             />
           </Collapsible>
         </ScrollView>
-        {loading ? (
+        {createDishLoading ? (
           <ActivityIndicator animating={true} size="large" />
         ) : (
           <>
