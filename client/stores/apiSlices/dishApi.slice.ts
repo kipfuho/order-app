@@ -1,13 +1,16 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Dish, DishCategory } from "../state.interface";
+import { Dish, DishCategory, Unit } from "../state.interface";
 import { API_BASE_URL } from "../../apis/api.service";
 import {
+  createDefaultUnitsRequest,
   createDishCategoryRequest,
   createDishRequest,
   deleteDishCategoryRequest,
   deleteDishRequest,
   getDishCategoriesRequest,
   getDishesRequest,
+  getDishTypesRequest,
+  getUnitsRequest,
   updateDishCategoryRequest,
   updateDishRequest,
 } from "../../apis/dish.api.service";
@@ -23,7 +26,7 @@ import {
 export const dishApiSlice = createApi({
   reducerPath: "dishApi",
   baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
-  tagTypes: ["Dishes", "DishCategories", "DishTypes"],
+  tagTypes: ["Dishes", "DishCategories", "DishTypes", "Units"],
   // keepUnusedDataFor: 600,
   endpoints: (builder) => ({
     /** Dish Categories */
@@ -155,6 +158,58 @@ export const dishApiSlice = createApi({
       },
       invalidatesTags: ["Dishes"],
     }),
+
+    /** Dish Types */
+    getDishTypes: builder.query<string[], string>({
+      queryFn: async (shopId) => {
+        try {
+          const dishTypes = await getDishTypesRequest({
+            shopId,
+            rtk: true,
+          });
+
+          return { data: dishTypes };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      providesTags: [],
+      keepUnusedDataFor: 3600,
+    }),
+
+    /** Units */
+    getUnits: builder.query<Unit[], string>({
+      queryFn: async (shopId) => {
+        try {
+          const units = await getUnitsRequest({
+            shopId,
+            rtk: true,
+          });
+
+          return { data: units };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      providesTags: ["Units"],
+      keepUnusedDataFor: 3600,
+    }),
+
+    createDefaultUnits: builder.mutation<Unit[], string>({
+      queryFn: async (shopId) => {
+        try {
+          const units = await createDefaultUnitsRequest({
+            shopId,
+            rtk: true,
+          });
+
+          return { data: units };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      invalidatesTags: ["Units"],
+    }),
   }),
 });
 
@@ -167,4 +222,7 @@ export const {
   useCreateDishMutation,
   useUpdateDishMutation,
   useDeleteDishMutation,
+  useGetDishTypesQuery,
+  useGetUnitsQuery,
+  useCreateDefaultUnitsMutation,
 } = dishApiSlice;

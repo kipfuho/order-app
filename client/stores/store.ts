@@ -1,6 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
-import userReducer from "./userSlice";
 import shopReducer from "./shop.slice";
 import customerReducer from "./customerSlice";
 import awsReducer from "./awsSlice";
@@ -10,6 +9,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { combineReducers } from "redux";
 import { listenerMiddleware } from "./listenerMiddleware";
+import { dishApiSlice } from "./apiSlices/dishApi.slice";
+import { tableApiSlice } from "./apiSlices/tableApi.slice";
 
 // Configure persistence
 const persistConfig = {
@@ -23,11 +24,12 @@ const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 // Combine reducers
 const rootReducer = combineReducers({
   auth: persistedAuthReducer, // Persistent
-  shop: userReducer, // todo: remove
-  shop2: shopReducer,
+  shop: shopReducer,
   customer: customerReducer, // Non-persistent
   aws: awsReducer, // Non-persistent
   [shopApiSlice.reducerPath]: shopApiSlice.reducer,
+  [dishApiSlice.reducerPath]: dishApiSlice.reducer,
+  [tableApiSlice.reducerPath]: tableApiSlice.reducer,
 });
 
 // Create the store
@@ -39,7 +41,9 @@ const store = configureStore({
       serializableCheck: false, // Ignore serialization warnings
     })
       .prepend(listenerMiddleware.middleware)
-      .concat(shopApiSlice.middleware),
+      .concat(shopApiSlice.middleware)
+      .concat(dishApiSlice.middleware)
+      .concat(tableApiSlice.middleware),
 });
 
 // Create persistor

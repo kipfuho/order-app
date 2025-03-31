@@ -42,7 +42,7 @@ const initialState: ShopState = {
 
 // Create Slice
 export const userSlice = createSlice({
-  name: "shop",
+  name: "shop_deprecated",
   initialState,
   reducers: {
     updateAllShops: (state, action: PayloadAction<Shop[]>) => {
@@ -55,15 +55,9 @@ export const userSlice = createSlice({
       if (!_.get(action, "payload")) {
         return;
       }
-      const { id, ...updatedData } = action.payload;
-      const index = _.findIndex(state.shops, (shop) => shop.id === id);
 
-      if (index !== -1) {
-        state.shops[index] = {
-          ...state.shops[index],
-          ...updatedData,
-        };
-      }
+      const id = action.payload.id;
+      state.shops = state.shops.map((s) => (s.id === id ? action.payload : s));
     },
 
     updateAllTables: (state, action: PayloadAction<Table[]>) => {
@@ -72,15 +66,11 @@ export const userSlice = createSlice({
     },
     updateTable: (state, action: PayloadAction<Table>) => {
       if (!_.get(action, "payload")) return;
-      const { id, ...updatedData } = action.payload;
-      const index = _.findIndex(state.tables, (tab) => tab.id === id);
 
-      if (index !== -1) {
-        state.tables[index] = {
-          ...state.tables[index],
-          ...updatedData,
-        };
-      }
+      const id = action.payload.id;
+      state.tables = state.tables.map((t) =>
+        t.id === id ? action.payload : t
+      );
     },
 
     updateAllTablePositions: (
@@ -92,18 +82,11 @@ export const userSlice = createSlice({
     },
     updateTablePosition: (state, action: PayloadAction<TablePosition>) => {
       if (!_.get(action, "payload")) return;
-      const { id, ...updatedData } = action.payload;
-      const index = _.findIndex(
-        state.tablePositions,
-        (tabPos) => tabPos.id === id
-      );
 
-      if (index !== -1) {
-        state.tablePositions[index] = {
-          ...state.tablePositions[index],
-          ...updatedData,
-        };
-      }
+      const id = action.payload.id;
+      state.tablePositions = state.tablePositions.map((tp) =>
+        tp.id === id ? action.payload : tp
+      );
     },
 
     updateAllEmployees: (state, action: PayloadAction<Employee[]>) => {
@@ -112,15 +95,11 @@ export const userSlice = createSlice({
     },
     updateEmployee: (state, action: PayloadAction<Employee>) => {
       if (!_.get(action, "payload")) return;
-      const { id, ...updatedData } = action.payload;
-      const index = _.findIndex(state.employees, (emp) => emp.id === id);
 
-      if (index !== -1) {
-        state.employees[index] = {
-          ...state.employees[index],
-          ...updatedData,
-        };
-      }
+      const id = action.payload.id;
+      state.employees = state.employees.map((e) =>
+        e.id === id ? action.payload : e
+      );
     },
 
     updateAllDepartments: (state, action: PayloadAction<Department[]>) => {
@@ -129,15 +108,11 @@ export const userSlice = createSlice({
     },
     updateDepartment: (state, action: PayloadAction<Department>) => {
       if (!_.get(action, "payload")) return;
-      const { id, ...updatedData } = action.payload;
-      const index = _.findIndex(state.departments, (dep) => dep.id === id);
 
-      if (index !== -1) {
-        state.departments[index] = {
-          ...state.departments[index],
-          ...updatedData,
-        };
-      }
+      const id = action.payload.id;
+      state.departments = state.departments.map((d) =>
+        d.id === id ? action.payload : d
+      );
     },
 
     updateAllUnits: (state, action: PayloadAction<Unit[]>) => {
@@ -146,15 +121,9 @@ export const userSlice = createSlice({
     },
     updateUnit: (state, action: PayloadAction<Unit>) => {
       if (!_.get(action, "payload")) return;
-      const { id, ...updatedData } = action.payload;
-      const index = _.findIndex(state.units, (unit) => unit.id === id);
 
-      if (index !== -1) {
-        state.units[index] = {
-          ...state.units[index],
-          ...updatedData,
-        };
-      }
+      const id = action.payload.id;
+      state.units = state.units.map((u) => (u.id === id ? action.payload : u));
     },
 
     updateAllDishes: (state, action: PayloadAction<Dish[]>) => {
@@ -163,15 +132,11 @@ export const userSlice = createSlice({
     },
     updateDish: (state, action: PayloadAction<Dish>) => {
       if (!_.get(action, "payload")) return;
-      const { id, ...updatedData } = action.payload;
-      const index = _.findIndex(state.dishes, (dish) => dish.id === id);
 
-      if (index !== -1) {
-        state.dishes[index] = {
-          ...state.dishes[index],
-          ...updatedData,
-        };
-      }
+      const id = action.payload.id;
+      state.dishes = state.dishes.map((d) =>
+        d.id === id ? action.payload : d
+      );
     },
 
     //
@@ -186,18 +151,11 @@ export const userSlice = createSlice({
     },
     updateDishCategory: (state, action: PayloadAction<DishCategory>) => {
       if (!_.get(action, "payload")) return;
-      const { id, ...updatedData } = action.payload;
-      const index = _.findIndex(
-        state.dishCategories,
-        (dishCat) => dishCat.id === id
-      );
 
-      if (index !== -1) {
-        state.dishCategories[index] = {
-          ...state.dishCategories[index],
-          ...updatedData,
-        };
-      }
+      const id = action.payload.id;
+      state.dishCategories = state.dishCategories.map((dc) =>
+        dc.id === id ? action.payload : dc
+      );
     },
 
     updateTablesForOrder: (state, action: PayloadAction<TableForOrder[]>) => {
