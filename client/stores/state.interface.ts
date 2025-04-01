@@ -72,6 +72,15 @@ export interface Dish {
   imageUrls: string[];
 }
 
+export interface DishOrder {
+  dishId: string;
+  quantity: number;
+  name?: string;
+  taxRate?: number;
+  price?: number;
+  isTaxIncludedPrice?: boolean;
+}
+
 export interface DishCategory {
   id: string;
   name: string;
