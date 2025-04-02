@@ -9,7 +9,7 @@ const envVarsSchema = Joi.object()
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
     PORT: Joi.number().default(3000),
     MONGODB_URL: Joi.string().required().description('Mongo DB url'),
-    REDIS_HORT: Joi.string().required().description('Redis hort'),
+    REDIS_HOST: Joi.string().required().description('Redis host'),
     REDIS_PORT: Joi.string().required().description('Redis port'),
     JOB_KEY: Joi.string().required().description('Job key'),
     JWT_SECRET: Joi.string().required().description('JWT secret key'),
@@ -50,7 +50,7 @@ module.exports = {
       maxPoolSize: 100,
     },
   },
-  redisHost: envVars.REDIS_HORT,
+  redisHost: envVars.REDIS_HOST,
   redisPort: envVars.REDIS_PORT,
   jobKey: envVars.JOB_KEY,
   jwt: {
