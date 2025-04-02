@@ -1,9 +1,16 @@
 const _ = require('lodash');
+const path = require('path');
 const fs = require('fs');
 const { getClientLanguageWithHook } = require('../middlewares/clsHooked');
 
-const vi = JSON.parse(fs.readFileSync('./server/src/locale/vi/locale.json', 'utf8'));
-const en = JSON.parse(fs.readFileSync('./server/src/locale/en/locale.json', 'utf8'));
+const loadLocale = (lang) => {
+  const filePath = path.join(__dirname, lang, 'locale.json');
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+};
+
+const en = loadLocale('en');
+const vi = loadLocale('vi');
 
 const getMessageByLocale = ({ key, lang }) => {
   const allMessage = { vi, en };
