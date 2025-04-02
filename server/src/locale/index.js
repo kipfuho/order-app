@@ -2,8 +2,8 @@ const _ = require('lodash');
 const fs = require('fs');
 const { getClientLanguageWithHook } = require('../middlewares/clsHooked');
 
-const vi = JSON.parse(fs.readFileSync('./src/locale/vi/locale.json', 'utf8'));
-const en = JSON.parse(fs.readFileSync('./src/locale/en/locale.json', 'utf8'));
+const vi = JSON.parse(fs.readFileSync('./server/src/locale/vi/locale.json', 'utf8'));
+const en = JSON.parse(fs.readFileSync('./server/src/locale/en/locale.json', 'utf8'));
 
 const getMessageByLocale = ({ key, lang }) => {
   const allMessage = { vi, en };
