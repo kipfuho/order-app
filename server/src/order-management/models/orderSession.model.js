@@ -10,13 +10,14 @@ const PaymentMethodEnum = Object.values(PaymentMethod);
 const discountProductSchema = new mongoose.Schema(
   {
     dishOrderId: { type: String },
+    dishId: { type: String },
     dishName: { type: String },
-    dishQuantity: { type: String },
+    discountRate: { type: Number }, // % discount
     discountValue: { type: Number },
     discountValueType: { type: String }, // percentage, absolute amount
-    beforeTaxTotalDiscountAmount: { type: Number },
-    afterTaxTotalDiscountAmount: { type: Number },
-    taxTotalDiscountAmount: { type: Number },
+    beforeTaxDiscountPrice: { type: Number },
+    afterTaxDiscountPrice: { type: Number },
+    taxDiscountPrice: { type: Number },
   },
   {
     timestamps: true,
@@ -76,6 +77,8 @@ const orderSessionSchema = new mongoose.Schema(
     customerInfo: {
       numberOfCustomer: { type: Number },
     },
+    totalDiscountAmountBeforeTax: { type: Number },
+    totalDiscountAmountAfterTax: { type: Number },
   },
   {
     timestamps: true,

@@ -3,8 +3,9 @@ const { Order, OrderSession, Cart, OrderSessionReport } = require('../../models'
 const orderUtilService = require('./orderUtils.service');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
-const { OrderSessionStatus } = require('../../utils/constant');
+const { OrderSessionStatus, OrderSessionDiscountType, DiscountValueType } = require('../../utils/constant');
 const { getTablesFromCache } = require('../../metadata/tableMetadata.service');
+const { getRoundDishPrice, getRoundDiscountAmount } = require('../../utils/common');
 
 const createOrder = async ({ shopId, requestBody }) => {
   const { tableId, orderSessionId, dishOrders } = requestBody;
@@ -14,27 +15,20 @@ const createOrder = async ({ shopId, requestBody }) => {
   return orderSession;
 };
 
-const increaseDishQuantity = async ({ shopId, requestBody }) => {
+const changeDishQuantity = async ({ shopId, requestBody }) => {
   const { orderId, dishId, newQuantity } = requestBody;
   const order = await Order.findOne({ shop: shopId, _id: orderId });
   throwBadRequest(!order, getMessageByLocale({ key: 'order.notFound' }));
-  const dishOrder = _.find(order.dishOrders, { dishId });
-  if (dishOrder) {
-    dishOrder.quantity = newQuantity;
-    await order.save();
+  const targetDishOrder = _.find(order.dishOrders, { dishId });
+  throwBadRequest(!targetDishOrder, getMessageByLocale({ key: 'dish.notFound' }));
+  // decrease quantity
+  if (newQuantity < targetDishOrder.quantity) {
+    targetDishOrder.quantity -= newQuantity;
+    order.returnedDishOrders.push(targetDishOrder);
   }
-  return order.toJSON();
-};
-
-const decreaseDishQuantity = async ({ shopId, requestBody }) => {
-  const { orderId, dishId, newQuantity } = requestBody;
-  const order = await Order.findOne({ shop: shopId, _id: orderId });
-  const dishOrder = _.find(order.dishOrders, { dishId });
-  if (dishOrder) {
-    dishOrder.quantity = newQuantity;
-    await order.save();
-  }
-  return order.toJSON();
+  targetDishOrder.quantity = newQuantity;
+  order.dishOrders = _.filter(order.dishOrders, (dishOrder) => dishOrder.quantity > 0);
+  await order.save();
 };
 
 const updateOrder = async ({ shopId, requestBody }) => {
@@ -48,11 +42,15 @@ const updateOrder = async ({ shopId, requestBody }) => {
 
   _.forEach(orderUpdates, (orderUpdate) => {
     const order = orderById[orderUpdate.orderId];
+    const newQuantity = orderUpdate.quantity;
     if (order) {
-      // more optimize may be?
       const dishOrder = _.find(order.dishOrders, { dishId: orderUpdate.dishId });
       if (dishOrder) {
-        dishOrder.quantity = orderUpdate.quantity;
+        if (newQuantity < dishOrder.quantity) {
+          dishOrder.quantity -= newQuantity;
+          order.returnedDishOrders.push(dishOrder);
+        }
+        dishOrder.quantity = newQuantity;
       }
     }
   });
@@ -64,7 +62,8 @@ const updateOrder = async ({ shopId, requestBody }) => {
         filter: { _id: order.id },
         update: {
           $set: {
-            dishOrders: order.dishOrders,
+            dishOrders: _.filter(order.dishOrders, (dishOrder) => dishOrder.quantity > 0),
+            returnedDishOrders: order.returnedDishOrders || [],
           },
         },
       },
@@ -118,8 +117,8 @@ const _validateBeforePayment = (orderSession, paymentDetails) => {
   );
 };
 
-const payOrderSession = async ({ shopId, orderSessionId, requestBody }) => {
-  const { paymentDetails } = requestBody;
+const payOrderSession = async ({ shopId, requestBody }) => {
+  const { orderSessionId, paymentDetails } = requestBody;
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSessionId, shopId);
   _validateBeforePayment(orderSessionJson, paymentDetails);
 
@@ -137,7 +136,8 @@ const payOrderSession = async ({ shopId, orderSessionId, requestBody }) => {
   return updatedOrderSession;
 };
 
-const cancelOrder = async ({ orderSessionId, shopId, user, reason }) => {
+const cancelOrder = async ({ shopId, user, requestBody }) => {
+  const { orderSessionId, reason } = requestBody;
   throwBadRequest(!reason, getMessageByLocale({ key: 'reason.empty' }));
   const updatedOrderSession = await orderUtilService.updateOrderSession({
     orderSessionId,
@@ -207,14 +207,104 @@ const checkoutCart = async ({ cartId, tableId, shopId }) => {
   return orderSession;
 };
 
-const discountDish = async ({ dishOrderId, orderId }) => {};
+const discountDish = async ({ shopId, requestBody }) => {
+  const { orderSessionId, dishOrderId, orderId, discountReason, discountValue, discountType } = requestBody;
+  let { discountAfterTax } = requestBody;
+  const orderSessionJson = await orderUtilService.getOrderSessionById(orderSessionId, shopId);
+  throwBadRequest(!orderSessionJson, getMessageByLocale({ key: 'orderSession.notFound' }));
+  const order = _.find(orderSessionJson.orders, (_order) => _order.id === orderId);
+  throwBadRequest(!order, getMessageByLocale({ key: 'order.notFound' }));
+  const dishOrder = _.find(order.dishOrders, (_dishOrder) => _dishOrder.id === dishOrderId);
+  throwBadRequest(!dishOrder, getMessageByLocale({ key: 'dish.notFound' }));
 
-const discountOrderSession = async ({ orderSessionId }) => {};
+  const discounts = _.filter(
+    orderSessionJson.discounts,
+    (discount) =>
+      discount.discountType !== OrderSessionDiscountType.PRODUCT || discount.discountProducts[0].dishOrderId !== dishOrderId
+  );
+  if (discountValue > 0) {
+    // eslint-disable-next-line no-param-reassign
+    if (dishOrder.isTaxIncludedPrice) discountAfterTax = true;
+    let dishTaxRate = dishOrder.dishVAT || orderSessionJson.taxRate || 0;
+    if (orderSessionJson.taxRate <= 0.001) {
+      dishTaxRate = 0;
+    }
+
+    const afterTaxDishPrice = dishOrder.taxIncludedPrice || getRoundDishPrice(dishOrder.price * (1 + dishTaxRate / 100));
+    let beforeTaxDiscountPrice = 0;
+    let afterTaxDiscountPrice = 0;
+    if (discountType === DiscountValueType.PERCENTAGE) {
+      beforeTaxDiscountPrice = getRoundDiscountAmount(dishOrder.price * (discountValue / 100));
+      afterTaxDiscountPrice = getRoundDiscountAmount(afterTaxDishPrice * (discountValue / 100));
+    } else if (discountAfterTax) {
+      afterTaxDiscountPrice = Math.min(discountValue, afterTaxDishPrice);
+      beforeTaxDiscountPrice = getRoundDiscountAmount(afterTaxDiscountPrice / (1 + dishTaxRate / 100));
+    } else {
+      beforeTaxDiscountPrice = Math.min(discountValue, dishOrder.price);
+      afterTaxDiscountPrice = getRoundDiscountAmount(beforeTaxDiscountPrice * (1 + dishTaxRate / 100));
+    }
+    const taxDiscountPrice = getRoundDiscountAmount(afterTaxDiscountPrice - beforeTaxDiscountPrice);
+
+    discounts.push({
+      discountType: OrderSessionDiscountType.PRODUCT,
+      discountAfterTax,
+      discountReason,
+      taxDiscountPrice,
+      productAppliedPromotions: [
+        {
+          dishOrderId,
+          dishId: _.get(dishOrder, 'dishId.id') || _.get(dishOrder, 'dishId', '').toString(),
+          dishName: _.get(dishOrder, 'dishName'),
+          discountValue,
+          discountValueType: discountType,
+          discountRate:
+            discountType === DiscountValueType.PERCENTAGE
+              ? discountValue
+              : _.min(100, (100 * discountValue) / (discountAfterTax ? afterTaxDishPrice : dishOrder.price)),
+          beforeTaxDiscountPrice,
+          afterTaxDiscountPrice,
+          taxDiscountPrice,
+        },
+      ],
+    });
+  }
+
+  await OrderSession.findByIdAndUpdate(orderSessionId, { $set: { discounts, totalDiscountAmount: 0 } });
+};
+
+const discountOrderSession = async ({ shopId, requestBody }) => {
+  const { orderSessionId, discountReason, discountValue, discountType, discountAfterTax } = requestBody;
+  const orderSessionJson = await orderUtilService.getOrderSessionById(orderSessionId, shopId);
+  throwBadRequest(!orderSessionJson, getMessageByLocale({ key: 'orderSession.notFound' }));
+
+  const discounts = _.filter(
+    orderSessionJson.discounts,
+    (discount) => discount.discountType !== OrderSessionDiscountType.INVOICE
+  );
+  const previousDiscount = _.find(
+    orderSessionJson.discounts,
+    (discount) => discount.discountType === OrderSessionDiscountType.INVOICE
+  );
+  if (
+    discountValue &&
+    _.get(previousDiscount, 'discountValueType') !== discountType &&
+    _.get(previousDiscount, 'discountValue') !== discountValue
+  ) {
+    discounts.push({
+      discountType: OrderSessionDiscountType.INVOICE,
+      discountValueType: discountType,
+      discountValue,
+      discountAfterTax,
+      discountReason,
+    });
+
+    await OrderSession.findByIdAndUpdate(orderSessionId, { $set: { discounts, totalDiscountAmount: 0 } });
+  }
+};
 
 module.exports = {
   createOrder,
-  increaseDishQuantity,
-  decreaseDishQuantity,
+  changeDishQuantity,
   updateOrder,
   getTableForOrder,
   getOrderSessionDetail,

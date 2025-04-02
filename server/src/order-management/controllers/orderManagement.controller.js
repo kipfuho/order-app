@@ -6,21 +6,14 @@ const orderManagementService = require('../services/orderManagement.service');
 const createOrder = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const requestBody = req.body;
-  await orderManagementService.createOrder({ shopId, requestBody });
-  res.status(httpStatus.OK).send({ message: 'OK' });
+  const orderSession = await orderManagementService.createOrder({ shopId, requestBody });
+  res.status(httpStatus.OK).send({ message: 'OK', orderSession });
 });
 
-const increaseDishQuantity = catchAsync(async (req, res) => {
+const changeDishQuantity = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const requestBody = req.body;
-  await orderManagementService.increaseDishQuantity({ shopId, requestBody });
-  res.status(httpStatus.OK).send({ message: 'OK' });
-});
-
-const decreaseDishQuantity = catchAsync(async (req, res) => {
-  const shopId = _.get(req, 'shop.id');
-  const requestBody = req.body;
-  await orderManagementService.decreaseDishQuantity({ shopId, requestBody });
+  await orderManagementService.changeDishQuantity({ shopId, requestBody });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
@@ -39,38 +32,50 @@ const getTableForOrder = catchAsync(async (req, res) => {
 
 const getOrderSessionDetail = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const orderSessionId = _.get(req, 'params.orderSessionId');
-  await orderManagementService.getOrderSessionDetail({ shopId, orderSessionId });
-  res.status(httpStatus.OK).send({ message: 'OK' });
+  const { orderSessionId } = req.body;
+  const orderSession = await orderManagementService.getOrderSessionDetail({ shopId, orderSessionId });
+  res.status(httpStatus.OK).send({ message: 'OK', orderSession });
 });
 
 const payOrderSession = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const orderSessionId = _.get(req, 'params.orderSessionId');
   const requestBody = req.body;
-  await orderManagementService.payOrderSession({ shopId, orderSessionId, requestBody });
+  await orderManagementService.payOrderSession({ shopId, requestBody });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
 const cancelOrderSession = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const orderSessionId = _.get(req, 'params.orderSessionId');
   const requestBody = req.body;
-  await orderManagementService.cancelOrder({ shopId, orderSessionId, reason: _.get(requestBody, 'reason') });
+  await orderManagementService.cancelOrder({ shopId, user: req.user, requestBody });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
 const cancelOrderSessionPaidStatus = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const orderSessionId = _.get(req, 'params.orderSessionId');
+  const { orderSessionId } = req.body;
   await orderManagementService.cancelPaidStatus({ shopId, orderSessionId });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
 const getOrderSessionHistory = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const { from, to } = _.get(req, 'params');
-  await orderManagementService.getOrderHistory({ from, shopId, to });
+  const { from, to } = req.body;
+  const orderSessions = await orderManagementService.getOrderHistory({ from, shopId, to });
+  res.status(httpStatus.OK).send({ message: 'OK', orderSessions });
+});
+
+const discountDish = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const requestBody = req.body;
+  await orderManagementService.discountDish({ shopId, requestBody });
+  res.status(httpStatus.OK).send({ message: 'OK' });
+});
+
+const discountOrderSession = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const requestBody = req.body;
+  await orderManagementService.discountOrderSession({ shopId, requestBody });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
@@ -88,24 +93,9 @@ const checkoutCart = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
-const discountDish = catchAsync(async (req, res) => {
-  const shopId = _.get(req, 'shop.id');
-  const requestBody = req.body;
-  await orderManagementService.discountDish();
-  res.status(httpStatus.OK).send({ message: 'OK' });
-});
-
-const discountOrder = catchAsync(async (req, res) => {
-  const shopId = _.get(req, 'shop.id');
-  const requestBody = req.body;
-  await orderManagementService.discountOrder();
-  res.status(httpStatus.OK).send({ message: 'OK' });
-});
-
 module.exports = {
   createOrder,
-  increaseDishQuantity,
-  decreaseDishQuantity,
+  changeDishQuantity,
   updateOrder,
   getTableForOrder,
   getOrderSessionDetail,
@@ -116,5 +106,5 @@ module.exports = {
   updateCart,
   checkoutCart,
   discountDish,
-  discountOrder,
+  discountOrderSession,
 };

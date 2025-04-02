@@ -8,6 +8,7 @@ const dishOrderSchema = new mongoose.Schema(
     name: { type: String },
     unit: { type: String },
     price: { type: Number },
+    isTaxIncludedPrice: { type: Boolean },
     taxIncludedPrice: { type: Number },
     quantity: { type: String },
     beforeTaxTotalPrice: { type: Number },

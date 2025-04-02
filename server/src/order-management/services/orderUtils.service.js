@@ -5,7 +5,7 @@ const { getShopFromCache, getTablesFromCache } = require('../../metadata/shopMet
 const { getShopTimeZone } = require('../../middlewares/clsHooked');
 const { Order, OrderSession } = require('../../models');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
-const { OrderSessionDiscountType, DiscountValueType, OrderSessionStatus } = require('../../utils/constant');
+const { OrderSessionDiscountType, DiscountValueType } = require('../../utils/constant');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 
@@ -109,6 +109,7 @@ const createNewOrder = async ({ tableId, shopId, orderSessionId, dishOrders, ord
         taxRate,
         price: isTaxIncludedPrice ? null : price,
         taxIncludedPrice: isTaxIncludedPrice ? price : null,
+        isTaxIncludedPrice,
       };
     }
     const dish = dishById[dishId];
@@ -120,6 +121,7 @@ const createNewOrder = async ({ tableId, shopId, orderSessionId, dishOrders, ord
       taxRate: _.get(dish, 'taxRate', ''),
       price: _.get(dish, 'isTaxIncludedPrice') ? null : price,
       taxIncludedPrice: _.get(dish, 'isTaxIncludedPrice') ? price : null,
+      isTaxIncludedPrice: _.get(dish, 'isTaxIncludedPrice'),
     };
   });
   const order = await Order.create({ tableId, shopId, orderSessionId, orderNo, dishOrders: orderDishOrders });
@@ -236,10 +238,33 @@ const _calculateDiscountOnInvoice = ({ discount, pretaxPaymentAmount, totalTaxAm
   // eslint-disable-next-line no-param-reassign
   discount.taxTotalDiscountAmount = taxTotalDiscountAmount;
 
-  return afterTaxTotalDiscountAmount;
+  return { beforeTaxAmount: beforeTaxTotalDiscountAmount, afterTaxAmount: afterTaxTotalDiscountAmount };
 };
 
-const _calculateDiscountOnProduct = ({ discount, pretaxPaymentAmount, totalTaxAmount }) => {};
+const _calculateDiscountOnProduct = ({ discount, dishOrderById }) => {
+  let beforeTaxTotalDiscountAmount = 0;
+  let afterTaxTotalDiscountAmount = 0;
+  let taxTotalDiscountAmount = 0;
+
+  _.forEach(discount.discountProducts, (discountProduct) => {
+    const dishOrder = dishOrderById[discountProduct.dishOrderId];
+    if (!dishOrder) return;
+
+    const dishQuantity = dishOrder.quantity;
+    beforeTaxTotalDiscountAmount += discountProduct.beforeTaxDiscountPrice * dishQuantity;
+    afterTaxTotalDiscountAmount += discountProduct.afterTaxDiscountPrice * dishQuantity;
+    taxTotalDiscountAmount += discountProduct.taxDiscountPrice * dishQuantity;
+  });
+
+  // eslint-disable-next-line no-param-reassign
+  discount.beforeTaxTotalDiscountAmount = beforeTaxTotalDiscountAmount;
+  // eslint-disable-next-line no-param-reassign
+  discount.afterTaxTotalDiscountAmount = afterTaxTotalDiscountAmount;
+  // eslint-disable-next-line no-param-reassign
+  discount.taxTotalDiscountAmount = taxTotalDiscountAmount;
+
+  return { beforeTaxAmount: beforeTaxTotalDiscountAmount, afterTaxAmount: afterTaxTotalDiscountAmount };
+};
 
 const _calculateDiscountByDiscountType = {
   [OrderSessionDiscountType.INVOICE]: _calculateDiscountOnInvoice,
@@ -253,15 +278,18 @@ const calculateDiscount = async ({ orderSessionJson, pretaxPaymentAmount, totalT
     return 0;
   }
 
+  let totalDiscountAmountBeforeTax = 0;
   let totalDiscountAmountAfterTax = 0;
   _.forEach(discounts, (discount) => {
-    totalDiscountAmountAfterTax += _calculateDiscountByDiscountType[discount.discountType]({
+    const { afterTaxAmount, beforeTaxAmount } = _calculateDiscountByDiscountType[discount.discountType]({
       discount,
       pretaxPaymentAmount,
       totalTaxAmount,
     });
+    totalDiscountAmountBeforeTax += beforeTaxAmount;
+    totalDiscountAmountAfterTax += afterTaxAmount;
   });
-  return totalDiscountAmountAfterTax;
+  return { totalDiscountAmountBeforeTax, totalDiscountAmountAfterTax };
 };
 
 const getOrderSessionById = async (orderSessionId, shopId) => {
@@ -273,18 +301,30 @@ const getOrderSessionById = async (orderSessionId, shopId) => {
   orderSessionJson.totalTaxAmount = totalTaxAmount;
   orderSessionJson.taxDetails = taxDetails;
 
-  const totalDiscountAmountAfterTax = calculateDiscount({ orderSessionJson, pretaxPaymentAmount, totalTaxAmount });
+  const { totalDiscountAmountBeforeTax, totalDiscountAmountAfterTax } = calculateDiscount({
+    orderSessionJson,
+    pretaxPaymentAmount,
+    totalTaxAmount,
+  });
 
+  orderSessionJson.totalDiscountAmountBeforeTax = totalDiscountAmountBeforeTax;
+  orderSessionJson.totalDiscountAmountAfterTax = totalDiscountAmountAfterTax;
   orderSessionJson.paymentAmount = Math.max(0, pretaxPaymentAmount + totalTaxAmount - totalDiscountAmountAfterTax);
 
   // update order if not audited
-  if (!orderSession.auditedAt && orderSession.paymentAmount !== orderSessionJson.paymentAmount) {
+  if (
+    !orderSession.auditedAt &&
+    (orderSession.paymentAmount !== orderSessionJson.paymentAmount ||
+      orderSession.totalDiscountAmountAfterTax !== orderSessionJson.totalDiscountAmountAfterTax)
+  ) {
     await OrderSession.updateOne(
       { _id: orderSessionId },
       {
         $set: {
           paymentAmount: orderSessionJson.paymentAmount,
           taxDetails: orderSessionJson.taxDetails,
+          totalDiscountAmountBeforeTax,
+          totalDiscountAmountAfterTax,
         },
       }
     );
