@@ -15,7 +15,7 @@ router.post('/cancel-ordersession-paid-status', auth(), orderManagementControlle
 router.post('/get-ordersession-history', orderManagementController.getOrderSessionHistory);
 router.post('/update-cart', auth(), orderManagementController.updateCart);
 router.post('/checkout-cart', auth(), orderManagementController.checkoutCart);
-router.post('/discount-dish', auth(), orderManagementController.discountDish);
-router.post('/discount-order', auth(), orderManagementController.discountOrderSession);
+router.post('/discount-dishorder', auth(), orderManagementController.discountDishOrder);
+router.post('/discount-ordersession', auth(), orderManagementController.discountOrderSession);
 
 module.exports = router;

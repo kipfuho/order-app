@@ -216,9 +216,10 @@ const checkoutCart = async ({ userId, shopId, requestBody }) => {
   return orderSession;
 };
 
-const discountDish = async ({ shopId, requestBody }) => {
+const discountDishOrder = async ({ shopId, requestBody }) => {
   const { orderSessionId, dishOrderId, orderId, discountReason, discountValue, discountType } = requestBody;
   let { discountAfterTax } = requestBody;
+
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSessionId, shopId);
   throwBadRequest(!orderSessionJson, getMessageByLocale({ key: 'orderSession.notFound' }));
   const order = _.find(orderSessionJson.orders, (_order) => _order.id === orderId);
@@ -283,6 +284,7 @@ const discountDish = async ({ shopId, requestBody }) => {
 
 const discountOrderSession = async ({ shopId, requestBody }) => {
   const { orderSessionId, discountReason, discountValue, discountType, discountAfterTax } = requestBody;
+
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSessionId, shopId);
   throwBadRequest(!orderSessionJson, getMessageByLocale({ key: 'orderSession.notFound' }));
 
@@ -324,6 +326,6 @@ module.exports = {
   updateCart,
   clearCart,
   checkoutCart,
-  discountDish,
+  discountDishOrder,
   discountOrderSession,
 };
