@@ -10,7 +10,7 @@ const dishOrderSchema = new mongoose.Schema(
     price: { type: Number },
     isTaxIncludedPrice: { type: Boolean },
     taxIncludedPrice: { type: Number },
-    quantity: { type: String },
+    quantity: { type: Number },
     beforeTaxTotalPrice: { type: Number },
     afterTaxTotalPrice: { type: Number },
     taxRate: { type: Number },
@@ -20,6 +20,7 @@ const dishOrderSchema = new mongoose.Schema(
     taxTotalDiscountAmount: { type: Number },
     paymentAmount: { type: Number }, // after discount, after tax
     status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
+    returnedAt: { type: Date },
   },
   {
     timestamps: true,
