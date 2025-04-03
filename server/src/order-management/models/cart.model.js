@@ -25,7 +25,6 @@ const cartSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-    userToken: { type: String }, // use for clearing cart
     cartItems: [cartItemSchema],
     status: {
       type: String,

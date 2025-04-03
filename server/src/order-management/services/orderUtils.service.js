@@ -3,11 +3,36 @@ const moment = require('moment-timezone');
 const redisClient = require('../../utils/redis');
 const { getShopFromCache, getTablesFromCache } = require('../../metadata/shopMetadata.service');
 const { getShopTimeZone } = require('../../middlewares/clsHooked');
-const { Order, OrderSession } = require('../../models');
+const { Order, OrderSession, Cart } = require('../../models');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
-const { OrderSessionDiscountType, DiscountValueType } = require('../../utils/constant');
+const { OrderSessionDiscountType, DiscountValueType, OrderSessionStatus } = require('../../utils/constant');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
+const { getTableFromCache } = require('../../metadata/tableMetadata.service');
+
+// Merge các dish order có trùng tên và giá
+const _mergeDishOrders = (dishOrders) => {
+  if (_.isEmpty(dishOrders)) {
+    return [];
+  }
+
+  const dishOrderMap = {};
+  // eslint-disable-next-line no-restricted-syntax
+  for (const dishOrder of dishOrders) {
+    const item = dishOrder;
+    const dishId = _.get(dishOrder, 'dishId._id') || _.get(dishOrder, 'dishId', '');
+    const dishIdStr = _.toString(dishId);
+    let key = `${dishIdStr}-${dishOrder.dishName}-${dishOrder.price}`;
+    key = key.replace(/\./g, '');
+    const existingItem = dishOrderMap[key];
+    const existingDishOrderQuantity = (_.get(existingItem, 'quantity') || 0) * 1;
+    const currentOrderQuantity = (dishOrder.quantity || 0) * 1;
+    item.quantity = currentOrderQuantity + existingDishOrderQuantity;
+    item.taxAmount = (_.get(existingItem, 'taxAmount') || 0) + (dishOrder.taxAmount || 0);
+    dishOrderMap[key] = item;
+  }
+  return Object.values(dishOrderMap);
+};
 
 const formatDateTimeToISOStringRegardingReportTime = ({ dateTime, reportTime }) => {
   try {
@@ -78,10 +103,36 @@ const getOrderSessionNoForNewOrderSession = async (shopId, createdAt) => {
   });
 };
 
+const getActiveOrderSessionStatus = () => {
+  return [OrderSessionStatus.unpaid];
+};
+
+const getActiveOrderSessionByTable = async ({ tableId, shopId }) => {
+  const orderSession = await OrderSession.findOne({
+    shop: shopId,
+    tables: tableId,
+    status: { $in: [getActiveOrderSessionStatus()] },
+  });
+
+  return orderSession;
+};
+
 const getOrCreateOrderSession = async ({ orderSessionId, tableId, shopId }) => {
+  const table = await getTableFromCache({ shopId, tableId });
+  throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
+
   if (orderSessionId) {
     const orderSession = await OrderSession.findById(orderSessionId);
-    return orderSession;
+    if (orderSession) {
+      return orderSession;
+    }
+  }
+
+  if (table.allowMultipleOrderSession) {
+    const orderSession = await getActiveOrderSessionByTable({ tableId, shopId });
+    if (orderSession) {
+      return orderSession;
+    }
   }
 
   const shop = await getShopFromCache({ shopId });
@@ -339,9 +390,43 @@ const updateOrderSession = async ({ orderSessionId, shopId, updateBody }) => {
   return getOrderSessionById(orderSessionId);
 };
 
+const mergeDishOrdersOfOrders = (orderSessionJson) => {
+  const orderDetails = _.get(orderSessionJson, 'orderDetails');
+  if (!_.isEmpty(orderDetails)) {
+    let dishOrders = _.flatMap(orderDetails, (o) => o.dishOrder);
+    dishOrders = _.filter(dishOrders, (dishOrder) => {
+      return dishOrder.quantity > 0;
+    });
+    return _mergeDishOrders(dishOrders);
+  }
+  return [];
+};
+
+const mergeCartItems = (cartItems) => {
+  if (!_.isEmpty(cartItems)) {
+    const filterdCartItems = _.filter(cartItems, (cartItem) => {
+      return cartItem.quantity > 0;
+    });
+    return _mergeDishOrders(filterdCartItems);
+  }
+  return [];
+};
+
+const getCart = async ({ shopId, userId }) => {
+  const cart = await Cart.findOneAndUpdate(
+    { user: userId, shop: shopId },
+    { $setOnInsert: { user: userId, shop: shopId, cartItems: [] } },
+    { upsert: true, new: true }
+  );
+  return cart;
+};
+
 module.exports = {
   createNewOrder,
   getOrCreateOrderSession,
   getOrderSessionById,
   updateOrderSession,
+  mergeDishOrdersOfOrders,
+  mergeCartItems,
+  getCart,
 };

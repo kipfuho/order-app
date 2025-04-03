@@ -174,9 +174,9 @@ const getOrderHistory = async ({ shopId, from, to }) => {
   return _.map(orderSessions, (orderSession) => orderSession.toJSON());
 };
 
-const updateCart = async ({ updatedishRequests, cartId }) => {
-  const cart = await Cart.findById(cartId);
-  throwBadRequest(!cart, 'Không tìm thấy giỏ hàng');
+const updateCart = async ({ userId, shopId, requestBody }) => {
+  const { updatedishRequests } = requestBody;
+  const cart = await orderUtilService.getCart({ shopId, userId });
   const cartItems = cart.cartItems || [];
   const cartItemByDishId = _.keyBy(cartItems, '_id');
   _.forEach(updatedishRequests, (updateRequest) => {
@@ -188,12 +188,21 @@ const updateCart = async ({ updatedishRequests, cartId }) => {
     cartItems.push(updateRequest);
   });
 
-  return Cart.findByIdAndUpdate(cartId, { $set: cartItems });
+  const updatedCartItems = orderUtilService.mergeCartItems(cartItems);
+  return Cart.findByIdAndUpdate(cart._id, { $set: { cartItems: updatedCartItems } });
 };
 
-const checkoutCart = async ({ cartId, tableId, shopId }) => {
-  const cart = await Cart.findById(cartId);
-  throwBadRequest(!cart, 'Không tìm thấy giỏ hàng');
+const clearCart = async ({ shopId, userId }) => {
+  const cart = await orderUtilService.getCart({ shopId, userId });
+  if (!_.isEmpty(cart.cartItems)) {
+    return Cart.findByIdAndUpdate(cart._id, { $set: { cartItems: [] } }, { new: true });
+  }
+  return cart;
+};
+
+const checkoutCart = async ({ userId, shopId, requestBody }) => {
+  const { tableId } = requestBody;
+  const cart = await orderUtilService.getCart({ shopId, userId });
   throwBadRequest(_.isEmpty(cart.cartItems), 'Giỏ hàng rỗng');
 
   const orderSession = await orderUtilService.getOrCreateOrderSession({ tableId, shopId });
@@ -313,6 +322,7 @@ module.exports = {
   cancelPaidStatus,
   getOrderHistory,
   updateCart,
+  clearCart,
   checkoutCart,
   discountDish,
   discountOrderSession,

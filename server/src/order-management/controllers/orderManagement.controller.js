@@ -81,15 +81,24 @@ const discountOrderSession = catchAsync(async (req, res) => {
 
 const updateCart = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
+  const userId = _.get(req, 'user.id');
   const requestBody = req.body;
-  await orderManagementService.updateCart();
+  await orderManagementService.updateCart({ userId, shopId, requestBody });
+  res.status(httpStatus.OK).send({ message: 'OK' });
+});
+
+const clearCart = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const userId = _.get(req, 'user.id');
+  await orderManagementService.clearCart({ userId, shopId });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
 const checkoutCart = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
+  const userId = _.get(req, 'user.id');
   const requestBody = req.body;
-  await orderManagementService.checkoutCart();
+  await orderManagementService.checkoutCart({ userId, shopId, requestBody });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
@@ -104,6 +113,7 @@ module.exports = {
   cancelOrderSessionPaidStatus,
   getOrderSessionHistory,
   updateCart,
+  clearCart,
   checkoutCart,
   discountDish,
   discountOrderSession,
