@@ -14,6 +14,8 @@ export const AppSyncChannel = {
   TEST: () => `${namespace}/test`,
   SHOP: (shopId: string) => `${namespace}/shop/${shopId}`,
   TABLE: (tableId: string) => `${namespace}/table/${tableId}`,
+  ORDERSESSION: (orderSessionId: string) =>
+    `${namespace}/orderSession/${orderSessionId}`,
 };
 
 export const EventType = {
@@ -35,7 +37,7 @@ const _getConnectionWithChannelId = (channelId: string) => {
 /**
  * Ket noi den channel shop
  */
-export const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
+const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
   if (!useappsync) return;
 
   try {
@@ -86,9 +88,83 @@ export const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
       error: (err) => console.error("Subscription error:", err),
     });
 
-    connectAppSyncChannel({ channelId, channel, subscription });
+    store.dispatch(connectAppSyncChannel({ channelId, channel, subscription }));
     // subscribeEventType()
   } catch (err) {
     console.error("Connection error:", err);
   }
+};
+
+const connectAppSyncForTable = async ({ tableId }: { tableId: string }) => {
+  if (!useappsync) return;
+
+  try {
+    const channelId = AppSyncChannel.TABLE(tableId);
+    const previousConnection = _getConnectionWithChannelId(channelId);
+    if (previousConnection) {
+      return;
+    }
+
+    const channel = await events.connect(channelId);
+
+    const subscription = channel.subscribe({
+      next: async (data) => {
+        try {
+          console.log("Received event:", data);
+
+          console.log("Cannot match event type!~");
+        } catch (error) {
+          console.error("Error handling event:", error);
+        }
+      },
+      error: (err) => console.error("Subscription error:", err),
+    });
+
+    store.dispatch(connectAppSyncChannel({ channelId, channel, subscription }));
+    // subscribeEventType()
+  } catch (err) {
+    console.error("Connection error:", err);
+  }
+};
+
+const connectAppSyncForOrderSession = async ({
+  orderSessionId,
+}: {
+  orderSessionId: string;
+}) => {
+  if (!useappsync) return;
+
+  try {
+    const channelId = AppSyncChannel.ORDERSESSION(orderSessionId);
+    const previousConnection = _getConnectionWithChannelId(channelId);
+    if (previousConnection) {
+      return;
+    }
+
+    const channel = await events.connect(channelId);
+
+    const subscription = channel.subscribe({
+      next: async (data) => {
+        try {
+          console.log("Received event:", data);
+
+          console.log("Cannot match event type!~");
+        } catch (error) {
+          console.error("Error handling event:", error);
+        }
+      },
+      error: (err) => console.error("Subscription error:", err),
+    });
+
+    store.dispatch(connectAppSyncChannel({ channelId, channel, subscription }));
+    // subscribeEventType()
+  } catch (err) {
+    console.error("Connection error:", err);
+  }
+};
+
+export {
+  connectAppSyncForShop,
+  connectAppSyncForTable,
+  connectAppSyncForOrderSession,
 };

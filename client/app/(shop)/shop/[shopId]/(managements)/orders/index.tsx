@@ -14,15 +14,23 @@ import _, { debounce } from "lodash";
 import { ScrollView, View } from "react-native";
 import { TableForOrderCard } from "../../../../../../components/ui/menus/TableForOrderCard";
 import { AppBar } from "../../../../../../components/AppBar";
-import { Shop, TableForOrder } from "../../../../../../stores/state.interface";
-import { useGetTablePositionsQuery } from "../../../../../../stores/apiSlices/tableApi.slice";
+import {
+  Shop,
+  Table,
+  TableForOrder,
+} from "../../../../../../stores/state.interface";
+import {
+  useGetTablePositionsQuery,
+  useGetTablesQuery,
+} from "../../../../../../stores/apiSlices/tableApi.slice";
 import { useGetTablesForOrderQuery } from "../../../../../../stores/apiSlices/orderApi.slice";
 import { LoaderBasic } from "../../../../../../components/ui/Loader";
 import CreateOrder from "../../../../../../components/ui/CreateOrderView";
 import {
   updateCurrentCustomerInfo,
-  updateCurrentTableId,
+  updateCurrentTable,
 } from "../../../../../../stores/shop.slice";
+import Toast from "react-native-toast-message";
 
 export default function OrderManagementOrderPage() {
   const dispatch = useDispatch();
@@ -33,6 +41,9 @@ export default function OrderManagementOrderPage() {
     useGetTablesForOrderQuery(shop.id);
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
     useGetTablePositionsQuery(shop.id);
+  const { data: tables = [], isLoading: tableLoading } = useGetTablesQuery(
+    shop.id
+  );
 
   const tablesGroupByPosition = _.groupBy(tablesForOrder, "position.id");
   const tablePositionById = _.keyBy(tablePositions, "id");
@@ -102,7 +113,8 @@ export default function OrderManagementOrderPage() {
   };
 
   const onTableClick = (tableId: string) => {
-    dispatch(updateCurrentTableId(tableId));
+    const table = _.find(tables, (t) => t.id === tableId) as Table;
+    dispatch(updateCurrentTable(table));
     setDefaultModalInfo();
     setCustomerDialogVisible(true);
   };
@@ -114,9 +126,9 @@ export default function OrderManagementOrderPage() {
 
   useEffect(() => {
     setFilteredTables(tablesGroupByPosition);
-  }, [tablesForOrder]);
+  }, [tableForOrderLoading]);
 
-  if (tableForOrderLoading || tablePositionLoading) {
+  if (tableForOrderLoading || tablePositionLoading || tableLoading) {
     return <LoaderBasic />;
   }
 
@@ -209,6 +221,7 @@ export default function OrderManagementOrderPage() {
           />
           <CreateOrder setCreateOrderVisible={setCreateOrderVisible} />
         </Modal>
+        <Toast />
       </Portal>
 
       <Surface style={{ flex: 1, padding: 16 }}>
@@ -262,7 +275,7 @@ export default function OrderManagementOrderPage() {
           <ScrollView>
             {_.map(filteredTables, (tables, positionId) => {
               return (
-                <Surface key={positionId}>
+                <Surface key={positionId} style={{ boxShadow: "none" }}>
                   <Text variant="titleLarge">
                     {tablePositionById[positionId].name}
                   </Text>

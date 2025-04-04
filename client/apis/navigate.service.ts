@@ -214,6 +214,19 @@ const goToCreateDishCategory = ({
   });
 };
 
+const goToTablesForOrderList = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/orders",
+    params: { shopId },
+  });
+};
+
 export {
   goBackShopList,
   goBackShopHome,
@@ -230,4 +243,5 @@ export {
   goToUpdateTable,
   goToCreateDish,
   goToCreateDishCategory,
+  goToTablesForOrderList,
 };

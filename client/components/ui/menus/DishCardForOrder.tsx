@@ -50,7 +50,6 @@ function QuantityControl({
   const handleUpdateDishQuantity = () => {
     const newQuantity = _.toNumber(dishQuantity);
     if (newQuantity > 999999) {
-      console.log("Invalid quantity");
       Toast.show({
         type: "error",
         text1: "Update quantity Failed",
@@ -75,7 +74,6 @@ function QuantityControl({
     <>
       {/* Delete Confirmation Dialog */}
       <Portal>
-        <Toast />
         <Dialog
           visible={dialogVisible}
           style={{ width: "60%", alignSelf: "center" }}
@@ -101,6 +99,7 @@ function QuantityControl({
             </Button>
           </Dialog.Actions>
         </Dialog>
+        <Toast />
       </Portal>
       <Surface
         style={{

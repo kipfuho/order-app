@@ -113,7 +113,10 @@ export const orderApiSlice = createApi({
           return { error: { status: 500, data: error } };
         }
       },
-      invalidatesTags: ["TablesForOrder"], // Enables cache invalidation
+      invalidatesTags: (_, __, { orderSessionId }) => [
+        { type: "OrderSessions", id: orderSessionId },
+        "TablesForOrder",
+      ], // Enables cache invalidation
     }),
 
     payOrderSession: builder.mutation<undefined, PayOrderSessionRequest>({
@@ -247,4 +250,14 @@ export const orderApiSlice = createApi({
   }),
 });
 
-export const { useGetTablesForOrderQuery } = orderApiSlice;
+export const {
+  useGetTablesForOrderQuery,
+  useGetOrderSessionDetailQuery,
+  useGetOrderSessionHistoryQuery,
+  useCreateOrderMutation,
+  usePayOrderSessionMutation,
+  useCancelOrderSessionMutation,
+  useCancelOrderSessionPaidStatusMutation,
+  useDiscountDishOrderMutation,
+  useDiscountOrderSessionMutation,
+} = orderApiSlice;

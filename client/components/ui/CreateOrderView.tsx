@@ -13,6 +13,8 @@ import { LoaderBasic } from "./Loader";
 import { ScrollView, View } from "react-native";
 import { DishCardForOrder } from "./menus/DishCardForOrder";
 import _ from "lodash";
+import Toast from "react-native-toast-message";
+import { useCreateOrderMutation } from "../../stores/apiSlices/orderApi.slice";
 
 /**
  * wrapped in a modal
@@ -23,12 +25,15 @@ export default function CreateOrder({
 }: {
   setCreateOrderVisible: SetStateAction<any>;
 }) {
-  const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
-  ) as Shop;
-  const currentOrderTotalAmount = useSelector(
-    (state: RootState) => state.shop.currentOrderTotalAmount
-  );
+  const {
+    currentShop,
+    currentOrderTotalAmount,
+    currentOrder,
+    currentTable,
+    currentOrderSession,
+  } = useSelector((state: RootState) => state.shop);
+  const shop = currentShop as Shop;
+
   const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery(
     shop.id
   );
@@ -36,10 +41,38 @@ export default function CreateOrder({
     useGetDishCategoriesQuery(shop.id);
   const { data: dishTypes = [], isLoading: dishTypeLoading } =
     useGetDishTypesQuery(shop.id);
+  const [createOrder, { isLoading: createOrderLoading }] =
+    useCreateOrderMutation();
 
   const [selectedCategory, setCategory] = useState<string>("");
   const [selectedDishType, setDishType] = useState<string>("ALL");
   const [filteredDishes, setFilteredDishes] = useState<Dish[]>([]);
+
+  const handleCreateOrder = async () => {
+    if (currentOrderTotalAmount === 0) {
+      Toast.show({
+        type: "error",
+        text1: "Create order Failed",
+        text2: "Please select at least one dish",
+      });
+      return;
+    }
+    if (!currentTable) {
+      Toast.show({
+        type: "error",
+        text1: "Create order Failed",
+        text2: "Cannot find table",
+      });
+      return;
+    }
+    await createOrder({
+      dishOrders: Object.values(currentOrder),
+      shopId: shop.id,
+      orderSessionId: currentOrderSession?.id,
+      tableId: currentTable.id,
+    }).unwrap();
+    setCreateOrderVisible(false);
+  };
 
   useEffect(() => {
     const filteredDishes = _.filter(dishes, (d) => {
@@ -58,42 +91,29 @@ export default function CreateOrder({
     });
 
     setFilteredDishes(filteredDishes);
-  }, [selectedCategory, selectedDishType, dishes]);
+  }, [selectedCategory, selectedDishType, dishLoading]);
 
   if (dishLoading || dishCategoryLoading || dishTypeLoading) {
     return <LoaderBasic />;
   }
 
   return (
-    <Surface style={styles.baseContainer}>
-      <Surface style={{ height: 50, boxShadow: "none" }}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingLeft: 5,
-          }}
-        >
-          <Button
-            key="ALL"
-            mode={selectedDishType === "ALL" ? "contained" : "contained-tonal"}
-            onPress={() => setDishType("ALL")}
-            style={{
-              width: "auto",
-              borderRadius: 0,
-              margin: 0,
-              alignSelf: "center",
+    <>
+      <Surface style={styles.baseContainer}>
+        <Surface style={{ height: 50, boxShadow: "none" }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingLeft: 5,
             }}
           >
-            All
-          </Button>
-          {dishTypes.map((dishType) => (
             <Button
-              key={dishType}
+              key="ALL"
               mode={
-                selectedDishType === dishType ? "contained" : "contained-tonal"
+                selectedDishType === "ALL" ? "contained" : "contained-tonal"
               }
-              onPress={() => setDishType(dishType)}
+              onPress={() => setDishType("ALL")}
               style={{
                 width: "auto",
                 borderRadius: 0,
@@ -101,79 +121,102 @@ export default function CreateOrder({
                 alignSelf: "center",
               }}
             >
-              {dishType}
+              All
             </Button>
-          ))}
-        </ScrollView>
-      </Surface>
+            {dishTypes.map((dishType) => (
+              <Button
+                key={dishType}
+                mode={
+                  selectedDishType === dishType
+                    ? "contained"
+                    : "contained-tonal"
+                }
+                onPress={() => setDishType(dishType)}
+                style={{
+                  width: "auto",
+                  borderRadius: 0,
+                  margin: 0,
+                  alignSelf: "center",
+                }}
+              >
+                {dishType}
+              </Button>
+            ))}
+          </ScrollView>
+        </Surface>
 
-      <Surface style={{ height: 50, marginBottom: 10, boxShadow: "none" }}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingLeft: 5,
-          }}
-        >
-          {dishCategories.map((cat) => (
-            <Button
-              key={cat.id}
-              mode={
-                selectedCategory === cat.id ? "outlined" : "contained-tonal"
-              }
-              onPress={() =>
-                setCategory((prevCat) => (prevCat === cat.id ? "" : cat.id))
-              }
-              style={{
-                width: "auto",
-                borderRadius: 10,
-                marginRight: 5,
-                alignSelf: "center",
-              }}
-            >
-              {cat.name}
-            </Button>
-          ))}
-        </ScrollView>
-      </Surface>
-      <Surface style={{ flex: 1 }}>
-        <ScrollView>
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              boxShadow: "0 0 0",
+        <Surface style={{ height: 50, marginBottom: 10, boxShadow: "none" }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingLeft: 5,
             }}
           >
-            {filteredDishes.map((d) => (
-              <DishCardForOrder key={d.id} dish={d} />
+            {dishCategories.map((cat) => (
+              <Button
+                key={cat.id}
+                mode={
+                  selectedCategory === cat.id ? "outlined" : "contained-tonal"
+                }
+                onPress={() =>
+                  setCategory((prevCat) => (prevCat === cat.id ? "" : cat.id))
+                }
+                style={{
+                  width: "auto",
+                  borderRadius: 10,
+                  marginRight: 5,
+                  alignSelf: "center",
+                }}
+              >
+                {cat.name}
+              </Button>
             ))}
-          </View>
-        </ScrollView>
-      </Surface>
-      <Surface
-        style={{
-          flexDirection: "row",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 10,
-        }}
-      >
-        <Icon source="cart-outline" size={40} />
-        <Text
-          variant="bodyLarge"
-          style={{ fontWeight: "bold", marginRight: 20 }}
+          </ScrollView>
+        </Surface>
+        <Surface style={{ flex: 1 }}>
+          <ScrollView>
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                boxShadow: "0 0 0",
+              }}
+            >
+              {filteredDishes.map((d) => (
+                <DishCardForOrder key={d.id} dish={d} />
+              ))}
+            </View>
+          </ScrollView>
+        </Surface>
+        <Surface
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 10,
+          }}
         >
-          {currentOrderTotalAmount}
-        </Text>
-        <Button
-          mode="contained"
-          onPress={() => setCreateOrderVisible(false)}
-          style={{ width: "auto" }}
-        >
-          Create order
-        </Button>
+          <Icon source="cart-outline" size={40} />
+          <Text
+            variant="bodyLarge"
+            style={{ fontWeight: "bold", marginRight: 20 }}
+          >
+            {currentOrderTotalAmount}
+          </Text>
+          {createOrderLoading ? (
+            <LoaderBasic />
+          ) : (
+            <Button
+              mode="contained"
+              onPress={handleCreateOrder}
+              style={{ width: "auto" }}
+            >
+              Create order
+            </Button>
+          )}
+        </Surface>
       </Surface>
-    </Surface>
+    </>
   );
 }

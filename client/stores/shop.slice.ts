@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Dish, DishOrder, Shop } from "./state.interface";
+import { Dish, DishOrder, OrderSession, Shop, Table } from "./state.interface";
 import { PURGE } from "redux-persist";
 
 type CustomerInfo = {
@@ -13,7 +13,8 @@ interface ShopState {
   currentOrder: Record<string, Partial<DishOrder>>;
   currentOrderTotalAmount: number;
   currentCustomerInfo: CustomerInfo;
-  currentTableId: string;
+  currentTable: Table | null;
+  currentOrderSession: OrderSession | null;
 }
 
 // Initial state
@@ -26,7 +27,8 @@ const initialState: ShopState = {
     customerName: "",
     customerPhone: "",
   },
-  currentTableId: "",
+  currentTable: null,
+  currentOrderSession: null,
 };
 
 // Create Slice
@@ -83,10 +85,16 @@ export const shopSlice = createSlice({
       };
     },
 
-    updateCurrentTableId: (state, action: PayloadAction<string>) => {
+    updateCurrentTable: (state, action: PayloadAction<Table>) => {
       if (!action.payload) return;
 
-      state.currentTableId = action.payload;
+      state.currentTable = action.payload;
+    },
+
+    updateCurrentOrderSession: (state, action: PayloadAction<OrderSession>) => {
+      if (!action.payload) return;
+
+      state.currentOrderSession = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -102,7 +110,8 @@ export const {
   resetCurrentOrder,
   updateCurrentOrder,
   updateCurrentCustomerInfo,
-  updateCurrentTableId,
+  updateCurrentTable,
+  updateCurrentOrderSession,
 } = shopSlice.actions;
 
 export default shopSlice.reducer;

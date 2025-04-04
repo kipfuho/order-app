@@ -25,7 +25,7 @@ export default function AppLayout() {
 
     dispatch(updateCurrentShop(shop));
     connectAppSyncForShop({ shopId: shop.id });
-  }, [shopId, shop]);
+  }, [shopId, isLoading]);
 
   if (isLoading) {
     return <LoaderBasic />;

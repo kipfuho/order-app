@@ -6,11 +6,11 @@ import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 import { PaperProvider, MD3DarkTheme, MD3LightTheme } from "react-native-paper";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import Toast from "react-native-toast-message";
 import store, { persistor } from "../stores/store";
 import { StyleSheet } from "react-native";
 import { Amplify } from "aws-amplify";
 import { AmplifyConfig } from "../amplify_outputs";
+import Toast from "react-native-toast-message";
 
 Amplify.configure(AmplifyConfig);
 
@@ -30,8 +30,8 @@ export default function RootLayout() {
     <ReduxProvider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <PaperProvider theme={theme}>
-          <Toast />
           <Stack screenOptions={{ headerShown: false }} />
+          <Toast />
         </PaperProvider>
       </PersistGate>
     </ReduxProvider>
