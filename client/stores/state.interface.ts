@@ -178,6 +178,7 @@ interface Order {
 }
 
 interface DishOrder {
+  dishId: string; // for create order
   dish: Dish;
   name: string;
   unit: string;

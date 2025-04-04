@@ -7,25 +7,28 @@ import {
   Text,
   TextInput,
 } from "react-native-paper";
-import { useEffect, useState } from "react";
-import { getTablesForOrderRequest } from "../../../../../../apis/order.api.service";
-import { useSelector } from "react-redux";
+import { useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
-import _ from "lodash";
+import _, { debounce } from "lodash";
 import { ScrollView, View } from "react-native";
 import { TableForOrderCard } from "../../../../../../components/ui/menus/TableForOrderCard";
 import { AppBar } from "../../../../../../components/AppBar";
-import { styles } from "../../../../../_layout";
 import { Shop, TableForOrder } from "../../../../../../stores/state.interface";
 import { useGetTablePositionsQuery } from "../../../../../../stores/apiSlices/tableApi.slice";
 import { useGetTablesForOrderQuery } from "../../../../../../stores/apiSlices/orderApi.slice";
 import { LoaderBasic } from "../../../../../../components/ui/Loader";
 import CreateOrder from "../../../../../../components/ui/CreateOrderView";
+import {
+  updateCurrentCustomerInfo,
+  updateCurrentTableId,
+} from "../../../../../../stores/shop.slice";
 
 export default function OrderManagementOrderPage() {
-  const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
-  ) as Shop;
+  const dispatch = useDispatch();
+  const { currentShop } = useSelector((state: RootState) => state.shop);
+  const shop = currentShop as Shop;
+
   const { data: tablesForOrder = [], isLoading: tableForOrderLoading } =
     useGetTablesForOrderQuery(shop.id);
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
@@ -48,13 +51,43 @@ export default function OrderManagementOrderPage() {
   const [createOrderVisible, setCreateOrderVisible] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [numberOfCustomer, setNumberOfCustomer] = useState("");
-  const [selectedTableId, setTableId] = useState("");
+  const [numberOfCustomer, setNumberOfCustomer] = useState("1");
+
+  const debouncedUpdateCustomerInfo = useCallback(
+    debounce(
+      ({
+        customerName,
+        customerPhone,
+        numberOfCustomer,
+      }: {
+        customerName: string;
+        customerPhone: string;
+        numberOfCustomer: string;
+      }) => {
+        dispatch(
+          updateCurrentCustomerInfo({
+            customerName,
+            customerPhone,
+            numberOfCustomer: _.toNumber(numberOfCustomer),
+          })
+        );
+      },
+      300
+    ), // 300ms delay
+    [dispatch]
+  );
 
   const setDefaultModalInfo = () => {
     setCustomerName("");
     setCustomerPhone("");
     setNumberOfCustomer("1");
+    dispatch(
+      updateCurrentCustomerInfo({
+        customerName: "",
+        customerPhone: "",
+        numberOfCustomer: 1,
+      })
+    );
   };
 
   const setSelectedPosition = (positionId: string) => {
@@ -69,9 +102,9 @@ export default function OrderManagementOrderPage() {
   };
 
   const onTableClick = (tableId: string) => {
+    dispatch(updateCurrentTableId(tableId));
     setDefaultModalInfo();
     setCustomerDialogVisible(true);
-    setTableId(tableId);
   };
 
   const onCustomerInfoConfirmClick = () => {
@@ -101,7 +134,14 @@ export default function OrderManagementOrderPage() {
               label="Customer Name"
               mode="outlined"
               value={customerName}
-              onChangeText={setCustomerName}
+              onChangeText={(text) => {
+                setCustomerName(text);
+                debouncedUpdateCustomerInfo({
+                  customerName: text,
+                  customerPhone,
+                  numberOfCustomer,
+                });
+              }}
             />
 
             <View
@@ -115,17 +155,32 @@ export default function OrderManagementOrderPage() {
                 label="Customer Phone"
                 mode="outlined"
                 value={customerPhone}
-                onChangeText={setCustomerPhone}
+                onChangeText={(text) => {
+                  const enteredCustomerPhone = text.replace(/[^0-9.]/g, "");
+                  setCustomerPhone(enteredCustomerPhone);
+                  debouncedUpdateCustomerInfo({
+                    customerName,
+                    customerPhone: enteredCustomerPhone,
+                    numberOfCustomer,
+                  });
+                }}
                 style={{ flex: 1, minWidth: 150 }} // Ensures proper width
               />
               <Text>Số người</Text>
               <TextInput
                 label="P"
                 mode="outlined"
+                keyboardType="numeric"
                 value={numberOfCustomer}
-                onChangeText={(text) =>
-                  setNumberOfCustomer(text.replace(/[^0-9.]/g, ""))
-                } // Restrict input to numbers & decimal
+                onChangeText={(text) => {
+                  const enteredNumberOfCustomer = text.replace(/[^0-9.]/g, "");
+                  setNumberOfCustomer(enteredNumberOfCustomer);
+                  debouncedUpdateCustomerInfo({
+                    customerName,
+                    customerPhone,
+                    numberOfCustomer: enteredNumberOfCustomer,
+                  });
+                }} // Restrict input to numbers & decimal
                 style={{ flex: 1, minWidth: 40 }} // Prevents shrinking
               />
             </View>
@@ -222,7 +277,7 @@ export default function OrderManagementOrderPage() {
                       <TableForOrderCard
                         key={table.id}
                         table={table}
-                        onClick={onTableClick}
+                        onClick={() => onTableClick(table.id)}
                       />
                     ))}
                   </Surface>

@@ -60,7 +60,7 @@ export default function TabLayout() {
           initialParams={{ shopId }}
         />
 
-        {["create-order"].map((name) => (
+        {[].map((name) => (
           <Tabs.Screen
             key={name}
             name={name}

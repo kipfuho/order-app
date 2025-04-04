@@ -157,14 +157,23 @@ export const loginRequest = async ({
   return true;
 };
 
+let refreshingPromise: Promise<Tokens> | null = null;
+
 export const refreshTokensRequest = async (refreshToken: string) => {
-  const tokens: Tokens = await apiRequest({
+  if (refreshingPromise) {
+    const newToken = await refreshingPromise;
+    return newToken ?? "";
+  }
+  refreshingPromise = apiRequest({
     method: "POST",
     endpoint: "v1/auth/refresh-tokens",
     data: {
       refreshToken,
     },
   });
+
+  const tokens = await refreshingPromise;
+  refreshingPromise = null; // Reset the promise after resolving
 
   return tokens;
 };

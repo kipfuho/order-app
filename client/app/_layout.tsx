@@ -30,8 +30,8 @@ export default function RootLayout() {
     <ReduxProvider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <PaperProvider theme={theme}>
-          <Stack screenOptions={{ headerShown: false }} />
           <Toast />
+          <Stack screenOptions={{ headerShown: false }} />
         </PaperProvider>
       </PersistGate>
     </ReduxProvider>
