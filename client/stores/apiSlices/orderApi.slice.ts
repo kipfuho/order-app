@@ -6,6 +6,7 @@ import {
   createOrderRequest,
   discountDishOrderRequest,
   discountOrderSessionRequest,
+  getActiveOrderSessionsRequest,
   getOrderSessionDetailRequest,
   getOrderSessionHistoryRequest,
   getTablesForOrderRequest,
@@ -19,6 +20,7 @@ import {
   CreateOrderRequest,
   DiscountDishOrderRequest,
   DiscountOrderSessionRequest,
+  GetActiveOrderSessionRequest,
   GetOrderSessionDetailRequest,
   GetOrderSessionHistoryRequest,
   PayOrderSessionRequest,
@@ -27,7 +29,7 @@ import {
 export const orderApiSlice = createApi({
   reducerPath: "orderApi",
   baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
-  tagTypes: ["TablesForOrder", "OrderSessions"],
+  tagTypes: ["TablesForOrder", "OrderSessions", "ActiveOrderSessions"],
   // keepUnusedDataFor: 600,
   endpoints: (builder) => ({
     getTablesForOrder: builder.query<TableForOrder[], string>({
@@ -43,6 +45,28 @@ export const orderApiSlice = createApi({
         }
       },
       providesTags: ["TablesForOrder"],
+    }),
+
+    getActiveOrderSessions: builder.query<
+      OrderSession[],
+      GetActiveOrderSessionRequest
+    >({
+      queryFn: async ({ shopId, tableId }) => {
+        try {
+          const orderSessions = await getActiveOrderSessionsRequest({
+            shopId,
+            tableId,
+          });
+
+          return { data: orderSessions };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      providesTags: (_, __, arg) => [
+        { type: "ActiveOrderSessions", id: arg.tableId },
+        "TablesForOrder",
+      ],
     }),
 
     getOrderSessionDetail: builder.query<
@@ -252,6 +276,7 @@ export const orderApiSlice = createApi({
 
 export const {
   useGetTablesForOrderQuery,
+  useGetActiveOrderSessionsQuery,
   useGetOrderSessionDetailQuery,
   useGetOrderSessionHistoryQuery,
   useCreateOrderMutation,

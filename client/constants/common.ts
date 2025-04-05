@@ -5,3 +5,9 @@ export enum DiscountType {
   PRODUCT = "PRODUCT",
   INVOICE = "INVOICE",
 }
+
+export enum OrderSessionStatus {
+  unpaid = "unpaid",
+  paid = "paid",
+  cancelled = "cancelled",
+}

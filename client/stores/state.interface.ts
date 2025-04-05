@@ -1,3 +1,4 @@
+import { OrderSessionStatus } from "../constants/common";
 import { PaymentMethod } from "../constants/paymentMethod";
 
 interface Tokens {
@@ -34,8 +35,15 @@ interface Table {
   position: TablePosition;
 }
 
-interface TableForOrder extends Table {
-  activeOrderSessions: OrderSessionPreview[];
+interface TableForOrder extends Omit<Table, "position"> {
+  position: string; // position id
+  numberOfOrderSession?: number;
+  numberOfCustomer?: number;
+  totalPaymentAmount?: number;
+  averagePaymentAmount?: number;
+  orderStatus?: OrderSessionStatus;
+  orderCreatedAtEpoch?: number;
+  orderColorCode?: number;
 }
 
 interface TablePosition {
@@ -121,10 +129,9 @@ interface OrderSessionDiscount {
 
 interface OrderSession {
   id: string;
-  name: string;
-  price: number;
-  tables: string[]; // object id
-  orders: string[]; // object id
+  tableIds: string[]; // ids
+  orders: Order[]; // object id
+  tableName: string;
   discounts: OrderSessionDiscount[];
   orderSessionNo: number;
   taxRate: number;
@@ -134,33 +141,21 @@ interface OrderSession {
     taxRate: number;
   }[];
   status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  endedAt: Date;
-  auditedAt: Date;
+  createdAt: string;
+  updatedAt: string;
+  endedAt: string;
   paymentDetails: PaymentDetail[];
   paymentAmount: number;
   customerInfo: {
     numberOfCustomer: number;
+    customerName: string;
+    customerPhone: string;
+    customerId: string;
+    customerAddress: string;
   };
   totalDiscountAmountBeforeTax: number;
   totalDiscountAmountAfterTax: number;
-}
-
-interface OrderSessionDetail extends Omit<OrderSession, "tables" | "orders"> {
-  tables: Table[];
-  orders: Order[];
-}
-
-// contain less information, for display only
-interface OrderSessionPreview {
-  id: string;
-  createdAt: Date;
-  numberOfCustomer: number;
-  status: string;
-  statusColorCode?: number;
-  paymentAmount: number;
-  averagePaymentAmount: number;
+  employeeName?: string;
 }
 
 interface PaymentDetail {
@@ -169,17 +164,16 @@ interface PaymentDetail {
 }
 
 interface Order {
-  table: Table;
+  table: string;
   orderNo: number;
   dishOrders: DishOrder[];
   returnedDishOrders: DishOrder[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface DishOrder {
-  dishId: string; // for create order
-  dish: Dish;
+  dishId?: string; // for create order
   name: string;
   unit: string;
   price: number;
@@ -191,7 +185,7 @@ interface DishOrder {
   taxRate: number;
   taxAmount: number;
   status: string;
-  returnedAt?: Date;
+  returnedAt?: string;
 }
 
 export {
@@ -213,8 +207,6 @@ export {
   DishOrder,
   Order,
   OrderSession,
-  OrderSessionPreview,
-  OrderSessionDetail,
   OrderSessionDiscount,
   OrderSessionDiscountProduct,
 };
