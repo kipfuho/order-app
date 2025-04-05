@@ -44,6 +44,7 @@ const orderSessionSchema = new mongoose.Schema(
   {
     shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     tables: [{ type: mongoose.Types.ObjectId, ref: 'Table' }],
+    tableNames: [String],
     orders: [{ type: mongoose.Types.ObjectId, ref: 'Order' }],
     discounts: [discountSchema],
     orderSessionNo: { type: Number },
@@ -87,7 +88,7 @@ const orderSessionSchema = new mongoose.Schema(
 
 orderSessionSchema.statics.getLastActiveOrderSessionBeforeCreatedAt = async function (shopId, createdAt) {
   return this.findOne({
-    shopId: mongoose.Types.ObjectId(shopId),
+    shop: shopId,
     createdAt: { $lt: createdAt },
     orderSessionNo: { $exists: true },
   }).sort({ createdAt: -1 });
@@ -101,7 +102,7 @@ orderSessionSchema.statics.getLastActiveOrderSessionSortByOrderSessionNo = async
   });
   return this.findOne(
     {
-      shopId: mongoose.Types.ObjectId(shopId),
+      shop: shopId,
       orderSessionNo: { $exists: true },
       createdAt: { $gte: startOfDay },
     },

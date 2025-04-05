@@ -2,12 +2,14 @@ const _ = require('lodash');
 const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
 const orderManagementService = require('../services/orderManagement.service');
+const { convertOrderSessionForResponse } = require('../converters/orderSession.converter');
 
 const createOrder = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const requestBody = req.body;
-  const orderSession = await orderManagementService.createOrder({ shopId, requestBody });
-  res.status(httpStatus.OK).send({ message: 'OK', orderSession });
+  const orderSessionJson = await orderManagementService.createOrder({ shopId, requestBody });
+  const orderSessionResponse = convertOrderSessionForResponse(orderSessionJson);
+  res.status(httpStatus.OK).send({ message: 'OK', orderSession: orderSessionResponse });
 });
 
 const changeDishQuantity = catchAsync(async (req, res) => {
@@ -33,8 +35,9 @@ const getTableForOrder = catchAsync(async (req, res) => {
 const getOrderSessionDetail = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const { orderSessionId } = req.body;
-  const orderSession = await orderManagementService.getOrderSessionDetail({ shopId, orderSessionId });
-  res.status(httpStatus.OK).send({ message: 'OK', orderSession });
+  const orderSessionJson = await orderManagementService.getOrderSessionDetail({ shopId, orderSessionId });
+  const orderSessionResponse = convertOrderSessionForResponse(orderSessionJson);
+  res.status(httpStatus.OK).send({ message: 'OK', orderSession: orderSessionResponse });
 });
 
 const payOrderSession = catchAsync(async (req, res) => {

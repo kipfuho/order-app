@@ -19,7 +19,8 @@ const formatDateTime = ({ dateTime, format, timeZone }) => {
   return moment(dateTime).tz(timeZone).format(format);
 };
 
-const formatDateDDMMYYYY = (dateTime, timeZone) => formatDateTime({ dateTime, timeZone, format: 'DD/MM/YYYY' });
+const formatDateDDMMYYYY = (dateTime, timeZone) => formatDateTime({ dateTime, timeZone, format: 'HH:MM DD/MM/YYYY' });
+const formatDateHHMMDDMMYYYY = (dateTime, timeZone) => formatDateTime({ dateTime, timeZone, format: 'HH:MM DD/MM/YYYY' });
 
 const getCurrencyPrecision = (currency) => {
   if (!currency) {
@@ -87,6 +88,7 @@ module.exports = {
   sleep,
   getStartTimeOfToday,
   formatDateDDMMYYYY,
+  formatDateHHMMDDMMYYYY,
   getRoundDishPrice,
   getRoundDiscountAmount,
   getRoundTaxAmount,

@@ -1,14 +1,15 @@
 const _ = require('lodash');
 const moment = require('moment-timezone');
 const redisClient = require('../../utils/redis');
-const { getShopFromCache, getTablesFromCache } = require('../../metadata/shopMetadata.service');
+const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { getShopTimeZone } = require('../../middlewares/clsHooked');
 const { Order, OrderSession, Cart } = require('../../models');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const { OrderSessionDiscountType, DiscountValueType, OrderSessionStatus } = require('../../utils/constant');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
-const { getTableFromCache } = require('../../metadata/tableMetadata.service');
+const { getTableFromCache, getTablesFromCache } = require('../../metadata/tableMetadata.service');
+const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
 
 // Merge các dish order có trùng tên và giá
 const _mergeDishOrders = (dishOrders) => {
@@ -139,7 +140,8 @@ const getOrCreateOrderSession = async ({ orderSessionId, tableId, shopId }) => {
   const orderSessionNo = await getOrderSessionNoForNewOrderSession(shopId);
   const orderSession = await OrderSession.create({
     tables: [tableId],
-    shopId,
+    tableNames: [table.name],
+    shop: shopId,
     orderSessionNo,
     taxRate: _.get(shop, 'taxRate', 0),
   });
@@ -147,8 +149,10 @@ const getOrCreateOrderSession = async ({ orderSessionId, tableId, shopId }) => {
   return orderSession.toJSON();
 };
 
-const createNewOrder = async ({ tableId, shopId, orderSessionId, dishOrders, orderNo }) => {
+const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, orderNo }) => {
   const dishes = await getDishesFromCache({ shopId });
+  const units = await getUnitsFromCache({ shopId });
+  const unitById = _.keyBy(units, 'id');
   const dishById = _.keyBy(dishes, 'id');
   const orderDishOrders = _.map(dishOrders, (dishOrder) => {
     const { dishId, quantity, name, taxRate, price, isTaxIncludedPrice } = dishOrder;
@@ -158,24 +162,39 @@ const createNewOrder = async ({ tableId, shopId, orderSessionId, dishOrders, ord
         quantity,
         name,
         taxRate,
-        price: isTaxIncludedPrice ? null : price,
-        taxIncludedPrice: isTaxIncludedPrice ? price : null,
+        price: isTaxIncludedPrice ? undefined : price,
+        taxIncludedPrice: isTaxIncludedPrice ? price : undefined,
         isTaxIncludedPrice,
       };
     }
     const dish = dishById[dishId];
+    throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
     return {
-      dishId,
+      dish: dishId,
       quantity,
-      name: _.get(dish, 'name', name),
-      unit: _.get(dish, 'unit', ''),
-      taxRate: _.get(dish, 'taxRate', ''),
-      price: _.get(dish, 'isTaxIncludedPrice') ? null : price,
-      taxIncludedPrice: _.get(dish, 'isTaxIncludedPrice') ? price : null,
-      isTaxIncludedPrice: _.get(dish, 'isTaxIncludedPrice'),
+      name: dish.name,
+      unit: _.get(unitById[dish.unit], 'name'),
+      taxRate: dish.taxRate,
+      price: dish.isTaxIncludedPrice ? undefined : dish.price,
+      taxIncludedPrice: dish.isTaxIncludedPrice ? dish.price : undefined,
+      isTaxIncludedPrice: dish.isTaxIncludedPrice,
     };
   });
-  const order = await Order.create({ tableId, shopId, orderSessionId, orderNo, dishOrders: orderDishOrders });
+  const order = await Order.create({
+    table: tableId,
+    shop: shopId,
+    orderSessionId: orderSession.id,
+    orderNo,
+    dishOrders: orderDishOrders,
+  });
+  await OrderSession.updateOne(
+    { _id: orderSession.id },
+    {
+      $push: {
+        orders: order._id,
+      },
+    }
+  );
 
   return order.toJSON();
 };
@@ -186,7 +205,7 @@ const createNewOrder = async ({ tableId, shopId, orderSessionId, dishOrders, ord
 const _getOrderSessionJson = async ({ orderSessionId, shopId }) => {
   const orderSession = await OrderSession.findById(orderSessionId);
   throwBadRequest(!orderSession, 'orderSession.notFound');
-  throwBadRequest(shopId && orderSession.shop !== shopId, 'orderSession.notFound');
+  throwBadRequest(shopId && orderSession.shop.toString() !== shopId, 'orderSession.notFound');
   const orderSessionJson = orderSession.toJSON();
   const orders = await Order.find({ orderSessionId });
 
@@ -326,7 +345,7 @@ const calculateDiscount = async ({ orderSessionJson, pretaxPaymentAmount, totalT
   const discounts = _.get(orderSessionJson, 'discounts', []);
 
   if (_.isEmpty(discounts)) {
-    return 0;
+    return { totalDiscountAmountBeforeTax: 0, totalDiscountAmountAfterTax: 0 };
   }
 
   let totalDiscountAmountBeforeTax = 0;
@@ -352,7 +371,7 @@ const getOrderSessionById = async (orderSessionId, shopId) => {
   orderSessionJson.totalTaxAmount = totalTaxAmount;
   orderSessionJson.taxDetails = taxDetails;
 
-  const { totalDiscountAmountBeforeTax, totalDiscountAmountAfterTax } = calculateDiscount({
+  const { totalDiscountAmountBeforeTax, totalDiscountAmountAfterTax } = await calculateDiscount({
     orderSessionJson,
     pretaxPaymentAmount,
     totalTaxAmount,
@@ -429,4 +448,5 @@ module.exports = {
   mergeDishOrdersOfOrders,
   mergeCartItems,
   getCart,
+  getActiveOrderSessionStatus,
 };

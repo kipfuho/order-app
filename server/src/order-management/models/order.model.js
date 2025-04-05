@@ -31,7 +31,7 @@ const orderSchema = new mongoose.Schema(
   {
     shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     table: { type: mongoose.Types.ObjectId, ref: 'Table' },
-    orderSession: { type: mongoose.Types.ObjectId, ref: 'OrderSession' },
+    orderSessionId: { type: mongoose.Types.ObjectId, ref: 'OrderSession' },
     orderNo: { type: Number },
     dishOrders: [dishOrderSchema],
     returnedDishOrders: [dishOrderSchema],

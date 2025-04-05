@@ -10,9 +10,10 @@ const { getRoundDishPrice, getRoundDiscountAmount } = require('../../utils/commo
 const createOrder = async ({ shopId, requestBody }) => {
   const { tableId, orderSessionId, dishOrders } = requestBody;
   const orderSession = await orderUtilService.getOrCreateOrderSession({ orderSessionId, tableId, shopId });
-  const order = await orderUtilService.createNewOrder({ tableId, shopId, orderSessionId, dishOrders });
-  orderSession.orders = [order];
-  return orderSession;
+  const newOrder = await orderUtilService.createNewOrder({ tableId, shopId, orderSession, dishOrders });
+  const orderSessionJson = await orderUtilService.getOrderSessionById(orderSession.id);
+  orderSessionJson.orders = _.filter(orderSessionJson.orders, (order) => order.id === newOrder.id);
+  return orderSessionJson;
 };
 
 const changeDishQuantity = async ({ shopId, requestBody }) => {
@@ -73,31 +74,60 @@ const updateOrder = async ({ shopId, requestBody }) => {
   await Order.bulkWrite(bulkOps);
 };
 
-const _getOrderSessionPreview = (orderSessionJson) => {
-  const numberOfCustomer = _.get(orderSessionJson, 'customerInfo.numberOfCustomer', 1);
-  const orderSessionPreview = _.pick(orderSessionJson, ['paymentAmount', 'status', 'createdAt']);
-  orderSessionPreview.numberOfCustomer = numberOfCustomer;
-  orderSessionPreview.averagePaymentAmount = orderSessionPreview.paymentAmount / numberOfCustomer;
+/**
+ * Get color based on order session created time
+ * @param {*} createdAt
+ * @returns
+ */
+const _getTableForOrderColorCode = (createdAt) => {
+  const diffTimeInMinutes = (Date.now() - createdAt.getTime()) / 60000;
 
-  return orderSessionPreview;
+  // green
+  if (diffTimeInMinutes < 5) {
+    return 1;
+  }
+  // yellow
+  if (diffTimeInMinutes < 15) {
+    return 2;
+  }
+  // red
+  return 3;
 };
 
 const getTableForOrder = async ({ shopId }) => {
   const tables = await getTablesFromCache({ shopId });
-  const orderSessions = await OrderSession.find({ shop: shopId });
+  const orderSessions = await OrderSession.find({
+    shop: shopId,
+    status: { $in: orderUtilService.getActiveOrderSessionStatus() },
+  });
   const tableById = _.keyBy(tables, 'id');
 
+  /* eslint-disable no-param-reassign */
   _.forEach(tables, (table) => {
-    // eslint-disable-next-line no-param-reassign
-    table.activeOrderSessions = [];
+    table.position = table.position.id;
+    delete table.shop;
+    delete table.status;
+    delete table.createdAt;
+    delete table.updatedAt;
   });
+  /* eslint-enable no-param-reassign */
 
   _.forEach(orderSessions, (orderSession) => {
     const orderSessionJson = orderSession.toJSON();
     _.forEach(orderSessionJson.tables, (tableId) => {
-      if (tableById[tableId]) {
-        const orderSessionPreview = _getOrderSessionPreview(orderSessionJson);
-        tableById[tableId].activeOrderSessions.push(orderSessionPreview);
+      const table = tableById[tableId];
+      if (!table) return;
+
+      table.numberOfOrderSession = (table.numberOfOrderSession || 0) + 1;
+      table.numberOfCustomer = (table.numberOfCustomer || 0) + _.get(orderSessionJson, 'customerInfo.numberOfCustomer', 1);
+      table.totalPaymentAmount = (table.totalPaymentAmount || 0) + orderSessionJson.paymentAmount;
+      table.averagePaymentAmount = table.totalPaymentAmount / table.numberOfCustomer;
+      if (!table.orderStatus) {
+        table.orderStatus = orderSessionJson.status;
+      }
+      if (!table.orderCreatedAt) {
+        table.orderCreatedAtEpoch = (orderSessionJson.createdAt || new Date()).getTime();
+        table.orderColorCode = _getTableForOrderColorCode(orderSessionJson.createdAt);
       }
     });
   });
