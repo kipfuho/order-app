@@ -6,6 +6,8 @@ const { getMessageByLocale } = require('../../locale');
 const { OrderSessionStatus, OrderSessionDiscountType, DiscountValueType } = require('../../utils/constant');
 const { getTablesFromCache } = require('../../metadata/tableMetadata.service');
 const { getRoundDishPrice, getRoundDiscountAmount } = require('../../utils/common');
+const { getShopFromCache } = require('../../metadata/shopMetadata.service');
+const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 
 const createOrder = async ({ shopId, requestBody }) => {
   const { tableId, orderSessionId, dishOrders } = requestBody;
@@ -343,11 +345,47 @@ const discountOrderSession = async ({ shopId, requestBody }) => {
   }
 };
 
+const getTableActiveOrderSessions = async ({ shopId, tableId }) => {
+  const activeOrderSessions = await OrderSession.find({
+    shop: shopId,
+    tables: tableId,
+    status: { $in: orderUtilService.getActiveOrderSessionStatus() },
+  });
+  const allOrders = await Order.find({ orderSessionId: { $in: _.map(activeOrderSessions, '_id') } });
+  const shop = await getShopFromCache({ shopId });
+  const tables = await getTablesFromCache({ shopId });
+  const tableById = _.keyBy(tables, 'id');
+  const dishes = await getDishesFromCache({ shopId });
+  const dishById = _.keyBy(dishes, 'id');
+  const ordersByOrderSessionId = _.groupBy(allOrders, 'orderSessionId');
+  const activeOrderSessionJsons = _.map(activeOrderSessions, (orderSession) => {
+    const orderSessionJson = orderSession.toJSON();
+    const orders = ordersByOrderSessionId[orderSessionJson.id];
+
+    const orderJsons = _.map(orders, (order) => {
+      const orderJson = order.toJSON();
+      _.map(orderJson.dishOrders, (dishOrder) => {
+        if (dishOrder.dish) {
+          // eslint-disable-next-line no-param-reassign
+          dishOrder.dish = dishById[dishOrder.dish];
+        }
+      });
+      return orderJson;
+    });
+    orderSessionJson.shop = shop;
+    orderSessionJson.orders = orderJsons;
+    orderSessionJson.tables = _.map(orderSessionJson.tables, (_tableId) => tableById[_tableId]);
+    return orderSessionJson;
+  });
+  return activeOrderSessionJsons;
+};
+
 module.exports = {
   createOrder,
   changeDishQuantity,
   updateOrder,
   getTableForOrder,
+  getTableActiveOrderSessions,
   getOrderSessionDetail,
   payOrderSession,
   cancelOrder,

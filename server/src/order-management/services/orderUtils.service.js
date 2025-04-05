@@ -10,6 +10,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { getTableFromCache, getTablesFromCache } = require('../../metadata/tableMetadata.service');
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
+const { getStringId } = require('../../utils/common');
 
 // Merge các dish order có trùng tên và giá
 const _mergeDishOrders = (dishOrders) => {
@@ -21,9 +22,8 @@ const _mergeDishOrders = (dishOrders) => {
   // eslint-disable-next-line no-restricted-syntax
   for (const dishOrder of dishOrders) {
     const item = dishOrder;
-    const dishId = _.get(dishOrder, 'dishId._id') || _.get(dishOrder, 'dishId', '');
-    const dishIdStr = _.toString(dishId);
-    let key = `${dishIdStr}-${dishOrder.dishName}-${dishOrder.price}`;
+    const dishId = getStringId({ object: dishOrder, key: 'dish' });
+    let key = `${dishId}-${dishOrder.dishName}-${dishOrder.price}`;
     key = key.replace(/\./g, '');
     const existingItem = dishOrderMap[key];
     const existingDishOrderQuantity = (_.get(existingItem, 'quantity') || 0) * 1;
@@ -410,9 +410,9 @@ const updateOrderSession = async ({ orderSessionId, shopId, updateBody }) => {
 };
 
 const mergeDishOrdersOfOrders = (orderSessionJson) => {
-  const orderDetails = _.get(orderSessionJson, 'orderDetails');
-  if (!_.isEmpty(orderDetails)) {
-    let dishOrders = _.flatMap(orderDetails, (o) => o.dishOrder);
+  const orders = _.get(orderSessionJson, 'orders');
+  if (!_.isEmpty(orders)) {
+    let dishOrders = _.flatMap(orders, (o) => o.dishOrders);
     dishOrders = _.filter(dishOrders, (dishOrder) => {
       return dishOrder.quantity > 0;
     });

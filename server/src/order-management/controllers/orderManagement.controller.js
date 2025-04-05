@@ -32,6 +32,16 @@ const getTableForOrder = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ message: 'OK', tables });
 });
 
+const getTableActiveOrderSessions = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const { tableId } = req.body;
+  const orderSessionJsons = await orderManagementService.getTableActiveOrderSessions({ shopId, tableId });
+  const orderSessionResponses = _.map(orderSessionJsons, (orderSessionJson) =>
+    convertOrderSessionForResponse(orderSessionJson, false)
+  );
+  res.status(httpStatus.OK).send({ message: 'OK', orderSessions: orderSessionResponses });
+});
+
 const getOrderSessionDetail = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const { orderSessionId } = req.body;
@@ -110,6 +120,7 @@ module.exports = {
   changeDishQuantity,
   updateOrder,
   getTableForOrder,
+  getTableActiveOrderSessions,
   getOrderSessionDetail,
   payOrderSession,
   cancelOrderSession,
