@@ -40,3 +40,6 @@ app-example
 
 # aws
 amplify_outputs.ts
+
+# gg
+scripts/credentials.json
