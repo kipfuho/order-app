@@ -1,20 +1,27 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { goBackShopHome } from "../../../../../../apis/navigate.service";
 import { AppBar } from "../../../../../../components/AppBar";
 import { Surface, Text } from "react-native-paper";
-import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../../../../stores/store";
+import { Shop } from "../../../../../../stores/state.interface";
 
 export default function OrderManagementApprovePage() {
-  const { shopId } = useLocalSearchParams() as { shopId: string };
   const router = useRouter();
-
-  useEffect(() => {
-    const fetchTablesForOrder = async () => {};
-  });
+  const { currentShop } = useSelector((state: RootState) => state.shop);
+  const shop = currentShop as Shop;
 
   return (
-    <Surface style={{ flex: 1, padding: 16 }}>
-      <Text>Approve orders</Text>
-    </Surface>
+    <>
+      <AppBar
+        title="Approve Order"
+        goBack={() => {
+          goBackShopHome({ router, shopId: shop.id });
+        }}
+      />
+      <Surface style={{ flex: 1, padding: 16 }}>
+        <Text>Approve orders</Text>
+      </Surface>
+    </>
   );
 }

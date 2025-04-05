@@ -31,8 +31,14 @@ import {
   updateCurrentTable,
 } from "../../../../../../stores/shop.slice";
 import Toast from "react-native-toast-message";
+import {
+  goBackShopHome,
+  goToTableCurrentOrderSessions,
+} from "../../../../../../apis/navigate.service";
+import { useRouter } from "expo-router";
 
 export default function OrderManagementOrderPage() {
+  const router = useRouter();
   const dispatch = useDispatch();
   const { currentShop } = useSelector((state: RootState) => state.shop);
   const shop = currentShop as Shop;
@@ -45,7 +51,7 @@ export default function OrderManagementOrderPage() {
     shop.id
   );
 
-  const tablesGroupByPosition = _.groupBy(tablesForOrder, "position.id");
+  const tablesGroupByPosition = _.groupBy(tablesForOrder, "position");
   const tablePositionById = _.keyBy(tablePositions, "id");
   tablePositionById["ALL"] = {
     id: "ALL",
@@ -112,11 +118,19 @@ export default function OrderManagementOrderPage() {
     setSelectedPositionId(positionId);
   };
 
-  const onTableClick = (tableId: string) => {
-    const table = _.find(tables, (t) => t.id === tableId) as Table;
-    dispatch(updateCurrentTable(table));
-    setDefaultModalInfo();
-    setCustomerDialogVisible(true);
+  const onTableClick = (tableForOrder: TableForOrder) => {
+    if (tableForOrder.numberOfOrderSession) {
+      goToTableCurrentOrderSessions({
+        router,
+        shopId: shop.id,
+        tableId: tableForOrder.id,
+      });
+    } else {
+      const table = _.find(tables, (t) => t.id === tableForOrder.id) as Table;
+      dispatch(updateCurrentTable(table));
+      setDefaultModalInfo();
+      setCustomerDialogVisible(true);
+    }
   };
 
   const onCustomerInfoConfirmClick = () => {
@@ -134,6 +148,12 @@ export default function OrderManagementOrderPage() {
 
   return (
     <>
+      <AppBar
+        title="Order Management"
+        goBack={() => {
+          goBackShopHome({ router, shopId: shop.id });
+        }}
+      />
       {/* Update & Delete Modal */}
       <Portal>
         <Dialog
@@ -290,7 +310,7 @@ export default function OrderManagementOrderPage() {
                       <TableForOrderCard
                         key={table.id}
                         table={table}
-                        onClick={() => onTableClick(table.id)}
+                        onClick={() => onTableClick(table)}
                       />
                     ))}
                   </Surface>
