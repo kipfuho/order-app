@@ -6,6 +6,7 @@ import {
   CreateOrderRequest,
   DiscountDishOrderRequest,
   DiscountOrderSessionRequest,
+  GetActiveOrderSessionRequest,
   GetOrderSessionDetailRequest,
   GetOrderSessionHistoryRequest,
   GetTablesForOrderRequest,
@@ -29,6 +30,28 @@ const getTablesForOrderRequest = async ({
   });
 
   return result.tables;
+};
+
+/**
+ * Get active order sessions of table
+ * @param param0
+ */
+const getActiveOrderSessionsRequest = async ({
+  shopId,
+  tableId,
+}: GetActiveOrderSessionRequest) => {
+  const accessToken = await getAccessToken();
+
+  const result: { orderSessions: OrderSession[] } = await apiRequest({
+    method: "POST",
+    endpoint: `/v1/shops/${shopId}/orders/get-active-ordersessions`,
+    token: accessToken,
+    data: {
+      tableId,
+    },
+  });
+
+  return result.orderSessions;
 };
 
 /**
@@ -229,6 +252,7 @@ const discountOrderSessionRequest = async ({
 
 export {
   getTablesForOrderRequest,
+  getActiveOrderSessionsRequest,
   getOrderSessionDetailRequest,
   createOrderRequest,
   getOrderSessionHistoryRequest,

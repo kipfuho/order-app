@@ -5,6 +5,11 @@ interface GetTablesForOrderRequest {
   shopId: string;
 }
 
+interface GetActiveOrderSessionRequest {
+  shopId: string;
+  tableId: string;
+}
+
 interface GetOrderSessionDetailRequest {
   shopId: string;
   orderSessionId: string;
@@ -62,6 +67,7 @@ interface DiscountOrderSessionRequest {
 
 export {
   GetTablesForOrderRequest,
+  GetActiveOrderSessionRequest,
   GetOrderSessionDetailRequest,
   GetOrderSessionHistoryRequest,
   CreateOrderRequest,

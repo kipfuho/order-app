@@ -227,6 +227,21 @@ const goToTablesForOrderList = ({
   });
 };
 
+const goToTableCurrentOrderSessions = ({
+  router,
+  shopId,
+  tableId,
+}: {
+  router: Router;
+  shopId: string;
+  tableId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/orders/table/[tableId]/current-orders",
+    params: { shopId, tableId },
+  });
+};
+
 export {
   goBackShopList,
   goBackShopHome,
@@ -244,4 +259,5 @@ export {
   goToCreateDish,
   goToCreateDishCategory,
   goToTablesForOrderList,
+  goToTableCurrentOrderSessions,
 };
