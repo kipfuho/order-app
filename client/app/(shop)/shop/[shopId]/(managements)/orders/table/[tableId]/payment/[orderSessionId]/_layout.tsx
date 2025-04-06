@@ -4,11 +4,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
 import { RootState } from "../../../../../../../../../../stores/store";
 import { LoaderBasic } from "../../../../../../../../../../components/ui/Loader";
-import { useGetOrderSessionDetailQuery } from "../../../../../../../../../../stores/apiSlices/orderApi.slice";
+import { useGetActiveOrderSessionsQuery } from "../../../../../../../../../../stores/apiSlices/orderApi.slice";
 import { updateCurrentOrderSession } from "../../../../../../../../../../stores/shop.slice";
 import { connectAppSyncForOrderSession } from "../../../../../../../../../../apis/aws.service";
 import { styles } from "../../../../../../../../../_layout";
 import { goToTablesForOrderList } from "../../../../../../../../../../apis/navigate.service";
+import {
+  Shop,
+  Table,
+} from "../../../../../../../../../../stores/state.interface";
 
 export default function PaymentOrderSessionLayout() {
   const { shopId, orderSessionId } = useLocalSearchParams() as {
@@ -19,23 +23,36 @@ export default function PaymentOrderSessionLayout() {
   const dispatch = useDispatch();
   const theme = useTheme();
 
-  const { currentOrderSession } = useSelector((state: RootState) => state.shop);
-  const { data: orderSessionDetail, isLoading } = useGetOrderSessionDetailQuery(
-    { orderSessionId, shopId }
+  const { currentShop, currentTable, currentOrderSession } = useSelector(
+    (state: RootState) => state.shop
+  );
+  const shop = currentShop as Shop;
+  const table = currentTable as Table;
+
+  const {
+    data: activeOrderSessions = [],
+    isLoading: activeOrderSessionLoading,
+  } = useGetActiveOrderSessionsQuery({
+    shopId: shop.id,
+    tableId: table.id,
+  });
+
+  const activeOrderSession = activeOrderSessions.find(
+    (orderSession) => orderSession.id === orderSessionId
   );
 
   useEffect(() => {
-    if (!orderSessionDetail) return;
+    if (!activeOrderSession) return;
 
-    dispatch(updateCurrentOrderSession(orderSessionDetail));
-    connectAppSyncForOrderSession({ orderSessionId: orderSessionDetail.id });
-  }, [orderSessionId, isLoading]);
+    dispatch(updateCurrentOrderSession(activeOrderSession));
+    connectAppSyncForOrderSession({ orderSessionId });
+  }, [orderSessionId, activeOrderSessionLoading]);
 
-  if (isLoading) {
+  if (activeOrderSessionLoading) {
     return <LoaderBasic />;
   }
 
-  if (!orderSessionDetail) {
+  if (!activeOrderSession) {
     return (
       <Surface style={styles.baseContainer}>
         <Text

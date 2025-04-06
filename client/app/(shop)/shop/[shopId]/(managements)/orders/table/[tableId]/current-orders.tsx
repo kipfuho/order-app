@@ -1,5 +1,12 @@
-import { Button, Divider, List, Surface, Text } from "react-native-paper";
-import { useSelector } from "react-redux";
+import {
+  Button,
+  Divider,
+  List,
+  Modal,
+  Portal,
+  Surface,
+} from "react-native-paper";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../../../../../stores/store";
 import { useGetActiveOrderSessionsQuery } from "../../../../../../../../stores/apiSlices/orderApi.slice";
 import { Shop, Table } from "../../../../../../../../stores/state.interface";
@@ -10,9 +17,18 @@ import { AppBar } from "../../../../../../../../components/AppBar";
 import { goToTablesForOrderList } from "../../../../../../../../apis/navigate.service";
 import { useRouter } from "expo-router";
 import { styles } from "../../../../../../../_layout";
+import { useTranslation } from "react-i18next";
+import CreateOrder from "../../../../../../../../components/ui/CreateOrderView";
+import { useState } from "react";
+import Toast from "react-native-toast-message";
+import { CustomerInfoDialog } from "../../../../../../../../components/ui/orders/CustomerInfoDialog";
+import { resetCurrentOrder } from "../../../../../../../../stores/shop.slice";
 
 export default function OrderTableCurrentOrderSessionsPage() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { t } = useTranslation();
+
   const { currentShop, currentTable } = useSelector(
     (state: RootState) => state.shop
   );
@@ -27,12 +43,53 @@ export default function OrderTableCurrentOrderSessionsPage() {
     tableId: table.id,
   });
 
+  const [customerDialogVisible, setCustomerDialogVisible] = useState(false);
+  const [createOrderVisible, setCreateOrderVisible] = useState(false);
+
+  const handleAddProduct = () => {
+    setCreateOrderVisible(true);
+  };
+
+  const handleAddNewCustomer = () => {
+    setCustomerDialogVisible(true);
+  };
+
+  const onCustomerInfoConfirmClick = () => {
+    setCustomerDialogVisible(false);
+    setCreateOrderVisible(true);
+  };
+
   if (activeOrderSessionLoading) {
     return <LoaderBasic />;
   }
 
   return (
     <>
+      <Portal>
+        <CustomerInfoDialog
+          customerDialogVisible={customerDialogVisible}
+          setCustomerDialogVisible={setCustomerDialogVisible}
+          onCustomerInfoConfirmClick={onCustomerInfoConfirmClick}
+        />
+        <Modal
+          visible={createOrderVisible}
+          onDismiss={() => setCreateOrderVisible(false)}
+          contentContainerStyle={{
+            flex: 1,
+          }}
+        >
+          <AppBar
+            title="Create order"
+            goBack={() => {
+              setCreateOrderVisible(false);
+              dispatch(resetCurrentOrder());
+            }}
+          />
+          <CreateOrder setCreateOrderVisible={setCreateOrderVisible} />
+        </Modal>
+        <Toast />
+      </Portal>
+
       <AppBar
         title={table.name}
         goBack={() => {
@@ -44,13 +101,21 @@ export default function OrderTableCurrentOrderSessionsPage() {
           {/* List of Table Positions */}
           <List.Section style={{ gap: 40 }}>
             {activeOrderSessions.map((item) => (
-              <ActiveOrderSession key={item.id} activeOrderSession={item} />
+              <ActiveOrderSession
+                key={item.id}
+                activeOrderSession={item}
+                handleAddProduct={handleAddProduct}
+              />
             ))}
           </List.Section>
         </ScrollView>
         <Divider />
-        <Button mode="contained" style={[styles.baseButton, { marginTop: 20 }]}>
-          Thêm lượt khách
+        <Button
+          mode="contained"
+          style={[styles.baseButton, { marginTop: 20 }]}
+          onPress={handleAddNewCustomer}
+        >
+          {t("add_new_customer_order")}
         </Button>
       </Surface>
     </>

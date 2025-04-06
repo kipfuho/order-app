@@ -69,6 +69,8 @@ export default function OrderManagementOrderPage() {
   };
 
   const onTableClick = (tableForOrder: TableForOrder) => {
+    const table = _.find(tables, (t) => t.id === tableForOrder.id) as Table;
+    dispatch(updateCurrentTable(table));
     if (tableForOrder.numberOfOrderSession) {
       goToTableCurrentOrderSessions({
         router,
@@ -76,8 +78,6 @@ export default function OrderManagementOrderPage() {
         tableId: tableForOrder.id,
       });
     } else {
-      const table = _.find(tables, (t) => t.id === tableForOrder.id) as Table;
-      dispatch(updateCurrentTable(table));
       setCustomerDialogVisible(true);
     }
   };

@@ -45,6 +45,7 @@ export const shopSlice = createSlice({
     resetCurrentOrder: (state) => {
       state.currentOrder = {};
       state.currentOrderTotalAmount = 0;
+      state.currentOrderSession = null;
     },
 
     updateCurrentOrder: (

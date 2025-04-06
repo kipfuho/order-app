@@ -17,8 +17,6 @@ export function CustomerInfoDialog({
 }) {
   const dispatch = useDispatch();
 
-  const { currentTable } = useSelector((state: RootState) => state.shop);
-
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [numberOfCustomer, setNumberOfCustomer] = useState("1");
@@ -62,7 +60,7 @@ export function CustomerInfoDialog({
 
   useEffect(() => {
     setDefaultModalInfo();
-  }, [currentTable]);
+  }, [customerDialogVisible]);
 
   return (
     <Dialog
