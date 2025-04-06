@@ -11,6 +11,8 @@ import { StyleSheet } from "react-native";
 import { Amplify } from "aws-amplify";
 import { AmplifyConfig } from "../amplify_outputs";
 import Toast from "react-native-toast-message";
+import { I18nextProvider } from "react-i18next";
+import i18n from "../locales/i18n";
 
 Amplify.configure(AmplifyConfig);
 
@@ -29,10 +31,12 @@ export default function RootLayout() {
   return (
     <ReduxProvider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <PaperProvider theme={theme}>
-          <Stack screenOptions={{ headerShown: false }} />
-          <Toast />
-        </PaperProvider>
+        <I18nextProvider i18n={i18n}>
+          <PaperProvider theme={theme}>
+            <Stack screenOptions={{ headerShown: false }} />
+            <Toast />
+          </PaperProvider>
+        </I18nextProvider>
       </PersistGate>
     </ReduxProvider>
   );

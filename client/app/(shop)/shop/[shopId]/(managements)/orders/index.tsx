@@ -1,17 +1,9 @@
-import {
-  Button,
-  Dialog,
-  Modal,
-  Portal,
-  Surface,
-  Text,
-  TextInput,
-} from "react-native-paper";
-import { useCallback, useEffect, useState } from "react";
+import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
-import _, { debounce } from "lodash";
-import { ScrollView, View } from "react-native";
+import _ from "lodash";
+import { ScrollView } from "react-native";
 import { TableForOrderCard } from "../../../../../../components/ui/menus/TableForOrderCard";
 import { AppBar } from "../../../../../../components/AppBar";
 import {
@@ -26,16 +18,14 @@ import {
 import { useGetTablesForOrderQuery } from "../../../../../../stores/apiSlices/orderApi.slice";
 import { LoaderBasic } from "../../../../../../components/ui/Loader";
 import CreateOrder from "../../../../../../components/ui/CreateOrderView";
-import {
-  updateCurrentCustomerInfo,
-  updateCurrentTable,
-} from "../../../../../../stores/shop.slice";
+import { updateCurrentTable } from "../../../../../../stores/shop.slice";
 import Toast from "react-native-toast-message";
 import {
   goBackShopHome,
   goToTableCurrentOrderSessions,
 } from "../../../../../../apis/navigate.service";
 import { useRouter } from "expo-router";
+import { CustomerInfoDialog } from "../../../../../../components/ui/orders/CustomerInfoDialog";
 
 export default function OrderManagementOrderPage() {
   const router = useRouter();
@@ -66,46 +56,6 @@ export default function OrderManagementOrderPage() {
   const [selectedPositionId, setSelectedPositionId] = useState("ALL");
   const [customerDialogVisible, setCustomerDialogVisible] = useState(false);
   const [createOrderVisible, setCreateOrderVisible] = useState(false);
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [numberOfCustomer, setNumberOfCustomer] = useState("1");
-
-  const debouncedUpdateCustomerInfo = useCallback(
-    debounce(
-      ({
-        customerName,
-        customerPhone,
-        numberOfCustomer,
-      }: {
-        customerName: string;
-        customerPhone: string;
-        numberOfCustomer: string;
-      }) => {
-        dispatch(
-          updateCurrentCustomerInfo({
-            customerName,
-            customerPhone,
-            numberOfCustomer: _.toNumber(numberOfCustomer),
-          })
-        );
-      },
-      300
-    ), // 300ms delay
-    [dispatch]
-  );
-
-  const setDefaultModalInfo = () => {
-    setCustomerName("");
-    setCustomerPhone("");
-    setNumberOfCustomer("1");
-    dispatch(
-      updateCurrentCustomerInfo({
-        customerName: "",
-        customerPhone: "",
-        numberOfCustomer: 1,
-      })
-    );
-  };
 
   const setSelectedPosition = (positionId: string) => {
     if (positionId === "ALL") {
@@ -128,7 +78,6 @@ export default function OrderManagementOrderPage() {
     } else {
       const table = _.find(tables, (t) => t.id === tableForOrder.id) as Table;
       dispatch(updateCurrentTable(table));
-      setDefaultModalInfo();
       setCustomerDialogVisible(true);
     }
   };
@@ -156,78 +105,11 @@ export default function OrderManagementOrderPage() {
       />
       {/* Update & Delete Modal */}
       <Portal>
-        <Dialog
-          visible={customerDialogVisible}
-          onDismiss={() => setCustomerDialogVisible(false)}
-        >
-          <Dialog.Title>Nhập thông tin</Dialog.Title>
-          <Dialog.Content>
-            <TextInput
-              label="Customer Name"
-              mode="outlined"
-              value={customerName}
-              onChangeText={(text) => {
-                setCustomerName(text);
-                debouncedUpdateCustomerInfo({
-                  customerName: text,
-                  customerPhone,
-                  numberOfCustomer,
-                });
-              }}
-            />
-
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 10, // Adds spacing between elements (Alternative: use marginRight)
-              }}
-            >
-              <TextInput
-                label="Customer Phone"
-                mode="outlined"
-                value={customerPhone}
-                onChangeText={(text) => {
-                  const enteredCustomerPhone = text.replace(/[^0-9.]/g, "");
-                  setCustomerPhone(enteredCustomerPhone);
-                  debouncedUpdateCustomerInfo({
-                    customerName,
-                    customerPhone: enteredCustomerPhone,
-                    numberOfCustomer,
-                  });
-                }}
-                style={{ flex: 1, minWidth: 150 }} // Ensures proper width
-              />
-              <Text>Số người</Text>
-              <TextInput
-                label="P"
-                mode="outlined"
-                keyboardType="numeric"
-                value={numberOfCustomer}
-                onChangeText={(text) => {
-                  const enteredNumberOfCustomer = text.replace(/[^0-9.]/g, "");
-                  setNumberOfCustomer(enteredNumberOfCustomer);
-                  debouncedUpdateCustomerInfo({
-                    customerName,
-                    customerPhone,
-                    numberOfCustomer: enteredNumberOfCustomer,
-                  });
-                }} // Restrict input to numbers & decimal
-                style={{ flex: 1, minWidth: 40 }} // Prevents shrinking
-              />
-            </View>
-          </Dialog.Content>
-          <Dialog.Actions style={{ justifyContent: "center" }}>
-            <Button
-              mode="contained"
-              onPress={onCustomerInfoConfirmClick}
-              style={{ width: 150 }}
-            >
-              Confirm
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-
+        <CustomerInfoDialog
+          customerDialogVisible={customerDialogVisible}
+          onCustomerInfoConfirmClick={onCustomerInfoConfirmClick}
+          setCustomerDialogVisible={setCustomerDialogVisible}
+        />
         <Modal
           visible={createOrderVisible}
           onDismiss={() => setCreateOrderVisible(false)}
