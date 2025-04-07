@@ -1,10 +1,41 @@
 /* eslint-disable no-param-reassign */
 
+const { default: mongoose } = require('mongoose');
+const _ = require('lodash');
+
 /**
  * A mongoose schema plugin which applies the following in the toJSON transform call:
- *  - removes __v, createdAt, updatedAt, and any path that has private: true
+ *  - removes __v and any path that has private: true
  *  - replaces _id with id
  */
+
+const transformAllIdToString = (ret) => {
+  if (!ret) return ret;
+  if (ret instanceof mongoose.Types.ObjectId) {
+    return ret.toString();
+  }
+  if (typeof ret !== 'object') {
+    return ret;
+  }
+  if (ret._id) {
+    ret.id = ret._id.toString();
+  }
+  delete ret._id;
+  delete ret.__v;
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const key of Object.keys(ret)) {
+    const v = ret[key];
+    if (v instanceof mongoose.Types.ObjectId) {
+      ret[key] = v.toString();
+    } else if (v instanceof Array) {
+      ret[key] = _.map(v, transformAllIdToString);
+    } else if (typeof v === 'object') {
+      ret[key] = transformAllIdToString(v);
+    }
+  }
+  return ret;
+};
 
 const deleteAtPath = (obj, path, index) => {
   if (index === path.length - 1) {
@@ -22,15 +53,13 @@ const toJSON = (schema) => {
 
   schema.options.toJSON = Object.assign(schema.options.toJSON || {}, {
     transform(doc, ret, options) {
-      Object.keys(schema.paths).forEach((path) => {
+      _.forEach(Object.keys(schema.paths), (path) => {
         if (schema.paths[path].options && schema.paths[path].options.private) {
           deleteAtPath(ret, path.split('.'), 0);
         }
       });
 
-      ret.id = ret._id.toString();
-      delete ret._id;
-      delete ret.__v;
+      ret = transformAllIdToString(ret);
       if (transform) {
         return transform(doc, ret, options);
       }
