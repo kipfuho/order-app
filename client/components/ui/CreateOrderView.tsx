@@ -174,7 +174,7 @@ export default function CreateOrder({
             ))}
           </ScrollView>
         </Surface>
-        <Surface style={{ flex: 1 }}>
+        <Surface style={{ flex: 1, boxShadow: "none" }}>
           <ScrollView>
             <View
               style={{
@@ -195,6 +195,7 @@ export default function CreateOrder({
             justifyContent: "center",
             alignItems: "center",
             padding: 10,
+            boxShadow: "none",
           }}
         >
           <Icon source="cart-outline" size={40} />

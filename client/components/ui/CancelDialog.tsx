@@ -8,26 +8,23 @@ export function ConfirmCancelDialog({
   title,
   isLoading,
   children,
-  cancelDialogVisible,
-  setCancelDialogVisible,
+  dialogVisible,
+  setDialogVisible,
   onConfirmClick,
   onCancelClick,
 }: {
   title: string;
   isLoading: boolean;
   children?: ReactNode;
-  cancelDialogVisible: boolean;
-  setCancelDialogVisible: SetStateAction<any>;
+  dialogVisible: boolean;
+  setDialogVisible: SetStateAction<any>;
   onConfirmClick: () => void;
   onCancelClick: () => void;
 }) {
   const { t } = useTranslation();
 
   return (
-    <Dialog
-      visible={cancelDialogVisible}
-      onDismiss={() => setCancelDialogVisible(false)}
-    >
+    <Dialog visible={dialogVisible} onDismiss={() => setDialogVisible(false)}>
       <Dialog.Title>{title}</Dialog.Title>
       {children}
       <Dialog.Actions style={{ justifyContent: "center" }}>

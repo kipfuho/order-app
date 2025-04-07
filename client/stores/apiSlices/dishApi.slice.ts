@@ -102,12 +102,12 @@ export const dishApiSlice = createApi({
       },
     }),
 
-    deleteDishCategory: builder.mutation<undefined, DeleteDishCategoryRequest>({
+    deleteDishCategory: builder.mutation<boolean, DeleteDishCategoryRequest>({
       queryFn: async (args) => {
         try {
           await deleteDishCategoryRequest(args);
 
-          return { data: undefined };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
@@ -200,12 +200,12 @@ export const dishApiSlice = createApi({
       },
     }),
 
-    deleteDish: builder.mutation<undefined, DeleteDishRequest>({
+    deleteDish: builder.mutation<boolean, DeleteDishRequest>({
       queryFn: async (args) => {
         try {
           await deleteDishRequest(args);
 
-          return { data: undefined };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }

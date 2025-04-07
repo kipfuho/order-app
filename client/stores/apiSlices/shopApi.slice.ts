@@ -96,14 +96,14 @@ export const shopApiSlice = createApi({
       },
     }),
 
-    deleteShop: builder.mutation<undefined, string>({
+    deleteShop: builder.mutation<boolean, string>({
       queryFn: async (shopId: string) => {
         try {
           await deleteShopRequest({
             shopId,
           });
 
-          return { data: undefined };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }

@@ -202,12 +202,12 @@ export const tableApiSlice = createApi({
       },
     }),
 
-    deleteTable: builder.mutation<undefined, DeleteTableRequest>({
+    deleteTable: builder.mutation<boolean, DeleteTableRequest>({
       queryFn: async (args) => {
         try {
           await deleteTableRequest(args);
 
-          return { data: undefined };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }

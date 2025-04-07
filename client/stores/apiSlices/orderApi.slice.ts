@@ -3,6 +3,7 @@ import { API_BASE_URL } from "../../apis/api.service";
 import {
   cancelOrderSessionPaidStatusRequest,
   cancelOrderSessionRequest,
+  changeDishQuantityRequest,
   createOrderRequest,
   discountDishOrderRequest,
   discountOrderSessionRequest,
@@ -17,6 +18,7 @@ import { RootState } from "../store";
 import {
   CancelOrderSessionPaidStatusRequest,
   CancelOrderSessionRequest,
+  ChangeDishQuantityRequest,
   CreateOrderRequest,
   DiscountDishOrderRequest,
   DiscountOrderSessionRequest,
@@ -146,7 +148,35 @@ export const orderApiSlice = createApi({
       ], // Enables cache invalidation
     }),
 
-    payOrderSession: builder.mutation<undefined, PayOrderSessionRequest>({
+    changeDishQuantity: builder.mutation<boolean, ChangeDishQuantityRequest>({
+      queryFn: async ({
+        orderSessionId,
+        shopId,
+        orderId,
+        dishOrderId,
+        newQuantity,
+      }) => {
+        try {
+          await changeDishQuantityRequest({
+            shopId,
+            orderId,
+            dishOrderId,
+            newQuantity,
+          });
+
+          return { data: true };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+
+      invalidatesTags: (_, __, { orderSessionId }) => [
+        { type: "OrderSessions", id: orderSessionId },
+        "TablesForOrder",
+      ], // Enables cache invalidation
+    }),
+
+    payOrderSession: builder.mutation<boolean, PayOrderSessionRequest>({
       queryFn: async ({ orderSessionId, shopId, paymentDetails }) => {
         try {
           await payOrderSessionRequest({
@@ -155,7 +185,7 @@ export const orderApiSlice = createApi({
             paymentDetails,
           });
 
-          return { data: undefined };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
@@ -166,7 +196,7 @@ export const orderApiSlice = createApi({
       ], // Enables cache invalidation
     }),
 
-    cancelOrderSession: builder.mutation<undefined, CancelOrderSessionRequest>({
+    cancelOrderSession: builder.mutation<boolean, CancelOrderSessionRequest>({
       queryFn: async ({ shopId, orderSessionId, reason }) => {
         try {
           await cancelOrderSessionRequest({
@@ -175,7 +205,7 @@ export const orderApiSlice = createApi({
             reason,
           });
 
-          return { data: undefined };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
@@ -208,7 +238,7 @@ export const orderApiSlice = createApi({
       ], // Enables cache invalidation
     }),
 
-    discountDishOrder: builder.mutation<undefined, DiscountDishOrderRequest>({
+    discountDishOrder: builder.mutation<boolean, DiscountDishOrderRequest>({
       queryFn: async ({
         shopId,
         orderSessionId,
@@ -231,7 +261,7 @@ export const orderApiSlice = createApi({
             discountReason,
           });
 
-          return { data: undefined };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
@@ -283,6 +313,7 @@ export const {
   useGetOrderSessionDetailQuery,
   useGetOrderSessionHistoryQuery,
   useCreateOrderMutation,
+  useChangeDishQuantityMutation,
   usePayOrderSessionMutation,
   useCancelOrderSessionMutation,
   useCancelOrderSessionPaidStatusMutation,

@@ -1,4 +1,5 @@
 import {
+  Modal,
   Portal,
   Surface,
   Text,
@@ -6,53 +7,109 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
-import { OrderSession } from "../../../stores/state.interface";
+import { DishOrder, OrderSession, Shop } from "../../../stores/state.interface";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import OrderCustomerInfo from "./OrderCutomerInfo";
 import DishOrderCard from "./DishOrder";
 import { useState } from "react";
 import { ConfirmCancelDialog } from "../CancelDialog";
-import { useCancelOrderSessionMutation } from "../../../stores/apiSlices/orderApi.slice";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import {
+  useCancelOrderSessionMutation,
+  useChangeDishQuantityMutation,
+} from "../../../stores/apiSlices/orderApi.slice";
+import { useRouter } from "expo-router";
 import { goToTablesForOrderList } from "../../../apis/navigate.service";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { resetCurrentTable } from "../../../stores/shop.slice";
 import Toast from "react-native-toast-message";
+import { AppBar } from "../../AppBar";
+import CreateOrder from "../CreateOrderView";
+import _ from "lodash";
+import { RootState } from "../../../stores/store";
 
 export default function ActiveOrderSessionPage({
   activeOrderSession,
 }: {
   activeOrderSession: OrderSession | null;
 }) {
-  const { shopId, orderSessionId } = useLocalSearchParams() as {
-    shopId: string;
-    orderSessionId: string;
-  };
   const theme = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch();
 
+  const { currentShop, currentOrderSession } = useSelector(
+    (state: RootState) => state.shop
+  );
+  const shop = currentShop as Shop;
+  const orderSession = currentOrderSession as OrderSession;
+
   const [cancelOrderSession, { isLoading: cancelOrderSessionLoading }] =
     useCancelOrderSessionMutation();
 
+  const [updateDishQuantity, { isLoading: updateDishQuantityLoading }] =
+    useChangeDishQuantityMutation();
+
   const [cancelDialogVisible, setCancelDialogVisible] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
+  const [createOrderVisible, setCreateOrderVisible] = useState(false);
+  const [dishQuantityDialogVisible, setDishQuantityDialogVisible] =
+    useState(false);
+  const [changeQuantityDishOrder, setChangeQuantityDishOrder] =
+    useState<DishOrder>();
+  const [orderId, setOrderId] = useState("");
+  const [newQuantity, setNewQuantity] = useState("");
+  const [reason, setReason] = useState("");
+
+  const onDishQuantityClick = (
+    dishOrder: DishOrder,
+    orderId: string,
+    newQuantity: number
+  ) => {
+    setChangeQuantityDishOrder(dishOrder);
+    setNewQuantity(`${newQuantity}`);
+    setOrderId(orderId);
+    setDishQuantityDialogVisible(true);
+  };
+
+  const handleChangeDishQuantity = async () => {
+    if (!changeQuantityDishOrder) return;
+
+    console.log(changeQuantityDishOrder);
+
+    try {
+      await updateDishQuantity({
+        orderSessionId: orderSession.id,
+        // reason,
+        shopId: shop.id,
+        dishOrderId: changeQuantityDishOrder.id,
+        newQuantity: _.toNumber(newQuantity),
+        orderId,
+      }).unwrap();
+
+      setDishQuantityDialogVisible(false);
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: t("error"),
+        text2: error.data?.message,
+      });
+      return;
+    }
+  };
 
   const handleCancelOrderSession = async () => {
     try {
       await cancelOrderSession({
-        orderSessionId,
-        reason: cancelReason,
-        shopId,
+        orderSessionId: orderSession.id,
+        reason,
+        shopId: shop.id,
       }).unwrap();
 
       setCancelDialogVisible(false);
       dispatch(resetCurrentTable());
       goToTablesForOrderList({
         router,
-        shopId,
+        shopId: shop.id,
       });
     } catch (error: any) {
       Toast.show({
@@ -74,24 +131,84 @@ export default function ActiveOrderSessionPage({
         <ConfirmCancelDialog
           title={t("cancel_order_confirmation")}
           isLoading={cancelOrderSessionLoading}
-          cancelDialogVisible={cancelDialogVisible}
-          setCancelDialogVisible={setCancelDialogVisible}
+          dialogVisible={cancelDialogVisible}
+          setDialogVisible={setCancelDialogVisible}
           onCancelClick={() => {
-            setCancelReason("");
+            setReason("");
             setCancelDialogVisible(false);
           }}
           onConfirmClick={handleCancelOrderSession}
         >
-          <View style={{ padding: 16 }}>
+          <View style={{ padding: 16, paddingTop: 0 }}>
             <TextInput
               label={t("reason")}
               placeholder={`${t("enter")} ${t("reason")}`}
               mode="outlined"
-              value={cancelReason}
-              onChangeText={(text) => setCancelReason(text)}
+              value={reason}
+              onChangeText={(text) => setReason(text)}
             />
           </View>
         </ConfirmCancelDialog>
+        <ConfirmCancelDialog
+          title={changeQuantityDishOrder?.name || ""}
+          isLoading={updateDishQuantityLoading}
+          dialogVisible={dishQuantityDialogVisible}
+          setDialogVisible={setDishQuantityDialogVisible}
+          onCancelClick={() => {
+            setReason("");
+            setDishQuantityDialogVisible(false);
+          }}
+          onConfirmClick={handleChangeDishQuantity}
+        >
+          <View style={{ padding: 16, paddingTop: 0 }}>
+            <Text style={{ fontSize: 16 }}>
+              {t("current_quantity")}:{" "}
+              <Text
+                style={{
+                  fontWeight: "bold",
+                  color: theme.colors.secondary,
+                  textDecorationLine: "line-through",
+                }}
+              >
+                {changeQuantityDishOrder?.quantity}
+              </Text>{" "}
+              <Text style={{ fontSize: 16, fontWeight: "600" }}>→</Text>{" "}
+              <Text style={{ fontWeight: "bold", color: theme.colors.primary }}>
+                {newQuantity}
+              </Text>
+            </Text>
+            <TextInput
+              label={t("new_quantity")}
+              placeholder={`${t("enter")} ${t("new_quantity")}`}
+              mode="outlined"
+              value={newQuantity}
+              keyboardType="numeric" // Shows numeric keyboard
+              onChangeText={(text) =>
+                setNewQuantity(text.replace(/[^0-9.]/g, ""))
+              } // Restrict input to numbers & decimal
+            />
+            <TextInput
+              label={t("reason")}
+              placeholder={`${t("enter")} ${t("reason")}`}
+              mode="outlined"
+              value={reason}
+              onChangeText={(text) => setReason(text)}
+            />
+          </View>
+        </ConfirmCancelDialog>
+        <Modal
+          visible={createOrderVisible}
+          onDismiss={() => setCreateOrderVisible(false)}
+          contentContainerStyle={{
+            flex: 1,
+          }}
+        >
+          <AppBar
+            title={t("create_order")}
+            goBack={() => setCreateOrderVisible(false)}
+          />
+          <CreateOrder setCreateOrderVisible={setCreateOrderVisible} />
+        </Modal>
         <Toast />
       </Portal>
       <Surface style={{ flex: 1, padding: 12, borderRadius: 10 }}>
@@ -107,7 +224,7 @@ export default function ActiveOrderSessionPage({
               }}
             >
               <TouchableRipple
-                onPress={() => {}}
+                onPress={() => setCreateOrderVisible(true)}
                 style={{
                   flex: 1,
                   borderRadius: 4,
@@ -159,6 +276,7 @@ export default function ActiveOrderSessionPage({
                     key={dishOrder.id}
                     order={order}
                     dishOrder={dishOrder}
+                    onQuantityClick={onDishQuantityClick}
                   />
                 ))}
               </Surface>

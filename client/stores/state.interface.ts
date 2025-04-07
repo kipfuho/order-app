@@ -161,7 +161,7 @@ interface OrderSession {
 
 interface PaymentDetail {
   paymentMethod: PaymentMethod;
-  paymentAmount: number;
+  paymentAmount?: number;
 }
 
 interface Order {

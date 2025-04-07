@@ -34,6 +34,7 @@ export default function PaymentOrderSessionLayout() {
   const {
     data: activeOrderSessions = [],
     isLoading: activeOrderSessionLoading,
+    isFetching: activeOrderSessionFetching,
   } = useGetActiveOrderSessionsQuery({
     shopId: shop.id,
     tableId: table.id,
@@ -48,7 +49,7 @@ export default function PaymentOrderSessionLayout() {
 
     dispatch(updateCurrentOrderSession(activeOrderSession));
     connectAppSyncForOrderSession({ orderSessionId });
-  }, [orderSessionId, activeOrderSessionLoading]);
+  }, [orderSessionId, activeOrderSessionFetching]);
 
   if (activeOrderSessionLoading) {
     return <LoaderBasic />;

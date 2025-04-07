@@ -3,6 +3,7 @@ import { apiRequest } from "./api.service";
 import {
   CancelOrderSessionPaidStatusRequest,
   CancelOrderSessionRequest,
+  ChangeDishQuantityRequest,
   CreateOrderRequest,
   DiscountDishOrderRequest,
   DiscountOrderSessionRequest,
@@ -124,6 +125,30 @@ const createOrderRequest = async ({
   });
 
   return result.orderSession;
+};
+
+/**
+ * create order
+ * @param param0
+ */
+const changeDishQuantityRequest = async ({
+  shopId,
+  dishOrderId,
+  newQuantity,
+  orderId,
+}: ChangeDishQuantityRequest) => {
+  const accessToken = await getAccessToken();
+
+  await apiRequest({
+    method: "POST",
+    endpoint: `/v1/shops/${shopId}/orders/change-dish-quantity`,
+    token: accessToken,
+    data: {
+      dishOrderId,
+      newQuantity,
+      orderId,
+    },
+  });
 };
 
 /**
@@ -255,6 +280,7 @@ export {
   getActiveOrderSessionsRequest,
   getOrderSessionDetailRequest,
   createOrderRequest,
+  changeDishQuantityRequest,
   getOrderSessionHistoryRequest,
   payOrderSessionRequest,
   cancelOrderSessionRequest,

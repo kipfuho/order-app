@@ -28,6 +28,14 @@ interface CreateOrderRequest {
   dishOrders: Partial<DishOrder>[];
 }
 
+interface ChangeDishQuantityRequest {
+  shopId: string;
+  orderId: string;
+  dishOrderId: string;
+  newQuantity: number;
+  orderSessionId?: string;
+}
+
 interface PayOrderSessionRequest {
   shopId: string;
   orderSessionId: string;
@@ -71,6 +79,7 @@ export {
   GetOrderSessionDetailRequest,
   GetOrderSessionHistoryRequest,
   CreateOrderRequest,
+  ChangeDishQuantityRequest,
   PayOrderSessionRequest,
   CancelOrderSessionRequest,
   CancelOrderSessionPaidStatusRequest,

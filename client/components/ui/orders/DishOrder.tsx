@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Card, Text, useTheme, Icon, Surface } from "react-native-paper";
 import { DishOrder, Order } from "../../../stores/state.interface";
 
@@ -35,9 +35,15 @@ const DishOrderStatus = () => {
 export default function DishOrderCard({
   order,
   dishOrder,
+  onQuantityClick,
 }: {
   order: Order;
   dishOrder: DishOrder;
+  onQuantityClick: (
+    dishOrder: DishOrder,
+    orderId: string,
+    newQuantity: number
+  ) => void;
 }) {
   const theme = useTheme();
 
@@ -48,17 +54,33 @@ export default function DishOrderCard({
           <View style={styles.leftSection}>
             <Icon source="store-outline" size={20} />
             <Surface style={styles.quantityBadge}>
-              <Icon source="minus-circle-outline" size={14} />
+              <TouchableOpacity
+                onPress={() =>
+                  onQuantityClick(dishOrder, order.id, dishOrder.quantity - 1)
+                }
+              >
+                <Icon source="minus-circle-outline" size={14} />
+              </TouchableOpacity>
               <Text
                 style={{
                   fontWeight: "bold",
                   fontSize: 16,
                   color: theme.colors.primary,
+                  paddingHorizontal: 5,
                 }}
+                onPress={() =>
+                  onQuantityClick(dishOrder, order.id, dishOrder.quantity)
+                }
               >
                 {dishOrder.quantity}
               </Text>
-              <Icon source="plus-circle-outline" size={14} />
+              <TouchableOpacity
+                onPress={() =>
+                  onQuantityClick(dishOrder, order.id, dishOrder.quantity + 1)
+                }
+              >
+                <Icon source="plus-circle-outline" size={14} />
+              </TouchableOpacity>
             </Surface>
             <Text
               variant="titleMedium"
