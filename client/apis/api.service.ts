@@ -49,7 +49,6 @@ export const apiProtobufRequest = async <T>(
     const response = await apiProtobufClient.request<T>(config);
     return response.data;
   } catch (error: any) {
-    console.error("API Request Error:", error.response?.data || error.message);
     throw new Error(error.response?.data?.message || "Something went wrong");
   }
 };
@@ -76,7 +75,6 @@ export const apiRequest = async <T>({
     const response = await apiClient.request<T>(config);
     return response.data;
   } catch (error: any) {
-    console.error("API Request Error:", error.response?.data || error.message);
     throw new Error(error.response?.data?.message || "Something went wrong");
   }
 };
@@ -101,7 +99,6 @@ export const apiFormDataRequest = async <T>({
     const response = await apiFormDataClient.request<T>(config);
     return response.data;
   } catch (error: any) {
-    console.error("API Request Error:", error.response?.data || error.message);
     throw new Error(error.response?.data?.message || "Something went wrong");
   }
 };

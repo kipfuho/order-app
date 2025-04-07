@@ -133,7 +133,7 @@ interface OrderSession {
   orders: Order[]; // object id
   tableName: string;
   discounts: OrderSessionDiscount[];
-  orderSessionNo: number;
+  billNo: string;
   taxRate: number;
   totalTaxAmount: number;
   taxDetails: {
@@ -145,6 +145,7 @@ interface OrderSession {
   updatedAt: string;
   endedAt: string;
   paymentDetails: PaymentDetail[];
+  pretaxPaymentAmount: number;
   paymentAmount: number;
   customerInfo: {
     numberOfCustomer: number;
@@ -164,6 +165,7 @@ interface PaymentDetail {
 }
 
 interface Order {
+  id: string;
   table: string;
   orderNo: number;
   dishOrders: DishOrder[];
@@ -173,6 +175,7 @@ interface Order {
 }
 
 interface DishOrder {
+  id: string;
   dishId?: string; // for create order
   name: string;
   unit: string;

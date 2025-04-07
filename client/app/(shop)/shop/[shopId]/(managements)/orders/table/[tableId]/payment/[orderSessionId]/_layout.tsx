@@ -13,6 +13,7 @@ import {
   Shop,
   Table,
 } from "../../../../../../../../../../stores/state.interface";
+import { useTranslation } from "react-i18next";
 
 export default function PaymentOrderSessionLayout() {
   const { shopId, orderSessionId } = useLocalSearchParams() as {
@@ -22,6 +23,7 @@ export default function PaymentOrderSessionLayout() {
   const router = useRouter();
   const dispatch = useDispatch();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const { currentShop, currentTable, currentOrderSession } = useSelector(
     (state: RootState) => state.shop
@@ -59,14 +61,14 @@ export default function PaymentOrderSessionLayout() {
           variant="displayMedium"
           style={{ color: theme.colors.error, alignSelf: "center" }}
         >
-          Order session not found
+          {t("ordersession_not_found")}
         </Text>
         <Button
           mode="contained"
           style={styles.baseButton}
           onPress={() => goToTablesForOrderList({ router, shopId })}
         >
-          Go Back
+          {t("go_back")}
         </Button>
       </Surface>
     );

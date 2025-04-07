@@ -6,7 +6,12 @@ export function LoaderBasic() {
       <ActivityIndicator
         animating={true}
         size="large"
-        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          boxShadow: "none",
+        }}
       />
     </Surface>
   );

@@ -9,6 +9,7 @@ import { updateCurrentTable } from "../../../../../../../../stores/shop.slice";
 import { connectAppSyncForTable } from "../../../../../../../../apis/aws.service";
 import { styles } from "../../../../../../../_layout";
 import { goToTablesForOrderList } from "../../../../../../../../apis/navigate.service";
+import { useTranslation } from "react-i18next";
 
 export default function TableCurrentOrderLayout() {
   const { shopId, tableId } = useLocalSearchParams() as {
@@ -18,6 +19,7 @@ export default function TableCurrentOrderLayout() {
   const router = useRouter();
   const dispatch = useDispatch();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const { currentTable } = useSelector((state: RootState) => state.shop);
   const { data: tables = [], isLoading } = useGetTablesQuery(shopId);
@@ -41,14 +43,14 @@ export default function TableCurrentOrderLayout() {
           variant="displayMedium"
           style={{ color: theme.colors.error, alignSelf: "center" }}
         >
-          Table not found
+          {t("table_not_found")}
         </Text>
         <Button
           mode="contained"
           style={styles.baseButton}
           onPress={() => goToTablesForOrderList({ router, shopId })}
         >
-          Go Back
+          {t("go_back")}
         </Button>
       </Surface>
     );

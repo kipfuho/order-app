@@ -37,7 +37,7 @@ export default function OrderTableCurrentOrderSessionsPage() {
 
   const {
     data: activeOrderSessions = [],
-    isLoading: activeOrderSessionLoading,
+    isFetching: activeOrderSessionFetching,
   } = useGetActiveOrderSessionsQuery({
     shopId: shop.id,
     tableId: table.id,
@@ -59,7 +59,7 @@ export default function OrderTableCurrentOrderSessionsPage() {
     setCreateOrderVisible(true);
   };
 
-  if (activeOrderSessionLoading) {
+  if (activeOrderSessionFetching) {
     return <LoaderBasic />;
   }
 
@@ -79,7 +79,7 @@ export default function OrderTableCurrentOrderSessionsPage() {
           }}
         >
           <AppBar
-            title="Create order"
+            title={t("create_order")}
             goBack={() => {
               setCreateOrderVisible(false);
               dispatch(resetCurrentOrder());

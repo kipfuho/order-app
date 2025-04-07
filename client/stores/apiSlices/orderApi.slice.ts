@@ -25,6 +25,7 @@ import {
   GetOrderSessionHistoryRequest,
   PayOrderSessionRequest,
 } from "../../apis/order.api.interface";
+import { resetCurrentOrder, resetCurrentTable } from "../shop.slice";
 
 export const orderApiSlice = createApi({
   reducerPath: "orderApi",
@@ -131,6 +132,8 @@ export const orderApiSlice = createApi({
             orderSessionId,
             tableId,
           });
+
+          api.dispatch(resetCurrentOrder());
 
           return { data: orderSession };
         } catch (error) {

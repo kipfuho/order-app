@@ -13,9 +13,12 @@ import { styles } from "../_layout";
 import { ScrollView } from "react-native";
 import { goBackShopList } from "../../apis/navigate.service";
 import { useCreateShopMutation } from "../../stores/apiSlices/shopApi.slice";
+import { useTranslation } from "react-i18next";
 
 export default function CreateShopPage() {
   const router = useRouter();
+  const { t } = useTranslation();
+
   const [createNewShop, { isLoading: createShopLoading }] =
     useCreateShopMutation();
 
@@ -37,8 +40,8 @@ export default function CreateShopPage() {
     if (!name.trim() || !email.trim()) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2: "Please enter both shop name and email",
+        text1: t("create_failed"),
+        text2: `${t("required")} ${_.join([t("shop_name"), t("email")], ",")}`,
       });
       return;
     }
@@ -61,7 +64,10 @@ export default function CreateShopPage() {
 
   return (
     <>
-      <AppBar title="Create Shop" goBack={() => goBackShopList({ router })} />
+      <AppBar
+        title={t("create_shop")}
+        goBack={() => goBackShopList({ router })}
+      />
       <Surface style={styles.baseContainer}>
         <ScrollView>
           <TextInput
@@ -108,7 +114,7 @@ export default function CreateShopPage() {
               onPress={handleCreateShop}
               style={styles.baseButton}
             >
-              Create Shop
+              {t("create_shop")}
             </Button>
           )}
         </ScrollView>

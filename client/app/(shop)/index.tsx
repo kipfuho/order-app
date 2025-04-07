@@ -6,10 +6,12 @@ import { AppBar } from "../../components/AppBar";
 import { useGetShopsQuery } from "../../stores/apiSlices/shopApi.slice";
 import { LoaderBasic } from "../../components/ui/Loader";
 import { goBackShopHome } from "../../apis/navigate.service";
+import { useTranslation } from "react-i18next";
 
 export default function ShopsPage() {
   const router = useRouter();
   const theme = useTheme(); // Get theme colors
+  const { t } = useTranslation();
 
   const { data: shops = [], isLoading, isError, error } = useGetShopsQuery({});
 
@@ -19,12 +21,12 @@ export default function ShopsPage() {
 
   return (
     <>
-      <AppBar title="Shops">
+      <AppBar title={t("shop")}>
         <Button
           mode="contained-tonal"
           onPress={() => router.replace("/create-shop")}
         >
-          Create Shop
+          {t("create_shop")}
         </Button>
       </AppBar>
       <Surface style={{ flex: 1, padding: 16 }}>

@@ -6,6 +6,9 @@ import { updateCurrentOrderSession } from "../../../stores/shop.slice";
 import { useRouter } from "expo-router";
 import { goToOrderSessionPayment } from "../../../apis/navigate.service";
 import { RootState } from "../../../stores/store";
+import { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import OrderCustomerInfo from "./OrderCutomerInfo";
 
 export function ActiveOrderSession({
   activeOrderSession,
@@ -38,34 +41,20 @@ export function ActiveOrderSession({
 
   return (
     <Surface style={{ gap: 8 }}>
-      <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-        {activeOrderSession.customerInfo?.customerName ?? "Khách lẻ"}
-      </Text>
-      <Text style={{ fontSize: 15 }}>Mã hoá đơn: {activeOrderSession.id}</Text>
-      <Text style={{ fontSize: 15 }}>
-        Số điện thoại: {activeOrderSession.customerInfo?.customerPhone ?? "N/A"}
-      </Text>
-      <Text style={{ fontSize: 15 }}>
-        Số người: {activeOrderSession.customerInfo?.numberOfCustomer ?? 1}
-      </Text>
-      <Text style={{ fontSize: 15 }}>
-        Tên bàn: {activeOrderSession.tableName}
-      </Text>
-      <Text style={{ fontSize: 15 }}>
-        Giờ vào: {activeOrderSession.createdAt}
-      </Text>
-      <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
-        <Button mode="contained" style={{ flex: 1 }} onPress={onPaymentClick}>
-          Thanh toán
-        </Button>
-        <Button
-          mode="contained-tonal"
-          style={{ flex: 1 }}
-          onPress={onAddProductClick}
-        >
-          Thêm sản phẩm
-        </Button>
-      </View>
+      <OrderCustomerInfo orderSession={activeOrderSession}>
+        <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
+          <Button mode="contained" style={{ flex: 1 }} onPress={onPaymentClick}>
+            Thanh toán
+          </Button>
+          <Button
+            mode="contained-tonal"
+            style={{ flex: 1 }}
+            onPress={onAddProductClick}
+          >
+            Thêm sản phẩm
+          </Button>
+        </View>
+      </OrderCustomerInfo>
     </Surface>
   );
 }

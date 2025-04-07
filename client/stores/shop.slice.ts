@@ -48,6 +48,11 @@ export const shopSlice = createSlice({
       state.currentOrderSession = null;
     },
 
+    resetCurrentTable: (state) => {
+      state.currentTable = null;
+      state.currentOrderSession = null;
+    },
+
     updateCurrentOrder: (
       state,
       action: PayloadAction<{ dish: Dish; quantity?: number }>
@@ -109,6 +114,7 @@ export const shopSlice = createSlice({
 export const {
   updateCurrentShop,
   resetCurrentOrder,
+  resetCurrentTable,
   updateCurrentOrder,
   updateCurrentCustomerInfo,
   updateCurrentTable,

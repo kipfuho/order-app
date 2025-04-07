@@ -30,6 +30,7 @@ import {
 } from "../../../../../../stores/apiSlices/dishApi.slice";
 import { LoaderBasic } from "../../../../../../components/ui/Loader";
 import { goBackShopDishList } from "../../../../../../apis/navigate.service";
+import { View } from "react-native";
 
 export default function CreateDishPage() {
   const router = useRouter();
@@ -115,7 +116,7 @@ export default function CreateDishPage() {
     <>
       <AppBar title="Create Dish" goBack={goBack} />
       <Surface style={{ flex: 1 }}>
-        <ScrollView style={{ flex: 1, padding: 16 }}>
+        <ScrollView>
           <UploadImages
             images={images}
             setImages={setImages}
@@ -123,71 +124,79 @@ export default function CreateDishPage() {
           />
           {/* General Information Collapsible */}
           <Collapsible title="General Information">
-            <TextInput
-              label="Dish Name"
-              mode="outlined"
-              placeholder="Enter dish name"
-              value={name}
-              onChangeText={setName}
-              style={{ marginBottom: 20 }}
-            />
+            <View style={{ padding: 16 }}>
+              <TextInput
+                label="Dish Name"
+                mode="outlined"
+                placeholder="Enter dish name"
+                value={name}
+                onChangeText={setName}
+                style={{ marginBottom: 20 }}
+              />
 
-            <DropdownMenu
-              item={dishType}
-              items={dishTypes}
-              label="Dish Type"
-              setItem={setDishType}
-              getItemValue={(item: string) => item}
-            />
+              <DropdownMenu
+                item={dishType}
+                items={dishTypes}
+                label="Dish Type"
+                setItem={setDishType}
+                getItemValue={(item: string) => item}
+              />
 
-            <DropdownMenu
-              item={category}
-              items={dishCategories}
-              label="Dish Category"
-              setItem={setCategory}
-              getItemValue={(item: DishCategory) => item?.name}
-            />
+              <DropdownMenu
+                item={category}
+                items={dishCategories}
+                label="Dish Category"
+                setItem={setCategory}
+                getItemValue={(item: DishCategory) => item?.name}
+              />
+            </View>
           </Collapsible>
 
           {/* Price Collapsible */}
           <Collapsible title="Price Information">
-            <TextInput
-              label="Price"
-              mode="outlined"
-              placeholder="Enter price"
-              value={price}
-              onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
-              keyboardType="numeric" // Shows numeric keyboard
-              style={{ marginBottom: 10 }}
-            />
-            <Surface
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 20,
-              }}
-            >
-              <Text style={{ marginRight: 16 }}>Price include tax</Text>
-              <Switch
-                value={isTaxIncludedPrice}
-                onValueChange={() => setIsTaxIncludedPrice(!isTaxIncludedPrice)}
+            <View style={{ padding: 16 }}>
+              <TextInput
+                label="Price"
+                mode="outlined"
+                placeholder="Enter price"
+                value={price}
+                onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
+                keyboardType="numeric" // Shows numeric keyboard
+                style={{ marginBottom: 10 }}
               />
-            </Surface>
-            <DropdownMenu
-              item={unit}
-              items={units}
-              label="Unit"
-              setItem={setUnit}
-              getItemValue={(item: Unit) => item?.name}
-            />
-            <TextInput
-              mode="outlined"
-              label="Tax Rate"
-              placeholder="Enter tax rate"
-              value={taxRate}
-              keyboardType="numeric" // Shows numeric keyboard
-              onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
-            />
+              <Surface
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: 20,
+                }}
+              >
+                <Text style={{ marginRight: 16 }}>Price include tax</Text>
+                <Switch
+                  value={isTaxIncludedPrice}
+                  onValueChange={() =>
+                    setIsTaxIncludedPrice(!isTaxIncludedPrice)
+                  }
+                />
+              </Surface>
+              <DropdownMenu
+                item={unit}
+                items={units}
+                label="Unit"
+                setItem={setUnit}
+                getItemValue={(item: Unit) => item?.name}
+              />
+              <TextInput
+                mode="outlined"
+                label="Tax Rate"
+                placeholder="Enter tax rate"
+                value={taxRate}
+                keyboardType="numeric" // Shows numeric keyboard
+                onChangeText={(text) =>
+                  setTaxRate(text.replace(/[^0-9.]/g, ""))
+                } // Restrict input to numbers & decimal
+              />
+            </View>
           </Collapsible>
         </ScrollView>
         {createDishLoading ? (
