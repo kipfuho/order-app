@@ -4,7 +4,7 @@ const fs = require('fs');
 const { getClientLanguageWithHook } = require('../middlewares/clsHooked');
 
 const loadLocale = (lang) => {
-  const filePath = path.join(__dirname, lang, 'locale.json');
+  const filePath = path.join(__dirname, `${lang}.json`);
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 };

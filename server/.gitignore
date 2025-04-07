@@ -12,3 +12,5 @@ yarn-error.log
 coverage
 
 .vercel
+
+src/locale/credentials.json
