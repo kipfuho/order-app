@@ -367,6 +367,7 @@ const getOrderSessionById = async (orderSessionId, shopId) => {
   const dishOrders = _.flatMap(orderSessionJson.orders, 'dishOrders');
 
   const pretaxPaymentAmount = _.sumBy(dishOrders, (dishOrder) => dishOrder.price * dishOrder.quantity);
+  orderSessionJson.pretaxPaymentAmount = pretaxPaymentAmount;
   const { totalTaxAmount, taxDetails } = await calculateTax({ orderSessionJson, dishOrders });
   orderSessionJson.totalTaxAmount = totalTaxAmount;
   orderSessionJson.taxDetails = taxDetails;
@@ -391,6 +392,7 @@ const getOrderSessionById = async (orderSessionId, shopId) => {
       { _id: orderSessionId },
       {
         $set: {
+          pretaxPaymentAmount: orderSessionJson.pretaxPaymentAmount,
           paymentAmount: orderSessionJson.paymentAmount,
           taxDetails: orderSessionJson.taxDetails,
           totalDiscountAmountBeforeTax,

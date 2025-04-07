@@ -84,6 +84,35 @@ const refineFileNameForUploading = (fileName) => {
   return baseName;
 };
 
+const formatIntegerWithZeroPadding = (num, places) => String(num).padStart(places, '0');
+
+const formatDateTimeToISOString = (dateTime) => {
+  try {
+    const timeZone = getShopTimeZone();
+    return moment(dateTime)
+      .tz(timeZone)
+      .toISOString(true)
+      .replace(/\+0\d:00/, 'Z');
+  } catch (err) {
+    return dateTime.toISOString();
+  }
+};
+
+const formatOrderSessionNo = (orderSessionJson) => {
+  try {
+    const orderSessionNo = _.get(orderSessionJson, 'orderSessionNo', 0);
+    const orderSessionNoWithPadding = formatIntegerWithZeroPadding(orderSessionNo, 4);
+
+    let createdAt = _.get(orderSessionJson, 'createdAt');
+    if (createdAt instanceof Date) {
+      createdAt = formatDateTimeToISOString(createdAt);
+    }
+    return `${createdAt.substring(0, 10).split('-').join('')}-${orderSessionNoWithPadding}`;
+  } catch (err) {
+    return '';
+  }
+};
+
 module.exports = {
   sleep,
   getStartTimeOfToday,
@@ -94,4 +123,5 @@ module.exports = {
   getRoundTaxAmount,
   getStringId,
   refineFileNameForUploading,
+  formatOrderSessionNo,
 };

@@ -65,6 +65,7 @@ const orderSessionSchema = new mongoose.Schema(
         paymentAmount: { type: Number },
       },
     ],
+    pretaxPaymentAmount: { type: Number },
     paymentAmount: { type: Number },
     paidByEmployee: {
       id: { type: mongoose.Types.ObjectId },
