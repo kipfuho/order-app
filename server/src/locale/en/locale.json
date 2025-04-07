@@ -3,5 +3,6 @@
   "department.cashier": "Cashier",
   "department.owner": "Owner",
   "notImage": "Please upload an image",
-  "fileTooLarge": "Please upload file less than 5MB"
+  "fileTooLarge": "Please upload file less than 5MB",
+  "reason.empty": "Reason is empty"
 }

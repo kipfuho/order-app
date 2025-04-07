@@ -405,9 +405,8 @@ const getOrderSessionById = async (orderSessionId, shopId) => {
 };
 
 const updateOrderSession = async ({ orderSessionId, shopId, updateBody }) => {
-  const orderSession = await OrderSession.updateOne({ _id: orderSessionId, shop: shopId }, updateBody);
+  await OrderSession.updateOne({ _id: orderSessionId, shop: shopId }, updateBody);
 
-  throwBadRequest(!orderSession, getMessageByLocale({ key: 'orderSession.notFound' }));
   return getOrderSessionById(orderSessionId);
 };
 

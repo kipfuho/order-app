@@ -19,19 +19,23 @@ const createOrder = async ({ shopId, requestBody }) => {
 };
 
 const changeDishQuantity = async ({ shopId, requestBody }) => {
-  const { orderId, dishId, newQuantity } = requestBody;
+  const { orderId, dishOrderId, newQuantity } = requestBody;
   const order = await Order.findOne({ shop: shopId, _id: orderId });
   throwBadRequest(!order, getMessageByLocale({ key: 'order.notFound' }));
-  const targetDishOrder = _.find(order.dishOrders, { dishId });
+  const orderJson = order.toJSON();
+  const targetDishOrder = _.find(orderJson.dishOrders, (dishOrder) => dishOrder.id === dishOrderId);
   throwBadRequest(!targetDishOrder, getMessageByLocale({ key: 'dish.notFound' }));
   // decrease quantity
   if (newQuantity < targetDishOrder.quantity) {
     targetDishOrder.quantity -= newQuantity;
-    order.returnedDishOrders.push(targetDishOrder);
+    orderJson.returnedDishOrders.push({ ...targetDishOrder, quantity: targetDishOrder.quantity - newQuantity });
   }
   targetDishOrder.quantity = newQuantity;
-  order.dishOrders = _.filter(order.dishOrders, (dishOrder) => dishOrder.quantity > 0);
-  await order.save();
+  orderJson.dishOrders = _.filter(orderJson.dishOrders, (dishOrder) => dishOrder.quantity > 0);
+  await Order.updateOne(
+    { _id: orderId },
+    { $set: { dishOrders: orderJson.dishOrders, returnedDishOrders: orderJson.returnedDishOrders } }
+  );
 };
 
 const updateOrder = async ({ shopId, requestBody }) => {
@@ -144,7 +148,7 @@ const getOrderSessionDetail = async ({ shopId, orderSessionId }) => {
 
 const _validateBeforePayment = (orderSession, paymentDetails) => {
   throwBadRequest(
-    orderSession.paymentAmount !== _.sumBy(paymentDetails, 'paymentAmount'),
+    orderSession.paymentAmount > _.sumBy(paymentDetails, 'paymentAmount'),
     'Số tiền thanh toán không khớp số tiền đơn'
   );
 };
@@ -156,6 +160,7 @@ const payOrderSession = async ({ shopId, requestBody }) => {
 
   const updatedOrderSession = await orderUtilService.updateOrderSession({
     orderSessionId,
+    shopId,
     updateBody: {
       $set: {
         status: OrderSessionStatus.paid,
