@@ -3,7 +3,7 @@ import { ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
-import { Button, List, useTheme } from "react-native-paper";
+import { Button, List, Surface, useTheme } from "react-native-paper";
 import _ from "lodash";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
@@ -15,10 +15,12 @@ import {
   goToCreateTablePosition,
   goToUpdateTablePosition,
 } from "../../../../../../../apis/navigate.service";
+import { useTranslation } from "react-i18next";
 
 export default function TablePositionsManagementPage() {
   const router = useRouter();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
@@ -34,14 +36,13 @@ export default function TablePositionsManagementPage() {
   return (
     <>
       <AppBar
-        title="Table Positions"
+        title={t("table_position")}
         goBack={() => goBackShopSetting({ router, shopId: shop.id })}
       />
-      <SafeAreaView
+      <Surface
         style={{
           flex: 1,
           padding: 16,
-          backgroundColor: theme.colors.background,
         }}
       >
         <ScrollView>
@@ -50,9 +51,9 @@ export default function TablePositionsManagementPage() {
             {tablePositions.map((item) => (
               <List.Item
                 title={item.name}
-                titleStyle={{ color: theme.colors.onSurface }}
+                titleStyle={{ color: theme.colors.onSecondaryContainer }}
                 style={{
-                  backgroundColor: theme.colors.surface,
+                  backgroundColor: theme.colors.secondaryContainer,
                   borderRadius: 8,
                   marginBottom: 8,
                 }}
@@ -75,9 +76,9 @@ export default function TablePositionsManagementPage() {
           onPress={() => goToCreateTablePosition({ router, shopId: shop.id })}
           style={{ marginTop: 20 }}
         >
-          Create Table Position
+          {t("table_position")}
         </Button>
-      </SafeAreaView>
+      </Surface>
     </>
   );
 }

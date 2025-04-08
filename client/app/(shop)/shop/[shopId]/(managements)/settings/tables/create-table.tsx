@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
@@ -20,9 +20,12 @@ import {
 } from "../../../../../../../stores/apiSlices/tableApi.slice";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import { goToTableList } from "../../../../../../../apis/navigate.service";
+import { useTranslation } from "react-i18next";
+import _ from "lodash";
 
 export default function CreateTablePage() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
@@ -43,8 +46,11 @@ export default function CreateTablePage() {
     if (!name.trim() || !tablePosition) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2: "Please enter a name and select a table position",
+        text1: t("create_failed"),
+        text2: `${t("required")} ${_.join(
+          [t("table_name"), t("table_position")],
+          ","
+        )}`,
       });
       return;
     }
@@ -55,8 +61,8 @@ export default function CreateTablePage() {
     } catch (err) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2: "Failed to create table. Please try again.",
+        text1: t("create_failed"),
+        text2: t("error_any"),
       });
       console.error(err);
     }
@@ -69,7 +75,7 @@ export default function CreateTablePage() {
   return (
     <>
       <AppBar
-        title="Create Table"
+        title={t("create_table")}
         goBack={() => goToTableList({ router, shopId: shop.id })}
       />
       <Surface
@@ -81,14 +87,14 @@ export default function CreateTablePage() {
           style={{
             flex: 1,
             padding: 16,
+            boxShadow: "none",
           }}
         >
           <ScrollView>
             {/* Table Name Input */}
             <TextInput
-              label="Table Name"
+              label={t("table_name")}
               mode="outlined"
-              placeholder="Enter table name"
               value={name}
               onChangeText={setName}
               style={{ marginBottom: 20 }}
@@ -96,7 +102,7 @@ export default function CreateTablePage() {
 
             {/* Table Position Dropdown Label */}
             <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
-              Select Table Position
+              {t("table_position")}
             </Text>
             {/* Table Position Dropdown */}
             <Menu
@@ -127,17 +133,19 @@ export default function CreateTablePage() {
         </Surface>
 
         {/* Loading or Action Buttons */}
-        {createTableLoading ? (
-          <ActivityIndicator size="large" />
-        ) : (
-          <Button
-            mode="contained"
-            onPress={handleCreateTable}
-            style={{ marginBottom: 10, alignSelf: "center", width: 200 }}
-          >
-            Create Table
-          </Button>
-        )}
+        <View style={{ marginVertical: 20 }}>
+          {createTableLoading ? (
+            <ActivityIndicator size={40} />
+          ) : (
+            <Button
+              mode="contained"
+              onPress={handleCreateTable}
+              style={{ alignSelf: "center", width: 200 }}
+            >
+              {t("create_table")}
+            </Button>
+          )}
+        </View>
       </Surface>
     </>
   );

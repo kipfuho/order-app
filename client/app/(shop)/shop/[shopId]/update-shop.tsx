@@ -13,7 +13,7 @@ import { RootState } from "../../../../stores/store";
 import { Shop } from "../../../../stores/state.interface";
 import { AppBar } from "../../../../components/AppBar";
 import { goBackShopHome } from "../../../../apis/navigate.service";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { styles } from "../../../_layout";
 import { useUpdateShopMutation } from "../../../../stores/apiSlices/shopApi.slice";
 import { useTranslation } from "react-i18next";
@@ -112,23 +112,20 @@ export default function UpdateShopPage() {
             keyboardType="numeric" // Shows numeric keyboard
             onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
           />
-
+        </ScrollView>
+        <View style={{ marginVertical: 20 }}>
           {updateShopLoading ? (
-            <ActivityIndicator
-              animating={true}
-              size="large"
-              style={styles.baseLoader}
-            />
+            <ActivityIndicator size={40} />
           ) : (
             <Button
               mode="contained"
               onPress={handleUpdateShop}
-              style={styles.baseButton}
+              style={[styles.baseButton, { margin: 0 }]}
             >
               {t("update_shop")}
             </Button>
           )}
-        </ScrollView>
+        </View>
       </Surface>
     </>
   );

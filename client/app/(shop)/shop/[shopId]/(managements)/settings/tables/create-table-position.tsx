@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
@@ -21,9 +21,11 @@ import { goToTablePositionList } from "../../../../../../../apis/navigate.servic
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import _ from "lodash";
 import { useCreateTablePositionMutation } from "../../../../../../../stores/apiSlices/tableApi.slice";
+import { useTranslation } from "react-i18next";
 
 export default function CreateTablePositionPage() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
@@ -33,7 +35,7 @@ export default function CreateTablePositionPage() {
   const [createTablePosition, { isLoading: createTablePositionLoading }] =
     useCreateTablePositionMutation();
 
-  const [name, setName] = useState("table position");
+  const [name, setName] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [dialogVisible, setDialogVisible] = useState(false);
 
@@ -41,8 +43,11 @@ export default function CreateTablePositionPage() {
     if (!name.trim() || selectedCategories.length === 0) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2: "Please enter a name and select at least one dish category",
+        text1: t("create_failed"),
+        text2: `${t("required")} ${_.join(
+          [t("table_position_name"), t("dish_category")],
+          ","
+        )}`,
       });
       return;
     }
@@ -58,8 +63,8 @@ export default function CreateTablePositionPage() {
     } catch (err) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2: "Failed to create table. Please try again.",
+        text1: t("create_failed"),
+        text2: t("error_any"),
       });
       console.error(err);
     }
@@ -80,9 +85,41 @@ export default function CreateTablePositionPage() {
   return (
     <>
       <AppBar
-        title="Create Table Position"
+        title={t("create_table_position")}
         goBack={() => goToTablePositionList({ router, shopId: shop.id })}
       />
+
+      {/* Dialog for selecting multiple categories */}
+      <Portal>
+        <Dialog
+          visible={dialogVisible}
+          onDismiss={() => setDialogVisible(false)}
+        >
+          <Dialog.Title>{t("dish_category")}</Dialog.Title>
+          <Dialog.ScrollArea>
+            <ScrollView>
+              {dishCategories.map((category) => (
+                <Checkbox.Item
+                  key={category.id}
+                  label={category.name}
+                  status={
+                    selectedCategories.includes(category.id)
+                      ? "checked"
+                      : "unchecked"
+                  }
+                  onPress={() => toggleCategorySelection(category.id)}
+                />
+              ))}
+            </ScrollView>
+          </Dialog.ScrollArea>
+          <Dialog.Actions>
+            <Button onPress={() => setDialogVisible(false)}>
+              {t("confirm")}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
       <Surface
         style={{
           flex: 1,
@@ -92,14 +129,14 @@ export default function CreateTablePositionPage() {
           style={{
             flex: 1,
             padding: 16,
+            boxShadow: "none",
           }}
         >
           <ScrollView>
             {/* Table Name Input */}
             <TextInput
-              label="Table Position Name"
+              label={t("table_position_name")}
               mode="outlined"
-              placeholder="Enter table position name"
               value={name}
               onChangeText={setName}
               style={{ marginBottom: 20 }}
@@ -107,18 +144,18 @@ export default function CreateTablePositionPage() {
 
             {/* Table Position Selection Label */}
             <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
-              Select Table Categories
+              {t("dish_category")}
             </Text>
 
             {/* Open Dialog Button */}
             <Button mode="outlined" onPress={() => setDialogVisible(true)}>
               {selectedCategories.length > 0
-                ? `${selectedCategories.length} Selected`
-                : "Select Dish Categories"}
+                ? `${selectedCategories.length} ${t("selected")}`
+                : t("select")}
             </Button>
 
             {/* Selected Categories List */}
-            <Surface style={{ marginTop: 10 }}>
+            <Surface style={{ marginTop: 10, boxShadow: "none" }}>
               {selectedCategories.map((categoryId) => {
                 const category = _.find(
                   dishCategories,
@@ -134,47 +171,20 @@ export default function CreateTablePositionPage() {
           </ScrollView>
         </Surface>
 
-        {/* Dialog for selecting multiple categories */}
-        <Portal>
-          <Dialog
-            visible={dialogVisible}
-            onDismiss={() => setDialogVisible(false)}
-          >
-            <Dialog.Title>Select Dish Categories</Dialog.Title>
-            <Dialog.ScrollArea>
-              <ScrollView>
-                {dishCategories.map((category) => (
-                  <Checkbox.Item
-                    key={category.id}
-                    label={category.name}
-                    status={
-                      selectedCategories.includes(category.id)
-                        ? "checked"
-                        : "unchecked"
-                    }
-                    onPress={() => toggleCategorySelection(category.id)}
-                  />
-                ))}
-              </ScrollView>
-            </Dialog.ScrollArea>
-            <Dialog.Actions>
-              <Button onPress={() => setDialogVisible(false)}>Done</Button>
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
-
         {/* Loading or Action Buttons */}
-        {createTablePositionLoading ? (
-          <ActivityIndicator size="large" />
-        ) : (
-          <Button
-            mode="contained-tonal"
-            onPress={handleCreateTablePosition}
-            style={{ marginTop: 20, width: 200, alignSelf: "center" }}
-          >
-            Create Table Position
-          </Button>
-        )}
+        <View style={{ marginVertical: 20 }}>
+          {createTablePositionLoading ? (
+            <ActivityIndicator size={40} />
+          ) : (
+            <Button
+              mode="contained-tonal"
+              onPress={handleCreateTablePosition}
+              style={{ width: 200, alignSelf: "center" }}
+            >
+              {t("create_table_position")}
+            </Button>
+          )}
+        </View>
       </Surface>
     </>
   );

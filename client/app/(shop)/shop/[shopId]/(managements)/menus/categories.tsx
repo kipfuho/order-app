@@ -14,10 +14,12 @@ import {
   goToCreateDishCategory,
   goToUpdateDishCategory,
 } from "../../../../../../apis/navigate.service";
+import { useTranslation } from "react-i18next";
 
 export default function CategoriesManagementPage() {
   const router = useRouter();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
@@ -32,7 +34,7 @@ export default function CategoriesManagementPage() {
   return (
     <>
       <AppBar
-        title="Dish Categories"
+        title={t("dish_category")}
         goBack={() => goBackShopHome({ router, shopId: shop.id })}
       />
       <Surface style={{ flex: 1, padding: 16 }}>
@@ -43,8 +45,9 @@ export default function CategoriesManagementPage() {
               <List.Item
                 key={item.id}
                 title={item.name}
+                titleStyle={{ color: theme.colors.onSecondaryContainer }}
                 style={{
-                  backgroundColor: theme.colors.backdrop,
+                  backgroundColor: theme.colors.secondaryContainer,
                   borderRadius: 8,
                   marginBottom: 8,
                 }}
@@ -67,7 +70,7 @@ export default function CategoriesManagementPage() {
           style={styles.createButton}
           onPress={() => goToCreateDishCategory({ router, shopId: shop.id })}
         >
-          Create Dish Category
+          {t("create_dish_category")}
         </Button>
       </Surface>
     </>

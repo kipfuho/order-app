@@ -3,21 +3,23 @@ import { ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
-import { ActivityIndicator, Button, useTheme, List } from "react-native-paper";
+import { Button, useTheme, List, Surface } from "react-native-paper";
 import _ from "lodash";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useGetTablesQuery } from "../../../../../../../stores/apiSlices/tableApi.slice";
 import {
   goBackShopSetting,
   goToCreateTable,
   goToUpdateTable,
 } from "../../../../../../../apis/navigate.service";
+import { useTranslation } from "react-i18next";
+import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 
 export default function TablesManagementPage() {
   const router = useRouter();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
@@ -27,21 +29,20 @@ export default function TablesManagementPage() {
   );
 
   if (tableLoading) {
-    return <ActivityIndicator size="large" style={{ marginTop: 20 }} />;
+    return <LoaderBasic />;
   }
 
   return (
     <>
       <AppBar
-        title="Tables"
+        title={t("table")}
         goBack={() => goBackShopSetting({ router, shopId: shop.id })}
       />
 
-      <SafeAreaView
+      <Surface
         style={{
           flex: 1,
           padding: 16,
-          backgroundColor: theme.colors.background,
         }}
       >
         <ScrollView>
@@ -50,9 +51,9 @@ export default function TablesManagementPage() {
             {tables.map((item) => (
               <List.Item
                 title={item.name}
-                titleStyle={{ color: theme.colors.onSurface }}
+                titleStyle={{ color: theme.colors.onSecondaryContainer }}
                 style={{
-                  backgroundColor: theme.colors.surface,
+                  backgroundColor: theme.colors.secondaryContainer,
                   borderRadius: 8,
                   marginBottom: 8,
                 }}
@@ -70,9 +71,9 @@ export default function TablesManagementPage() {
           onPress={() => goToCreateTable({ router, shopId: shop.id })}
           style={{ marginTop: 16 }}
         >
-          Create Table
+          {t("create_table")}
         </Button>
-      </SafeAreaView>
+      </Surface>
     </>
   );
 }

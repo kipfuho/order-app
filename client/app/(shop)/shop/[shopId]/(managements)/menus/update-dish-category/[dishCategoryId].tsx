@@ -20,17 +20,22 @@ import {
 } from "../../../../../../../stores/apiSlices/dishApi.slice";
 import { goToDishCategoryList } from "../../../../../../../apis/navigate.service";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
+import { View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function UpdateDishCategoryPage() {
   const { dishCategoryId } = useLocalSearchParams();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
   ) as Shop;
-  const { data: dishCategories, isLoading } = useGetDishCategoriesQuery(
-    shop.id
-  );
+  const {
+    data: dishCategories,
+    isLoading: dishCategoryLoading,
+    isFetching: dishCategoryFetching,
+  } = useGetDishCategoriesQuery(shop.id);
   const dishCategory = _.find(dishCategories, (dc) => dc.id === dishCategoryId);
   const [updateDishCategory, { isLoading: updateDishCategoryLoading }] =
     useUpdateDishCategoryMutation();
@@ -42,7 +47,7 @@ export default function UpdateDishCategoryPage() {
     if (!dishCategory) return;
 
     setName(dishCategory.name);
-  }, [dishCategory]);
+  }, [dishCategoryId, dishCategoryFetching]);
 
   const handleUpdateDishCategory = async () => {
     if (!dishCategory) {
@@ -52,8 +57,11 @@ export default function UpdateDishCategoryPage() {
     if (!name.trim()) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2: "Please enter name",
+        text1: t("update_failed"),
+        text2: `${t("required")} ${_.join(
+          _.compact([!name.trim() && t("dish_category_name")]),
+          ","
+        )}`,
       });
       return;
     }
@@ -67,23 +75,27 @@ export default function UpdateDishCategoryPage() {
 
       // Navigate back to table position list
       goToDishCategoryList({ router, shopId: shop.id });
-    } catch (err) {
-      console.error(err);
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: t("update_failed"),
+        text2: error.data?.message,
+      });
     }
   };
 
-  if (isLoading) {
+  if (dishCategoryLoading) {
     return <LoaderBasic />;
   }
 
   if (!dishCategory) {
     return (
       <SafeAreaView>
-        <Text>Dish Category not found</Text>
+        <Text>{t("dish_category_not_found")}</Text>
         <Button
           onPress={() => goToDishCategoryList({ router, shopId: shop.id })}
         >
-          Go Back
+          {t("loading")}
         </Button>
       </SafeAreaView>
     );
@@ -92,31 +104,34 @@ export default function UpdateDishCategoryPage() {
   return (
     <>
       <AppBar
-        title="Update Dish Category"
+        title={t("update_dish_category")}
         goBack={() => goToDishCategoryList({ router, shopId: shop.id })}
       />
       <Surface style={{ flex: 1 }}>
-        <Surface style={{ flex: 1, padding: 16 }}>
+        <Surface style={{ flex: 1, padding: 16, boxShadow: "none" }}>
           <TextInput
-            placeholder="Dish Category Name"
+            mode="outlined"
+            label={t("dish_category_name")}
             value={name}
             onChangeText={setName}
           />
         </Surface>
 
-        {updateDishCategoryLoading ? (
-          <ActivityIndicator animating={true} size="large" />
-        ) : (
-          <>
-            <Button
-              mode="contained-tonal"
-              style={{ width: 200, alignSelf: "center", marginBottom: 16 }}
-              onPress={handleUpdateDishCategory}
-            >
-              Update Dish Category
-            </Button>
-          </>
-        )}
+        <View style={{ marginVertical: 20 }}>
+          {updateDishCategoryLoading ? (
+            <ActivityIndicator size={40} />
+          ) : (
+            <>
+              <Button
+                mode="contained-tonal"
+                style={{ width: 200, alignSelf: "center" }}
+                onPress={handleUpdateDishCategory}
+              >
+                {t("update_dish_category")}
+              </Button>
+            </>
+          )}
+        </View>
       </Surface>
     </>
   );

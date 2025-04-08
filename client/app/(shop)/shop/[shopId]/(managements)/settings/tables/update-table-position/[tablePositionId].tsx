@@ -16,7 +16,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../../stores/store";
 import { Shop } from "../../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../../components/AppBar";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import {
   useGetTablePositionsQuery,
   useUpdateTablePositionMutation,
@@ -24,16 +24,21 @@ import {
 import { useGetDishCategoriesQuery } from "../../../../../../../../stores/apiSlices/dishApi.slice";
 import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
 import { goToTablePositionList } from "../../../../../../../../apis/navigate.service";
+import { useTranslation } from "react-i18next";
 
 export default function UpdateTablePositionPage() {
   const { tablePositionId } = useLocalSearchParams();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
   ) as Shop;
-  const { data: tablePositions = [], isLoading: tablePositionLoading } =
-    useGetTablePositionsQuery(shop.id);
+  const {
+    data: tablePositions = [],
+    isLoading: tablePositionLoading,
+    isFetching: tablePositionFetching,
+  } = useGetTablePositionsQuery(shop.id);
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
     useGetDishCategoriesQuery(shop.id);
   const tablePosition = _.find(
@@ -52,11 +57,17 @@ export default function UpdateTablePositionPage() {
       return;
     }
 
-    if (!name.trim()) {
+    if (!name.trim() || _.isEmpty(selectedCategories)) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2: "Please enter name",
+        text1: t("update_failed"),
+        text2: `${t("required")} ${_.join(
+          _.compact([
+            !name.trim() && t("table_position_name"),
+            _.isEmpty(selectedCategories) && t("dish_category"),
+          ]),
+          ","
+        )}`,
       });
       return;
     }
@@ -71,8 +82,12 @@ export default function UpdateTablePositionPage() {
 
       // Navigate back to table position list
       goToTablePositionList({ router, shopId: shop.id });
-    } catch (err) {
-      console.error(err);
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: t("update_failed"),
+        text2: error.data?.message,
+      });
     }
   };
 
@@ -81,7 +96,7 @@ export default function UpdateTablePositionPage() {
 
     setName(tablePosition.name);
     setSelectedCategories(tablePosition.dishCategories);
-  }, [tablePosition]);
+  }, [tablePositionId, tablePositionFetching]);
 
   const toggleCategorySelection = (categoryId: string) => {
     setSelectedCategories((prev) =>
@@ -98,11 +113,11 @@ export default function UpdateTablePositionPage() {
   if (!tablePosition) {
     return (
       <Surface style={{ flex: 1 }}>
-        <Text>Table position not found</Text>
+        <Text>{t("table_position_not_found")}</Text>
         <Button
           onPress={() => goToTablePositionList({ router, shopId: shop.id })}
         >
-          <Text>Go Back</Text>
+          <Text>{t("go_back")}</Text>
         </Button>
       </Surface>
     );
@@ -111,15 +126,46 @@ export default function UpdateTablePositionPage() {
   return (
     <>
       <AppBar
-        title="Update Table Position"
+        title={t("update_table_position")}
         goBack={() => goToTablePositionList({ router, shopId: shop.id })}
       />
+
+      {/* Dialog for selecting multiple categories */}
+      <Portal>
+        <Dialog
+          visible={dialogVisible}
+          onDismiss={() => setDialogVisible(false)}
+        >
+          <Dialog.Title>{t("dish_category")}</Dialog.Title>
+          <Dialog.ScrollArea>
+            <ScrollView>
+              {dishCategories.map((category) => (
+                <Checkbox.Item
+                  key={category.id}
+                  label={category.name}
+                  status={
+                    selectedCategories.includes(category.id)
+                      ? "checked"
+                      : "unchecked"
+                  }
+                  onPress={() => toggleCategorySelection(category.id)}
+                />
+              ))}
+            </ScrollView>
+          </Dialog.ScrollArea>
+          <Dialog.Actions>
+            <Button onPress={() => setDialogVisible(false)}>
+              {t("confirm")}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
       <Surface style={{ flex: 1 }}>
-        <Surface style={{ flex: 1, padding: 16 }}>
+        <Surface style={{ flex: 1, padding: 16, boxShadow: "none" }}>
           <TextInput
-            label="Table Position Name"
+            label={t("table_position_name")}
             mode="outlined"
-            placeholder="Enter table position name"
             value={name}
             onChangeText={setName}
             style={{ marginBottom: 20 }}
@@ -127,14 +173,14 @@ export default function UpdateTablePositionPage() {
 
           {/* Table Position Selection Label */}
           <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
-            Select Table Categories
+            {t("dish_category")}
           </Text>
 
           {/* Open Dialog Button */}
           <Button mode="outlined" onPress={() => setDialogVisible(true)}>
             {selectedCategories.length > 0
-              ? `${selectedCategories.length} Selected`
-              : "Select Dish Categories"}
+              ? `${selectedCategories.length} ${t("selected")}`
+              : t("select")}
           </Button>
 
           {/* Selected Categories List */}
@@ -153,46 +199,19 @@ export default function UpdateTablePositionPage() {
           </Surface>
         </Surface>
 
-        {/* Dialog for selecting multiple categories */}
-        <Portal>
-          <Dialog
-            visible={dialogVisible}
-            onDismiss={() => setDialogVisible(false)}
-          >
-            <Dialog.Title>Select Dish Categories</Dialog.Title>
-            <Dialog.ScrollArea>
-              <ScrollView>
-                {dishCategories.map((category) => (
-                  <Checkbox.Item
-                    key={category.id}
-                    label={category.name}
-                    status={
-                      selectedCategories.includes(category.id)
-                        ? "checked"
-                        : "unchecked"
-                    }
-                    onPress={() => toggleCategorySelection(category.id)}
-                  />
-                ))}
-              </ScrollView>
-            </Dialog.ScrollArea>
-            <Dialog.Actions>
-              <Button onPress={() => setDialogVisible(false)}>Done</Button>
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
-
-        {updateTablePositionLoading ? (
-          <ActivityIndicator animating={true} size="large" />
-        ) : (
-          <Button
-            mode="contained-tonal"
-            style={{ alignSelf: "center", width: 200, marginBottom: 16 }}
-            onPress={handleCreateShop}
-          >
-            Update Table Position
-          </Button>
-        )}
+        <View style={{ marginVertical: 20 }}>
+          {updateTablePositionLoading ? (
+            <ActivityIndicator size={40} />
+          ) : (
+            <Button
+              mode="contained-tonal"
+              style={{ alignSelf: "center", width: 200 }}
+              onPress={handleCreateShop}
+            >
+              {t("update_table_position")}
+            </Button>
+          )}
+        </View>
       </Surface>
     </>
   );

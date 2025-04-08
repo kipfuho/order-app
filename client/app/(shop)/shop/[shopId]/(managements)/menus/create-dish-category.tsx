@@ -12,12 +12,14 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../stores/store";
 import { Shop } from "../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../components/AppBar";
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { goToDishCategoryList } from "../../../../../../apis/navigate.service";
 import { useCreateDishCategoryMutation } from "../../../../../../stores/apiSlices/dishApi.slice";
+import { useTranslation } from "react-i18next";
 
 export default function CreateDishCategoryPage() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
@@ -27,12 +29,19 @@ export default function CreateDishCategoryPage() {
 
   const [name, setName] = useState("category");
 
+  const resetFields = () => {
+    setName("");
+  };
+
   const handleCreateDishCategory = async () => {
     if (!name.trim()) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2: "Please enter name and dish category",
+        text1: t("create_failed"),
+        text2: `${t("required")} ${_.join(
+          _.compact([!name.trim() && t("dish_category_name")]),
+          ","
+        )}`,
       });
       return;
     }
@@ -45,44 +54,51 @@ export default function CreateDishCategoryPage() {
 
       // Navigate back to table position list
       goToDishCategoryList({ router, shopId: shop.id });
-    } catch (err) {
-      console.error(err);
+      resetFields();
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: t("update_failed"),
+        text2: error.data?.message,
+      });
     }
   };
-
-  useEffect(() => {
-    setName("");
-  }, []);
 
   return (
     <>
       <AppBar
-        title="Create Dish Category"
-        goBack={() => goToDishCategoryList({ router, shopId: shop.id })}
+        title={t("create_dish_category")}
+        goBack={() => {
+          goToDishCategoryList({ router, shopId: shop.id });
+          resetFields();
+        }}
       />
-      <Surface style={{ flex: 1, padding: 16 }}>
-        <ScrollView style={{ flex: 1 }}>
-          <TextInput
-            label="Dish Category Name"
-            mode="outlined"
-            placeholder="Enter dish category name"
-            value={name}
-            onChangeText={setName}
-            style={{ marginBottom: 20 }}
-          />
-        </ScrollView>
+      <Surface style={{ flex: 1 }}>
+        <Surface style={{ flex: 1, padding: 16, boxShadow: "none" }}>
+          <ScrollView style={{ flex: 1 }}>
+            <TextInput
+              label={t("dish_category_name")}
+              mode="outlined"
+              value={name}
+              onChangeText={setName}
+              style={{ marginBottom: 20 }}
+            />
+          </ScrollView>
+        </Surface>
 
-        {createDishCategoryLoading ? (
-          <ActivityIndicator animating={true} size="large" />
-        ) : (
-          <Button
-            mode="contained"
-            onPress={handleCreateDishCategory}
-            style={styles.createButton}
-          >
-            Create Dish Category
-          </Button>
-        )}
+        <View style={{ marginVertical: 20 }}>
+          {createDishCategoryLoading ? (
+            <ActivityIndicator size={40} />
+          ) : (
+            <Button
+              mode="contained"
+              onPress={handleCreateDishCategory}
+              style={[styles.createButton, { margin: 0 }]}
+            >
+              {t("create_dish_category")}
+            </Button>
+          )}
+        </View>
       </Surface>
     </>
   );

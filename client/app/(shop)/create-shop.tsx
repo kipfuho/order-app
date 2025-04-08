@@ -10,7 +10,7 @@ import {
 } from "react-native-paper";
 import { AppBar } from "../../components/AppBar";
 import { styles } from "../_layout";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { goBackShopList } from "../../apis/navigate.service";
 import { useCreateShopMutation } from "../../stores/apiSlices/shopApi.slice";
 import { useTranslation } from "react-i18next";
@@ -68,56 +68,59 @@ export default function CreateShopPage() {
         title={t("create_shop")}
         goBack={() => goBackShopList({ router })}
       />
-      <Surface style={styles.baseContainer}>
-        <ScrollView>
-          <TextInput
-            mode="outlined"
-            label={t("shop_name")}
-            value={name}
-            onChangeText={setName}
-          />
+      <Surface style={{ flex: 1 }}>
+        <Surface style={[styles.baseContainer, { boxShadow: "none" }]}>
+          <ScrollView>
+            <TextInput
+              mode="outlined"
+              label={t("shop_name")}
+              value={name}
+              onChangeText={setName}
+            />
 
-          <TextInput
-            mode="outlined"
-            label={t("email")}
-            value={email}
-            onChangeText={setEmail}
-          />
+            <TextInput
+              mode="outlined"
+              label={t("email")}
+              value={email}
+              onChangeText={setEmail}
+            />
 
-          <TextInput
-            mode="outlined"
-            label={t("phone")}
-            value={phone}
-            onChangeText={setPhone}
-          />
+            <TextInput
+              mode="outlined"
+              label={t("phone")}
+              value={phone}
+              onChangeText={setPhone}
+            />
 
-          <TextInput
-            mode="outlined"
-            label={t("location")}
-            value={location}
-            onChangeText={setLocation}
-          />
+            <TextInput
+              mode="outlined"
+              label={t("location")}
+              value={location}
+              onChangeText={setLocation}
+            />
 
-          <TextInput
-            mode="outlined"
-            label={t("tax_rate")}
-            value={taxRate}
-            keyboardType="numeric" // Shows numeric keyboard
-            onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
-          />
-
+            <TextInput
+              mode="outlined"
+              label={t("tax_rate")}
+              value={taxRate}
+              keyboardType="numeric" // Shows numeric keyboard
+              onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
+            />
+          </ScrollView>
+        </Surface>
+        <View style={{ marginVertical: 20 }}>
           {createShopLoading ? (
-            <ActivityIndicator animating={true} size="large" />
+            <ActivityIndicator size={40} />
           ) : (
             <Button
               mode="contained"
               onPress={handleCreateShop}
-              style={styles.baseButton}
+              style={[styles.baseButton, { margin: 0 }]}
             >
               {t("create_shop")}
             </Button>
           )}
-        </ScrollView>
+        </View>
       </Surface>
     </>
   );

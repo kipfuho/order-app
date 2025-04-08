@@ -28,7 +28,7 @@ export const DishCard = ({
   }, [width]);
 
   return (
-    <Card style={{ margin: 10, width: cardWidth }}>
+    <Card style={{ width: cardWidth }}>
       <Card.Cover
         source={{ uri: dish.imageUrls[0] || "https://picsum.photos/700" }}
       />

@@ -37,8 +37,6 @@ export default function UploadImages({
         formData,
       });
 
-      console.log(imageUrl);
-
       if (imageUrl) {
         setImages((prev) =>
           prev.map((img, i) =>

@@ -17,7 +17,6 @@ import {
 } from "../../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../../components/AppBar";
 import { DropdownMenu } from "../../../../../../../../components/DropdownMenu";
-import { updateTableRequest } from "../../../../../../../../apis/table.api.service";
 import {
   useGetTablePositionsQuery,
   useGetTablesQuery,
@@ -25,17 +24,22 @@ import {
 } from "../../../../../../../../stores/apiSlices/tableApi.slice";
 import { goToTableList } from "../../../../../../../../apis/navigate.service";
 import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
+import { View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function UpdateTablePage() {
   const { tableId } = useLocalSearchParams();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
   ) as Shop;
-  const { data: tables = [], isLoading: tableLoading } = useGetTablesQuery(
-    shop.id
-  );
+  const {
+    data: tables = [],
+    isLoading: tableLoading,
+    isFetching: tableFetching,
+  } = useGetTablesQuery(shop.id);
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
     useGetTablePositionsQuery(shop.id);
   const table = _.find(tables, (t) => t.id === tableId);
@@ -50,7 +54,7 @@ export default function UpdateTablePage() {
 
     setName(table.name);
     setTablePosition(table.position);
-  }, [table]);
+  }, [tableId, tableFetching]);
 
   const handleUpdateTable = async () => {
     if (!table) {
@@ -60,8 +64,14 @@ export default function UpdateTablePage() {
     if (!name.trim() || !tablePosition) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2: "Please enter name and table position",
+        text1: t("update_failed"),
+        text2: `${t("required")} ${_.join(
+          _.compact([
+            !name.trim() && t("table_name"),
+            !tablePosition && t("table_position"),
+          ]),
+          ","
+        )}`,
       });
       return;
     }
@@ -80,8 +90,12 @@ export default function UpdateTablePage() {
       // Clear input fields
       setName("");
       setTablePosition(undefined);
-    } catch (err) {
-      console.error(err);
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: t("update_failed"),
+        text2: error.data?.message,
+      });
     }
   };
 
@@ -92,12 +106,12 @@ export default function UpdateTablePage() {
   if (!table) {
     return (
       <Surface style={{ flex: 1 }}>
-        <Text>Table not found</Text>
+        <Text>{t("table_not_found")}</Text>
         <Button
           mode="contained"
           onPress={() => goToTableList({ router, shopId: shop.id })}
         >
-          Go Back
+          {t("go_back")}
         </Button>
       </Surface>
     );
@@ -110,17 +124,16 @@ export default function UpdateTablePage() {
         goBack={() => goToTableList({ router, shopId: shop.id })}
       />
       <Surface style={{ flex: 1 }}>
-        <Surface style={{ flex: 1, padding: 16 }}>
+        <Surface style={{ flex: 1, padding: 16, boxShadow: "none" }}>
           <TextInput
-            label="Table Name"
+            label={t("table_name")}
             mode="outlined"
-            placeholder="Enter table name"
             value={name}
             onChangeText={setName}
             style={{ marginBottom: 20 }}
           />
           <DropdownMenu
-            label="Table Position"
+            label={t("table_position")}
             item={tablePosition}
             setItem={setTablePosition}
             items={tablePositions}
@@ -128,19 +141,21 @@ export default function UpdateTablePage() {
           />
         </Surface>
 
-        {updateTableLoading ? (
-          <ActivityIndicator animating={true} size="large" />
-        ) : (
-          <>
-            <Button
-              mode="contained-tonal"
-              style={{ alignSelf: "center", marginBottom: 20, width: 200 }}
-              onPress={handleUpdateTable}
-            >
-              Update Table
-            </Button>
-          </>
-        )}
+        <View style={{ marginVertical: 20 }}>
+          {updateTableLoading ? (
+            <ActivityIndicator size={40} />
+          ) : (
+            <>
+              <Button
+                mode="contained-tonal"
+                style={{ alignSelf: "center", width: 200 }}
+                onPress={handleUpdateTable}
+              >
+                {t("update_table")}
+              </Button>
+            </>
+          )}
+        </View>
       </Surface>
     </>
   );

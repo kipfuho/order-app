@@ -31,9 +31,11 @@ import {
 import { LoaderBasic } from "../../../../../../components/ui/Loader";
 import { goBackShopDishList } from "../../../../../../apis/navigate.service";
 import { View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function CreateDishPage() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
@@ -76,17 +78,25 @@ export default function CreateDishPage() {
     if (!name.trim() || !category || !dishType || !unit || !price.trim()) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2:
-          "Please enter name and category and dish type and unit and price",
+        text1: t("create_failed"),
+        text2: `${t("required")} ${_.join(
+          _.compact([
+            !name.trim() && t("dish_name"),
+            !category && t("dish_category"),
+            !dishType && t("dish_type"),
+            !unit && t("unit"),
+            !price.trim() && t("price"),
+          ]),
+          ","
+        )}`,
       });
       return;
     }
     if (_.some(images, (image) => image.loading)) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2: "Please wait for images to be uploaded",
+        text1: t("create_failed"),
+        text2: t("image_uploading_error"),
       });
       return;
     }
@@ -103,8 +113,12 @@ export default function CreateDishPage() {
         imageUrls: _.map(images, "uri"),
       }).unwrap();
       goBack();
-    } catch (err) {
-      console.error(err);
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: t("update_failed"),
+        text2: error.data?.message,
+      });
     }
   };
 
@@ -114,104 +128,110 @@ export default function CreateDishPage() {
 
   return (
     <>
-      <AppBar title="Create Dish" goBack={goBack} />
+      <AppBar title={t("create_dish")} goBack={goBack} />
       <Surface style={{ flex: 1 }}>
         <ScrollView>
-          <UploadImages
-            images={images}
-            setImages={setImages}
-            shopId={shop.id}
-          />
-          {/* General Information Collapsible */}
-          <Collapsible title="General Information">
-            <View style={{ padding: 16 }}>
-              <TextInput
-                label="Dish Name"
-                mode="outlined"
-                placeholder="Enter dish name"
-                value={name}
-                onChangeText={setName}
-                style={{ marginBottom: 20 }}
-              />
-
-              <DropdownMenu
-                item={dishType}
-                items={dishTypes}
-                label="Dish Type"
-                setItem={setDishType}
-                getItemValue={(item: string) => item}
-              />
-
-              <DropdownMenu
-                item={category}
-                items={dishCategories}
-                label="Dish Category"
-                setItem={setCategory}
-                getItemValue={(item: DishCategory) => item?.name}
-              />
-            </View>
-          </Collapsible>
-
-          {/* Price Collapsible */}
-          <Collapsible title="Price Information">
-            <View style={{ padding: 16 }}>
-              <TextInput
-                label="Price"
-                mode="outlined"
-                placeholder="Enter price"
-                value={price}
-                onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
-                keyboardType="numeric" // Shows numeric keyboard
-                style={{ marginBottom: 10 }}
-              />
-              <Surface
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 20,
-                }}
-              >
-                <Text style={{ marginRight: 16 }}>Price include tax</Text>
-                <Switch
-                  value={isTaxIncludedPrice}
-                  onValueChange={() =>
-                    setIsTaxIncludedPrice(!isTaxIncludedPrice)
-                  }
+          <Surface style={{ flex: 1, boxShadow: "none", gap: 16 }}>
+            <UploadImages
+              images={images}
+              setImages={setImages}
+              shopId={shop.id}
+            />
+            {/* General Information Collapsible */}
+            <Collapsible title={t("general_information")}>
+              <View style={{ padding: 16 }}>
+                <TextInput
+                  label={t("dish_name")}
+                  mode="outlined"
+                  value={name}
+                  onChangeText={setName}
+                  style={{ marginBottom: 20 }}
                 />
-              </Surface>
-              <DropdownMenu
-                item={unit}
-                items={units}
-                label="Unit"
-                setItem={setUnit}
-                getItemValue={(item: Unit) => item?.name}
-              />
-              <TextInput
-                mode="outlined"
-                label="Tax Rate"
-                placeholder="Enter tax rate"
-                value={taxRate}
-                keyboardType="numeric" // Shows numeric keyboard
-                onChangeText={(text) =>
-                  setTaxRate(text.replace(/[^0-9.]/g, ""))
-                } // Restrict input to numbers & decimal
-              />
-            </View>
-          </Collapsible>
+
+                <DropdownMenu
+                  item={dishType}
+                  items={dishTypes}
+                  label={t("dish_type")}
+                  setItem={setDishType}
+                  getItemValue={(item: string) => item}
+                />
+
+                <DropdownMenu
+                  item={category}
+                  items={dishCategories}
+                  label={t("dish_category")}
+                  setItem={setCategory}
+                  getItemValue={(item: DishCategory) => item?.name}
+                />
+              </View>
+            </Collapsible>
+
+            {/* Price Collapsible */}
+            <Collapsible title={t("price_information")}>
+              <View style={{ padding: 16 }}>
+                <TextInput
+                  label={t("price")}
+                  mode="outlined"
+                  value={price}
+                  onChangeText={(text) =>
+                    setPrice(text.replace(/[^0-9.]/g, ""))
+                  } // Restrict input to numbers & decimal
+                  keyboardType="numeric" // Shows numeric keyboard
+                  style={{ marginBottom: 10 }}
+                />
+                <Surface
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 20,
+                    boxShadow: "none",
+                  }}
+                >
+                  <Text style={{ marginRight: 16 }}>
+                    {t("price_include_tax")}
+                  </Text>
+                  <Switch
+                    value={isTaxIncludedPrice}
+                    onValueChange={() =>
+                      setIsTaxIncludedPrice(!isTaxIncludedPrice)
+                    }
+                  />
+                </Surface>
+                <DropdownMenu
+                  item={unit}
+                  items={units}
+                  label={t("unit")}
+                  setItem={setUnit}
+                  getItemValue={(item: Unit) => item?.name}
+                />
+                <TextInput
+                  mode="outlined"
+                  label={t("tax_rate")}
+                  value={taxRate}
+                  keyboardType="numeric" // Shows numeric keyboard
+                  onChangeText={(text) =>
+                    setTaxRate(text.replace(/[^0-9.]/g, ""))
+                  } // Restrict input to numbers & decimal
+                />
+              </View>
+            </Collapsible>
+          </Surface>
         </ScrollView>
-        {createDishLoading ? (
-          <ActivityIndicator animating={true} size="large" />
-        ) : (
-          <>
-            <Button
-              mode="contained-tonal"
-              onPress={handleCreateDish}
-              style={{ width: 200, alignSelf: "center", marginBottom: 20 }}
-            >
-              Create Dish
-            </Button>
-          </>
-        )}
+        <View style={{ marginVertical: 20 }}>
+          {createDishLoading ? (
+            <ActivityIndicator size={40} />
+          ) : (
+            <>
+              <Button
+                mode="contained-tonal"
+                onPress={handleCreateDish}
+                style={{ width: 200, alignSelf: "center" }}
+              >
+                {t("create_dish")}
+              </Button>
+            </>
+          )}
+        </View>
       </Surface>
     </>
   );

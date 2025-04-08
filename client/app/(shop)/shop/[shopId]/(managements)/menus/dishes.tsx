@@ -34,10 +34,12 @@ import {
   goToDishUpdatePage,
 } from "../../../../../../apis/navigate.service";
 import _ from "lodash";
+import { useTranslation } from "react-i18next";
 
 export default function DishesManagementPage() {
   const router = useRouter();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
@@ -115,21 +117,7 @@ export default function DishesManagementPage() {
         title="Dishes"
         goBack={() => goBackShopHome({ router, shopId: shop.id })}
       />
-      <Menu
-        visible={menuVisible}
-        onDismiss={() => setMenuVisible(false)}
-        anchor={{ x: menuPosition.x, y: menuPosition.y }}
-      >
-        <Menu.Item onPress={goEditDish} title="Edit" leadingIcon="pencil" />
-        <Menu.Item
-          onPress={() => {
-            setDialogVisible(true);
-            setMenuVisible(false);
-          }}
-          title="Delete"
-          leadingIcon="delete"
-        />
-      </Menu>
+
       {/* Delete Confirmation Dialog */}
       <Portal>
         <Dialog
@@ -163,28 +151,53 @@ export default function DishesManagementPage() {
             )}
           </Dialog.Actions>
         </Dialog>
+
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          anchor={{ x: menuPosition.x, y: menuPosition.y }}
+        >
+          <Menu.Item onPress={goEditDish} title="Edit" leadingIcon="pencil" />
+          <Menu.Item
+            onPress={() => {
+              setDialogVisible(true);
+              setMenuVisible(false);
+            }}
+            title="Delete"
+            leadingIcon="delete"
+          />
+        </Menu>
+        <Toast />
       </Portal>
+
       <Surface style={{ flex: 1 }}>
         <Surface style={styles.content}>
           {/* Left Sidebar for Categories */}
           <Surface
-            style={[styles.sidebar, { backgroundColor: theme.colors.backdrop }]}
+            style={[
+              styles.sidebar,
+              { backgroundColor: theme.colors.background },
+            ]}
           >
             <ScrollView showsVerticalScrollIndicator={false}>
-              {dishCategories.map((category) => (
-                <Button
-                  key={category.id}
-                  mode="contained-tonal"
-                  onPress={() => scrollToCategory(category.id)}
-                  style={styles.categoryButton}
-                  labelStyle={{
-                    color: theme.colors.onSurface,
-                    marginHorizontal: 0,
-                  }}
-                >
-                  {category.name}
-                </Button>
-              ))}
+              <View style={{ gap: 1 }}>
+                {dishCategories.map((category) => {
+                  console.log(category);
+                  return (
+                    <Button
+                      key={category.id}
+                      mode="contained-tonal"
+                      onPress={() => scrollToCategory(category.id)}
+                      style={styles.categoryButton}
+                      labelStyle={{
+                        marginHorizontal: 0,
+                      }}
+                    >
+                      {category.name}
+                    </Button>
+                  );
+                })}
+              </View>
             </ScrollView>
           </Surface>
 
@@ -204,7 +217,8 @@ export default function DishesManagementPage() {
                     style={{
                       flexDirection: "row",
                       flexWrap: "wrap",
-                      boxShadow: "0 0 0",
+                      boxShadow: "none",
+                      gap: 10,
                     }}
                   >
                     {_.get(dishesGroupByCategoryId, category.id, []).map(
@@ -227,7 +241,7 @@ export default function DishesManagementPage() {
               onPress={() => goToCreateDish({ router, shopId: shop.id })}
               style={styles.createButton}
             >
-              Create Dish
+              {t("create_dish")}
             </Button>
           </Surface>
         </Surface>
@@ -243,24 +257,23 @@ const styles = StyleSheet.create({
   },
   sidebar: {
     width: 120,
-    paddingRight: 8,
   },
   categoryButton: {
     padding: 0,
     borderRadius: 0,
-    marginBottom: 1,
   },
   dishList: {
     flex: 1,
   },
   categoryContainer: {
     marginBottom: 12,
+    padding: 8,
   },
   categoryTitle: {
     marginBottom: 8,
   },
   createButton: {
-    marginTop: 16,
+    marginVertical: 10,
     alignSelf: "center",
   },
 });

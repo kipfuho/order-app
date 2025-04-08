@@ -1,12 +1,12 @@
 import { Redirect, Stack } from "expo-router";
 import { useSession } from "../../hooks/useSession";
-import { ActivityIndicator } from "react-native-paper";
+import { LoaderBasic } from "../../components/ui/Loader";
 
 export default function AppLayout() {
   const { session, isLoading } = useSession();
 
   if (isLoading) {
-    return <ActivityIndicator size="large" />;
+    return <LoaderBasic />;
   }
 
   if (session) {
@@ -14,5 +14,11 @@ export default function AppLayout() {
   }
 
   // This layout can be deferred because it's not the root layout.
-  return <Stack />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    />
+  );
 }

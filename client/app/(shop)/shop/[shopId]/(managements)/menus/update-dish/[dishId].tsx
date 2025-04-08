@@ -31,17 +31,21 @@ import {
 } from "../../../../../../../stores/apiSlices/dishApi.slice";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import { goBackShopDishList } from "../../../../../../../apis/navigate.service";
+import { useTranslation } from "react-i18next";
 
 export default function UpdateDishPage() {
   const { dishId } = useLocalSearchParams();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
   ) as Shop;
-  const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery(
-    shop.id
-  );
+  const {
+    data: dishes = [],
+    isLoading: dishLoading,
+    isFetching: dishFetching,
+  } = useGetDishesQuery(shop.id);
   const { data: dishTypes = [], isLoading: dishTypeLoading } =
     useGetDishTypesQuery(shop.id);
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
@@ -72,9 +76,17 @@ export default function UpdateDishPage() {
     if (!name.trim() || !category || !dishType || !unit || !price.trim()) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2:
-          "Please enter name and category and dish type and unit and price",
+        text1: t("update_failed"),
+        text2: `${t("required")} ${_.join(
+          _.compact([
+            !name.trim() && t("dish_name"),
+            !category && t("dish_category"),
+            !dishType && t("dish_type"),
+            !unit && t("unit"),
+            !price.trim() && t("price"),
+          ]),
+          ","
+        )}`,
       });
       return;
     }
@@ -95,8 +107,12 @@ export default function UpdateDishPage() {
 
       // Navigate back to table position list
       goBackShopDishList({ router, shopId: shop.id });
-    } catch (err) {
-      console.error(err);
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: t("update_failed"),
+        text2: error.data?.message,
+      });
     }
   };
 
@@ -112,7 +128,7 @@ export default function UpdateDishPage() {
     setUnit(dish.unit);
     setTaxRate(_.toString(dish.taxRate));
     setImages(_.map(dish.imageUrls, (url) => ({ uri: url, loading: false })));
-  }, [dish]);
+  }, [dishId, dishFetching]);
 
   if (dishLoading || dishCategoryLoading || dishTypeLoading || unitLoading) {
     return <LoaderBasic />;
@@ -121,9 +137,9 @@ export default function UpdateDishPage() {
   if (!dish) {
     return (
       <Surface style={{ flex: 1 }}>
-        <Text>Dish not found</Text>
+        <Text>{t("dish_not_found")}</Text>
         <Button onPress={() => goBackShopDishList({ router, shopId: shop.id })}>
-          <Text>Go Back</Text>
+          <Text>{t("go_back")}</Text>
         </Button>
       </Surface>
     );
@@ -132,104 +148,110 @@ export default function UpdateDishPage() {
   return (
     <>
       <AppBar
-        title="Update Dish"
+        title={t("update_dish")}
         goBack={() => goBackShopDishList({ router, shopId: shop.id })}
       />
       <Surface style={{ flex: 1 }}>
-        <ScrollView style={{ flex: 1, padding: 16 }}>
-          <UploadImages
-            images={images}
-            setImages={setImages}
-            shopId={shop.id}
-          />
-          {/* General Information Collapsible */}
-          <Collapsible title="General Information">
-            <View style={{ padding: 16 }}>
-              <TextInput
-                label="Dish Name"
-                mode="outlined"
-                placeholder="Enter dish name"
-                value={name}
-                onChangeText={setName}
-                style={{ marginBottom: 20 }}
-              />
-
-              <DropdownMenu
-                item={dishType}
-                items={dishTypes}
-                label="Dish Type"
-                setItem={setDishType}
-                getItemValue={(item: string) => item}
-              />
-
-              <DropdownMenu
-                item={category}
-                items={dishCategories}
-                label="Dish Category"
-                setItem={setCategory}
-                getItemValue={(item: DishCategory) => item?.name}
-              />
-            </View>
-          </Collapsible>
-
-          {/* Price Collapsible */}
-          <Collapsible title="Price Information">
-            <View style={{ padding: 16 }}>
-              <TextInput
-                label="Price"
-                mode="outlined"
-                placeholder="Enter price"
-                value={price}
-                onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
-                keyboardType="numeric" // Shows numeric keyboard
-                style={{ marginBottom: 10 }}
-              />
-              <Surface
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 20,
-                }}
-              >
-                <Text style={{ marginRight: 16 }}>Price include tax</Text>
-                <Switch
-                  value={isTaxIncludedPrice}
-                  onValueChange={onToggleSwitch}
+        <ScrollView>
+          <Surface style={{ flex: 1, boxShadow: "none", gap: 16 }}>
+            <UploadImages
+              images={images}
+              setImages={setImages}
+              shopId={shop.id}
+            />
+            {/* General Information Collapsible */}
+            <Collapsible title={t("general_information")}>
+              <View style={{ padding: 16 }}>
+                <TextInput
+                  label={t("dish_name")}
+                  mode="outlined"
+                  value={name}
+                  onChangeText={setName}
+                  style={{ marginBottom: 20 }}
                 />
-              </Surface>
-              <DropdownMenu
-                item={unit}
-                items={units}
-                label="Unit"
-                setItem={setUnit}
-                getItemValue={(item: Unit) => item?.name}
-              />
-              <TextInput
-                mode="outlined"
-                label="Tax Rate"
-                placeholder="Enter tax rate"
-                value={taxRate}
-                keyboardType="numeric" // Shows numeric keyboard
-                onChangeText={(text) =>
-                  setTaxRate(text.replace(/[^0-9.]/g, ""))
-                } // Restrict input to numbers & decimal
-              />
-            </View>
-          </Collapsible>
+
+                <DropdownMenu
+                  item={dishType}
+                  items={dishTypes}
+                  label={t("dish_type")}
+                  setItem={setDishType}
+                  getItemValue={(item: string) => item}
+                />
+
+                <DropdownMenu
+                  item={category}
+                  items={dishCategories}
+                  label={t("dish_category")}
+                  setItem={setCategory}
+                  getItemValue={(item: DishCategory) => item?.name}
+                />
+              </View>
+            </Collapsible>
+
+            {/* Price Collapsible */}
+            <Collapsible title={t("price_information")}>
+              <View style={{ padding: 16 }}>
+                <TextInput
+                  label={t("price")}
+                  mode="outlined"
+                  value={price}
+                  onChangeText={(text) =>
+                    setPrice(text.replace(/[^0-9.]/g, ""))
+                  } // Restrict input to numbers & decimal
+                  keyboardType="numeric" // Shows numeric keyboard
+                  style={{ marginBottom: 10 }}
+                />
+                <Surface
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 20,
+                    boxShadow: "none",
+                  }}
+                >
+                  <Text style={{ marginRight: 16 }}>
+                    {t("price_include_tax")}
+                  </Text>
+                  <Switch
+                    value={isTaxIncludedPrice}
+                    onValueChange={onToggleSwitch}
+                  />
+                </Surface>
+                <DropdownMenu
+                  item={unit}
+                  items={units}
+                  label={t("unit")}
+                  setItem={setUnit}
+                  getItemValue={(item: Unit) => item?.name}
+                />
+                <TextInput
+                  mode="outlined"
+                  label={t("tax_rate")}
+                  value={taxRate}
+                  keyboardType="numeric" // Shows numeric keyboard
+                  onChangeText={(text) =>
+                    setTaxRate(text.replace(/[^0-9.]/g, ""))
+                  } // Restrict input to numbers & decimal
+                />
+              </View>
+            </Collapsible>
+          </Surface>
         </ScrollView>
-        {updateDishLoading ? (
-          <ActivityIndicator animating={true} size="large" />
-        ) : (
-          <>
-            <Button
-              mode="contained-tonal"
-              onPress={handleUpdateDish}
-              style={{ width: 200, alignSelf: "center", marginBottom: 20 }}
-            >
-              Update Dish
-            </Button>
-          </>
-        )}
+        <View style={{ marginVertical: 20 }}>
+          {updateDishLoading ? (
+            <ActivityIndicator size={40} />
+          ) : (
+            <>
+              <Button
+                mode="contained-tonal"
+                onPress={handleUpdateDish}
+                style={{ width: 200, alignSelf: "center" }}
+              >
+                {t("update_dish")}
+              </Button>
+            </>
+          )}
+        </View>
       </Surface>
     </>
   );

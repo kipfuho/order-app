@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button, Menu, Text } from "react-native-paper";
 
 export const DropdownMenu = ({
@@ -14,6 +15,7 @@ export const DropdownMenu = ({
   setItem: Dispatch<SetStateAction<any>>;
   getItemValue: (item: any) => string;
 }) => {
+  const { t } = useTranslation();
   // Menu state for dropdown
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -23,7 +25,7 @@ export const DropdownMenu = ({
     <>
       {/* Dish Category Dropdown Label */}
       <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
-        Select {label}
+        {t("select")} {label}
       </Text>
       {/* Dish Category Dropdown */}
       <Menu
@@ -35,7 +37,7 @@ export const DropdownMenu = ({
             onPress={openMenu}
             style={{ marginBottom: 20, borderRadius: 5 }}
           >
-            {getItemValue(item) || `Select ${label}`}
+            {getItemValue(item) || `${t("select")} ${label}`}
           </Button>
         }
       >
