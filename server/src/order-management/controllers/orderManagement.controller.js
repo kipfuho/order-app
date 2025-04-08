@@ -2,7 +2,10 @@ const _ = require('lodash');
 const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
 const orderManagementService = require('../services/orderManagement.service');
-const { convertOrderSessionForResponse } = require('../converters/orderSession.converter');
+const {
+  convertOrderSessionForResponse,
+  convertOrderSessionHistoryForResponse,
+} = require('../converters/orderSession.converter');
 
 const createOrder = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
@@ -75,7 +78,8 @@ const getOrderSessionHistory = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const { from, to } = req.body;
   const orderSessions = await orderManagementService.getOrderHistory({ from, shopId, to });
-  res.status(httpStatus.OK).send({ message: 'OK', orderSessions });
+  const orderSessionResponse = _.map(orderSessions, (orderSession) => convertOrderSessionHistoryForResponse(orderSession));
+  res.status(httpStatus.OK).send({ message: 'OK', orderSessions: orderSessionResponse });
 });
 
 const discountDishOrder = catchAsync(async (req, res) => {

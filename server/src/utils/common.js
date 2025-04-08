@@ -113,6 +113,36 @@ const formatOrderSessionNo = (orderSessionJson) => {
   }
 };
 
+/**
+ * Creates a query options for date in mongoose.
+ * @params: from date ( ex: 2021-11-02)
+ * @params: to date ( ex: 2021-11-03)
+ * Tinh theo timezone, khong tinh report time
+ */
+const createSearchByDateOptionWithShopTimezone = ({ from, to, filterKey = 'createdAt' }) => {
+  const timezone = getShopTimeZone();
+  const options = {};
+
+  if (!from) {
+    // eslint-disable-next-line no-param-reassign
+    from = new Date();
+    // eslint-disable-next-line no-param-reassign
+    to = new Date();
+  }
+  if (from) {
+    // start of day
+    const fromDate = moment(from).tz(timezone).startOf('day').toDate();
+    options[filterKey] = { ...options[filterKey], $gte: fromDate };
+  }
+  if (to) {
+    // end of day
+    const toDate = moment(to).tz(timezone).endOf('day').toDate();
+    options[filterKey] = { ...options[filterKey], $lte: toDate };
+  }
+
+  return options;
+};
+
 module.exports = {
   sleep,
   getStartTimeOfToday,
@@ -124,4 +154,5 @@ module.exports = {
   getStringId,
   refineFileNameForUploading,
   formatOrderSessionNo,
+  createSearchByDateOptionWithShopTimezone,
 };

@@ -1,11 +1,15 @@
 const _ = require('lodash');
-const { Order, OrderSession, Cart, OrderSessionReport } = require('../../models');
+const { Order, OrderSession, Cart } = require('../../models');
 const orderUtilService = require('./orderUtils.service');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { OrderSessionStatus, OrderSessionDiscountType, DiscountValueType } = require('../../utils/constant');
 const { getTablesFromCache } = require('../../metadata/tableMetadata.service');
-const { getRoundDishPrice, getRoundDiscountAmount } = require('../../utils/common');
+const {
+  getRoundDishPrice,
+  getRoundDiscountAmount,
+  createSearchByDateOptionWithShopTimezone,
+} = require('../../utils/common');
 const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 
@@ -206,8 +210,11 @@ const cancelPaidStatus = async ({ orderSessionId, shopId }) => {
 };
 
 const getOrderHistory = async ({ shopId, from, to }) => {
-  // replace with order session report
-  const orderSessions = await OrderSessionReport.find({ shop: shopId, createdAt: { $gte: from, $lt: to } });
+  const timeFilter = createSearchByDateOptionWithShopTimezone({ from, to });
+  const filterOptions = { shop: shopId, ...timeFilter };
+
+  // TODO: replace with order session report
+  const orderSessions = await OrderSession.find(filterOptions);
   return _.map(orderSessions, (orderSession) => orderSession.toJSON());
 };
 

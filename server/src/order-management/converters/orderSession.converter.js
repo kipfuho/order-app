@@ -28,6 +28,31 @@ const convertOrderSessionForResponse = (orderSessionJson, shouldMergeDishOrders 
 };
 /* eslint-enable no-param-reassign */
 
+/* eslint-disable no-param-reassign */
+const convertOrderSessionHistoryForResponse = (orderSession) => {
+  const orderSessionJson = _.pick(orderSession, [
+    'tableNames',
+    'endedAt',
+    'updatedAt',
+    'createdAt',
+    'orderSessionNo',
+    'paymentAmount',
+    'paymentDetails',
+    'status',
+  ]);
+  orderSessionJson.tableName = _.join(orderSessionJson.tableNames, ',');
+  orderSessionJson.billNo = formatOrderSessionNo(orderSessionJson);
+  orderSessionJson.endedAt = formatDateHHMMDDMMYYYY(orderSessionJson.endedAt);
+  orderSessionJson.updatedAt = formatDateHHMMDDMMYYYY(orderSessionJson.updatedAt);
+  orderSessionJson.createdAt = formatDateHHMMDDMMYYYY(orderSessionJson.createdAt);
+
+  delete orderSessionJson.orderSessionNo;
+  delete orderSessionJson.tableNames;
+  return orderSessionJson;
+};
+/* eslint-enable no-param-reassign */
+
 module.exports = {
   convertOrderSessionForResponse,
+  convertOrderSessionHistoryForResponse,
 };

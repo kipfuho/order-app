@@ -13,7 +13,7 @@ router.post('/get-ordersession-detail', auth(), orderManagementController.getOrd
 router.post('/pay-ordersession', auth(), orderManagementController.payOrderSession);
 router.post('/cancel-ordersession', auth(), orderManagementController.cancelOrderSession);
 router.post('/cancel-ordersession-paid-status', auth(), orderManagementController.cancelOrderSessionPaidStatus);
-router.post('/get-ordersession-history', orderManagementController.getOrderSessionHistory);
+router.post('/get-ordersession-history', auth(), orderManagementController.getOrderSessionHistory);
 router.post('/update-cart', auth(), orderManagementController.updateCart);
 router.post('/checkout-cart', auth(), orderManagementController.checkoutCart);
 router.post('/discount-dishorder', auth(), orderManagementController.discountDishOrder);
