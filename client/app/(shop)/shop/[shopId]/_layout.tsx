@@ -9,12 +9,14 @@ import { updateCurrentShop } from "../../../../stores/shop.slice";
 import { RootState } from "../../../../stores/store";
 import { LoaderBasic } from "../../../../components/ui/Loader";
 import { goBackShopList } from "../../../../apis/navigate.service";
+import { useTranslation } from "react-i18next";
 
 export default function AppLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };
   const router = useRouter();
   const dispatch = useDispatch();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const { data: shops = [], isLoading } = useGetShopsQuery({});
   const shop = shops.find((s) => s.id.toString() === shopId);
@@ -38,14 +40,14 @@ export default function AppLayout() {
           variant="displayMedium"
           style={{ color: theme.colors.error, alignSelf: "center" }}
         >
-          Shop not found
+          {t("shop_not_found")}
         </Text>
         <Button
           mode="contained"
           style={styles.baseButton}
           onPress={() => goBackShopList({ router })}
         >
-          Go Back
+          {t("go_back")}
         </Button>
       </Surface>
     );

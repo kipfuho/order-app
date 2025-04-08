@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { TableForOrder } from "../../../stores/state.interface";
-import { Card, Divider, Icon, Surface, Text } from "react-native-paper";
+import { Card, Icon, Surface, Text, useTheme } from "react-native-paper";
 import { TouchableOpacity, View } from "react-native";
 
 const getTimeColorByCode = (code: number | undefined) => {
@@ -16,6 +16,8 @@ const getTimeColorByTimeDifferent = (minutesSinceOrderCreated: number) => {
 };
 
 const TableForOrderCurrentInfo = ({ table }: { table: TableForOrder }) => {
+  const theme = useTheme();
+
   if (table.numberOfOrderSession) {
     const now = Date.now();
     const minutesSinceOrderCreated = Math.floor(
@@ -23,7 +25,17 @@ const TableForOrderCurrentInfo = ({ table }: { table: TableForOrder }) => {
     );
 
     return (
-      <Surface style={{ flex: 1, padding: 8 }}>
+      <Surface
+        style={{
+          flex: 1,
+          padding: 8,
+          borderRadius: 5,
+          borderTopLeftRadius: 0,
+          borderTopRightRadius: 0,
+          backgroundColor: theme.colors.secondaryContainer,
+          boxShadow: "none",
+        }}
+      >
         {/* Row: Customers and Order ID */}
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={{ fontSize: 18, fontWeight: "bold" }}>
@@ -58,7 +70,15 @@ const TableForOrderCurrentInfo = ({ table }: { table: TableForOrder }) => {
 
   return (
     <Surface
-      style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 5,
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
+        boxShadow: "none",
+      }}
     >
       <Icon source="plus-circle-outline" size={30} />
     </Surface>
@@ -72,6 +92,7 @@ export const TableForOrderCard = ({
   table: TableForOrder;
   onClick: (tableId: string) => void;
 }) => {
+  const theme = useTheme();
   return (
     <TouchableOpacity onPress={() => onClick(table.id)} activeOpacity={1}>
       <Card
@@ -83,14 +104,25 @@ export const TableForOrderCard = ({
           marginHorizontal: 5,
           marginVertical: 5,
         }}
-        mode="contained"
+        mode="elevated"
         contentStyle={{ flex: 1 }}
       >
         {/* Table name */}
-        <Text style={{ padding: 8 }} numberOfLines={1}>
-          {table.name}
-        </Text>
-        <Divider style={{ borderWidth: 1 }} />
+        <Surface
+          style={{
+            backgroundColor: theme.colors.tertiaryContainer,
+            borderRadius: 5,
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
+          }}
+        >
+          <Text
+            style={{ padding: 8, color: theme.colors.onTertiaryContainer }}
+            numberOfLines={1}
+          >
+            {table.name}
+          </Text>
+        </Surface>
         <TableForOrderCurrentInfo table={table} />
       </Card>
     </TouchableOpacity>

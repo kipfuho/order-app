@@ -1,7 +1,7 @@
 import React from "react";
 import { ScrollView } from "react-native";
 import { Button, List, Surface, useTheme } from "react-native-paper";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { AppBar } from "../../components/AppBar";
 import { useGetShopsQuery } from "../../stores/apiSlices/shopApi.slice";
 import { LoaderBasic } from "../../components/ui/Loader";
@@ -38,7 +38,7 @@ export default function ShopsPage() {
                 key={item.id}
                 title={item.name}
                 style={{
-                  backgroundColor: theme.colors.backdrop,
+                  backgroundColor: theme.colors.secondaryContainer,
                   borderRadius: 8,
                   marginBottom: 8,
                 }}

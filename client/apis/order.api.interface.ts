@@ -17,8 +17,8 @@ interface GetOrderSessionDetailRequest {
 
 interface GetOrderSessionHistoryRequest {
   shopId: string;
-  from: string;
-  to: string;
+  from?: Date;
+  to?: Date;
 }
 
 interface CreateOrderRequest {

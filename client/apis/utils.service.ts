@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { Tokens } from "../stores/state.interface";
 import store from "../stores/store";
 import { refreshTokensRequest } from "./api.service";
 import { signIn, signOut } from "../stores/authSlice";
@@ -23,9 +22,7 @@ export const getAccessToken = async (): Promise<string> => {
   }
 
   if (isTokenExpired(_.get(user, "tokens.access"))) {
-    const newTokens: Tokens = await refreshTokensRequest(
-      user.tokens.refresh.token
-    );
+    const newTokens = await refreshTokensRequest(user.tokens.refresh.token);
     if (!newTokens) {
       store.dispatch(signOut());
       return "";

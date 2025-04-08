@@ -13,7 +13,11 @@ import {
   getTablesForOrderRequest,
   payOrderSessionRequest,
 } from "../../apis/order.api.service";
-import { OrderSession, TableForOrder } from "../state.interface";
+import {
+  OrderSession,
+  OrderSessionHistory,
+  TableForOrder,
+} from "../state.interface";
 import { RootState } from "../store";
 import {
   CancelOrderSessionPaidStatusRequest,
@@ -95,7 +99,7 @@ export const orderApiSlice = createApi({
     }),
 
     getOrderSessionHistory: builder.query<
-      OrderSession[],
+      OrderSessionHistory[],
       GetOrderSessionHistoryRequest
     >({
       queryFn: async ({ shopId, from, to }) => {

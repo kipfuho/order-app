@@ -1,4 +1,4 @@
-import { OrderSession, TableForOrder } from "../stores/state.interface";
+import { OrderSession, OrderSessionHistory, TableForOrder } from "../stores/state.interface";
 import { apiRequest } from "./api.service";
 import {
   CancelOrderSessionPaidStatusRequest,
@@ -88,7 +88,7 @@ const getOrderSessionHistoryRequest = async ({
 }: GetOrderSessionHistoryRequest) => {
   const accessToken = await getAccessToken();
 
-  const result: { orderSessions: OrderSession[] } = await apiRequest({
+  const result: { orderSessions: OrderSessionHistory[] } = await apiRequest({
     method: "POST",
     endpoint: `/v1/shops/${shopId}/orders/get-ordersession-history`,
     token: accessToken,

@@ -11,3 +11,15 @@ export enum OrderSessionStatus {
   paid = "paid",
   cancelled = "cancelled",
 }
+
+export enum CurrencyText {
+  VND = "đ",
+  USD = "$",
+}
+
+export const Countries = {
+  VietNam: {
+    name: "Việt Nam",
+    currency: "VND",
+  },
+};

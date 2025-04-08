@@ -22,6 +22,7 @@ import { styles } from "../../../_layout";
 import { createDefaultUnitsRequest } from "../../../../apis/dish.api.service";
 import { useDeleteShopMutation } from "../../../../stores/apiSlices/shopApi.slice";
 import { LoaderBasic } from "../../../../components/ui/Loader";
+import { useTranslation } from "react-i18next";
 
 interface Item {
   title: string;
@@ -31,32 +32,32 @@ interface Item {
 
 const BUTTONS: Item[] = [
   {
-    title: "Orders",
+    title: "orders",
     route: "orders",
     icon: "food",
   },
   {
-    title: "Menus",
+    title: "menus",
     route: "menus",
     icon: "menu",
   },
   {
-    title: "Customers",
+    title: "customers",
     route: "customers",
     icon: "face-agent",
   },
   {
-    title: "Settings",
+    title: "settings",
     route: "settings",
     icon: "cog",
   },
   {
-    title: "Analytics",
+    title: "analytics",
     route: "analytics",
     icon: "google-analytics",
   },
   {
-    title: "Staff",
+    title: "staffs",
     route: "staffs",
     icon: "account-group",
   },
@@ -71,6 +72,7 @@ const getButtonSize = (width: number) => {
 export default function ShopPage() {
   const router = useRouter();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
@@ -129,7 +131,7 @@ export default function ShopPage() {
                 alignItems: "center",
                 elevation: 4,
                 borderRadius: 10,
-                backgroundColor: theme.colors.backdrop,
+                backgroundColor: theme.colors.tertiaryContainer,
                 paddingVertical: 10,
               }}
             >
@@ -192,7 +194,7 @@ export default function ShopPage() {
               >
                 <View style={{ flex: 1, gap: 5 }}>
                   <Icon source={item.icon} size={50} />
-                  <Text variant="bodyLarge">{item.title}</Text>
+                  <Text variant="bodyLarge">{t(item.title)}</Text>
                 </View>
               </Button>
             ))}
@@ -203,17 +205,13 @@ export default function ShopPage() {
       {/* Update & Delete Modal */}
       <Portal>
         <Dialog visible={modalVisible} onDismiss={() => setModalVisible(false)}>
-          <Dialog.Title>Actions</Dialog.Title>
+          <Dialog.Title>{t("settings")}</Dialog.Title>
           <Dialog.Content style={{ gap: 10 }}>
             <Button mode="contained" onPress={handleUpdate}>
-              Update
+              {t("update_shop")}
             </Button>
             <Button mode="elevated" onPress={handleDelete}>
-              Delete
-            </Button>
-            {/* TODO: Remove this */}
-            <Button mode="outlined" onPress={handleCreateDefaultUnits}>
-              Create Default Units
+              {t("delete_shop")}
             </Button>
           </Dialog.Content>
           <Dialog.Actions>
@@ -221,7 +219,7 @@ export default function ShopPage() {
               mode="contained-tonal"
               onPress={() => setModalVisible(false)}
             >
-              Cancel
+              {t("cancel")}
             </Button>
           </Dialog.Actions>
         </Dialog>
@@ -231,9 +229,9 @@ export default function ShopPage() {
           visible={confirmModalVisible || deleteShopLoading}
           onDismiss={() => setConfirmModalVisible(false)}
         >
-          <Dialog.Title>Confirm Deletion</Dialog.Title>
+          <Dialog.Title>{t("delete_shop")}</Dialog.Title>
           <Dialog.Content>
-            <Text>Are you sure you want to delete this shop?</Text>
+            <Text>{t("delete_shop_confirmation")}</Text>
           </Dialog.Content>
           <Dialog.Actions>
             {deleteShopLoading ? (
@@ -241,10 +239,10 @@ export default function ShopPage() {
             ) : (
               <>
                 <Button onPress={confirmDelete} textColor={theme.colors.error}>
-                  Yes, Delete
+                  {t("confirm")}
                 </Button>
                 <Button onPress={() => setConfirmModalVisible(false)}>
-                  Cancel
+                  {t("cancel")}
                 </Button>
               </>
             )}

@@ -3,6 +3,7 @@ import { Redirect, Stack } from "expo-router";
 import store, { persistor } from "../../stores/store";
 import { useEffect } from "react";
 import { useSession } from "../../hooks/useSession";
+import { LoaderBasic } from "../../components/ui/Loader";
 
 export default function AppLayout() {
   const { session, isLoading } = useSession();
@@ -25,7 +26,7 @@ export default function AppLayout() {
 
   // You can keep the splash screen open, or render a loading screen like we do here.
   if (isLoading) {
-    return <Text>Loading...</Text>;
+    return <LoaderBasic />;
   }
 
   // Only require authentication within the (app) group's layout as users

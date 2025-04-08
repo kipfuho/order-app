@@ -16,8 +16,12 @@ import { goBackShopHome } from "../../../../apis/navigate.service";
 import { ScrollView } from "react-native";
 import { styles } from "../../../_layout";
 import { useUpdateShopMutation } from "../../../../stores/apiSlices/shopApi.slice";
+import { useTranslation } from "react-i18next";
 
 export default function UpdateShopPage() {
+  const { t } = useTranslation();
+  const router = useRouter();
+
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
   ) as Shop;
@@ -29,7 +33,6 @@ export default function UpdateShopPage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState(shop.email || "");
   const [taxRate, setTaxRate] = useState("");
-  const router = useRouter();
 
   const resetField = useCallback(async () => {
     setName("");
@@ -43,8 +46,8 @@ export default function UpdateShopPage() {
     if (!name.trim() || !email.trim()) {
       Toast.show({
         type: "error",
-        text1: "Create Failed",
-        text2: "Please enter both shop name and email",
+        text1: t("create_failed"),
+        text2: `${t("required")}: ${_.join([t("shop_name"), t("email")], ",")}`,
       });
       return;
     }
@@ -69,42 +72,42 @@ export default function UpdateShopPage() {
   return (
     <>
       <AppBar
-        title="Update shop"
+        title={t("update_shop")}
         goBack={() => goBackShopHome({ router, shopId: shop.id })}
       />
       <Surface style={styles.baseContainer}>
         <ScrollView>
           <TextInput
             mode="outlined"
-            label="Shop Name"
+            label={t("shop_name")}
             value={name}
             onChangeText={setName}
           />
 
           <TextInput
             mode="outlined"
-            label="Email"
+            label={t("email")}
             value={email}
             onChangeText={setEmail}
           />
 
           <TextInput
             mode="outlined"
-            label="Phone"
+            label={t("phone")}
             value={phone}
             onChangeText={setPhone}
           />
 
           <TextInput
             mode="outlined"
-            label="Location"
+            label={t("location")}
             value={location}
             onChangeText={setLocation}
           />
 
           <TextInput
             mode="outlined"
-            label="Tax Rate"
+            label={t("tax_rate")}
             value={taxRate}
             keyboardType="numeric" // Shows numeric keyboard
             onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
@@ -122,7 +125,7 @@ export default function UpdateShopPage() {
               onPress={handleUpdateShop}
               style={styles.baseButton}
             >
-              Update Shop
+              {t("update_shop")}
             </Button>
           )}
         </ScrollView>

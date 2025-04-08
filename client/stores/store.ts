@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
+import settingReducer from "./appSetting.slice";
 import shopReducer from "./shop.slice";
 import customerReducer from "./customerSlice";
 import awsReducer from "./awsSlice";
@@ -21,11 +22,13 @@ const persistConfig = {
 
 // Create a persisted reducer
 const persistedAuthReducer = persistReducer(persistConfig, authReducer);
+const persistedSettingReducer = persistReducer(persistConfig, settingReducer);
 
 // Combine reducers
 const rootReducer = combineReducers({
   auth: persistedAuthReducer, // Persistent
-  shop: shopReducer,
+  setting: persistedSettingReducer, // Persistent
+  shop: shopReducer, // Non-persistent
   customer: customerReducer, // Non-persistent
   aws: awsReducer, // Non-persistent
   [shopApiSlice.reducerPath]: shopApiSlice.reducer,

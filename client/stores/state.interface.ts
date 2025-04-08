@@ -26,7 +26,10 @@ interface Shop {
   email: string;
   location?: string;
   imageUrls?: string[];
-  country: string;
+  country: {
+    name: string;
+    currency: string;
+  };
 }
 
 interface Table {
@@ -127,6 +130,16 @@ interface OrderSessionDiscount {
   discountProducts: OrderSessionDiscountProduct[];
 }
 
+interface OrderSessionHistory {
+  id: string;
+  billNo: string;
+  createdAt: string;
+  endedAt: string;
+  tableName: string;
+  paymentAmount: number;
+  status: OrderSessionStatus;
+}
+
 interface OrderSession {
   id: string;
   tableIds: string[]; // ids
@@ -212,4 +225,5 @@ export {
   OrderSession,
   OrderSessionDiscount,
   OrderSessionDiscountProduct,
+  OrderSessionHistory,
 };

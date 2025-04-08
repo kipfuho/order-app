@@ -26,10 +26,13 @@ import {
 } from "../../../../../../apis/navigate.service";
 import { useRouter } from "expo-router";
 import { CustomerInfoDialog } from "../../../../../../components/ui/orders/CustomerInfoDialog";
+import { useTranslation } from "react-i18next";
 
 export default function OrderManagementOrderPage() {
   const router = useRouter();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
+
   const { currentShop } = useSelector((state: RootState) => state.shop);
   const shop = currentShop as Shop;
 
@@ -100,7 +103,7 @@ export default function OrderManagementOrderPage() {
   return (
     <>
       <AppBar
-        title="Order Management"
+        title={t("order_management")}
         goBack={() => {
           goBackShopHome({ router, shopId: shop.id });
         }}
@@ -120,7 +123,7 @@ export default function OrderManagementOrderPage() {
           }}
         >
           <AppBar
-            title="Create order"
+            title={t("create_order")}
             goBack={() => setCreateOrderVisible(false)}
           />
           <CreateOrder setCreateOrderVisible={setCreateOrderVisible} />
@@ -150,7 +153,7 @@ export default function OrderManagementOrderPage() {
                 alignSelf: "center",
               }}
             >
-              ALL
+              {t("all")}
             </Button>
             {tablePositions.map((position) => (
               <Button
