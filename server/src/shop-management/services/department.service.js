@@ -9,9 +9,8 @@ const getDepartment = async ({ shopId, departmentId }) => {
 };
 
 const getDepartments = async ({ shopId }) => {
-  const department = await getDepartmentsFromCache({ shopId });
-  throwBadRequest(!department, 'Không tìm thấy bộ phận');
-  return department;
+  const departments = await getDepartmentsFromCache({ shopId });
+  return departments;
 };
 
 const createDepartment = async ({ shopId, createBody }) => {

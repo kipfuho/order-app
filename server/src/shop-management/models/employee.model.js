@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const { toJSON } = require('../../utils/plugins');
 const { Status } = require('../../utils/constant');
 const { getStringId } = require('../../utils/common');
-const { deleteEmployeeCache } = require('../../metadata/common');
+const { deleteEmployeeCache, deleteEmployeeByUserIdCache } = require('../../metadata/common');
 const logger = require('../../config/logger');
 
 const employeeSchema = new mongoose.Schema(
@@ -24,7 +24,9 @@ const employeeSchema = new mongoose.Schema(
 employeeSchema.post('save', async function (doc) {
   try {
     const shopId = getStringId({ object: doc, key: 'shop' });
+    const userId = getStringId({ object: doc, key: 'user' });
     await deleteEmployeeCache({ shopId });
+    await deleteEmployeeByUserIdCache({ shopId, userId });
   } catch (err) {
     logger.error(`error running post hook save of employee model`);
   }
@@ -34,15 +36,18 @@ employeeSchema.post(new RegExp('.*update.*', 'i'), async function () {
   try {
     const filter = this.getFilter();
     let shopId = _.get(filter, 'shop');
+    let userId = _.get(filter, 'user');
     const employeeId = _.get(filter, '_id');
-    if (!shopId) {
+    if (!shopId || !userId) {
       const employee = await this.model.findById(employeeId);
       shopId = _.get(employee, 'shop');
+      userId = _.get(employee, 'user');
     }
-    if (!shopId) {
+    if (!shopId || !userId) {
       return;
     }
     await deleteEmployeeCache({ shopId });
+    await deleteEmployeeByUserIdCache({ shopId, userId });
   } catch (err) {
     logger.error(`error running post hook update of employee model`);
   }

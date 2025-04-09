@@ -5,6 +5,7 @@ const shopManagementService = require('../services/shopManagement.service');
 const tableService = require('../services/table.service');
 const employeeService = require('../services/employee.service');
 const departmentService = require('../services/department.service');
+const { convertEmployeeForResponse } = require('../converters/employee.converter');
 
 const getShop = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
@@ -115,20 +116,21 @@ const getEmployee = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const employeeId = _.get(req, 'params.employeeId');
   const employee = await employeeService.getEmployee({ shopId, employeeId });
-  res.status(httpStatus.OK).send({ employee });
+  res.status(httpStatus.OK).send({ employee: convertEmployeeForResponse(employee) });
 });
 
 const getEmployees = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const employees = await employeeService.getEmployees({ shopId });
-  res.status(httpStatus.OK).send({ employees });
+  const employeeResponse = _.map(employees, (e) => convertEmployeeForResponse(e));
+  res.status(httpStatus.OK).send({ employees: employeeResponse });
 });
 
 const createEmployee = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const createBody = req.body;
   const employee = await employeeService.createEmployee({ shopId, createBody });
-  res.status(httpStatus.CREATED).send({ employee });
+  res.status(httpStatus.CREATED).send({ employee: convertEmployeeForResponse(employee) });
 });
 
 const updateEmployee = catchAsync(async (req, res) => {
@@ -136,7 +138,7 @@ const updateEmployee = catchAsync(async (req, res) => {
   const employeeId = _.get(req, 'params.employeeId');
   const updateBody = req.body;
   const employee = await employeeService.updateEmployee({ shopId, employeeId, updateBody });
-  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công', employee });
+  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công', employee: convertEmployeeForResponse(employee) });
 });
 
 const deleteEmployee = catchAsync(async (req, res) => {
@@ -190,9 +192,8 @@ const getDepartment = catchAsync(async (req, res) => {
 
 const getDepartments = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const departmentId = _.get(req, 'params.departmentId');
-  const department = await departmentService.getDepartment({ shopId, departmentId });
-  res.status(httpStatus.OK).send({ department });
+  const departments = await departmentService.getDepartments({ shopId });
+  res.status(httpStatus.OK).send({ departments });
 });
 
 const createDepartment = catchAsync(async (req, res) => {
@@ -215,6 +216,12 @@ const deleteDepartment = catchAsync(async (req, res) => {
   const departmentId = _.get(req, 'params.departmentId');
   await departmentService.deleteDepartment({ shopId, departmentId });
   res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
+});
+
+const getPermissionTypes = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const permissionTypes = await employeeService.getAllPermissionTypes(shopId);
+  res.status(httpStatus.OK).send({ message: 'Xoá thành công', permissionTypes });
 });
 
 module.exports = {
@@ -248,4 +255,5 @@ module.exports = {
   createDepartment,
   updateDepartment,
   deleteDepartment,
+  getPermissionTypes,
 };

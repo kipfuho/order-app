@@ -4,6 +4,7 @@ const auth = require('../../middlewares/auth');
 
 const router = express.Router();
 
+router.get('/permissionTypes', auth(), shopManagementController.getPermissionTypes);
 router.get('/:employeeId', auth(), shopManagementController.getEmployee);
 router.route('/').get(auth(), shopManagementController.getEmployees).post(auth(), shopManagementController.createEmployee);
 router.patch('/:employeeId', auth(), shopManagementController.updateEmployee);

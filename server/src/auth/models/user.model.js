@@ -3,6 +3,7 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('../../utils/plugins');
 const { roles } = require('../../config/roles');
+const { Status } = require('../../utils/constant');
 
 const userSchema = new mongoose.Schema(
   {
@@ -25,7 +26,7 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      unique: true,
+      unique: true, // make this sparse index
       trim: true,
       validate(value) {
         if (value && !validator.isMobilePhone(value)) {
@@ -54,6 +55,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
   },
   {
     timestamps: true,

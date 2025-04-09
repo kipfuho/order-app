@@ -1,10 +1,15 @@
+const { createUser } = require('../../auth/services/user.service');
+const { roles } = require('../../config/roles');
+const { getMessageByLocale } = require('../../locale');
 const {
   getEmployeePositionFromCache,
   getEmployeePositionsFromCache,
   getEmployeeFromCache,
   getEmployeesFromCache,
 } = require('../../metadata/employeeMetadata.service');
+const { getUserFromDatabase } = require('../../metadata/userMetadata.service');
 const { EmployeePosition, Employee } = require('../../models');
+const { PermissionType } = require('../../utils/constant');
 const { throwBadRequest } = require('../../utils/errorHandling');
 
 const getEmployee = async ({ shopId, employeeId }) => {
@@ -15,12 +20,26 @@ const getEmployee = async ({ shopId, employeeId }) => {
 
 const getEmployees = async ({ shopId }) => {
   const employees = await getEmployeesFromCache({ shopId });
-  throwBadRequest(!employees, 'Không tìm thấy nhân viên');
   return employees;
 };
 
 const createEmployee = async ({ shopId, createBody }) => {
-  const employee = await Employee.create({ ...createBody, shop: shopId });
+  const { name, email, password, positionId, departmentId, permissions } = createBody;
+
+  let user = await getUserFromDatabase({ email });
+  if (!user) {
+    user = await createUser({ name, email, password });
+  }
+  throwBadRequest(user.role === roles.admin, getMessageByLocale({ key: 'email.invalid' }));
+
+  const employee = await Employee.create({
+    name,
+    permissions,
+    position: positionId,
+    department: departmentId,
+    shop: shopId,
+    user: user._id,
+  });
   return employee;
 };
 
@@ -42,7 +61,6 @@ const getEmployeePosition = async ({ shopId, employeePositionId }) => {
 
 const getEmployeePositions = async ({ shopId }) => {
   const employeePositions = await getEmployeePositionsFromCache({ shopId });
-  throwBadRequest(!employeePositions, 'Không tìm thấy vị trí nhân viên');
   return employeePositions;
 };
 
@@ -65,6 +83,10 @@ const deleteEmployeePosition = async ({ shopId, employeePositionId }) => {
   await EmployeePosition.deleteOne({ _id: employeePositionId, shop: shopId });
 };
 
+const getAllPermissionTypes = async () => {
+  return Object.values(PermissionType);
+};
+
 module.exports = {
   getEmployee,
   getEmployees,
@@ -76,4 +98,5 @@ module.exports = {
   createEmployeePosition,
   updateEmployeePosition,
   deleteEmployeePosition,
+  getAllPermissionTypes,
 };

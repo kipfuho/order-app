@@ -1,8 +1,8 @@
 const _ = require('lodash');
 const redisClient = require('../utils/redis');
-const { getSession, setSession } = require('../middlewares/clsHooked');
+const { getSession, setSession, setEmployeePermissions } = require('../middlewares/clsHooked');
 const { Employee, EmployeePosition } = require('../models');
-const { getEmployeeKey, getEmployeePositionKey } = require('./common');
+const { getEmployeeKey, getEmployeePositionKey, getEmployeeByUserIdKey } = require('./common');
 const constant = require('../utils/constant');
 
 const _getEmployeesFromClsHook = ({ key }) => {
@@ -81,6 +81,31 @@ const getEmployeesFromCache = async ({ shopId }) => {
   return employeeJsons;
 };
 
+const getEmployeeWithPermissionByUserId = async ({ userId, shopId }) => {
+  const key = getEmployeeByUserIdKey({ shopId, userId });
+  if (redisClient.isRedisConnected()) {
+    const employeeVal = await redisClient.getJson(key);
+    const employee = _.get(employeeVal, 'employee');
+    const permissions = _.get(employeeVal, 'permissions');
+    if (!_.isEmpty(employee)) {
+      return { employee, permissions };
+    }
+  }
+
+  const employee = await Employee.findOne({ user: userId, shop: shopId })
+    .populate('user')
+    .populate('position')
+    .populate('department');
+  const employeeJson = employee.toJSON();
+  const permissions = (employeeJson.permissions || []).concat(_.get(employeeJson, 'departmentId.permissions') || []);
+  setEmployeePermissions(permissions);
+
+  if (redisClient.isRedisConnected()) {
+    await redisClient.putJson({ key, jsonVal: { employee: employeeJson, permissions } });
+  }
+  return { employee, permissions };
+};
+
 const getEmployeePositionFromCache = async ({ shopId, employeePositionId }) => {
   if (!employeePositionId) {
     return;
@@ -133,6 +158,7 @@ const getEmployeePositionsFromCache = async ({ shopId }) => {
 
 module.exports = {
   getEmployeeFromCache,
+  getEmployeeWithPermissionByUserId,
   getEmployeesFromCache,
   getEmployeePositionFromCache,
   getEmployeePositionsFromCache,
