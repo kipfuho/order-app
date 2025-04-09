@@ -59,12 +59,20 @@ interface TablePosition {
 interface Employee {
   id: string;
   name: string;
-  role?: string;
+  permissions: string[];
+  positionId: string;
+  departmentId: string;
+}
+
+interface EmployeePosition {
+  id: string;
+  name: string;
 }
 
 interface Department {
   id: string;
   name: string;
+  permissions: string[];
 }
 
 interface Unit {
@@ -217,6 +225,7 @@ export {
   Cart,
   Customer,
   Employee,
+  EmployeePosition,
   Department,
   MenuItem,
   PaymentDetail,

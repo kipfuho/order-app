@@ -221,7 +221,7 @@ export const orderApiSlice = createApi({
     }),
 
     cancelOrderSessionPaidStatus: builder.mutation<
-      undefined,
+      boolean,
       CancelOrderSessionPaidStatusRequest
     >({
       queryFn: async ({ shopId, orderSessionId }) => {
@@ -231,7 +231,7 @@ export const orderApiSlice = createApi({
             orderSessionId,
           });
 
-          return { data: undefined };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
@@ -277,7 +277,7 @@ export const orderApiSlice = createApi({
     }),
 
     discountOrderSession: builder.mutation<
-      undefined,
+      boolean,
       DiscountOrderSessionRequest
     >({
       queryFn: async ({
@@ -298,7 +298,7 @@ export const orderApiSlice = createApi({
             discountReason,
           });
 
-          return { data: undefined };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }

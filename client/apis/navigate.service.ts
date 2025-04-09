@@ -259,6 +259,130 @@ const goToOrderSessionPayment = ({
   });
 };
 
+const goToEmployeeList = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/staffs",
+    params: { shopId },
+  });
+};
+
+const goToEmployeePositionList = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/staffs/employee-positions",
+    params: { shopId },
+  });
+};
+
+const goToDepartmentList = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/staffs/departments",
+    params: { shopId },
+  });
+};
+
+const goToCreateEmployee = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/staffs/create-employee",
+    params: { shopId },
+  });
+};
+
+const goToCreateEmployeePosition = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/staffs/create-employee-position",
+    params: { shopId },
+  });
+};
+
+const goToCreateDepartment = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/staffs/create-department",
+    params: { shopId },
+  });
+};
+
+const goToUpdateEmployee = ({
+  router,
+  shopId,
+  employeeId,
+}: {
+  router: Router;
+  shopId: string;
+  employeeId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/staffs/update-employee/[employeeId]",
+    params: { shopId, employeeId },
+  });
+};
+
+const goToUpdateEmployeePosition = ({
+  router,
+  shopId,
+  employeePositionId,
+}: {
+  router: Router;
+  shopId: string;
+  employeePositionId: string;
+}) => {
+  router.replace({
+    pathname:
+      "/shop/[shopId]/staffs/update-employee-position/[employeePositionId]",
+    params: { shopId, employeePositionId },
+  });
+};
+
+const goToUpdateDepartment = ({
+  router,
+  shopId,
+  departmentId,
+}: {
+  router: Router;
+  shopId: string;
+  departmentId: string;
+}) => {
+  router.replace({
+    pathname: "/shop/[shopId]/staffs/update-department/[departmentId]",
+    params: { shopId, departmentId },
+  });
+};
+
 export {
   goBackShopList,
   goBackShopHome,
@@ -278,4 +402,13 @@ export {
   goToTablesForOrderList,
   goToTableCurrentOrderSessions,
   goToOrderSessionPayment,
+  goToEmployeeList,
+  goToEmployeePositionList,
+  goToDepartmentList,
+  goToCreateEmployee,
+  goToCreateEmployeePosition,
+  goToCreateDepartment,
+  goToUpdateEmployee,
+  goToUpdateEmployeePosition,
+  goToUpdateDepartment,
 };
