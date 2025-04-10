@@ -4,6 +4,7 @@ import { auth } from "../generated/auth";
 import { signIn, signOut } from "../stores/authSlice";
 import _ from "lodash";
 import store from "../stores/store";
+import { getAccessToken } from "./utils.service";
 
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -180,5 +181,24 @@ export const refreshTokensRequest = async (refreshToken: string) => {
     return null;
   } finally {
     refreshingPromise = null; // Reset the promise after resolving
+  }
+};
+
+export const checkUserByEmailRequest = async (email: string) => {
+  try {
+    const accessToken = await getAccessToken();
+
+    const result: { exist: boolean } = await apiRequest({
+      method: "POST",
+      endpoint: "v1/auth/check-user-by-email",
+      token: accessToken,
+      data: {
+        email,
+      },
+    });
+
+    return result.exist;
+  } catch (error) {
+    return true;
   }
 };

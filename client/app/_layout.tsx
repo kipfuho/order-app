@@ -58,7 +58,9 @@ export const styles = StyleSheet.create({
     padding: 16,
   },
   baseButton: {
-    width: 200,
+    minWidth: 200,
+    maxWidth: 'auto',
+    width: 'auto',
     alignSelf: "center",
     marginTop: 10,
   },

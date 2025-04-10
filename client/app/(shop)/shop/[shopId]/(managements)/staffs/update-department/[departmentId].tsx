@@ -24,7 +24,7 @@ import { goToDepartmentList } from "../../../../../../../apis/navigate.service";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import { AppBar } from "../../../../../../../components/AppBar";
 
-export default function CreateTablePage() {
+export default function UpdateDepartmentPage() {
   const { departmentId } = useLocalSearchParams() as { departmentId: string };
   const router = useRouter();
   const { t } = useTranslation();
@@ -53,28 +53,29 @@ export default function CreateTablePage() {
     );
   };
 
-  const handleCreateTable = async () => {
+  const handleUpdateDepartment = async () => {
     if (!name.trim()) {
       Toast.show({
         type: "error",
-        text1: t("create_failed"),
+        text1: t("update_failed"),
         text2: `${t("required")} ${_.join([t("department_name")], ",")}`,
       });
       return;
     }
+    console.log(selectedPermissions);
 
     try {
       await updateDepartment({
         departmentId,
         shopId: shop.id,
         name,
-        permissions: [],
+        permissions: selectedPermissions,
       }).unwrap();
       goToDepartmentList({ router, shopId: shop.id });
     } catch (err) {
       Toast.show({
         type: "error",
-        text1: t("create_failed"),
+        text1: t("update_failed"),
         text2: t("error_any"),
       });
       console.error(err);
@@ -123,7 +124,7 @@ export default function CreateTablePage() {
           }}
         >
           <ScrollView>
-            {/* Table Name Input */}
+            {/* department Name Input */}
             <TextInput
               label={t("department_name")}
               mode="outlined"
@@ -158,7 +159,7 @@ export default function CreateTablePage() {
           ) : (
             <Button
               mode="contained"
-              onPress={handleCreateTable}
+              onPress={handleUpdateDepartment}
               style={{ alignSelf: "center", width: 200 }}
             >
               {t("update_department")}

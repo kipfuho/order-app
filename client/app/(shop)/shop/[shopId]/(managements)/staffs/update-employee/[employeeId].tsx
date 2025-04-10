@@ -30,8 +30,9 @@ import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { goToEmployeeList } from "../../../../../../../apis/navigate.service";
 import { DropdownMenu } from "../../../../../../../components/DropdownMenu";
+import { Collapsible } from "../../../../../../../components/Collapsible";
 
-export default function CreateTablePage() {
+export default function UpdateEmployeePage() {
   const { employeeId } = useLocalSearchParams() as { employeeId: string };
   const router = useRouter();
   const { t } = useTranslation();
@@ -54,7 +55,7 @@ export default function CreateTablePage() {
   const [updateEmployee, { isLoading: updateEmployeeLoading }] =
     useUpdateEmployeeMutation();
 
-  const [name, setName] = useState("table");
+  const [name, setName] = useState("");
   const [position, setPosition] = useState<EmployeePosition>();
   const [department, setDepartment] = useState<Department>();
   // const [email, setEmail] = useState("");
@@ -67,7 +68,7 @@ export default function CreateTablePage() {
     );
   };
 
-  const handleCreateTable = async () => {
+  const handleUpdateEmployee = async () => {
     if (
       !name.trim() ||
       _.isEmpty(position) ||
@@ -77,7 +78,7 @@ export default function CreateTablePage() {
     ) {
       Toast.show({
         type: "error",
-        text1: t("create_failed"),
+        text1: t("update_failed"),
         text2: `${t("required")} ${_.join(
           _.compact([
             !name.trim() && t("employee_name"),
@@ -107,7 +108,7 @@ export default function CreateTablePage() {
     } catch (err) {
       Toast.show({
         type: "error",
-        text1: t("create_failed"),
+        text1: t("update_failed"),
         text2: t("error_any"),
       });
       console.error(err);
@@ -153,7 +154,7 @@ export default function CreateTablePage() {
   return (
     <>
       <AppBar
-        title={t("create_table")}
+        title={t("update_employee")}
         goBack={() => goToEmployeeList({ router, shopId: shop.id })}
       />
 
@@ -170,9 +171,9 @@ export default function CreateTablePage() {
           }}
         >
           <ScrollView>
-            {/* Table Name Input */}
+            {/* Employee Name Input */}
             <TextInput
-              label={t("table_name")}
+              label={t("employee_name")}
               mode="outlined"
               value={name}
               onChangeText={setName}
@@ -200,7 +201,7 @@ export default function CreateTablePage() {
               items={employeePositions}
               label={t("employee_position")}
               setItem={setPosition}
-              getItemValue={(item: EmployeePosition) => item.name}
+              getItemValue={(item: EmployeePosition) => item?.name}
             />
 
             <DropdownMenu
@@ -208,25 +209,25 @@ export default function CreateTablePage() {
               items={departments}
               label={t("department")}
               setItem={setDepartment}
-              getItemValue={(item: Department) => item.name}
+              getItemValue={(item: Department) => item?.name}
             />
 
-            {/* Permission Checkboxes */}
-            <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-              {t("permissions")}
-            </Text>
-            <View style={{ marginBottom: 32 }}>
-              {permissionTypes.map((perm) => (
-                <Checkbox.Item
-                  key={perm}
-                  label={t(perm)}
-                  status={
-                    selectedPermissions.includes(perm) ? "checked" : "unchecked"
-                  }
-                  onPress={() => togglePermission(perm)}
-                />
-              ))}
-            </View>
+            <Collapsible title={t("permissions")}>
+              <View style={{ marginBottom: 32 }}>
+                {permissionTypes.map((perm) => (
+                  <Checkbox.Item
+                    key={perm}
+                    label={t(perm)}
+                    status={
+                      selectedPermissions.includes(perm)
+                        ? "checked"
+                        : "unchecked"
+                    }
+                    onPress={() => togglePermission(perm)}
+                  />
+                ))}
+              </View>
+            </Collapsible>
           </ScrollView>
         </Surface>
 
@@ -237,10 +238,10 @@ export default function CreateTablePage() {
           ) : (
             <Button
               mode="contained"
-              onPress={handleCreateTable}
+              onPress={handleUpdateEmployee}
               style={{ alignSelf: "center", width: 200 }}
             >
-              {t("create_employee")}
+              {t("update_employee")}
             </Button>
           )}
         </View>

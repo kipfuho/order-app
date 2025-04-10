@@ -103,7 +103,7 @@ export default function CreateEmployeePositionPage() {
             <Button
               mode="contained-tonal"
               onPress={handleCreateEmployeePosition}
-              style={{ width: 200, alignSelf: "center" }}
+              style={{ width: "auto", alignSelf: "center" }}
             >
               {t("create_employee_position")}
             </Button>

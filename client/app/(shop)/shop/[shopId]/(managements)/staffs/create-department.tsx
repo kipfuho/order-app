@@ -22,6 +22,7 @@ import {
 import { goToDepartmentList } from "../../../../../../apis/navigate.service";
 import { AppBar } from "../../../../../../components/AppBar";
 import { LoaderBasic } from "../../../../../../components/ui/Loader";
+import { Collapsible } from "../../../../../../components/Collapsible";
 
 export default function CreateDepartmentPage() {
   const router = useRouter();
@@ -59,7 +60,7 @@ export default function CreateDepartmentPage() {
       await createDepartment({
         shopId: shop.id,
         name,
-        permissions: [],
+        permissions: selectedPermissions,
       }).unwrap();
       goToDepartmentList({ router, shopId: shop.id });
     } catch (err) {
@@ -104,22 +105,22 @@ export default function CreateDepartmentPage() {
               style={{ marginBottom: 20 }}
             />
 
-            {/* Permission Checkboxes */}
-            <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-              {t("permissions")}
-            </Text>
-            <View style={{ marginBottom: 32 }}>
-              {permissionTypes.map((perm) => (
-                <Checkbox.Item
-                  key={perm}
-                  label={t(perm)}
-                  status={
-                    selectedPermissions.includes(perm) ? "checked" : "unchecked"
-                  }
-                  onPress={() => togglePermission(perm)}
-                />
-              ))}
-            </View>
+            <Collapsible title={t("permissions")}>
+              <View style={{ marginBottom: 32, padding: 16 }}>
+                {permissionTypes.map((perm) => (
+                  <Checkbox.Item
+                    key={perm}
+                    label={t(perm)}
+                    status={
+                      selectedPermissions.includes(perm)
+                        ? "checked"
+                        : "unchecked"
+                    }
+                    onPress={() => togglePermission(perm)}
+                  />
+                ))}
+              </View>
+            </Collapsible>
           </ScrollView>
         </Surface>
 

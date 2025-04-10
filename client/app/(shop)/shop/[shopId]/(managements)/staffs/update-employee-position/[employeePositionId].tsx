@@ -51,7 +51,7 @@ export default function UpdateEmployeePositionPage() {
     if (!name.trim()) {
       Toast.show({
         type: "error",
-        text1: t("create_failed"),
+        text1: t("update_failed"),
         text2: `${t("required")} ${_.join(
           _.compact([!name.trim() && t("employee_position_name")]),
           ","
@@ -71,7 +71,7 @@ export default function UpdateEmployeePositionPage() {
     } catch (err) {
       Toast.show({
         type: "error",
-        text1: t("create_failed"),
+        text1: t("update_failed"),
         text2: t("error_any"),
       });
       console.error(err);
@@ -122,7 +122,7 @@ export default function UpdateEmployeePositionPage() {
           }}
         >
           <ScrollView>
-            {/* Table Name Input */}
+            {/* Employee position Name Input */}
             <TextInput
               label={t("employee_position_name")}
               mode="outlined"

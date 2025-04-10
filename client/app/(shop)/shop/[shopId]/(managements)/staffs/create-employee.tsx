@@ -29,6 +29,7 @@ import { goToEmployeeList } from "../../../../../../apis/navigate.service";
 import { AppBar } from "../../../../../../components/AppBar";
 import { DropdownMenu } from "../../../../../../components/DropdownMenu";
 import { Collapsible } from "../../../../../../components/Collapsible";
+import { checkUserByEmailRequest } from "../../../../../../apis/api.service";
 
 export default function CreateEmployeePage() {
   const router = useRouter();
@@ -52,6 +53,8 @@ export default function CreateEmployeePage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [emailExists, setEmailExists] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
 
   const togglePermission = (perm: string) => {
     setSelectedPermissions((prev) =>
@@ -59,13 +62,42 @@ export default function CreateEmployeePage() {
     );
   };
 
-  const handleCreateTable = async () => {
+  const debouncedCheckEmail = React.useRef(
+    _.debounce(async (emailToCheck: string) => {
+      if (!emailToCheck.trim()) return;
+
+      setCheckingEmail(true);
+      try {
+        // Replace this with your actual API call
+        const exists = await checkUserByEmailRequest(emailToCheck);
+        setEmailExists(exists);
+
+        if (exists) {
+          Toast.show({
+            type: "info",
+            text1: t("email_exists"),
+            text2: t("email_exist_cannot_enter_password"),
+          });
+        }
+      } catch (e) {
+        Toast.show({
+          type: "error",
+          text1: t("create_failed"),
+          text2: t("error_any"),
+        });
+      } finally {
+        setCheckingEmail(false);
+      }
+    }, 800)
+  ).current;
+
+  const handleCreateEmployee = async () => {
     if (
       !name.trim() ||
       _.isEmpty(position) ||
       _.isEmpty(department) ||
       !email.trim() ||
-      !password.trim()
+      (!password.trim() && !emailExists)
     ) {
       Toast.show({
         type: "error",
@@ -76,7 +108,7 @@ export default function CreateEmployeePage() {
             _.isEmpty(position) && t("employee_position"),
             _.isEmpty(department) && t("department"),
             !email.trim() && t("email"),
-            !password.trim() && t("password"),
+            !password.trim() && !emailExists && t("password"),
           ]),
           ","
         )}`,
@@ -101,7 +133,6 @@ export default function CreateEmployeePage() {
         text1: t("create_failed"),
         text2: t("error_any"),
       });
-      console.error(err);
     }
   };
 
@@ -141,17 +172,38 @@ export default function CreateEmployeePage() {
             <TextInput
               label={t("email")}
               mode="outlined"
-              value={name}
-              onChangeText={setEmail}
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                setEmailExists(false); // reset state on change
+                debouncedCheckEmail(text); // debounce call
+              }}
               style={{ marginBottom: 20 }}
+              right={
+                checkingEmail ? (
+                  <TextInput.Icon icon="loading" />
+                ) : emailExists ? (
+                  <TextInput.Icon
+                    icon="alert-circle"
+                    onPress={() =>
+                      Toast.show({
+                        type: "info",
+                        text1: t("email_exists"),
+                        text2: t("email_exist_cannot_enter_password"),
+                      })
+                    }
+                  />
+                ) : null
+              }
             />
 
             <TextInput
               label={t("password")}
               mode="outlined"
-              value={name}
+              value={password}
               onChangeText={setPassword}
               style={{ marginBottom: 20 }}
+              disabled={emailExists}
             />
 
             <DropdownMenu
@@ -196,7 +248,7 @@ export default function CreateEmployeePage() {
           ) : (
             <Button
               mode="contained"
-              onPress={handleCreateTable}
+              onPress={handleCreateEmployee}
               style={{ alignSelf: "center", width: 200 }}
             >
               {t("create_employee")}
