@@ -34,7 +34,10 @@ const getEmployeeFromCache = async ({ shopId, employeeId }) => {
     }
   }
 
-  const employee = await Employee.findById(employeeId).populate('user').populate('position').populate('department');
+  const employee = await Employee.findOne({ shop: shopId, _id: employeeId })
+    .populate('user')
+    .populate('position')
+    .populate('department');
   const employeeJson = employee.toJSON();
   employeeJson.permissions = [...employeeJson.permissions, ..._.get(employeeJson, 'department.permissions')];
   return employeeJson;
@@ -54,7 +57,7 @@ const getEmployeesFromCache = async ({ shopId }) => {
       return employees;
     }
 
-    const employeeModels = await Employee.find({ shopId, status: constant.Status.enabled })
+    const employeeModels = await Employee.find({ shop: shopId, status: constant.Status.enabled })
       .populate('user')
       .populate('position')
       .populate('department');
@@ -68,7 +71,7 @@ const getEmployeesFromCache = async ({ shopId }) => {
     return employeeJsons;
   }
 
-  const employees = await Employee.find({ shopId, status: constant.Status.enabled })
+  const employees = await Employee.find({ shop: shopId, status: constant.Status.enabled })
     .populate('user')
     .populate('position')
     .populate('department');

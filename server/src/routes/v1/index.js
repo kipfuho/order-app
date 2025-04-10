@@ -1,6 +1,6 @@
 const express = require('express');
 const authRoute = require('../../auth/routes/auth.route');
-const userRoute = require('../../auth/routes/user.route');
+// const userRoute = require('../../auth/routes/user.route');
 const docsRoute = require('./docs.route');
 const shopsRoute = require('../../shop-management/routes/shopManagement.route');
 const config = require('../../config/config');
@@ -16,10 +16,10 @@ const defaultRoutes = [
     path: '/shops',
     route: shopsRoute,
   },
-  {
-    path: '/users',
-    route: userRoute,
-  },
+  // {
+  //   path: '/users',
+  //   route: userRoute,
+  // },
 ];
 
 const devRoutes = [

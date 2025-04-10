@@ -16,7 +16,16 @@ const getUserFromDatabase = async ({ userId, email, phone }) => {
     const userJson = user.toJSON();
     return userJson;
   }
-  const user = await User.findOne({ $or: [{ email }, { phone }], status: { $ne: constant.Status.disabled } });
+  const filter = {
+    $or: _.compact([email && { email }, phone && { phone }]),
+    status: { $ne: constant.Status.disabled },
+  };
+  if (_.isEmpty(filter.$or)) return null;
+
+  const user = await User.findOne(filter);
+  if (!user) {
+    return null;
+  }
   const userJson = user.toJSON();
   return userJson;
 };

@@ -4,6 +4,7 @@ const userService = require('./user.service');
 const Token = require('../models/token.model');
 const ApiError = require('../../utils/ApiError');
 const { tokenTypes } = require('../../config/tokens');
+const { getUserFromDatabase } = require('../../metadata/userMetadata.service');
 
 /**
  * Login with username and password
@@ -90,10 +91,21 @@ const verifyEmail = async (verifyEmailToken) => {
   }
 };
 
+/**
+ * Check user by email
+ * @param {string} verifyEmailToken
+ * @returns {Promise}
+ */
+const checkUserExistByEmail = async ({ email }) => {
+  const user = await getUserFromDatabase({ email });
+  return !!user;
+};
+
 module.exports = {
   loginUserWithEmailAndPassword,
   logout,
   refreshAuth,
   resetPassword,
   verifyEmail,
+  checkUserExistByEmail,
 };

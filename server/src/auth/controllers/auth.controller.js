@@ -56,6 +56,11 @@ const verifyEmail = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const checkUserExistByEmail = catchAsync(async (req, res) => {
+  const exist = await authService.checkUserExistByEmail(req.body);
+  res.send({ exist });
+});
+
 module.exports = {
   register,
   loginWithProtobuf,
@@ -66,4 +71,5 @@ module.exports = {
   resetPassword,
   sendVerificationEmail,
   verifyEmail,
+  checkUserExistByEmail,
 };

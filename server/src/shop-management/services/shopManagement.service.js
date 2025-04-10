@@ -68,6 +68,7 @@ const createShop = async ({ createBody, ownerUserId }) => {
     shop: shopId,
     department: ownerDepartment._id,
     user: ownerUserId,
+    name: getMessageByLocale({ key: 'shop.owner' }),
   });
   return shop;
 };
