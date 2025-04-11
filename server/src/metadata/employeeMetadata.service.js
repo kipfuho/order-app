@@ -38,6 +38,9 @@ const getEmployeeFromCache = async ({ shopId, employeeId }) => {
     .populate('user')
     .populate('position')
     .populate('department');
+  if (!employee) {
+    return null;
+  }
   const employeeJson = employee.toJSON();
   employeeJson.permissions = [...employeeJson.permissions, ..._.get(employeeJson, 'department.permissions')];
   return employeeJson;
@@ -99,6 +102,9 @@ const getEmployeeWithPermissionByUserId = async ({ userId, shopId }) => {
     .populate('user')
     .populate('position')
     .populate('department');
+  if (!employee) {
+    return null;
+  }
   const employeeJson = employee.toJSON();
   const permissions = (employeeJson.permissions || []).concat(_.get(employeeJson, 'departmentId.permissions') || []);
   setEmployeePermissions(permissions);
@@ -129,6 +135,9 @@ const getEmployeePositionFromCache = async ({ shopId, employeePositionId }) => {
   }
 
   const employeePosition = await EmployeePosition.findById(employeePositionId);
+  if (!employeePosition) {
+    return null;
+  }
   return employeePosition.toJSON();
 };
 

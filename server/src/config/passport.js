@@ -13,7 +13,10 @@ const jwtVerify = async (payload, done) => {
     if (payload.type !== tokenTypes.ACCESS) {
       throw new Error('Invalid token type');
     }
-    const user = await getUserFromCache({ userId: payload.sub });
+    let user;
+    if (!payload.isCustomer) {
+      user = await getUserFromCache({ userId: payload.sub });
+    }
     if (!user) {
       return done(null, false);
     }

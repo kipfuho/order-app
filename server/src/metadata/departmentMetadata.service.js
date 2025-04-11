@@ -30,6 +30,9 @@ const getDepartmentFromCache = async ({ shopId, departmentId }) => {
   }
 
   const department = await Department.findOne({ _id: departmentId, shop: shopId });
+  if (!department) {
+    return null;
+  }
   return department.toJSON();
 };
 

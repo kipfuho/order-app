@@ -35,6 +35,9 @@ const getTableFromCache = async ({ shopId, tableId }) => {
   }
 
   const table = await Table.findOne({ _id: tableId, shop: shopId }).populate('position');
+  if (!table) {
+    return null;
+  }
   return table.toJSON();
 };
 
@@ -73,19 +76,22 @@ const getTablePositionFromCache = async ({ shopId, tablePositionId }) => {
   const key = getTablePositionKey({ shopId });
   const clsHookTablePositions = _getTablePositionsFromClsHook({ key });
   if (!_.isEmpty(clsHookTablePositions)) {
-    return _.find(clsHookTablePositions, (tablePostion) => tablePostion.id === tablePositionId);
+    return _.find(clsHookTablePositions, (tablePosition) => tablePosition.id === tablePositionId);
   }
 
   if (redisClient.isRedisConnected()) {
-    const tablePostions = await redisClient.getJson(key);
-    if (!_.isEmpty(tablePostions)) {
-      setSession({ key, value: tablePostions });
-      return _.find(tablePostions, (tablePostion) => tablePostion.id === tablePositionId);
+    const tablePositions = await redisClient.getJson(key);
+    if (!_.isEmpty(tablePositions)) {
+      setSession({ key, value: tablePositions });
+      return _.find(tablePositions, (tablePosition) => tablePosition.id === tablePositionId);
     }
   }
 
-  const tablePostion = await TablePosition.findOne({ _id: tablePositionId, shop: shopId });
-  return tablePostion.toJSON();
+  const tablePosition = await TablePosition.findOne({ _id: tablePositionId, shop: shopId });
+  if (!tablePosition) {
+    return null;
+  }
+  return tablePosition.toJSON();
 };
 
 const getTablePositionsFromCache = async ({ shopId }) => {
@@ -96,23 +102,23 @@ const getTablePositionsFromCache = async ({ shopId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const tablePostions = await redisClient.getJson(key);
-    if (!_.isEmpty(tablePostions)) {
-      setSession({ key, value: tablePostions });
-      return tablePostions;
+    const tablePositions = await redisClient.getJson(key);
+    if (!_.isEmpty(tablePositions)) {
+      setSession({ key, value: tablePositions });
+      return tablePositions;
     }
 
-    const tablePostionModels = await TablePosition.find({ shop: shopId, status: constant.Status.enabled });
-    const tablePostionJsons = _.map(tablePostionModels, (tablePostion) => tablePostion.toJSON());
-    redisClient.putJson({ key, jsonVal: tablePostionJsons });
-    setSession({ key, value: tablePostionJsons });
-    return tablePostionJsons;
+    const tablePositionModels = await TablePosition.find({ shop: shopId, status: constant.Status.enabled });
+    const tablePositionJsons = _.map(tablePositionModels, (tablePosition) => tablePosition.toJSON());
+    redisClient.putJson({ key, jsonVal: tablePositionJsons });
+    setSession({ key, value: tablePositionJsons });
+    return tablePositionJsons;
   }
 
-  const tablePostions = await TablePosition.find({ shop: shopId, status: constant.Status.enabled });
-  const tablePostionJsons = _.map(tablePostions, (tablePostion) => tablePostion.toJSON());
-  setSession({ key, value: tablePostionJsons });
-  return tablePostionJsons;
+  const tablePositions = await TablePosition.find({ shop: shopId, status: constant.Status.enabled });
+  const tablePositionJsons = _.map(tablePositions, (tablePosition) => tablePosition.toJSON());
+  setSession({ key, value: tablePositionJsons });
+  return tablePositionJsons;
 };
 
 module.exports = {

@@ -6,7 +6,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const protoPath = path.join(__dirname, '../../../../protos/auth.proto');
 
 const rootPromise = protobuf.load(protoPath).catch((err) => {
-  console.error('Error loading protobuf:', err);
+  logger.error('Error loading protobuf:', err);
   process.exit(1);
 });
 

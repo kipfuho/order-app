@@ -1,10 +1,31 @@
 const httpStatus = require('http-status');
+const bcrypt = require('bcryptjs');
 const tokenService = require('./token.service');
 const userService = require('./user.service');
 const Token = require('../models/token.model');
 const ApiError = require('../../utils/ApiError');
 const { tokenTypes } = require('../../config/tokens');
-const { getUserFromDatabase } = require('../../metadata/userMetadata.service');
+const { getUserFromDatabase, getUserFromCache } = require('../../metadata/userMetadata.service');
+const { getCustomerFromCache, getCustomerFromDatabase } = require('../../metadata/customerMetadata.service');
+
+const _getUserFromRefreshToken = async (tokenDoc) => {
+  if (!tokenDoc.isCustomer) {
+    return getUserFromCache({ userId: tokenDoc.user });
+  }
+  return getCustomerFromCache({ userId: tokenDoc.user });
+};
+
+/**
+ * Check if password matches the user's password
+ * @param {string} password
+ * @returns {Promise<boolean>}
+ */
+const compareUserPassword = async (user, password) => {
+  if (!user) {
+    return false;
+  }
+  return bcrypt.compare(password, user.password);
+};
 
 /**
  * Login with username and password
@@ -13,11 +34,33 @@ const { getUserFromDatabase } = require('../../metadata/userMetadata.service');
  * @returns {Promise<User>}
  */
 const loginUserWithEmailAndPassword = async ({ email, password }) => {
-  const user = await userService.getUserByEmail(email);
-  if (!user || !(await user.isPasswordMatch(password))) {
+  const user = await getUserFromDatabase({ email });
+  const isPasswordMatch = await compareUserPassword(user, password);
+  if (!isPasswordMatch) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
   }
+
+  // delete all previous refresh tokens
+  await Token.deleteMany({ user: user.id, type: tokenTypes.REFRESH });
   return user;
+};
+
+/**
+ * Login customer with phone and password
+ * @param {string} phone
+ * @param {string} password
+ * @returns {Promise<Customer>}
+ */
+const loginCustomerWithPhoneAndPassword = async ({ phone, password }) => {
+  const customer = await getCustomerFromDatabase({ phone });
+  const isPasswordMatch = await compareUserPassword(customer, password);
+  if (!isPasswordMatch) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect phone or password');
+  }
+
+  // delete all previous refresh tokens
+  await Token.deleteMany({ user: customer.id, type: tokenTypes.REFRESH });
+  return customer;
 };
 
 /**
@@ -41,12 +84,12 @@ const logout = async (refreshToken) => {
 const refreshAuth = async (refreshToken) => {
   try {
     const refreshTokenDoc = await tokenService.verifyToken(refreshToken, tokenTypes.REFRESH);
-    const user = await userService.getUserById(refreshTokenDoc.user);
+    const user = await _getUserFromRefreshToken(refreshTokenDoc);
     if (!user) {
       throw new Error();
     }
     await Token.deleteOne({ _id: refreshTokenDoc._id });
-    return tokenService.generateAuthTokens(user);
+    return tokenService.generateAuthTokens(user, refreshTokenDoc.isCustomer);
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate');
   }
@@ -61,7 +104,7 @@ const refreshAuth = async (refreshToken) => {
 const resetPassword = async (resetPasswordToken, newPassword) => {
   try {
     const resetPasswordTokenDoc = await tokenService.verifyToken(resetPasswordToken, tokenTypes.RESET_PASSWORD);
-    const user = await userService.getUserById(resetPasswordTokenDoc.user);
+    const user = await _getUserFromRefreshToken(resetPasswordTokenDoc);
     if (!user) {
       throw new Error();
     }
@@ -80,7 +123,7 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
 const verifyEmail = async (verifyEmailToken) => {
   try {
     const verifyEmailTokenDoc = await tokenService.verifyToken(verifyEmailToken, tokenTypes.VERIFY_EMAIL);
-    const user = await userService.getUserById(verifyEmailTokenDoc.user);
+    const user = await _getUserFromRefreshToken(verifyEmailTokenDoc);
     if (!user) {
       throw new Error();
     }
@@ -103,6 +146,7 @@ const checkUserExistByEmail = async ({ email }) => {
 
 module.exports = {
   loginUserWithEmailAndPassword,
+  loginCustomerWithPhoneAndPassword,
   logout,
   refreshAuth,
   resetPassword,

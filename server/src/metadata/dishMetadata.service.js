@@ -40,6 +40,9 @@ const getDishFromCache = async ({ shopId, dishId }) => {
   const dish = await Dish.findOne({ _id: dishId, shop: shopId, status: { $ne: constant.Status.disabled } }).populate(
     'category'
   );
+  if (!dish) {
+    return null;
+  }
   return dish.toJSON();
 };
 
@@ -94,6 +97,9 @@ const getDishCategoryFromCache = async ({ shopId, dishCategoryId }) => {
   }
 
   const dishCategory = await DishCategory.findOne({ _id: dishCategoryId, shop: shopId, status: constant.Status.enabled });
+  if (!dishCategory) {
+    return null;
+  }
   return dishCategory.toJSON();
 };
 

@@ -10,9 +10,14 @@ const tokenSchema = new mongoose.Schema(
       index: true,
     },
     user: {
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'User',
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
+      refPath: 'userModel',
+    },
+    userModel: {
+      type: String,
+      required: true,
+      enum: ['User', 'Customer'],
     },
     type: {
       type: String,
@@ -24,6 +29,10 @@ const tokenSchema = new mongoose.Schema(
       required: true,
     },
     blacklisted: {
+      type: Boolean,
+      default: false,
+    },
+    isCustomer: {
       type: Boolean,
       default: false,
     },

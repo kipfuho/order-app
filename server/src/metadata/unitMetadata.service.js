@@ -26,6 +26,9 @@ const getUnitFromCache = async ({ shopId, unitId }) => {
   }
 
   const unit = await Unit.findOne({ _id: unitId, shop: shopId, status: { $ne: constant.Status.disabled } });
+  if (!unit) {
+    return null;
+  }
   const unitJson = unit.toJSON();
   return unitJson;
 };

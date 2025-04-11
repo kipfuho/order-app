@@ -32,6 +32,9 @@ const getShopFromCache = async ({ shopId }) => {
   }
 
   const shop = await Shop.findOne({ _id: shopId, status: constant.Status.enabled });
+  if (!shop) {
+    return null;
+  }
   const shopJson = shop.toJSON();
   setSession({ key, value: shopJson });
   return shopJson;
