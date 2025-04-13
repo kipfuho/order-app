@@ -432,10 +432,10 @@ const mergeCartItems = (cartItems) => {
   return [];
 };
 
-const getCart = async ({ shopId, userId }) => {
+const getCart = async ({ shopId, customerId }) => {
   const cart = await Cart.findOneAndUpdate(
-    { user: userId, shop: shopId },
-    { $setOnInsert: { user: userId, shop: shopId, cartItems: [] } },
+    { customer: customerId, shop: shopId },
+    { $setOnInsert: { customer: customerId, shop: shopId, cartItems: [] } },
     { upsert: true, new: true }
   );
   return cart;

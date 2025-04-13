@@ -98,24 +98,24 @@ const discountOrderSession = catchAsync(async (req, res) => {
 
 const updateCart = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
+  const customerId = _.get(req, 'user.id');
   const requestBody = req.body;
-  await orderManagementService.updateCart({ userId, shopId, requestBody });
+  await orderManagementService.updateCart({ customerId, shopId, requestBody });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
 const clearCart = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
-  await orderManagementService.clearCart({ userId, shopId });
+  const customerId = _.get(req, 'user.id');
+  await orderManagementService.clearCart({ customerId, shopId });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
 const checkoutCart = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
+  const customerId = _.get(req, 'user.id');
   const requestBody = req.body;
-  await orderManagementService.checkoutCart({ userId, shopId, requestBody });
+  await orderManagementService.checkoutCart({ customerId, shopId, requestBody });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
