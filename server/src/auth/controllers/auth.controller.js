@@ -2,11 +2,18 @@ const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
 const { authService, userService, tokenService, emailService } = require('../services');
 const authConverter = require('../converters/auth.converter');
+const customerService = require('../../customer-management/services/customerManagement.service');
 
 const register = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
   const tokens = await tokenService.generateAuthTokens(user);
   res.status(httpStatus.CREATED).send({ user, tokens });
+});
+
+const registerForCustomer = catchAsync(async (req, res) => {
+  const customer = await customerService.registerCustomer(req.body);
+  const tokens = await tokenService.generateAuthTokens(customer, true);
+  res.status(httpStatus.CREATED).send({ customer, tokens });
 });
 
 const loginWithProtobuf = catchAsync(async (req, res) => {
@@ -22,6 +29,21 @@ const login = catchAsync(async (req, res) => {
   const user = await authService.loginUserWithEmailAndPassword({ email, password });
   const tokens = await tokenService.generateAuthTokens(user);
   res.send({ user, tokens });
+});
+
+const loginForAnonymousCustomer = catchAsync(async (req, res) => {
+  const customer = await customerService.createCustomer({
+    anonymous: true,
+  });
+  const tokens = await tokenService.generateAuthTokens(customer, true);
+  res.send({ customer: customer.toJSON(), tokens });
+});
+
+const loginForCustomer = catchAsync(async (req, res) => {
+  const { phone, password } = req.body;
+  const customer = await authService.loginCustomerWithPhoneAndPassword({ phone, password });
+  const tokens = await tokenService.generateAuthTokens(customer, true);
+  res.send({ customer, tokens });
 });
 
 const logout = catchAsync(async (req, res) => {
@@ -65,6 +87,8 @@ module.exports = {
   register,
   loginWithProtobuf,
   login,
+  loginForAnonymousCustomer,
+  loginForCustomer,
   logout,
   refreshTokens,
   forgotPassword,
@@ -72,4 +96,5 @@ module.exports = {
   sendVerificationEmail,
   verifyEmail,
   checkUserExistByEmail,
+  registerForCustomer,
 };

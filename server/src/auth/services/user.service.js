@@ -1,6 +1,9 @@
 const httpStatus = require('http-status');
 const { User } = require('../../models');
 const ApiError = require('../../utils/ApiError');
+const { getUserFromCache } = require('../../metadata/userMetadata.service');
+const { throwBadRequest } = require('../../utils/errorHandling');
+const { getMessageByLocale } = require('../../locale');
 
 /**
  * Create a user
@@ -21,10 +24,8 @@ const createUser = async (userBody) => {
  * @returns {Promise<User>}
  */
 const updateUserById = async (userId, updateBody) => {
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
+  const user = await getUserFromCache({ userId });
+  throwBadRequest(!user, getMessageByLocale({ key: 'user.notFound' }));
   if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }

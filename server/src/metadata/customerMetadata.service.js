@@ -13,6 +13,9 @@ const _getCustomerFromClsHook = ({ key }) => {
 const getCustomerFromDatabase = async ({ customerId, phone }) => {
   if (customerId) {
     const customer = await Customer.findOne({ _id: customerId, status: { $ne: constant.Status.disabled } });
+    if (!customer) {
+      return null;
+    }
     const customerJson = customer.toJSON();
     return customerJson;
   }

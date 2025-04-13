@@ -1,15 +1,16 @@
+const { getMessageByLocale } = require('../../locale');
+const { getCustomerFromCache } = require('../../metadata/customerMetadata.service');
 const { Customer } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 
 const getCustomer = async (customerId) => {
-  const customer = await Customer.findById(customerId);
-  throwBadRequest(!customer, 'Không tìm thấy khách hàng');
+  const customer = await getCustomerFromCache({ customerId });
   return customer;
 };
 
 const createCustomer = async (createBody) => {
   const customer = await Customer.create(createBody);
-  return customer;
+  return customer.toJSON();
 };
 
 const updateCustomer = async (customerId, updateBody) => {
@@ -20,7 +21,30 @@ const updateCustomer = async (customerId, updateBody) => {
     },
     { new: true }
   );
-  throwBadRequest(!customer, 'Không tìm thấy khách hàng');
+  throwBadRequest(!customer, getMessageByLocale({ key: 'customer.notFound' }));
+  return customer;
+};
+
+const registerCustomer = async ({ phone, password, name, id }) => {
+  if (id) {
+    const customer = await Customer.findByIdAndUpdate(
+      { _id: id, anonymous: true },
+      {
+        $set: { name, phone, password },
+        $unset: {
+          anonymous: 1,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    throwBadRequest(!customer, getMessageByLocale({ key: 'customer.notFound' }));
+    return customer.toJSON();
+  }
+
+  const customer = await createCustomer({ name, phone, password });
   return customer;
 };
 
@@ -36,4 +60,5 @@ module.exports = {
   updateCustomer,
   deleteCustomer,
   getCustomers,
+  registerCustomer,
 };

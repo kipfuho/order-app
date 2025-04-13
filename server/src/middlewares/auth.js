@@ -52,7 +52,7 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
     if (!shopId) {
       shopId = req.params.shopId || _.get(req, 'body.shopId');
     }
-    if (!shopId) {
+    if (!shopId || req.isCustomerRequest) {
       resolve();
       return;
     }

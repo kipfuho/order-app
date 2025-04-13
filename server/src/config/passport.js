@@ -2,6 +2,7 @@ const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 const config = require('./config');
 const { tokenTypes } = require('./tokens');
 const { getUserFromCache } = require('../metadata/userMetadata.service');
+const { getCustomerFromCache } = require('../metadata/customerMetadata.service');
 
 const jwtOptions = {
   secretOrKey: config.jwt.secret,
@@ -16,6 +17,9 @@ const jwtVerify = async (payload, done) => {
     let user;
     if (!payload.isCustomer) {
       user = await getUserFromCache({ userId: payload.sub });
+    }
+    if (payload.isCustomer) {
+      user = await getCustomerFromCache({ customerId: payload.sub });
     }
     if (!user) {
       return done(null, false);
