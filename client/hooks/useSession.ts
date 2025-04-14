@@ -1,17 +1,26 @@
 import { useDispatch, useSelector } from "react-redux";
-import { signIn, signOut } from "../stores/authSlice";
+import {
+  signIn,
+  signInForCustomer,
+  signOut,
+  signOutForCustomer,
+} from "../stores/authSlice";
 import { RootState } from "../stores/store";
-import { User } from "../stores/state.interface";
+import { Customer, User } from "../stores/state.interface";
 
 export function useSession() {
-  const session = useSelector((state: RootState) => state.auth.session);
-  const isLoading = useSelector((state: RootState) => state.auth.isLoading);
+  const { session, customerSession } = useSelector(
+    (state: RootState) => state.auth
+  );
   const dispatch = useDispatch();
 
   return {
     session,
-    isLoading,
-    signIn: (user: User) => dispatch(signIn(user)), // Replace with real token
+    customerSession,
+    signIn: (user: User) => dispatch(signIn(user)),
+    signInForCustomer: (customer: Customer) =>
+      dispatch(signInForCustomer(customer)),
     signOut: () => dispatch(signOut()),
+    signOutForCustomer: () => dispatch(signOutForCustomer()),
   };
 }

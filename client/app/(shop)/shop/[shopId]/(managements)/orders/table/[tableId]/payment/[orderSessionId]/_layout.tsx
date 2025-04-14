@@ -79,5 +79,5 @@ export default function PaymentOrderSessionLayout() {
     return <LoaderBasic />;
   }
 
-  return <Stack key={shopId} screenOptions={{ headerShown: false }} />;
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

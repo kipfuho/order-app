@@ -1,10 +1,8 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { Tokens, User } from "../stores/state.interface";
 import { auth } from "../generated/auth";
-import { signIn, signOut } from "../stores/authSlice";
+import { signOut } from "../stores/authSlice";
 import _ from "lodash";
 import store from "../stores/store";
-import { getAccessToken } from "./utils.service";
 
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -130,75 +128,5 @@ export const loginRequestProtobuf = async (email: string, password: string) => {
     return decodedResponse;
   } catch (err) {
     console.error(err);
-  }
-};
-
-export const loginRequest = async ({
-  email,
-  password,
-}: {
-  email: string;
-  password: string;
-}): Promise<boolean> => {
-  const {
-    user,
-    tokens,
-  }: {
-    user: User;
-    tokens: Tokens;
-  } = await apiRequest({
-    method: "POST",
-    endpoint: "v1/auth/login",
-    data: {
-      email,
-      password,
-    },
-  });
-
-  store.dispatch(signIn({ ...user, tokens }));
-  return true;
-};
-
-let refreshingPromise: Promise<Tokens> | null = null;
-
-export const refreshTokensRequest = async (refreshToken: string) => {
-  try {
-    if (refreshingPromise) {
-      const newToken = await refreshingPromise;
-      return newToken ?? "";
-    }
-    refreshingPromise = apiRequest({
-      method: "POST",
-      endpoint: "v1/auth/refresh-tokens",
-      data: {
-        refreshToken,
-      },
-    });
-
-    const tokens = await refreshingPromise;
-    return tokens;
-  } catch (error) {
-    return null;
-  } finally {
-    refreshingPromise = null; // Reset the promise after resolving
-  }
-};
-
-export const checkUserByEmailRequest = async (email: string) => {
-  try {
-    const accessToken = await getAccessToken();
-
-    const result: { exist: boolean } = await apiRequest({
-      method: "POST",
-      endpoint: "v1/auth/check-user-by-email",
-      token: accessToken,
-      data: {
-        email,
-      },
-    });
-
-    return result.exist;
-  } catch (error) {
-    return true;
   }
 };

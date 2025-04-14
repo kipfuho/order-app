@@ -6,6 +6,7 @@ import {
   deleteTablePositionRequest,
   deleteTableRequest,
   getTablePositionsRequest,
+  getTableRequest,
   getTablesRequest,
   updateTablePositionRequest,
   updateTableRequest,
@@ -135,6 +136,28 @@ export const tableApiSlice = createApi({
     }),
 
     /** Tables */
+    getTable: builder.query<Table, { tableId: string; shopId: string }>({
+      queryFn: async ({ shopId, tableId }) => {
+        try {
+          const table = await getTableRequest({
+            shopId,
+            tableId,
+          });
+
+          return { data: table };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      providesTags: (table) =>
+        table
+          ? [
+              { type: "TablePositions", id: table.position.id },
+              { type: "Tables", id: table.id },
+            ]
+          : [], // Enables cache invalidation
+    }),
+
     getTables: builder.query<Table[], string>({
       queryFn: async (shopId) => {
         try {
@@ -239,6 +262,7 @@ export const {
   useCreateTablePositionMutation,
   useUpdateTablePositionMutation,
   useDeleteTablePositionMutation,
+  useGetTableQuery,
   useGetTablesQuery,
   useCreateTableMutation,
   useUpdateTableMutation,

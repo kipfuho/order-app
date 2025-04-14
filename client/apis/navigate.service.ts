@@ -377,7 +377,7 @@ const goToUpdateDepartment = ({
   shopId: string;
   departmentId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/staffs/update-department/[departmentId]",
     params: { shopId, departmentId },
   });

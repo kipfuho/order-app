@@ -1,7 +1,12 @@
 import _ from "lodash";
 import store from "../stores/store";
-import { refreshTokensRequest } from "./api.service";
-import { signIn, signOut } from "../stores/authSlice";
+import {
+  signIn,
+  signInForCustomer,
+  signOut,
+  signOutForCustomer,
+} from "../stores/authSlice";
+import { refreshTokensRequest } from "./auth.api.service";
 
 export const isTokenExpired = (
   token:
@@ -14,10 +19,45 @@ export const isTokenExpired = (
   return Date.now() >= token.expires;
 };
 
+const _getCustomerAccessToken = async (): Promise<string> => {
+  const state = store.getState(); // Access Redux state
+  const customer = state.auth.customerSession;
+  if (!customer) {
+    return "";
+  }
+  if (!customer.tokens) {
+    store.dispatch(signOutForCustomer());
+    return "";
+  }
+
+  if (isTokenExpired(_.get(customer, "tokens.access"))) {
+    const newTokens = await refreshTokensRequest(
+      customer.tokens.refresh.token,
+      true
+    );
+    if (!newTokens) {
+      store.dispatch(signOutForCustomer());
+      return "";
+    }
+    store.dispatch(signInForCustomer({ ...customer, tokens: newTokens }));
+    return newTokens.access.token;
+  }
+  return customer.tokens.access.token;
+};
+
 export const getAccessToken = async (): Promise<string> => {
   const state = store.getState(); // Access Redux state
+  if (state.auth.isCustomerApp) {
+    const token = await _getCustomerAccessToken();
+    return token;
+  }
+
   const user = state.auth.session;
-  if (!user || !user.tokens) {
+  if (!user) {
+    return "";
+  }
+  if (!user.tokens) {
+    store.dispatch(signOut());
     return "";
   }
 

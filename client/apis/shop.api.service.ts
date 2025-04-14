@@ -44,6 +44,18 @@ const createShopRequest = async ({
   return result.shop;
 };
 
+const getShopRequest = async (shopId: string) => {
+  const accessToken = await getAccessToken();
+
+  const result: { shop: Shop } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}`,
+    token: accessToken,
+  });
+
+  return result.shop;
+};
+
 const queryShopsRequest = async ({
   user,
   searchName,
@@ -128,6 +140,7 @@ const deleteShopRequest = async ({ shopId }: DeleteShopRequest) => {
 
 export {
   createShopRequest,
+  getShopRequest,
   queryShopsRequest,
   updateShopRequest,
   deleteShopRequest,

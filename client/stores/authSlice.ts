@@ -1,15 +1,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User } from "./state.interface";
+import { Customer, User } from "./state.interface";
 import { PURGE } from "redux-persist";
 
 interface AuthState {
   session: User | null;
-  isLoading: boolean;
+  customerSession: Customer | null;
+  isCustomerApp: boolean;
 }
 
 const initialState: AuthState = {
   session: null,
-  isLoading: false,
+  customerSession: null,
+  isCustomerApp: false,
 };
 
 const authSlice = createSlice({
@@ -19,13 +21,19 @@ const authSlice = createSlice({
     signIn: (state, action: PayloadAction<User>) => {
       if (!action.payload) return;
       state.session = action.payload;
-      state.isLoading = false;
+    },
+    signInForCustomer: (state, action: PayloadAction<Customer>) => {
+      if (!action.payload) return;
+      state.customerSession = action.payload;
     },
     signOut: (state) => {
       state.session = null;
     },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
+    signOutForCustomer: (state) => {
+      state.customerSession = null;
+    },
+    setCustomerApp: (state, action: PayloadAction<boolean>) => {
+      state.isCustomerApp = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -35,5 +43,11 @@ const authSlice = createSlice({
   },
 });
 
-export const { signIn, signOut, setLoading } = authSlice.actions;
+export const {
+  signIn,
+  signOut,
+  signInForCustomer,
+  signOutForCustomer,
+  setCustomerApp,
+} = authSlice.actions;
 export default authSlice.reducer;

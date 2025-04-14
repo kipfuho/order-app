@@ -4,6 +4,7 @@ import { RootState } from "../store";
 import {
   createShopRequest,
   deleteShopRequest,
+  getShopRequest,
   queryShopsRequest,
   updateShopRequest,
 } from "../../apis/shop.api.service";
@@ -20,6 +21,19 @@ export const shopApiSlice = createApi({
   tagTypes: ["Shops"],
   // keepUnusedDataFor: 600,
   endpoints: (builder) => ({
+    getShop: builder.query<Shop, string>({
+      queryFn: async (shopId) => {
+        try {
+          const shop = await getShopRequest(shopId);
+
+          return { data: shop };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      providesTags: (_, __, id) => [{ type: "Shops", id }], // Enables cache invalidation
+    }),
+
     getShops: builder.query<Shop[], QueryShopsRequest>({
       queryFn: async (
         { searchName, sortBy = "createdAt", page = 1, limit = 1000 },
@@ -130,6 +144,7 @@ export const shopApiSlice = createApi({
 });
 
 export const {
+  useGetShopQuery,
   useGetShopsQuery,
   useCreateShopMutation,
   useUpdateShopMutation,

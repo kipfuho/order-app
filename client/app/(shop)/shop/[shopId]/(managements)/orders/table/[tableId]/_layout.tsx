@@ -60,5 +60,5 @@ export default function TableCurrentOrderLayout() {
     return <LoaderBasic />;
   }
 
-  return <Stack key={shopId} screenOptions={{ headerShown: false }} />;
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

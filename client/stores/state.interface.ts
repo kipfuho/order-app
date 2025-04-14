@@ -101,18 +101,21 @@ interface DishCategory {
 interface Customer {
   id?: string;
   name?: string;
+  phone?: string;
   email?: string;
+  tokens?: Tokens;
 }
 
 interface Cart {
-  items: Array<{ id: string; quantity: number }>;
-  total: number;
+  shop: string;
+  customer: string;
+  cartItems: CartItem[];
 }
 
-interface MenuItem {
+interface CartItem {
   id: string;
-  name: string;
-  price: number;
+  dish: string;
+  quantity: number;
 }
 
 interface OrderSessionDiscountProduct {
@@ -227,7 +230,7 @@ export {
   Employee,
   EmployeePosition,
   Department,
-  MenuItem,
+  CartItem,
   PaymentDetail,
   DishOrder,
   Order,

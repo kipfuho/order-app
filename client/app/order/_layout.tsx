@@ -2,11 +2,13 @@ import { Redirect, Stack } from "expo-router";
 import store, { persistor } from "../../stores/store";
 import { useEffect } from "react";
 import { useSession } from "../../hooks/useSession";
+import { LoaderBasic } from "../../components/ui/Loader";
+import { loginForAnonymousCustomerRequest } from "../../apis/auth.api.service";
 import { useDispatch } from "react-redux";
 import { setCustomerApp } from "../../stores/authSlice";
 
-export default function AppLayout() {
-  const { session } = useSession();
+export default function CustomerAppLayout() {
+  const { customerSession } = useSession();
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -26,15 +28,14 @@ export default function AppLayout() {
   }, []);
 
   useEffect(() => {
-    dispatch(setCustomerApp(false));
-  }, []);
+    dispatch(setCustomerApp(true));
+    if (!customerSession) {
+      loginForAnonymousCustomerRequest();
+    }
+  }, [customerSession]);
 
-  // Only require authentication within the (app) group's layout as users
-  // need to be able to access the (auth) group and sign in again.
-  if (!session) {
-    // On web, static rendering will stop here as the user is not authenticated
-    // in the headless Node process that the pages are rendered in.
-    return <Redirect href="/login" />;
+  if (!customerSession) {
+    return <LoaderBasic />;
   }
 
   // This layout can be deferred because it's not the root layout.

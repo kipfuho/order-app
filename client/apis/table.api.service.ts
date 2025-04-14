@@ -95,6 +95,26 @@ const deleteTablePositionRequest = async ({
   return result.tablePosition;
 };
 
+const getTableRequest = async ({
+  shopId,
+  tableId,
+}: {
+  tableId: string;
+  shopId: string;
+}) => {
+  const accessToken = await getAccessToken();
+
+  const result: {
+    table: Table;
+  } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/tables/${tableId}`,
+    token: accessToken,
+  });
+
+  return result.table;
+};
+
 const getTablesRequest = async ({ shopId }: GetTablesRequest) => {
   const accessToken = await getAccessToken();
 
@@ -169,6 +189,7 @@ export {
   createTablePositionRequest,
   updateTablePositionRequest,
   deleteTablePositionRequest,
+  getTableRequest,
   getTablesRequest,
   createTableRequest,
   updateTableRequest,

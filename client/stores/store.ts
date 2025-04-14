@@ -23,6 +23,7 @@ const persistConfig = {
 
 // Create a persisted reducer
 const persistedAuthReducer = persistReducer(persistConfig, authReducer);
+const persistedCustomerReducer = persistReducer(persistConfig, customerReducer);
 const persistedSettingReducer = persistReducer(persistConfig, settingReducer);
 
 // Combine reducers
@@ -30,7 +31,7 @@ const rootReducer = combineReducers({
   auth: persistedAuthReducer, // Persistent
   setting: persistedSettingReducer, // Persistent
   shop: shopReducer, // Non-persistent
-  customer: customerReducer, // Non-persistent
+  customer: persistedCustomerReducer, // Persistent
   aws: awsReducer, // Non-persistent
   [shopApiSlice.reducerPath]: shopApiSlice.reducer,
   [dishApiSlice.reducerPath]: dishApiSlice.reducer,
