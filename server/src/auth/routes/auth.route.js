@@ -24,6 +24,9 @@ router.post('/reset-password', validate(authValidation.resetPassword), authContr
 router.post('/send-verification-email', auth(), authController.sendVerificationEmail);
 router.post('/verify-email', validate(authValidation.verifyEmail), authController.verifyEmail);
 router.post('/check-user-by-email', auth(), authController.checkUserExistByEmail);
+router.post('/login-for-anonymous-customer', authController.loginForAnonymousCustomer);
+router.post('/login-for-customer', authController.loginForCustomer);
+router.post('/register-for-customer', authController.registerForCustomer);
 
 module.exports = router;
 

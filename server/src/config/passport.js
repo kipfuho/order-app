@@ -22,11 +22,11 @@ const jwtVerify = async (payload, done) => {
       user = await getCustomerFromCache({ customerId: payload.sub });
     }
     if (!user) {
-      return done(null, false);
+      return done(null, false, payload);
     }
-    done(null, user);
+    done(null, user, payload);
   } catch (error) {
-    done(error, false);
+    done(error, false, payload);
   }
 };
 

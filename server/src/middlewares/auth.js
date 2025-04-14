@@ -3,22 +3,10 @@ const passport = require('passport');
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const { roleRights, roles, allRoleRights } = require('../config/roles');
-const { appid } = require('../config/config');
 const { getShopFromCache } = require('../metadata/shopMetadata.service');
 const { getEmployeeWithPermissionByUserId } = require('../metadata/employeeMetadata.service');
 const { PermissionType } = require('../utils/constant');
 const { setEmployeePermissions } = require('./clsHooked');
-
-const getAppId = (req) => _.get(req, 'headers.appid') || '';
-const isCustomerRequest = (req) => {
-  const appId = getAppId(req);
-  return appId.includes(appid.customer);
-};
-
-const isShopRequest = (req) => {
-  const appId = getAppId(req);
-  return appId.includes(appid.shop);
-};
 
 const _verifyAdmin = (req, requiredRights) => {
   const { user } = req;
@@ -36,7 +24,7 @@ const _verifyAdmin = (req, requiredRights) => {
 
 const verifyCallback = (req, resolve, reject, requiredRights) => async (err, user, info) => {
   try {
-    if (err || info || !user) {
+    if (err || !user) {
       return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
     }
     req.user = user;
@@ -45,8 +33,8 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
       return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
     }
 
-    req.isCustomerRequest = isCustomerRequest(req);
-    req.isShopRequest = isShopRequest(req);
+    req.isCustomerRequest = info.isCustomer;
+    req.isShopRequest = !req.isCustomerRequest;
 
     let { shopId } = req;
     if (!shopId) {

@@ -244,6 +244,11 @@ const clearCart = async ({ shopId, customerId }) => {
   return cart;
 };
 
+const getCart = async ({ customerId, shopId }) => {
+  const cart = await orderUtilService.getCart({ shopId, customerId });
+  return cart.toJSON();
+};
+
 const checkoutCart = async ({ customerId, shopId, requestBody }) => {
   const { tableId } = requestBody;
   const cart = await orderUtilService.getCart({ shopId, customerId });
@@ -403,6 +408,7 @@ module.exports = {
   cancelOrder,
   cancelPaidStatus,
   getOrderHistory,
+  getCart,
   updateCart,
   clearCart,
   checkoutCart,

@@ -14,6 +14,7 @@ router.post('/pay-ordersession', auth(), orderManagementController.payOrderSessi
 router.post('/cancel-ordersession', auth(), orderManagementController.cancelOrderSession);
 router.post('/cancel-ordersession-paid-status', auth(), orderManagementController.cancelOrderSessionPaidStatus);
 router.post('/get-ordersession-history', auth(), orderManagementController.getOrderSessionHistory);
+router.post('/get-cart', auth(), orderManagementController.getCart);
 router.post('/update-cart', auth(), orderManagementController.updateCart);
 router.post('/checkout-cart', auth(), orderManagementController.checkoutCart);
 router.post('/discount-dishorder', auth(), orderManagementController.discountDishOrder);

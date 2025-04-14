@@ -36,7 +36,7 @@ const loginForAnonymousCustomer = catchAsync(async (req, res) => {
     anonymous: true,
   });
   const tokens = await tokenService.generateAuthTokens(customer, true);
-  res.send({ customer: customer.toJSON(), tokens });
+  res.send({ customer, tokens });
 });
 
 const loginForCustomer = catchAsync(async (req, res) => {
