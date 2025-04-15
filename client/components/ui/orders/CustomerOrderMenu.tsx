@@ -1,21 +1,23 @@
-import {
-  Button,
-  Surface,
-  Text,
-  TouchableRipple,
-  useTheme,
-} from "react-native-paper";
-import { SetStateAction, useState } from "react";
+import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
+import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { ScrollView, View } from "react-native";
-import _ from "lodash";
+import _, { debounce } from "lodash";
 import { LoaderBasic } from "../../../components/ui/Loader";
 import { RootState } from "../../../stores/store";
-import { Dish, DishCategory, Shop } from "../../../stores/state.interface";
+import {
+  CartItem,
+  Dish,
+  DishCategory,
+  Shop,
+} from "../../../stores/state.interface";
 import { useGetDishCategoriesQuery } from "../../../stores/apiSlices/dishApi.slice";
-import { styles } from "../../../app/_layout";
 import { DishCardForCustomer } from "../menus/DishCardForCustomer";
 import { useTranslation } from "react-i18next";
+import {
+  useGetCartQuery,
+  useUpdateCartMutation,
+} from "../../../stores/apiSlices/cartApi.slice";
 
 const getDishByCategory = (dishes: Dish[], categories: DishCategory[]) => {
   const dishesByCategory = _.groupBy(dishes, "category.id");
@@ -31,9 +33,9 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const { shop } = useSelector((state: RootState) => state.customer) as {
-    shop: Shop;
-  };
+  const { shop, currentCartItem } = useSelector(
+    (state: RootState) => state.customer
+  ) as { shop: Shop; currentCartItem: Record<string, CartItem> };
 
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
     useGetDishCategoriesQuery(shop.id);
@@ -41,10 +43,49 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
     dishes,
     dishCategories
   );
+  const {
+    data: cart,
+    isLoading: cartLoading,
+    isFetching: cartFetching,
+  } = useGetCartQuery(shop.id);
 
+  const [updateCart, { isLoading: updateCartLoading }] =
+    useUpdateCartMutation();
   const [selectedCategory, setCategory] = useState<string>("all");
 
-  if (dishCategoryLoading) {
+  const debouncedUpdateCart = useCallback(
+    debounce(
+      ({ shopId, cartItems }: { shopId: string; cartItems: CartItem[] }) => {
+        if (!updateCartLoading) {
+          updateCart({ cartItems, shopId });
+        }
+      },
+      2000
+    ), // 2s delay
+    [updateCart]
+  );
+
+  useEffect(() => {
+    if (cartFetching) {
+      return;
+    }
+    const currentCartItems = Object.values(currentCartItem);
+    const cartItems = cart?.cartItems || [];
+
+    const sameItems =
+      currentCartItems.length === cartItems.length &&
+      currentCartItems.every((item, i) => {
+        const other = cartItems[i];
+        return item.dish === other.dish && item.quantity === other.quantity;
+      });
+    if (!sameItems)
+      debouncedUpdateCart({
+        shopId: shop.id,
+        cartItems: Object.values(currentCartItem),
+      });
+  }, [currentCartItem, cartFetching]);
+
+  if (dishCategoryLoading || cartLoading) {
     return <LoaderBasic />;
   }
 

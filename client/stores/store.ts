@@ -14,6 +14,7 @@ import { dishApiSlice } from "./apiSlices/dishApi.slice";
 import { tableApiSlice } from "./apiSlices/tableApi.slice";
 import { orderApiSlice } from "./apiSlices/orderApi.slice";
 import { staffApiSlice } from "./apiSlices/staffApi.slice";
+import { cartApiSlice } from "./apiSlices/cartApi.slice";
 
 // Configure persistence
 const persistConfig = {
@@ -38,6 +39,7 @@ const rootReducer = combineReducers({
   [tableApiSlice.reducerPath]: tableApiSlice.reducer,
   [orderApiSlice.reducerPath]: orderApiSlice.reducer,
   [staffApiSlice.reducerPath]: staffApiSlice.reducer,
+  [cartApiSlice.reducerPath]: cartApiSlice.reducer,
 });
 
 // Create the store
@@ -53,7 +55,8 @@ const store = configureStore({
       .concat(dishApiSlice.middleware)
       .concat(tableApiSlice.middleware)
       .concat(orderApiSlice.middleware)
-      .concat(staffApiSlice.middleware),
+      .concat(staffApiSlice.middleware)
+      .concat(cartApiSlice.middleware),
 });
 
 // Create persistor

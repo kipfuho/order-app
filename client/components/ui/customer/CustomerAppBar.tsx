@@ -1,15 +1,29 @@
 import { ReactNode, useState } from "react";
-import { Appbar, Menu, Text } from "react-native-paper";
+import { Appbar, Badge, Menu, Text } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../stores/store";
-import { setLocale, toggleDarkMode } from "../stores/appSetting.slice";
+import { RootState } from "../../../stores/store";
+import { setLocale, toggleDarkMode } from "../../../stores/appSetting.slice";
 import { View } from "react-native";
+import _ from "lodash";
 
-export function CustomerAppBar({ children }: { children?: ReactNode }) {
+export function CustomerAppBar({
+  children,
+  goBack,
+}: {
+  children?: ReactNode;
+  goBack?: () => void;
+}) {
   const dispatch = useDispatch();
-  const { shop, table } = useSelector((state: RootState) => state.customer);
+  const { shop, table, currentCartItem } = useSelector(
+    (state: RootState) => state.customer
+  );
   const { darkMode, locale } = useSelector((state: RootState) => state.setting);
   const [menuVisible, setMenuVisible] = useState(false);
+
+  const totalCartQuantity = _.sumBy(
+    Object.values(currentCartItem) || [],
+    "quantity"
+  );
 
   const toggleLocale = (lang: "vi" | "en") => {
     dispatch(setLocale(lang));
@@ -23,6 +37,7 @@ export function CustomerAppBar({ children }: { children?: ReactNode }) {
 
   return (
     <Appbar.Header style={{ height: 60, paddingHorizontal: 8 }}>
+      {goBack && <Appbar.BackAction onPress={goBack} size={20} />}
       <Appbar.Content
         title={
           <View>
@@ -67,6 +82,21 @@ export function CustomerAppBar({ children }: { children?: ReactNode }) {
         icon={darkMode ? "weather-sunny" : "weather-night"}
         onPress={onThemeClick}
       />
+      <View>
+        <Appbar.Action icon="cart-outline" onPress={() => {}} />
+        {totalCartQuantity > 0 && (
+          <Badge
+            style={{
+              position: "absolute",
+              top: 3,
+              right: 3,
+              fontSize: 10,
+            }}
+          >
+            {totalCartQuantity}
+          </Badge>
+        )}
+      </View>
       {children}
     </Appbar.Header>
   );

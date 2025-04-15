@@ -14,7 +14,8 @@ import { useTranslation } from "react-i18next";
 import ImageSlider from "../../../components/ImageSlider";
 import CustomerOrderMenu from "../../../components/ui/orders/CustomerOrderMenu";
 import { useState } from "react";
-import { CustomerAppBar } from "../../../components/CustomerAppBar";
+import { CustomerAppBar } from "../../../components/ui/customer/CustomerAppBar";
+import { useGetCartQuery } from "../../../stores/apiSlices/cartApi.slice";
 
 const getButtonSize = (width: number) => {
   return width / 2 - 30;
@@ -44,6 +45,7 @@ export default function CustomerHomePage() {
   );
   const { data: dishTypes = [], isLoading: dishTypeLoading } =
     useGetDishTypesQuery(shop.id);
+  const { isLoading: cartLoading } = useGetCartQuery(shop.id);
 
   const { availableDishTypes, dishGroupByDishType } = getDishGroupByDishType(
     dishes,
@@ -53,7 +55,7 @@ export default function CustomerHomePage() {
   const [selectedDishType, setSelectedDishType] = useState("all");
   const [menuVisible, setMenuVisible] = useState(false);
 
-  if (dishLoading || dishTypeLoading) {
+  if (dishLoading || dishTypeLoading || cartLoading) {
     return <LoaderBasic />;
   }
 
@@ -67,7 +69,7 @@ export default function CustomerHomePage() {
             flex: 1,
           }}
         >
-          <CustomerAppBar />
+          <CustomerAppBar goBack={() => setMenuVisible(false)} />
           <CustomerOrderMenu dishes={dishGroupByDishType[selectedDishType]} />
         </Modal>
       </Portal>

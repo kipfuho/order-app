@@ -110,6 +110,7 @@ interface Cart {
   shop: string;
   customer: string;
   cartItems: CartItem[];
+  totalAmount: number;
 }
 
 interface CartItem {

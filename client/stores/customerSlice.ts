@@ -41,6 +41,7 @@ export const customerSlice = createSlice({
       if (!_.get(action, "payload")) return;
 
       state.currentCartItem = _.keyBy(action.payload.cartItems, "dish");
+      state.currentCartAmount = action.payload.totalAmount || 0;
     },
 
     updateCartSingleDish: (
@@ -51,13 +52,20 @@ export const customerSlice = createSlice({
 
       const dish = action.payload.dish;
       const currentCartItem = state.currentCartItem[dish.id];
-      state.currentCartItem[dish.id] = {
-        ...currentCartItem,
-        quantity: action.payload.quantity,
-      };
       state.currentCartAmount +=
         (action.payload.quantity - (currentCartItem?.quantity || 0)) *
         dish.price;
+
+      if (action.payload.quantity === 0) {
+        delete state.currentCartItem[dish.id];
+        return;
+      }
+
+      state.currentCartItem[dish.id] = {
+        ...currentCartItem,
+        dish: dish.id,
+        quantity: action.payload.quantity,
+      };
     },
 
     updateCurrentCartAmount: (state, action: PayloadAction<number>) => {
