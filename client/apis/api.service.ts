@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { auth } from "../generated/auth";
-import { signOut } from "../stores/authSlice";
+import { signOut, signOutForCustomer } from "../stores/authSlice";
 import _ from "lodash";
 import store from "../stores/store";
 
@@ -76,7 +76,12 @@ export const apiRequest = async <T>({
   } catch (error: any) {
     // 401 Unauthorized
     if (error.status === 401) {
-      store.dispatch(signOut());
+      const state = store.getState();
+      if (state.auth.isCustomerApp) {
+        store.dispatch(signOutForCustomer());
+      } else {
+        store.dispatch(signOut());
+      }
     }
     throw new Error(error.response?.data?.message || "Something went wrong");
   }
