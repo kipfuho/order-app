@@ -219,21 +219,18 @@ const getOrderHistory = async ({ shopId, from, to }) => {
 };
 
 const updateCart = async ({ customerId, shopId, requestBody }) => {
-  const { updatedishRequests } = requestBody;
+  const { cartItems } = requestBody;
   const cart = await orderUtilService.getCart({ shopId, customerId });
-  const cartItems = cart.cartItems || [];
-  const cartItemByDishId = _.keyBy(cartItems, '_id');
-  _.forEach(updatedishRequests, (updateRequest) => {
-    if (cartItemByDishId[_.get(updateRequest, 'dishId')]) {
-      cartItemByDishId[updateRequest.dishId].quantity = updateRequest.quantity || 0;
-      return;
-    }
 
-    cartItems.push(updateRequest);
+  const dishes = await getDishesFromCache({ shopId });
+  const dishById = _.keyBy(dishes, 'id');
+  _.forEach(cartItems, (item) => {
+    // eslint-disable-next-line no-param-reassign
+    item.price = dishById[item.dish].price;
   });
+  const totalAmount = _.sumBy(cartItems, (item) => item.quantity * item.price);
 
-  const updatedCartItems = orderUtilService.mergeCartItems(cartItems);
-  return Cart.findByIdAndUpdate(cart._id, { $set: { cartItems: updatedCartItems } });
+  return Cart.findByIdAndUpdate(cart._id, { $set: { cartItems, totalAmount } });
 };
 
 const clearCart = async ({ shopId, customerId }) => {

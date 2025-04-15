@@ -40,13 +40,18 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
     if (!shopId) {
       shopId = req.params.shopId || _.get(req, 'body.shopId');
     }
-    if (!shopId || req.isCustomerRequest) {
+    if (!shopId) {
       resolve();
       return;
     }
 
     const shop = await getShopFromCache({ shopId });
     req.shop = shop;
+
+    if (req.isCustomerRequest) {
+      resolve();
+      return;
+    }
 
     if (shop.owner.toString() !== user.id) {
       const { employee, permissions } = await getEmployeeWithPermissionByUserId({ userId: user.id, shopId });

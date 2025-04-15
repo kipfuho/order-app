@@ -6,6 +6,7 @@ const {
   convertOrderSessionForResponse,
   convertOrderSessionHistoryForResponse,
 } = require('../converters/orderSession.converter');
+const { convertCartForResponse } = require('../converters/cart.converter');
 
 const createOrder = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
@@ -100,7 +101,7 @@ const getCart = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const customerId = _.get(req, 'user.id');
   const cart = await orderManagementService.getCart({ customerId, shopId });
-  res.status(httpStatus.OK).send({ message: 'OK', cart });
+  res.status(httpStatus.OK).send({ message: 'OK', cart: convertCartForResponse(cart) });
 });
 
 const updateCart = catchAsync(async (req, res) => {

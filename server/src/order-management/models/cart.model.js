@@ -9,6 +9,7 @@ const cartItemSchema = new mongoose.Schema(
       ref: 'Shop',
     },
     quantity: { type: Number },
+    price: { type: Number },
   },
   {
     timestamps: true,
@@ -26,6 +27,7 @@ const cartSchema = new mongoose.Schema(
       ref: 'Customer',
     },
     cartItems: [cartItemSchema],
+    totalAmount: { type: Number },
     status: {
       type: String,
       enum: [Status.enabled, Status.disabled],
