@@ -2,7 +2,6 @@ import axios, { AxiosRequestConfig } from "axios";
 import { auth } from "../generated/auth";
 import { signOut, signOutForCustomer } from "../stores/authSlice";
 import _ from "lodash";
-import store from "../stores/store";
 
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -76,6 +75,7 @@ export const apiRequest = async <T>({
   } catch (error: any) {
     // 401 Unauthorized
     if (error.status === 401) {
+      const store = require("../stores/store").default;
       const state = store.getState();
       if (state.auth.isCustomerApp) {
         store.dispatch(signOutForCustomer());

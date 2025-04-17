@@ -1,5 +1,6 @@
 import { OrderSession, OrderSessionHistory, TableForOrder } from "../stores/state.interface";
 import { apiRequest } from "./api.service";
+import { getAccessTokenLazily } from "./auth.api.service";
 import {
   CancelOrderSessionPaidStatusRequest,
   CancelOrderSessionRequest,
@@ -13,7 +14,6 @@ import {
   GetTablesForOrderRequest,
   PayOrderSessionRequest,
 } from "./order.api.interface";
-import { getAccessToken } from "./utils.service";
 
 /**
  * Get tables for order
@@ -22,7 +22,7 @@ import { getAccessToken } from "./utils.service";
 const getTablesForOrderRequest = async ({
   shopId,
 }: GetTablesForOrderRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: { tables: TableForOrder[] } = await apiRequest({
     method: "POST",
@@ -41,7 +41,7 @@ const getActiveOrderSessionsRequest = async ({
   shopId,
   tableId,
 }: GetActiveOrderSessionRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: { orderSessions: OrderSession[] } = await apiRequest({
     method: "POST",
@@ -63,7 +63,7 @@ const getOrderSessionDetailRequest = async ({
   shopId,
   orderSessionId,
 }: GetOrderSessionDetailRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: { orderSession: OrderSession } = await apiRequest({
     method: "POST",
@@ -86,7 +86,7 @@ const getOrderSessionHistoryRequest = async ({
   from,
   to,
 }: GetOrderSessionHistoryRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: { orderSessions: OrderSessionHistory[] } = await apiRequest({
     method: "POST",
@@ -111,7 +111,7 @@ const createOrderRequest = async ({
   tableId,
   orderSessionId,
 }: CreateOrderRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: { orderSession: OrderSession } = await apiRequest({
     method: "POST",
@@ -137,7 +137,7 @@ const changeDishQuantityRequest = async ({
   newQuantity,
   orderId,
 }: ChangeDishQuantityRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "POST",
@@ -160,7 +160,7 @@ const payOrderSessionRequest = async ({
   orderSessionId,
   paymentDetails,
 }: PayOrderSessionRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "POST",
@@ -182,7 +182,7 @@ const cancelOrderSessionRequest = async ({
   orderSessionId,
   reason,
 }: CancelOrderSessionRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "POST",
@@ -203,7 +203,7 @@ const cancelOrderSessionPaidStatusRequest = async ({
   shopId,
   orderSessionId,
 }: CancelOrderSessionPaidStatusRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "POST",
@@ -229,7 +229,7 @@ const discountDishOrderRequest = async ({
   orderId,
   discountReason = "",
 }: DiscountDishOrderRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "POST",
@@ -259,7 +259,7 @@ const discountOrderSessionRequest = async ({
   discountType,
   discountAfterTax,
 }: DiscountOrderSessionRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "POST",

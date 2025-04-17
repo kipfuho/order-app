@@ -1,6 +1,5 @@
 import _ from "lodash";
 import { apiFormDataRequest, apiRequest } from "./api.service";
-import { getAccessToken } from "./utils.service";
 import { Dish, DishCategory, Unit } from "../stores/state.interface";
 import {
   CreateDefaultUnitsRequest,
@@ -17,9 +16,10 @@ import {
   UpdateDishRequest,
   UploadImageRequest,
 } from "./dish.api.interface";
+import { getAccessTokenLazily } from "./auth.api.service";
 
 const uploadImageRequest = async ({ shopId, formData }: UploadImageRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const result: { url: string } = await apiFormDataRequest({
     endpoint: `/v1/shops/${shopId}/dishes/upload`,
     formData,
@@ -30,7 +30,7 @@ const uploadImageRequest = async ({ shopId, formData }: UploadImageRequest) => {
 };
 
 const removeImageRequest = async ({ shopId, url }: RemoveImageRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   await apiRequest({
     method: "POST",
     endpoint: `/v1/shops/${shopId}/dishes/remove`,
@@ -49,7 +49,7 @@ const createDishCategoryRequest = async ({
   shopId,
   name,
 }: CreateDishCategoryRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
   } = { name };
@@ -71,7 +71,7 @@ const createDishCategoryRequest = async ({
 const getDishCategoriesRequest = async ({
   shopId,
 }: GetDishCategoriesRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: { dishCategories: DishCategory[] } = await apiRequest({
     method: "GET",
@@ -91,7 +91,7 @@ const updateDishCategoryRequest = async ({
   shopId,
   name,
 }: UpdateDishCategoryRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
   } = { name };
@@ -114,7 +114,7 @@ const deleteDishCategoryRequest = async ({
   shopId,
   dishCategoryId,
 }: DeleteDishCategoryRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "DELETE",
@@ -138,7 +138,7 @@ const createDishRequest = async ({
   isTaxIncludedPrice = false,
   imageUrls = [],
 }: CreateDishRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
     category: string;
@@ -174,7 +174,7 @@ const createDishRequest = async ({
  * @param param0
  */
 const getDishesRequest = async ({ shopId }: GetDishesRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: { dishes: Dish[] } = await apiRequest({
     method: "GET",
@@ -201,7 +201,7 @@ const updateDishRequest = async ({
   isTaxIncludedPrice = false,
   imageUrls = [],
 }: UpdateDishRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
     category: string;
@@ -237,7 +237,7 @@ const updateDishRequest = async ({
  * @param param0
  */
 const deleteDishRequest = async ({ shopId, dishId }: DeleteDishRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "DELETE",
@@ -251,7 +251,7 @@ const deleteDishRequest = async ({ shopId, dishId }: DeleteDishRequest) => {
  * @param param0
  */
 const getDishTypesRequest = async ({ shopId }: GetDishTypesRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: { dishTypes: string[] } = await apiRequest({
     method: "GET",
@@ -267,7 +267,7 @@ const getDishTypesRequest = async ({ shopId }: GetDishTypesRequest) => {
  * @param param0
  */
 const getUnitsRequest = async ({ shopId }: GetUnitsRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const result: { units: Unit[] } = await apiRequest({
     method: "GET",
     endpoint: `/v1/shops/${shopId}/units/`,
@@ -280,7 +280,7 @@ const getUnitsRequest = async ({ shopId }: GetUnitsRequest) => {
 const createDefaultUnitsRequest = async ({
   shopId,
 }: CreateDefaultUnitsRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const result: { units: Unit[] } = await apiRequest({
     method: "GET",
     endpoint: `/v1/shops/${shopId}/units/create-default`,

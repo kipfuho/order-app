@@ -1,12 +1,12 @@
 import { Shop } from "../stores/state.interface";
 import { apiRequest } from "./api.service";
+import { getAccessTokenLazily } from "./auth.api.service";
 import {
   CreateShopRequest,
   DeleteShopRequest,
   QueryShopsRequest,
   UpdateShopRequest,
 } from "./shop.api.interface";
-import { getAccessToken } from "./utils.service";
 
 const createShopRequest = async ({
   name,
@@ -15,7 +15,7 @@ const createShopRequest = async ({
   taxRate,
   location,
 }: CreateShopRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
     email: string;
@@ -45,7 +45,7 @@ const createShopRequest = async ({
 };
 
 const getShopRequest = async (shopId: string) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: { shop: Shop } = await apiRequest({
     method: "GET",
@@ -64,7 +64,7 @@ const queryShopsRequest = async ({
   limit = 10,
 }: QueryShopsRequest) => {
   if (!user) return [];
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const queryParams = new URLSearchParams({
     employeeUserId: user.id,
     sortBy,
@@ -97,7 +97,7 @@ const updateShopRequest = async ({
   taxRate,
   location,
 }: UpdateShopRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
     email: string;
@@ -127,7 +127,7 @@ const updateShopRequest = async ({
 };
 
 const deleteShopRequest = async ({ shopId }: DeleteShopRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const response: { shop: Shop } = await apiRequest({
     method: "DELETE",

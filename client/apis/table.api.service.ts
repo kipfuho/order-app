@@ -1,7 +1,6 @@
 import _ from "lodash";
 import { Table, TablePosition } from "../stores/state.interface";
 import { apiRequest } from "./api.service";
-import { getAccessToken } from "./utils.service";
 import {
   CreateTablePositionRequest,
   CreateTableRequest,
@@ -12,11 +11,12 @@ import {
   UpdateTablePositionRequest,
   UpdateTableRequest,
 } from "./table.api.interface";
+import { getAccessTokenLazily } from "./auth.api.service";
 
 const getTablePositionsRequest = async ({
   shopId,
 }: GetTablePositionsRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     tablePositions: TablePosition[];
@@ -34,7 +34,7 @@ const createTablePositionRequest = async ({
   name,
   categories,
 }: CreateTablePositionRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
     dishCategories?: string[];
@@ -60,7 +60,7 @@ const updateTablePositionRequest = async ({
   name,
   categories,
 }: UpdateTablePositionRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
     dishCategories?: string[];
@@ -84,7 +84,7 @@ const deleteTablePositionRequest = async ({
   tablePositionId,
   shopId,
 }: DeleteTablePositionRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: { tablePosition: TablePosition } = await apiRequest({
     method: "DELETE",
@@ -102,7 +102,7 @@ const getTableRequest = async ({
   tableId: string;
   shopId: string;
 }) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     table: Table;
@@ -116,7 +116,7 @@ const getTableRequest = async ({
 };
 
 const getTablesRequest = async ({ shopId }: GetTablesRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     tables: Table[];
@@ -134,7 +134,7 @@ const createTableRequest = async ({
   name,
   tablePosition,
 }: CreateTableRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
     position: string;
@@ -156,7 +156,7 @@ const updateTableRequest = async ({
   name,
   tablePosition,
 }: UpdateTableRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
     position: string;
@@ -173,7 +173,7 @@ const updateTableRequest = async ({
 };
 
 const deleteTableRequest = async ({ tableId, shopId }: DeleteTableRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: { table: Table } = await apiRequest({
     method: "DELETE",

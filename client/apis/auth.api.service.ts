@@ -1,13 +1,17 @@
 import { signIn, signInForCustomer } from "../stores/authSlice";
 import { Customer, Tokens, User } from "../stores/state.interface";
-import store from "../stores/store";
 import { apiRequest } from "./api.service";
 import {
   LoginForCustomerRequest,
   LoginRequest,
   RegisterForCustomerRequest,
 } from "./auth.api.interface";
-import { getAccessToken } from "./utils.service";
+
+export const getAccessTokenLazily = async () => {
+  const { getAccessToken } = await import("./utils.service");
+
+  return getAccessToken();
+};
 
 const loginRequest = async ({
   email,
@@ -28,7 +32,7 @@ const loginRequest = async ({
     },
   });
 
-  store.dispatch(signIn({ ...user, tokens }));
+  require("../stores/store").default.dispatch(signIn({ ...user, tokens }));
   return true;
 };
 
@@ -81,7 +85,7 @@ const refreshTokensRequest = async (
 
 const checkUserByEmailRequest = async (email: string) => {
   try {
-    const accessToken = await getAccessToken();
+    const accessToken = await getAccessTokenLazily();
 
     const result: { exist: boolean } = await apiRequest({
       method: "POST",
@@ -98,18 +102,31 @@ const checkUserByEmailRequest = async (email: string) => {
   }
 };
 
+let loginForAnonymousCustomerRequestPromise: Promise<{
+  customer: Customer;
+  tokens: Tokens;
+}> | null = null;
+
 const loginForAnonymousCustomerRequest = async () => {
   try {
-    const { customer, tokens }: { customer: Customer; tokens: Tokens } =
-      await apiRequest({
+    let response: { customer: Customer; tokens: Tokens };
+    if (!loginForAnonymousCustomerRequestPromise) {
+      loginForAnonymousCustomerRequestPromise = apiRequest({
         method: "POST",
         endpoint: "v1/auth/login-for-anonymous-customer",
       });
+    }
 
-    store.dispatch(signInForCustomer({ ...customer, tokens }));
+    response = await loginForAnonymousCustomerRequestPromise;
+
+    require("../stores/store").default.dispatch(
+      signInForCustomer({ ...response.customer, tokens: response.tokens })
+    );
     return true;
   } catch (error) {
-    return true;
+    return false;
+  } finally {
+    loginForAnonymousCustomerRequestPromise = null; // Reset the promise after resolving
   }
 };
 
@@ -128,7 +145,9 @@ const loginForCustomerRequest = async ({
         },
       });
 
-    store.dispatch(signInForCustomer({ ...customer, tokens }));
+    require("../stores/store").default.dispatch(
+      signInForCustomer({ ...customer, tokens })
+    );
     return true;
   } catch (error) {
     return true;
@@ -154,7 +173,9 @@ const registerForCustomerRequest = async ({
         },
       });
 
-    store.dispatch(signInForCustomer({ ...customer, tokens }));
+    require("../stores/store").default.dispatch(
+      signInForCustomer({ ...customer, tokens })
+    );
     return true;
   } catch (error) {
     return true;

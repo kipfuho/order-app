@@ -8,7 +8,7 @@ import {
 } from "../stores/authSlice";
 import { refreshTokensRequest } from "./auth.api.service";
 
-export const isTokenExpired = (
+const isTokenExpired = (
   token:
     | Partial<{
         expires: number;

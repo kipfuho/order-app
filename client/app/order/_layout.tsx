@@ -1,8 +1,7 @@
 import { Redirect, Stack } from "expo-router";
-import store, { persistor } from "../../stores/store";
+import { persistor } from "../../stores/store";
 import { useEffect } from "react";
 import { useSession } from "../../hooks/useSession";
-import { LoaderBasic } from "../../components/ui/Loader";
 import { loginForAnonymousCustomerRequest } from "../../apis/auth.api.service";
 import { useDispatch } from "react-redux";
 import { setCustomerApp } from "../../stores/authSlice";
@@ -16,8 +15,6 @@ export default function CustomerAppLayout() {
       if (event.ctrlKey && event.key === "Delete") {
         console.log("Wiping persisted store...");
         await persistor.purge();
-        console.log(store.getState());
-        return <Redirect href="/login" />;
       }
     };
 
@@ -29,13 +26,12 @@ export default function CustomerAppLayout() {
 
   useEffect(() => {
     dispatch(setCustomerApp(true));
-    if (!customerSession) {
-      loginForAnonymousCustomerRequest();
-    }
-  }, [customerSession]);
+  }, []);
 
+  console.log(customerSession);
   if (!customerSession) {
-    return <LoaderBasic />;
+    loginForAnonymousCustomerRequest();
+    return <Redirect href="/order/home" />;
   }
 
   // This layout can be deferred because it's not the root layout.

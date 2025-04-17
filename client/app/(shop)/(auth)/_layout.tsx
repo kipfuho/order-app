@@ -1,5 +1,5 @@
 import { Redirect, Stack } from "expo-router";
-import store, { persistor } from "../../../stores/store";
+import { persistor } from "../../../stores/store";
 import { useEffect } from "react";
 import { useSession } from "../../../hooks/useSession";
 import { useDispatch } from "react-redux";
@@ -14,8 +14,6 @@ export default function AppLayout() {
       if (event.ctrlKey && event.key === "Delete") {
         console.log("Wiping persisted store...");
         await persistor.purge();
-        console.log(store.getState());
-        return <Redirect href="/login" />;
       }
     };
 

@@ -4,6 +4,7 @@ import {
   EmployeePosition,
 } from "../stores/state.interface";
 import { apiRequest } from "./api.service";
+import { getAccessTokenLazily } from "./auth.api.service";
 import {
   CreateDepartmentRequest,
   CreateEmployeePositionRequest,
@@ -21,10 +22,9 @@ import {
   UpdateEmployeePositionRequest,
   UpdateEmployeeRequest,
 } from "./staff.api.interface";
-import { getAccessToken } from "./utils.service";
 
 const getDepartmentsRequest = async ({ shopId }: GetDepartmentsRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     departments: Department[];
@@ -41,7 +41,7 @@ const getDepartmentRequest = async ({
   shopId,
   departmentId,
 }: GetDepartmentRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     department: Department;
@@ -59,7 +59,7 @@ const createDepartmentRequest = async ({
   name,
   permissions,
 }: CreateDepartmentRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     department: Department;
@@ -82,7 +82,7 @@ const updateDepartmentRequest = async ({
   name,
   permissions,
 }: UpdateDepartmentRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     department: Department;
@@ -100,7 +100,7 @@ const deleteDepartmentRequest = async ({
   shopId,
   departmentId,
 }: DeleteDepartmentRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "DELETE",
@@ -110,7 +110,7 @@ const deleteDepartmentRequest = async ({
 };
 
 const getEmployeesRequest = async ({ shopId }: GetEmployeesRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     employees: Employee[];
@@ -127,7 +127,7 @@ const getEmployeeRequest = async ({
   shopId,
   employeeId,
 }: GetEmployeeRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     employee: Employee;
@@ -149,7 +149,7 @@ const createEmployeeRequest = async ({
   permissions,
   positionId,
 }: CreateEmployeeRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     employee: Employee;
@@ -178,7 +178,7 @@ const updateEmployeeRequest = async ({
   permissions,
   positionId,
 }: UpdateEmployeeRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     employee: Employee;
@@ -201,7 +201,7 @@ const deleteEmployeeRequest = async ({
   shopId,
   employeeId,
 }: DeleteEmployeeRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "DELETE",
@@ -213,7 +213,7 @@ const deleteEmployeeRequest = async ({
 const getEmployeePositionsRequest = async ({
   shopId,
 }: GetEmployeePositionsRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     employeePositions: EmployeePosition[];
@@ -230,7 +230,7 @@ const createEmployeePositionRequest = async ({
   shopId,
   name,
 }: CreateEmployeePositionRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     employeePosition: EmployeePosition;
@@ -251,7 +251,7 @@ const updateEmployeePositionRequest = async ({
   employeePositionId,
   name,
 }: UpdateEmployeePositionRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     employeePosition: EmployeePosition;
@@ -271,7 +271,7 @@ const deleteEmployeePositionRequest = async ({
   shopId,
   employeePositionId,
 }: DeleteEmployeePositionRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "DELETE",
@@ -283,7 +283,7 @@ const deleteEmployeePositionRequest = async ({
 const getAllPermissionTypesRequest = async ({
   shopId,
 }: GetAllPermissionTypesRequest) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: {
     permissionTypes: string[];

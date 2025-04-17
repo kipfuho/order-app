@@ -1,9 +1,9 @@
 import { Cart, CartItem } from "../stores/state.interface";
 import { apiRequest } from "./api.service";
-import { getAccessToken } from "./utils.service";
+import { getAccessTokenLazily } from "./auth.api.service";
 
 const getCartRequest = async (shopId: string) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   const result: { cart: Cart } = await apiRequest({
     method: "POST",
@@ -21,7 +21,7 @@ const updateCartRequest = async ({
   shopId: string;
   cartItems: CartItem[];
 }) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "POST",
@@ -42,7 +42,7 @@ const checkoutCartRequest = async ({
   shopId: string;
   tableId: string;
 }) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "POST",
@@ -63,7 +63,7 @@ const getCartCheckoutHistoryRequest = async ({
   shopId: string;
   tableId: string;
 }) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessTokenLazily();
 
   await apiRequest({
     method: "POST",
