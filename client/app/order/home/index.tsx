@@ -1,6 +1,20 @@
-import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
+import {
+  Appbar,
+  Button,
+  Modal,
+  Portal,
+  Searchbar,
+  Surface,
+  Text,
+} from "react-native-paper";
 import { styles } from "../../_layout";
-import { ScrollView, useWindowDimensions, View } from "react-native";
+import {
+  Keyboard,
+  Pressable,
+  ScrollView,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import {
   useGetDishesQuery,
   useGetDishTypesQuery,
@@ -16,6 +30,7 @@ import CustomerOrderMenu from "../../../components/ui/orders/CustomerOrderMenu";
 import { useState } from "react";
 import { CustomerAppBar } from "../../../components/ui/customer/CustomerAppBar";
 import { useGetCartQuery } from "../../../stores/apiSlices/cartApi.slice";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 const getButtonSize = (width: number) => {
   return width / 2 - 30;
@@ -54,6 +69,19 @@ export default function CustomerHomePage() {
 
   const [selectedDishType, setSelectedDishType] = useState("all");
   const [menuVisible, setMenuVisible] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [searchVisible, setSearchVisible] = useState(false);
+
+  const gesture = Gesture.Race(
+    Gesture.Tap().onStart(() => {
+      setSearchVisible(false);
+      Keyboard.dismiss();
+    }),
+    Gesture.Pan().onStart(() => {
+      setSearchVisible(false);
+      Keyboard.dismiss();
+    })
+  );
 
   if (dishLoading || dishTypeLoading || cartLoading) {
     return <LoaderBasic />;
@@ -69,8 +97,57 @@ export default function CustomerHomePage() {
             flex: 1,
           }}
         >
-          <CustomerAppBar goBack={() => setMenuVisible(false)} />
-          <CustomerOrderMenu dishes={dishGroupByDishType[selectedDishType]} />
+          <GestureDetector gesture={gesture}>
+            <View style={{ flex: 1 }}>
+              <CustomerAppBar goBack={() => setMenuVisible(false)}>
+                <Appbar.Action
+                  icon="magnify"
+                  onPress={() => setSearchVisible((a) => !a)}
+                />
+                {searchVisible && (
+                  <Pressable
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      padding: 8,
+                      zIndex: 10,
+                    }}
+                    onPress={() => {
+                      setSearchVisible(true);
+                    }}
+                  >
+                    <Searchbar
+                      placeholder={t("search_dish")}
+                      value={searchValue}
+                      onChangeText={setSearchValue}
+                      autoFocus
+                      inputStyle={{
+                        padding: 0,
+                        minHeight: "auto",
+                      }}
+                      style={{
+                        padding: 0,
+                        height: 46,
+                        alignContent: "center",
+                      }}
+                    />
+                  </Pressable>
+                )}
+              </CustomerAppBar>
+              <CustomerOrderMenu
+                dishes={
+                  searchValue
+                    ? _.filter(dishGroupByDishType[selectedDishType], (dish) =>
+                        _.includes(dish.name, searchValue)
+                      )
+                    : dishGroupByDishType[selectedDishType]
+                }
+              />
+            </View>
+          </GestureDetector>
         </Modal>
       </Portal>
       <Surface style={styles.baseContainer}>

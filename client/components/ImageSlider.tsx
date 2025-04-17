@@ -19,6 +19,7 @@ export default function ImageSlider({ images }: { images: string[] }) {
         modeConfig={{
           parallaxScrollingScale: 0.8,
         }}
+        style={{ marginTop: -25 }}
         renderItem={({ item }) => (
           <Image
             source={{ uri: item }}

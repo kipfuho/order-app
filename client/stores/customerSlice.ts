@@ -40,18 +40,19 @@ export const customerSlice = createSlice({
     updateCurrentCart: (state, action: PayloadAction<Cart>) => {
       if (!_.get(action, "payload")) return;
 
-      state.currentCartItem = _.keyBy(action.payload.cartItems, "dish");
+      state.currentCartItem = _.keyBy(action.payload.cartItems, "id");
       state.currentCartAmount = action.payload.totalAmount || 0;
     },
 
     updateCartSingleDish: (
       state,
-      action: PayloadAction<{ dish: Dish; quantity: number }>
+      action: PayloadAction<{ id?: string; dish: Dish; quantity: number }>
     ) => {
       if (!_.get(action, "payload")) return;
 
       const dish = action.payload.dish;
-      const currentCartItem = state.currentCartItem[dish.id];
+      const currentCartItem =
+        state.currentCartItem[action.payload.id || dish.id];
       state.currentCartAmount +=
         (action.payload.quantity - (currentCartItem?.quantity || 0)) *
         dish.price;
@@ -61,7 +62,7 @@ export const customerSlice = createSlice({
         return;
       }
 
-      state.currentCartItem[dish.id] = {
+      state.currentCartItem[action.payload.id || dish.id] = {
         ...currentCartItem,
         dish: dish.id,
         quantity: action.payload.quantity,

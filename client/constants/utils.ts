@@ -1,3 +1,5 @@
+import _ from "lodash";
+import { CartItem } from "../stores/state.interface";
 import store from "../stores/store";
 import { Countries, CurrencyText } from "./common";
 
@@ -15,4 +17,23 @@ const convertPaymentAmount = (paymentAmount: number) => {
   return `${paymentAmount.toLocaleString()}${getCountryCurrency()}`;
 };
 
-export { getCountryCurrency, convertPaymentAmount };
+const mergeCartItems = (currentCartItem: Record<string, CartItem>) => {
+  const cardItemByKey: Record<string, CartItem> = {};
+
+  for (const item of Object.values(currentCartItem)) {
+    const key = `${item.dish}_${item.note || ""}`;
+
+    const previousItem = cardItemByKey[key];
+
+    cardItemByKey[key] = {
+      id: previousItem?.id || item.id,
+      dish: item.dish,
+      quantity: (previousItem?.quantity || 0) + item.quantity,
+      note: previousItem?.note || item.note,
+    };
+  }
+
+  return _.filter(Object.values(cardItemByKey), (item) => item.quantity > 0);
+};
+
+export { getCountryCurrency, convertPaymentAmount, mergeCartItems };

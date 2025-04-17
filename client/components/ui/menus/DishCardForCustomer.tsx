@@ -9,29 +9,45 @@ import {
   useTheme,
 } from "react-native-paper";
 import { Pressable, useWindowDimensions, View } from "react-native";
-import _, { debounce } from "lodash";
+import _ from "lodash";
 import { convertPaymentAmount } from "../../../constants/utils";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
+import { useDispatch } from "react-redux";
 import { updateCartSingleDish } from "../../../stores/customerSlice";
 
-function QuantityControlForCustomer({ dish }: { dish: Dish }) {
+function QuantityControlForCustomer({
+  dish,
+  cartItems,
+}: {
+  dish: Dish;
+  cartItems: CartItem[];
+}) {
   const dispatch = useDispatch();
   const theme = useTheme();
 
-  const cartItem = useSelector(
-    (state: RootState) => state.customer.currentCartItem[dish.id]
-  );
+  const totalQuantity = _.sumBy(cartItems, "quantity");
+  const cartItem = _.find(cartItems, (item) => item.quantity > 0);
 
   const handleDecrease = () => {
-    if (cartItem?.quantity > 0) {
-      dispatch(updateCartSingleDish({ dish, quantity: cartItem.quantity - 1 }));
+    if (!cartItem) return;
+
+    if (cartItem.quantity > 0) {
+      dispatch(
+        updateCartSingleDish({
+          id: cartItem.id,
+          dish,
+          quantity: cartItem.quantity - 1,
+        })
+      );
     }
   };
 
   const handleIncrease = () => {
     dispatch(
-      updateCartSingleDish({ dish, quantity: (cartItem?.quantity ?? 0) + 1 })
+      updateCartSingleDish({
+        id: cartItem?.id,
+        dish,
+        quantity: (cartItem?.quantity ?? 0) + 1,
+      })
     );
   };
 
@@ -114,14 +130,16 @@ function QuantityControlForCustomer({ dish }: { dish: Dish }) {
   );
 }
 
-export const DishCardForCustomer = ({ dish }: { dish: Dish }) => {
+export const DishCardForCustomer = ({
+  dish,
+  cartItems,
+}: {
+  dish: Dish;
+  cartItems: CartItem[];
+}) => {
   const theme = useTheme();
   const { width } = useWindowDimensions();
   const cardWidth = (width * 0.75 - 10) / 2 - 10;
-
-  const cartItem = useSelector(
-    (state: RootState) => state.customer.currentCartItem[dish?.id]
-  );
 
   if (!dish) {
     return;
@@ -147,7 +165,7 @@ export const DishCardForCustomer = ({ dish }: { dish: Dish }) => {
           }}
         />
       </View>
-      <QuantityControlForCustomer dish={dish} />
+      <QuantityControlForCustomer dish={dish} cartItems={cartItems} />
       <Card.Title
         title={
           <View style={{ flex: 1 }}>

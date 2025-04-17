@@ -91,6 +91,7 @@ interface Dish {
   type: string;
   taxRate: number;
   imageUrls: string[];
+  description: string;
 }
 
 interface DishCategory {
@@ -117,6 +118,7 @@ interface CartItem {
   id: string;
   dish: string;
   quantity: number;
+  note?: string;
 }
 
 interface OrderSessionDiscountProduct {

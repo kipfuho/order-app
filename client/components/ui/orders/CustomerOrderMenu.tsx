@@ -18,13 +18,14 @@ import {
   useGetCartQuery,
   useUpdateCartMutation,
 } from "../../../stores/apiSlices/cartApi.slice";
+import { mergeCartItems } from "../../../constants/utils";
 
 const getDishByCategory = (dishes: Dish[], categories: DishCategory[]) => {
   const dishesByCategory = _.groupBy(dishes, "category.id");
   dishesByCategory["all"] = dishes;
-  const availableDishCategories = _.filter(
-    _.concat([{ id: "all", name: "all" }], categories) as DishCategory[],
-    (c) => !_.isEmpty(dishesByCategory[c.id])
+  const availableDishCategories = _.concat(
+    [{ id: "all", name: "all" }],
+    _.filter(categories, (c) => !_.isEmpty(dishesByCategory[c.id]))
   );
   return { availableDishCategories, dishesByCategory };
 };
@@ -36,6 +37,7 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
   const { shop, currentCartItem } = useSelector(
     (state: RootState) => state.customer
   ) as { shop: Shop; currentCartItem: Record<string, CartItem> };
+  const cartItemsGroupByDish = _.groupBy(currentCartItem, "dish");
 
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
     useGetDishCategoriesQuery(shop.id);
@@ -69,19 +71,19 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
     if (cartFetching) {
       return;
     }
-    const currentCartItems = Object.values(currentCartItem);
+    const mergedCartItems = mergeCartItems(currentCartItem);
     const cartItems = cart?.cartItems || [];
 
     const sameItems =
-      currentCartItems.length === cartItems.length &&
-      currentCartItems.every((item, i) => {
+      mergedCartItems.length === cartItems.length &&
+      mergedCartItems.every((item, i) => {
         const other = cartItems[i];
         return item.dish === other.dish && item.quantity === other.quantity;
       });
     if (!sameItems)
       debouncedUpdateCart({
         shopId: shop.id,
-        cartItems: Object.values(currentCartItem),
+        cartItems: mergedCartItems,
       });
   }, [currentCartItem, cartFetching]);
 
@@ -91,7 +93,13 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
 
   return (
     <Surface style={{ flex: 1, flexDirection: "row" }}>
-      <Surface style={{ boxShadow: "none", width: "25%" }}>
+      <Surface
+        style={{
+          boxShadow: "none",
+          width: "25%",
+          backgroundColor: theme.colors.background,
+        }}
+      >
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -104,9 +112,7 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
           {availableDishCategories.map((cat) => (
             <TouchableRipple
               key={cat.id}
-              onPress={() =>
-                setCategory((prevCat) => (prevCat === cat.id ? "" : cat.id))
-              }
+              onPress={() => setCategory(cat.id)}
               style={{
                 borderRadius: 0,
                 backgroundColor:
@@ -144,7 +150,11 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
             }}
           >
             {dishesByCategory[selectedCategory].map((d) => (
-              <DishCardForCustomer key={d.id} dish={d} />
+              <DishCardForCustomer
+                key={d.id}
+                dish={d}
+                cartItems={cartItemsGroupByDish[d.id]}
+              />
             ))}
           </View>
         </ScrollView>
