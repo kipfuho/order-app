@@ -5,7 +5,7 @@ const userService = require('./user.service');
 const Token = require('../models/token.model');
 const ApiError = require('../../utils/ApiError');
 const { tokenTypes } = require('../../config/tokens');
-const { getUserFromDatabase, getUserFromCache } = require('../../metadata/userMetadata.service');
+const { getUserFromDatabase, getUserFromCache, getUserModelFromDatabase } = require('../../metadata/userMetadata.service');
 const { getCustomerFromCache, getCustomerFromDatabase } = require('../../metadata/customerMetadata.service');
 
 const _getUserFromRefreshToken = async (tokenDoc) => {
@@ -34,7 +34,7 @@ const compareUserPassword = async (user, password) => {
  * @returns {Promise<User>}
  */
 const loginUserWithEmailAndPassword = async ({ email, password }) => {
-  const user = await getUserFromDatabase({ email });
+  const user = await getUserModelFromDatabase({ email });
   const isPasswordMatch = await compareUserPassword(user, password);
   if (!isPasswordMatch) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');

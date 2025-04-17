@@ -10,14 +10,10 @@ const _getUserFromClsHook = ({ key }) => {
   return user;
 };
 
-const getUserFromDatabase = async ({ userId, email, phone }) => {
+const getUserModelFromDatabase = async ({ userId, email, phone }) => {
   if (userId) {
     const user = await User.findOne({ _id: userId, status: { $ne: constant.Status.disabled } });
-    if (!user) {
-      return null;
-    }
-    const userJson = user.toJSON();
-    return userJson;
+    return user;
   }
   const filter = {
     $or: _.compact([email && { email }, phone && { phone }]),
@@ -26,6 +22,11 @@ const getUserFromDatabase = async ({ userId, email, phone }) => {
   if (_.isEmpty(filter.$or)) return null;
 
   const user = await User.findOne(filter);
+  return user;
+};
+
+const getUserFromDatabase = async ({ userId, email, phone }) => {
+  const user = await getUserModelFromDatabase({ userId, email, phone });
   if (!user) {
     return null;
   }
@@ -53,6 +54,7 @@ const getUserFromCache = async ({ userId }) => {
 };
 
 module.exports = {
+  getUserModelFromDatabase,
   getUserFromDatabase,
   getUserFromCache,
 };
