@@ -219,18 +219,27 @@ const getOrderHistory = async ({ shopId, from, to }) => {
 };
 
 const updateCart = async ({ customerId, shopId, requestBody }) => {
-  const { cartItems } = requestBody;
+  const { cartItems: incomingItems } = requestBody;
   const cart = await orderUtilService.getCart({ shopId, customerId });
 
   const dishes = await getDishesFromCache({ shopId });
   const dishById = _.keyBy(dishes, 'id');
-  _.forEach(cartItems, (item) => {
-    // eslint-disable-next-line no-param-reassign
-    item.price = dishById[item.dish].price;
-  });
-  const totalAmount = _.sumBy(cartItems, (item) => item.quantity * item.price);
 
-  return Cart.findByIdAndUpdate(cart._id, { $set: { cartItems, totalAmount } });
+  // Map existing items by dish ID for quick lookup
+  const existingItemsByDish = _.keyBy(cart.cartItems, 'dish');
+
+  const updatedItems = incomingItems.map((item) => {
+    const existingItem = existingItemsByDish[item.dish];
+    return {
+      ...(existingItem ? { _id: existingItem._id } : {}),
+      ...item,
+      price: dishById[item.dish].price,
+    };
+  });
+
+  const totalAmount = _.sumBy(updatedItems, (item) => item.quantity * item.price);
+
+  return Cart.findByIdAndUpdate(cart._id, { $set: { cartItems: updatedItems, totalAmount } }, { new: true });
 };
 
 const clearCart = async ({ shopId, customerId }) => {

@@ -10,6 +10,7 @@ const cartItemSchema = new mongoose.Schema(
     },
     quantity: { type: Number },
     price: { type: Number },
+    note: { type: String },
   },
   {
     timestamps: true,
