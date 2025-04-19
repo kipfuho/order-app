@@ -7,7 +7,6 @@ import awsReducer from "./awsSlice";
 import { shopApiSlice } from "./apiSlices/shopApi.slice";
 import { persistStore, persistReducer } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import { combineReducers } from "redux";
 import { listenerMiddleware } from "./listenerMiddleware";
 import { dishApiSlice } from "./apiSlices/dishApi.slice";
@@ -16,16 +15,28 @@ import { orderApiSlice } from "./apiSlices/orderApi.slice";
 import { staffApiSlice } from "./apiSlices/staffApi.slice";
 import { cartApiSlice } from "./apiSlices/cartApi.slice";
 
-// Configure persistence
-const persistConfig = {
-  key: "root",
-  storage: AsyncStorage, // Stores data in AsyncStorage (React Native) or localStorage (Web)
-};
-
 // Create a persisted reducer
-const persistedAuthReducer = persistReducer(persistConfig, authReducer);
-const persistedCustomerReducer = persistReducer(persistConfig, customerReducer);
-const persistedSettingReducer = persistReducer(persistConfig, settingReducer);
+const persistedAuthReducer = persistReducer(
+  {
+    key: "persist:auth",
+    storage: AsyncStorage,
+  },
+  authReducer
+);
+const persistedCustomerReducer = persistReducer(
+  {
+    key: "persist:customer",
+    storage: AsyncStorage,
+  },
+  customerReducer
+);
+const persistedSettingReducer = persistReducer(
+  {
+    key: "persist:setting",
+    storage: AsyncStorage,
+  },
+  settingReducer
+);
 
 // Combine reducers
 const rootReducer = combineReducers({
