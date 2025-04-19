@@ -266,19 +266,19 @@ const checkoutCart = async ({ customerId, shopId, requestBody }) => {
       dishOrders: cart.cartItems,
     });
     await clearCart({ customerId, shopId });
-    return;
   }
 
   const orderSession = await orderUtilService.getOrCreateOrderSession({ tableId, shopId });
-  const order = await orderUtilService.createNewOrder({
+  const newOrder = await orderUtilService.createNewOrder({
     tableId,
     shopId,
     orderSession,
     dishOrders: cart.cartItems,
   });
   await clearCart({ customerId, shopId });
-  orderSession.orders = [order];
-  return orderSession;
+  const orderSessionJson = await orderUtilService.getOrderSessionById(orderSession.id);
+  orderSessionJson.orders = _.filter(orderSessionJson.orders, (order) => order.id === newOrder.id);
+  return orderSessionJson;
 };
 
 const discountDishOrder = async ({ shopId, requestBody }) => {

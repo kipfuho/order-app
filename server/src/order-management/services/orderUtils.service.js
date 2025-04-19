@@ -10,7 +10,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { getTableFromCache, getTablesFromCache } = require('../../metadata/tableMetadata.service');
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
-const { getStringId } = require('../../utils/common');
+const { getStringId, getRoundTaxAmount } = require('../../utils/common');
 
 // Merge các dish order có trùng tên và giá
 const _mergeDishOrders = (dishOrders) => {
@@ -252,17 +252,17 @@ const calculateTax = async ({ orderSessionJson, dishOrders, calculateTaxDirectly
       dishOrder.taxIncludedPrice = dishOrder.price;
     }
 
-    const afterTaxPrice = dishOrder.taxIncludedPrice || (beforeTaxPrice * (100 + dishTaxRate)) / 100;
+    const afterTaxPrice = dishOrder.taxIncludedPrice || getRoundTaxAmount((beforeTaxPrice * (100 + dishTaxRate)) / 100);
     let beforeTaxTotalPrice;
     let afterTaxTotalPrice;
     let taxAmount;
     if (calculateTaxDirectly) {
       beforeTaxTotalPrice = beforeTaxPrice * (dishOrder.quantity || 1);
-      afterTaxTotalPrice = beforeTaxTotalPrice;
-      taxAmount = afterTaxTotalPrice - beforeTaxTotalPrice;
+      afterTaxTotalPrice = getRoundTaxAmount((beforeTaxTotalPrice * (100 + dishTaxRate)) / 100);
+      taxAmount = getRoundTaxAmount(afterTaxTotalPrice - beforeTaxTotalPrice);
     } else {
       beforeTaxTotalPrice = beforeTaxPrice * (dishOrder.quantity || 1);
-      afterTaxTotalPrice = (afterTaxPrice * (100 + dishTaxRate)) / 100;
+      afterTaxTotalPrice = getRoundTaxAmount((afterTaxPrice * (100 + dishTaxRate)) / 100) * (dishOrder.quantity || 1);
       taxAmount = afterTaxTotalPrice - beforeTaxTotalPrice;
     }
 
