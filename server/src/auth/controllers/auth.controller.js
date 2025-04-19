@@ -32,9 +32,15 @@ const login = catchAsync(async (req, res) => {
 });
 
 const loginForAnonymousCustomer = catchAsync(async (req, res) => {
-  const customer = await customerService.createCustomer({
-    anonymous: true,
-  });
+  const { customerId } = req.body;
+  let customer;
+  if (customerId) {
+    customer = await customerService.getCustomer(customerId);
+  } else {
+    customer = await customerService.createCustomer({
+      anonymous: true,
+    });
+  }
   const tokens = await tokenService.generateAuthTokens(customer, true);
   res.send({ customer, tokens });
 });

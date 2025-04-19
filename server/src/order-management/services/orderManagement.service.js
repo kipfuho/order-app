@@ -264,16 +264,18 @@ const checkoutCart = async ({ customerId, shopId, requestBody }) => {
       tableId,
       shopId,
       dishOrders: cart.cartItems,
+      customerId,
     });
     await clearCart({ customerId, shopId });
   }
 
-  const orderSession = await orderUtilService.getOrCreateOrderSession({ tableId, shopId });
+  const orderSession = await orderUtilService.getOrCreateOrderSession({ tableId, shopId, customerId });
   const newOrder = await orderUtilService.createNewOrder({
     tableId,
     shopId,
     orderSession,
     dishOrders: cart.cartItems,
+    customerId,
   });
   await clearCart({ customerId, shopId });
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSession.id);
@@ -413,6 +415,12 @@ const getTableActiveOrderSessions = async ({ shopId, tableId }) => {
   return activeOrderSessionJsons;
 };
 
+const getCheckoutCartHistory = async ({ customerId, shopId }) => {
+  const orderHistories = await Order.find({ customerId, shop: shopId }).sort({ _id: -1 }).limit(50);
+
+  return orderHistories;
+};
+
 module.exports = {
   createOrder,
   changeDishQuantity,
@@ -430,4 +438,5 @@ module.exports = {
   checkoutCart,
   discountDishOrder,
   discountOrderSession,
+  getCheckoutCartHistory,
 };

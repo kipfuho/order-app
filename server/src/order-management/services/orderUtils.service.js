@@ -118,7 +118,7 @@ const getActiveOrderSessionByTable = async ({ tableId, shopId }) => {
   return orderSession;
 };
 
-const getOrCreateOrderSession = async ({ orderSessionId, tableId, shopId }) => {
+const getOrCreateOrderSession = async ({ orderSessionId, tableId, shopId, customerId, numberOfCustomer }) => {
   const table = await getTableFromCache({ shopId, tableId });
   throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
 
@@ -144,12 +144,16 @@ const getOrCreateOrderSession = async ({ orderSessionId, tableId, shopId }) => {
     shop: shopId,
     orderSessionNo,
     taxRate: _.get(shop, 'taxRate', 0),
+    customerInfo: {
+      customerIds: customerId ? [customerId] : undefined,
+      numberOfCustomer: numberOfCustomer || 1,
+    },
   });
 
   return orderSession.toJSON();
 };
 
-const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, orderNo }) => {
+const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, orderNo, customerId }) => {
   const dishes = await getDishesFromCache({ shopId });
   const units = await getUnitsFromCache({ shopId });
   const unitById = _.keyBy(units, 'id');
@@ -186,6 +190,7 @@ const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, order
     orderSessionId: _.get(orderSession, 'id'),
     orderNo,
     dishOrders: orderDishOrders,
+    customerId,
   });
   if (orderSession) {
     await OrderSession.updateOne(

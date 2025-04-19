@@ -30,6 +30,7 @@ const orderSchema = new mongoose.Schema(
     orderNo: { type: Number },
     dishOrders: [dishOrderSchema],
     returnedDishOrders: [dishOrderSchema],
+    customerId: { type: mongoose.Types.ObjectId, ref: 'Customer' },
   },
   {
     timestamps: true,

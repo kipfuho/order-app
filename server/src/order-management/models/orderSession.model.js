@@ -77,6 +77,10 @@ const orderSessionSchema = new mongoose.Schema(
       reason: { type: String },
     },
     customerInfo: {
+      customerIds: {
+        type: mongoose.Types.ObjectId,
+        ref: 'Customer',
+      },
       numberOfCustomer: { type: Number },
     },
     totalDiscountAmountBeforeTax: { type: Number },
