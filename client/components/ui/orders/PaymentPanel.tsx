@@ -80,9 +80,9 @@ export default function PaymentMethodPage() {
         />
         <Toast />
       </Portal>
-      <Surface style={{ flex: 1, padding: 12, borderRadius: 10 }}>
+      <Surface mode="flat" style={{ flex: 1, padding: 12, borderRadius: 10 }}>
         <ScrollView style={{ flex: 1 }}>
-          <Surface style={{ flex: 1, gap: 12 }}>
+          <Surface mode="flat" style={{ flex: 1, gap: 12 }}>
             {paymentMethods.map((paymentMethod) => (
               <TouchableRipple
                 key={paymentMethod}

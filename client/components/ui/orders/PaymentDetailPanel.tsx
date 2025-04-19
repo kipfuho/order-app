@@ -19,6 +19,7 @@ export default function OrderSessionDetailPage({
 
   return (
     <Surface
+      mode="flat"
       style={{
         flex: 1,
         padding: 16,
@@ -26,7 +27,7 @@ export default function OrderSessionDetailPage({
       }}
     >
       <ScrollView>
-        <Surface style={{ flex: 1, boxShadow: "none" }}>
+        <Surface mode="flat" style={{ flex: 1, boxShadow: "none" }}>
           <View
             style={{
               flexDirection: "row",

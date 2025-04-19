@@ -211,9 +211,9 @@ export default function ActiveOrderSessionPage({
         </Modal>
         <Toast />
       </Portal>
-      <Surface style={{ flex: 1, padding: 12, borderRadius: 10 }}>
+      <Surface mode="flat" style={{ flex: 1, padding: 12, borderRadius: 10 }}>
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <Surface style={{ flex: 1 }}>
+          <Surface mode="flat" style={{ flex: 1 }}>
             <OrderCustomerInfo orderSession={activeOrderSession} />
             <View
               style={{
@@ -267,7 +267,11 @@ export default function ActiveOrderSessionPage({
             </View>
 
             {activeOrderSession.orders.map((order, idx) => (
-              <Surface key={order.id} style={{ marginTop: 10, gap: 10 }}>
+              <Surface
+                mode="flat"
+                key={order.id}
+                style={{ marginTop: 10, gap: 10 }}
+              >
                 <Text style={{ alignSelf: "flex-end" }}>
                   {t("times")}: {idx + 1}
                 </Text>
