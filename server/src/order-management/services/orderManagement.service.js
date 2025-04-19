@@ -416,7 +416,8 @@ const getTableActiveOrderSessions = async ({ shopId, tableId }) => {
 };
 
 const getCheckoutCartHistory = async ({ customerId, shopId }) => {
-  const orderHistories = await Order.find({ customerId, shop: shopId }).sort({ _id: -1 }).limit(50);
+  // need optimization
+  const orderHistories = await Order.find({ customerId, shop: shopId }).sort({ _id: -1 });
 
   return orderHistories;
 };

@@ -31,6 +31,9 @@ const orderSchema = new mongoose.Schema(
     dishOrders: [dishOrderSchema],
     returnedDishOrders: [dishOrderSchema],
     customerId: { type: mongoose.Types.ObjectId, ref: 'Customer' },
+    totalQuantity: { type: Number },
+    totalBeforeTaxAmount: { type: Number },
+    totalAfterTaxAmount: { type: Number },
   },
   {
     timestamps: true,

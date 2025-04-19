@@ -10,7 +10,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { getTableFromCache, getTablesFromCache } = require('../../metadata/tableMetadata.service');
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
-const { getStringId, getRoundTaxAmount } = require('../../utils/common');
+const { getStringId, getRoundTaxAmount, getRoundDishPrice } = require('../../utils/common');
 
 // Merge các dish order có trùng tên và giá
 const _mergeDishOrders = (dishOrders) => {
@@ -153,37 +153,96 @@ const getOrCreateOrderSession = async ({ orderSessionId, tableId, shopId, custom
   return orderSession.toJSON();
 };
 
+const _getPaymentDetailForDishOrder = ({ price, taxRate, isTaxIncludedPrice, quantity, calculateTaxDirectly = false }) => {
+  let beforeTaxPrice = isTaxIncludedPrice ? getRoundDishPrice(price / (1 + taxRate / 100)) : price;
+  let afterTaxPrice = isTaxIncludedPrice ? price : getRoundDishPrice(price * (1 + taxRate / 100));
+  let beforeTaxTotalPrice = beforeTaxPrice * quantity;
+  let afterTaxTotalPrice = afterTaxPrice * quantity;
+  if (calculateTaxDirectly) {
+    // gia k bao gom thue
+    if (!isTaxIncludedPrice) {
+      afterTaxTotalPrice = getRoundTaxAmount(beforeTaxTotalPrice * (1 + taxRate / 100));
+      afterTaxPrice = getRoundDishPrice(afterTaxTotalPrice / quantity);
+    } else {
+      // gia bao gom thue
+      beforeTaxTotalPrice = getRoundTaxAmount(afterTaxTotalPrice / (1 + taxRate / 100));
+      beforeTaxPrice = getRoundDishPrice(beforeTaxTotalPrice / quantity);
+    }
+  }
+
+  return {
+    beforeTaxPrice,
+    beforeTaxTotalPrice,
+    afterTaxPrice,
+    afterTaxTotalPrice,
+  };
+};
+
+const _setMetatadaForDishOrder = ({ dishOrder, dishById, unitById, orderSessionTaxRate, calculateTaxDirectly = false }) => {
+  const { dishId, quantity, name, price, isTaxIncludedPrice } = dishOrder;
+  let taxRate = _.get(dishOrder, 'taxRate', 0);
+  if (orderSessionTaxRate < 0.001) {
+    taxRate = 0;
+  }
+
+  if (!dishId) {
+    const { beforeTaxPrice, beforeTaxTotalPrice, afterTaxPrice, afterTaxTotalPrice } = _getPaymentDetailForDishOrder({
+      isTaxIncludedPrice,
+      price,
+      quantity,
+      taxRate,
+      calculateTaxDirectly,
+    });
+    return {
+      dishId,
+      quantity,
+      name,
+      taxRate,
+      price: beforeTaxPrice,
+      taxIncludedPrice: afterTaxPrice,
+      isTaxIncludedPrice,
+      beforeTaxTotalPrice,
+      afterTaxTotalPrice,
+    };
+  }
+  const dish = dishById[dishId];
+  throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
+  taxRate = dish.taxRate;
+  if (orderSessionTaxRate < 0.001) {
+    taxRate = 0;
+  }
+  const { beforeTaxPrice, beforeTaxTotalPrice, afterTaxPrice, afterTaxTotalPrice } = _getPaymentDetailForDishOrder({
+    isTaxIncludedPrice: dish.isTaxIncludedPrice,
+    price: dish.price,
+    quantity,
+    taxRate,
+    calculateTaxDirectly,
+  });
+  return {
+    dish: dishId,
+    quantity,
+    name: dish.name,
+    unit: _.get(unitById[dish.unit], 'name'),
+    taxRate: dish.taxRate,
+    price: beforeTaxPrice,
+    taxIncludedPrice: afterTaxPrice,
+    isTaxIncludedPrice: dish.isTaxIncludedPrice,
+    beforeTaxTotalPrice,
+    afterTaxTotalPrice,
+  };
+};
+
 const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, orderNo, customerId }) => {
+  const shop = await getShopFromCache({ shopId });
   const dishes = await getDishesFromCache({ shopId });
   const units = await getUnitsFromCache({ shopId });
   const unitById = _.keyBy(units, 'id');
   const dishById = _.keyBy(dishes, 'id');
-  const orderDishOrders = _.map(dishOrders, (dishOrder) => {
-    const { dishId, quantity, name, taxRate, price, isTaxIncludedPrice } = dishOrder;
-    if (!dishId) {
-      return {
-        dishId,
-        quantity,
-        name,
-        taxRate,
-        price: isTaxIncludedPrice ? undefined : price,
-        taxIncludedPrice: isTaxIncludedPrice ? price : undefined,
-        isTaxIncludedPrice,
-      };
-    }
-    const dish = dishById[dishId];
-    throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
-    return {
-      dish: dishId,
-      quantity,
-      name: dish.name,
-      unit: _.get(unitById[dish.unit], 'name'),
-      taxRate: dish.taxRate,
-      price: dish.isTaxIncludedPrice ? undefined : dish.price,
-      taxIncludedPrice: dish.isTaxIncludedPrice ? dish.price : undefined,
-      isTaxIncludedPrice: dish.isTaxIncludedPrice,
-    };
-  });
+  const orderSessionTaxRate = _.get(orderSession, 'taxRate') || _.get(shop, 'taxRate', 0);
+  const orderDishOrders = _.map(
+    _.filter(dishOrders, (dishOrder) => dishOrder.quantity > 0),
+    (dishOrder) => _setMetatadaForDishOrder({ dishById, dishOrder, unitById, orderSessionTaxRate })
+  );
   const order = await Order.create({
     table: tableId,
     shop: shopId,
@@ -191,6 +250,9 @@ const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, order
     orderNo,
     dishOrders: orderDishOrders,
     customerId,
+    totalQuantity: _.sumBy(orderDishOrders, 'quantity'),
+    totalBeforeTaxAmount: _.sumBy(orderDishOrders, 'beforeTaxTotalPrice'),
+    totalAfterTaxAmount: _.sumBy(orderDishOrders, 'afterTaxTotalPrice'),
   });
   if (orderSession) {
     await OrderSession.updateOne(
