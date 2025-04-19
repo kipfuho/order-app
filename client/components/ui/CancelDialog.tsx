@@ -1,7 +1,6 @@
 import { ReactNode, SetStateAction } from "react";
-import { Button, Dialog } from "react-native-paper";
+import { ActivityIndicator, Button, Dialog } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-import { LoaderBasic } from "./Loader";
 import { View } from "react-native";
 
 export function ConfirmCancelDialog({
@@ -29,7 +28,7 @@ export function ConfirmCancelDialog({
       {children}
       <Dialog.Actions style={{ justifyContent: "center" }}>
         {isLoading ? (
-          <LoaderBasic />
+          <ActivityIndicator />
         ) : (
           <View style={{ flexDirection: "row", gap: 8 }}>
             <Button

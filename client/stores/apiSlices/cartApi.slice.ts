@@ -75,7 +75,9 @@ export const cartApiSlice = createApi({
             isCustomerApp: true,
           });
 
-          return { data: histories };
+          return {
+            data: histories,
+          };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
@@ -88,6 +90,7 @@ export const cartApiSlice = createApi({
 
 export const {
   useGetCartQuery,
+  useGetCheckoutCartHistoryQuery,
   useUpdateCartMutation,
   useCheckoutCartMutation,
 } = cartApiSlice;

@@ -72,7 +72,9 @@ const getCartCheckoutHistoryRequest = async ({
 }) => {
   const accessToken = await getAccessTokenLazily(isCustomerApp);
 
-  const result: { histories: Order[] } = await apiRequest({
+  const result: {
+    histories: Order[];
+  } = await apiRequest({
     method: "POST",
     endpoint: `/v1/shops/${shopId}/orders/checkout-cart-history`,
     token: accessToken,

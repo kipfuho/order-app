@@ -156,11 +156,12 @@ export const DishCardForOrder = ({ dish }: { dish: Dish }) => {
   };
 
   useEffect(() => {
-    setCardWidth(width > 600 ? 200 : width * 0.2);
+    setCardWidth(width > 600 ? 200 : width * 0.4);
   }, [width]);
 
   return (
     <Card
+      mode="contained"
       style={{ margin: 3, width: cardWidth }}
       onPress={increaseDishQuantity}
     >

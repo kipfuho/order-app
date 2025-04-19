@@ -1,5 +1,16 @@
 import { ReactNode, useState } from "react";
-import { Appbar, Badge, Menu, Modal, Portal, Text } from "react-native-paper";
+import {
+  Appbar,
+  Badge,
+  Divider,
+  Icon,
+  Menu,
+  Modal,
+  Portal,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../stores/store";
 import { setLocale, toggleDarkMode } from "../../../stores/appSetting.slice";
@@ -7,6 +18,7 @@ import { View } from "react-native";
 import _ from "lodash";
 import CartDetail from "./CartDetail";
 import Toast from "react-native-toast-message";
+import CartCheckoutHistory from "./CartCheckoutHistory";
 
 export function CustomerAppBar({
   children,
@@ -15,6 +27,7 @@ export function CustomerAppBar({
   children?: ReactNode;
   goBack?: () => void;
 }) {
+  const theme = useTheme();
   const dispatch = useDispatch();
   const { shop, table, currentCartItem } = useSelector(
     (state: RootState) => state.customer
@@ -22,6 +35,7 @@ export function CustomerAppBar({
   const { darkMode, locale } = useSelector((state: RootState) => state.setting);
   const [menuVisible, setMenuVisible] = useState(false);
   const [cartDetailVisible, setCartDetailVisible] = useState(false);
+  const [checkoutHistoryVisible, setCheckoutHistoryVisible] = useState(false);
 
   const totalCartQuantity = _.sumBy(
     Object.values(currentCartItem) || [],
@@ -49,6 +63,16 @@ export function CustomerAppBar({
           }}
         >
           <CartDetail setCartDetailVisible={setCartDetailVisible} />
+          <Toast />
+        </Modal>
+        <Modal
+          visible={checkoutHistoryVisible}
+          onDismiss={() => setCheckoutHistoryVisible(false)}
+          contentContainerStyle={{
+            flex: 1,
+          }}
+        >
+          <CartCheckoutHistory setVisible={setCheckoutHistoryVisible} />
           <Toast />
         </Modal>
       </Portal>
@@ -99,25 +123,77 @@ export function CustomerAppBar({
           icon={darkMode ? "weather-sunny" : "weather-night"}
           onPress={onThemeClick}
         />
-        <View>
-          <Appbar.Action
-            icon="cart-outline"
-            onPress={() => setCartDetailVisible(true)}
-          />
-          {totalCartQuantity > 0 && (
-            <Badge
-              style={{
-                position: "absolute",
-                top: 3,
-                right: 3,
-                fontSize: 10,
-              }}
-            >
-              {totalCartQuantity}
-            </Badge>
-          )}
-        </View>
       </Appbar.Header>
+      <Divider />
+      <View
+        style={{
+          flexDirection: "row",
+          backgroundColor: theme.colors.background,
+        }}
+      >
+        <TouchableRipple
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 10,
+          }}
+          onPress={() => {
+            setCheckoutHistoryVisible(false);
+            setCartDetailVisible(true);
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <Icon source="cart-outline" size={28} />
+            {totalCartQuantity > 0 && (
+              <Badge
+                style={{
+                  position: "absolute",
+                  top: 3,
+                  right: 3,
+                  fontSize: 10,
+                }}
+              >
+                {totalCartQuantity}
+              </Badge>
+            )}
+            <Text variant="titleMedium">Cart</Text>
+          </View>
+        </TouchableRipple>
+        <TouchableRipple
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 10,
+          }}
+          onPress={() => {
+            setCartDetailVisible(false);
+            setCheckoutHistoryVisible(true);
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <Icon source="history" size={28} />
+            <Text variant="titleMedium">History</Text>
+          </View>
+        </TouchableRipple>
+      </View>
     </>
   );
 }

@@ -9,7 +9,7 @@ export default function VerticalDivider({ width = 1 }: { width?: number }) {
       style={{
         width,
         height: "100%",
-        backgroundColor: theme.colors.onBackground,
+        backgroundColor: theme.colors.backdrop,
         marginHorizontal: 4,
       }}
     />

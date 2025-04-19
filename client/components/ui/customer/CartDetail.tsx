@@ -87,6 +87,7 @@ export default function CartDetail({
   const { data: cart, isLoading: cartLoading } = useGetCartQuery(shop.id);
   const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery({
     shopId: shop.id,
+    isCustomerApp: true,
   });
   const dishById = _.keyBy(dishes, "id");
 
@@ -152,7 +153,10 @@ export default function CartDetail({
               justifyContent: "space-between",
             }}
           >
-            <Text variant="titleMedium" style={{ fontWeight: "bold" }}>
+            <Text
+              variant="titleMedium"
+              style={{ fontWeight: "bold", paddingVertical: 4 }}
+            >
               {t("total")}
             </Text>
             <View

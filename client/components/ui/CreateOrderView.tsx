@@ -1,4 +1,10 @@
-import { Button, Icon, Surface, Text } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Button,
+  Icon,
+  Surface,
+  Text,
+} from "react-native-paper";
 import { styles } from "../../app/_layout";
 import { SetStateAction, useEffect, useState } from "react";
 import {
@@ -181,6 +187,7 @@ export default function CreateOrder({
                 flexDirection: "row",
                 flexWrap: "wrap",
                 boxShadow: "0 0 0",
+                justifyContent: "center",
               }}
             >
               {filteredDishes.map((d) => (
@@ -206,7 +213,7 @@ export default function CreateOrder({
             {currentOrderTotalAmount}
           </Text>
           {createOrderLoading ? (
-            <LoaderBasic />
+            <ActivityIndicator />
           ) : (
             <Button
               mode="contained"
