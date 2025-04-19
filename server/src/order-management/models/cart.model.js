@@ -4,7 +4,7 @@ const { Status } = require('../../utils/constant');
 
 const cartItemSchema = new mongoose.Schema(
   {
-    dish: {
+    dishId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Shop',
     },

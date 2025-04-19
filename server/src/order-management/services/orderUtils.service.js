@@ -183,18 +183,20 @@ const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, order
   const order = await Order.create({
     table: tableId,
     shop: shopId,
-    orderSessionId: orderSession.id,
+    orderSessionId: _.get(orderSession, 'id'),
     orderNo,
     dishOrders: orderDishOrders,
   });
-  await OrderSession.updateOne(
-    { _id: orderSession.id },
-    {
-      $push: {
-        orders: order._id,
-      },
-    }
-  );
+  if (orderSession) {
+    await OrderSession.updateOne(
+      { _id: orderSession.id },
+      {
+        $push: {
+          orders: order._id,
+        },
+      }
+    );
+  }
 
   return order.toJSON();
 };

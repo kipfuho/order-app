@@ -13,6 +13,7 @@ const tableSchema = new mongoose.Schema(
     position: { type: mongoose.Types.ObjectId, ref: 'TablePosition' },
     status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
     allowMultipleOrderSession: { type: Boolean },
+    needApprovalWhenCustomerOrder: { type: Boolean },
   },
   {
     timestamps: true,

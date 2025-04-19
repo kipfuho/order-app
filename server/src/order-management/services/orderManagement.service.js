@@ -4,7 +4,7 @@ const orderUtilService = require('./orderUtils.service');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { OrderSessionStatus, OrderSessionDiscountType, DiscountValueType } = require('../../utils/constant');
-const { getTablesFromCache } = require('../../metadata/tableMetadata.service');
+const { getTablesFromCache, getTableFromCache } = require('../../metadata/tableMetadata.service');
 const {
   getRoundDishPrice,
   getRoundDiscountAmount,
@@ -229,11 +229,11 @@ const updateCart = async ({ customerId, shopId, requestBody }) => {
   const existingItemsByDish = _.keyBy(cart.cartItems, 'dish');
 
   const updatedItems = incomingItems.map((item) => {
-    const existingItem = existingItemsByDish[item.dish];
+    const existingItem = existingItemsByDish[item.dishId];
     return {
       ...(existingItem ? { _id: existingItem._id } : {}),
       ...item,
-      price: dishById[item.dish].price,
+      price: dishById[item.dishId].price,
     };
   });
 
@@ -243,11 +243,7 @@ const updateCart = async ({ customerId, shopId, requestBody }) => {
 };
 
 const clearCart = async ({ shopId, customerId }) => {
-  const cart = await orderUtilService.getCart({ shopId, customerId });
-  if (!_.isEmpty(cart.cartItems)) {
-    return Cart.findByIdAndUpdate(cart._id, { $set: { cartItems: [] } }, { new: true });
-  }
-  return cart;
+  return Cart.findOneAndUpdate({ customer: customerId, shop: shopId }, { $set: { cartItems: [] } }, { upsert: true });
 };
 
 const getCart = async ({ customerId, shopId }) => {
@@ -257,16 +253,30 @@ const getCart = async ({ customerId, shopId }) => {
 
 const checkoutCart = async ({ customerId, shopId, requestBody }) => {
   const { tableId } = requestBody;
+  const table = await getTableFromCache({ shopId, tableId });
+  throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
   const cart = await orderUtilService.getCart({ shopId, customerId });
   throwBadRequest(_.isEmpty(cart.cartItems), 'Giỏ hàng rỗng');
+
+  // Nếu bàn cần xác nhận của nhân viên thì không gắn order session
+  if (table.needApprovalWhenCustomerOrder) {
+    await orderUtilService.createNewOrder({
+      tableId,
+      shopId,
+      dishOrders: cart.cartItems,
+    });
+    await clearCart({ customerId, shopId });
+    return;
+  }
 
   const orderSession = await orderUtilService.getOrCreateOrderSession({ tableId, shopId });
   const order = await orderUtilService.createNewOrder({
     tableId,
     shopId,
-    orderSessionId: orderSession.id,
+    orderSession,
     dishOrders: cart.cartItems,
   });
+  await clearCart({ customerId, shopId });
   orderSession.orders = [order];
   return orderSession;
 };
