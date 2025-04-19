@@ -27,6 +27,7 @@ export default function TableCurrentOrderLayout() {
   } = useGetTableQuery({
     shopId,
     tableId,
+    isCustomerApp: true,
   });
 
   useEffect(() => {

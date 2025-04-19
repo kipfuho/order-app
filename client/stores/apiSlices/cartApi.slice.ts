@@ -1,10 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Cart, CartItem, Shop } from "../state.interface";
+import { Cart, CartItem, Order, Shop } from "../state.interface";
 import { updateShopRequest } from "../../apis/shop.api.service";
 import { API_BASE_URL } from "../../apis/api.service";
 import { UpdateShopRequest } from "../../apis/shop.api.interface";
 import {
   checkoutCartRequest,
+  getCartCheckoutHistoryRequest,
   getCartRequest,
   updateCartRequest,
 } from "../../apis/cart.api.service";
@@ -19,7 +20,7 @@ export const cartApiSlice = createApi({
     getCart: builder.query<Cart, string>({
       queryFn: async (shopId, api) => {
         try {
-          const cart = await getCartRequest(shopId);
+          const cart = await getCartRequest(shopId, true);
           api.dispatch(updateCurrentCart(cart));
 
           return { data: cart };
@@ -39,6 +40,7 @@ export const cartApiSlice = createApi({
           await updateCartRequest({
             shopId,
             cartItems,
+            isCustomerApp: true,
           });
 
           return { data: true };
@@ -55,7 +57,7 @@ export const cartApiSlice = createApi({
     >({
       queryFn: async (args) => {
         try {
-          await checkoutCartRequest(args);
+          await checkoutCartRequest({ ...args, isCustomerApp: true });
 
           return { data: true };
         } catch (error) {
@@ -65,14 +67,15 @@ export const cartApiSlice = createApi({
       invalidatesTags: ["Cart", "CartHistory"],
     }),
 
-    getCheckoutCartHistory: builder.query<Shop, UpdateShopRequest>({
-      queryFn: async (args) => {
+    getCheckoutCartHistory: builder.query<Order[], string>({
+      queryFn: async (shopId) => {
         try {
-          const shop = await updateShopRequest({
-            ...args,
+          const histories = await getCartCheckoutHistoryRequest({
+            shopId,
+            isCustomerApp: true,
           });
 
-          return { data: shop };
+          return { data: histories };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }

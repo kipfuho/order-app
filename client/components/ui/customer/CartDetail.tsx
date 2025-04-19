@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Button,
   Divider,
   Icon,
@@ -7,8 +8,12 @@ import {
   Portal,
   Surface,
   Text,
+  useTheme,
 } from "react-native-paper";
-import { useGetCartQuery } from "../../../stores/apiSlices/cartApi.slice";
+import {
+  useCheckoutCartMutation,
+  useGetCartQuery,
+} from "../../../stores/apiSlices/cartApi.slice";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../stores/store";
 import { CartItem, Dish, Shop, Table } from "../../../stores/state.interface";
@@ -73,18 +78,23 @@ export default function CartDetail({
   setCartDetailVisible: SetStateAction<any>;
 }) {
   const { t } = useTranslation();
+  const theme = useTheme();
+
   const { shop, table } = useSelector((state: RootState) => state.customer) as {
     shop: Shop;
     table: Table;
   };
   const { data: cart, isLoading: cartLoading } = useGetCartQuery(shop.id);
-  const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery(
-    shop.id
-  );
+  const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery({
+    shopId: shop.id,
+  });
   const dishById = _.keyBy(dishes, "id");
 
   const [updateItemVisible, setUpdateItemVisible] = useState(false);
   const [selectedCartItem, setSelectedCartItem] = useState<CartItem>();
+
+  const [checkoutCart, { isLoading: checkoutCartLoading }] =
+    useCheckoutCartMutation();
 
   const handleEditItemClick = (cartItem: CartItem) => {
     setSelectedCartItem(cartItem);
@@ -92,6 +102,7 @@ export default function CartDetail({
   };
 
   const handleCheckoutCart = async () => {
+    await checkoutCart({ shopId: shop.id, tableId: table.id });
     setCartDetailVisible(false);
   };
 
@@ -110,7 +121,7 @@ export default function CartDetail({
           <UpdateCartItem
             setVisible={setUpdateItemVisible}
             cartItemId={selectedCartItem?.id || ""}
-            dish={dishById[selectedCartItem?.dish || ""]}
+            dish={dishById[selectedCartItem?.dishId || ""]}
           />
         </Modal>
       </Portal>
@@ -129,7 +140,7 @@ export default function CartDetail({
             <CartItemCard
               key={item.id}
               item={item}
-              dish={dishById[item.dish]}
+              dish={dishById[item.dishId]}
               handleEditItemClick={handleEditItemClick}
             />
           ))}
@@ -165,8 +176,13 @@ export default function CartDetail({
             mode="contained"
             style={{ borderRadius: 5 }}
             onPress={handleCheckoutCart}
+            disabled={checkoutCartLoading}
           >
-            {t("confirm")}
+            {checkoutCartLoading ? (
+              <ActivityIndicator size={14} />
+            ) : (
+              t("confirm")
+            )}
           </Button>
           <Button
             mode="contained-tonal"

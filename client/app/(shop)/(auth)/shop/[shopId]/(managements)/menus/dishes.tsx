@@ -44,9 +44,11 @@ export default function DishesManagementPage() {
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
   ) as Shop;
-  const { data: dishes, isLoading: dishLoading } = useGetDishesQuery(shop.id);
+  const { data: dishes, isLoading: dishLoading } = useGetDishesQuery({
+    shopId: shop.id,
+  });
   const { data: dishCategories = [], isLoading: categoryLoading } =
-    useGetDishCategoriesQuery(shop.id);
+    useGetDishCategoriesQuery({ shopId: shop.id });
   const dishesGroupByCategoryId = _.groupBy(dishes, "category.id");
 
   const [loading, setLoading] = useState(false);

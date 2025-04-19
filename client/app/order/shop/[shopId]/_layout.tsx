@@ -16,7 +16,11 @@ export default function AppLayout() {
   const theme = useTheme();
   const { t } = useTranslation();
 
-  const { data: shop, isLoading, isFetching } = useGetShopQuery(shopId);
+  const {
+    data: shop,
+    isLoading,
+    isFetching,
+  } = useGetShopQuery({ shopId, isCustomerApp: true });
   const currentShop = useSelector((state: RootState) => state.customer.shop);
 
   useEffect(() => {

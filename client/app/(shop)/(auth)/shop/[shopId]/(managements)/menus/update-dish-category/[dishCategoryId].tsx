@@ -35,7 +35,7 @@ export default function UpdateDishCategoryPage() {
     data: dishCategories,
     isLoading: dishCategoryLoading,
     isFetching: dishCategoryFetching,
-  } = useGetDishCategoriesQuery(shop.id);
+  } = useGetDishCategoriesQuery({ shopId: shop.id });
   const dishCategory = _.find(dishCategories, (dc) => dc.id === dishCategoryId);
   const [updateDishCategory, { isLoading: updateDishCategoryLoading }] =
     useUpdateDishCategoryMutation();

@@ -31,7 +31,7 @@ export default function CreateTablePositionPage() {
     (state: RootState) => state.shop.currentShop
   ) as Shop;
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
-    useGetDishCategoriesQuery(shop.id);
+    useGetDishCategoriesQuery({ shopId: shop.id });
   const [createTablePosition, { isLoading: createTablePositionLoading }] =
     useCreateTablePositionMutation();
 

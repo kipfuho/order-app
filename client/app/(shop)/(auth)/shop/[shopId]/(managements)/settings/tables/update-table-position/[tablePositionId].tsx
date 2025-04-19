@@ -40,7 +40,7 @@ export default function UpdateTablePositionPage() {
     isFetching: tablePositionFetching,
   } = useGetTablePositionsQuery(shop.id);
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
-    useGetDishCategoriesQuery(shop.id);
+    useGetDishCategoriesQuery({ shopId: shop.id });
   const tablePosition = _.find(
     tablePositions,
     (tp) => tp.id === tablePositionId

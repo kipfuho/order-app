@@ -41,9 +41,9 @@ export default function CreateDishPage() {
     (state: RootState) => state.shop.currentShop
   ) as Shop;
   const { data: dishTypes = [], isLoading: dishTypeLoading } =
-    useGetDishTypesQuery(shop.id);
+    useGetDishTypesQuery({ shopId: shop.id });
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
-    useGetDishCategoriesQuery(shop.id);
+    useGetDishCategoriesQuery({ shopId: shop.id });
   const { data: units = [], isLoading: unitLoading } = useGetUnitsQuery(
     shop.id
   );

@@ -21,13 +21,13 @@ const mergeCartItems = (currentCartItem: Record<string, CartItem>) => {
   const cardItemByKey: Record<string, CartItem> = {};
 
   for (const item of Object.values(currentCartItem)) {
-    const key = `${item.dish}_${item.note || ""}`;
+    const key = `${item.dishId}_${item.note || ""}`;
 
     const previousItem = cardItemByKey[key];
 
     cardItemByKey[key] = {
       id: previousItem?.id || item.id,
-      dish: item.dish,
+      dishId: item.dishId,
       quantity: (previousItem?.quantity || 0) + item.quantity,
       note: previousItem?.note || item.note,
     };

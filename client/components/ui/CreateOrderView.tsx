@@ -34,13 +34,13 @@ export default function CreateOrder({
   } = useSelector((state: RootState) => state.shop);
   const shop = currentShop as Shop;
 
-  const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery(
-    shop.id
-  );
+  const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery({
+    shopId: shop.id,
+  });
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
-    useGetDishCategoriesQuery(shop.id);
+    useGetDishCategoriesQuery({ shopId: shop.id });
   const { data: dishTypes = [], isLoading: dishTypeLoading } =
-    useGetDishTypesQuery(shop.id);
+    useGetDishTypesQuery({ shopId: shop.id });
   const [createOrder, { isLoading: createOrderLoading }] =
     useCreateOrderMutation();
 

@@ -55,11 +55,15 @@ export default function CustomerHomePage() {
     shop: Shop;
   };
 
-  const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery(
-    shop.id
-  );
+  const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery({
+    shopId: shop.id,
+    isCustomerApp: true,
+  });
   const { data: dishTypes = [], isLoading: dishTypeLoading } =
-    useGetDishTypesQuery(shop.id);
+    useGetDishTypesQuery({
+      shopId: shop.id,
+      isCustomerApp: true,
+    });
   const { isLoading: cartLoading } = useGetCartQuery(shop.id);
 
   const { availableDishTypes, dishGroupByDishType } = getDishGroupByDishType(

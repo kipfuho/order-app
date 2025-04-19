@@ -25,7 +25,7 @@ export default function CategoriesManagementPage() {
     (state: RootState) => state.shop.currentShop
   ) as Shop;
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
-    useGetDishCategoriesQuery(shop.id);
+    useGetDishCategoriesQuery({ shopId: shop.id });
 
   if (dishCategoryLoading) {
     return <LoaderBasic />;

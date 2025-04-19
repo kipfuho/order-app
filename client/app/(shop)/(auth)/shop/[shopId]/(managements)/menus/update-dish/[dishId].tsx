@@ -45,11 +45,11 @@ export default function UpdateDishPage() {
     data: dishes = [],
     isLoading: dishLoading,
     isFetching: dishFetching,
-  } = useGetDishesQuery(shop.id);
+  } = useGetDishesQuery({ shopId: shop.id });
   const { data: dishTypes = [], isLoading: dishTypeLoading } =
-    useGetDishTypesQuery(shop.id);
+    useGetDishTypesQuery({ shopId: shop.id });
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
-    useGetDishCategoriesQuery(shop.id);
+    useGetDishCategoriesQuery({ shopId: shop.id });
   const { data: units = [], isLoading: unitLoading } = useGetUnitsQuery(
     shop.id
   );

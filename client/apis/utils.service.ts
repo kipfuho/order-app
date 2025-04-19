@@ -6,7 +6,10 @@ import {
   signOut,
   signOutForCustomer,
 } from "../stores/authSlice";
-import { refreshTokensRequest } from "./auth.api.service";
+import {
+  loginForAnonymousCustomerRequest,
+  refreshTokensRequest,
+} from "./auth.api.service";
 
 const isTokenExpired = (
   token:
@@ -31,10 +34,13 @@ const _getCustomerAccessToken = async (): Promise<string> => {
   }
 
   if (isTokenExpired(_.get(customer, "tokens.access"))) {
-    const newTokens = await refreshTokensRequest(
+    let newTokens = await refreshTokensRequest(
       customer.tokens.refresh.token,
       true
     );
+    if (!newTokens && customer.anonymous) {
+      newTokens = await loginForAnonymousCustomerRequest(customer.id);
+    }
     if (!newTokens) {
       store.dispatch(signOutForCustomer());
       return "";
@@ -45,9 +51,11 @@ const _getCustomerAccessToken = async (): Promise<string> => {
   return customer.tokens.access.token;
 };
 
-export const getAccessToken = async (): Promise<string> => {
+export const getAccessToken = async (
+  isCustomerApp: boolean = false
+): Promise<string> => {
   const state = store.getState(); // Access Redux state
-  if (state.auth.isCustomerApp) {
+  if (isCustomerApp) {
     const token = await _getCustomerAccessToken();
     return token;
   }

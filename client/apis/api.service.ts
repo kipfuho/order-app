@@ -56,11 +56,13 @@ export const apiRequest = async <T>({
   endpoint,
   data,
   token,
+  isCustomerApp = false,
 }: {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   endpoint: string;
   data?: object;
   token?: string;
+  isCustomerApp?: boolean;
 }): Promise<T> => {
   try {
     const config: AxiosRequestConfig = {
@@ -76,8 +78,7 @@ export const apiRequest = async <T>({
     // 401 Unauthorized
     if (error.status === 401) {
       const store = require("../stores/store").default;
-      const state = store.getState();
-      if (state.auth.isCustomerApp) {
+      if (isCustomerApp) {
         store.dispatch(signOutForCustomer());
       } else {
         store.dispatch(signOut());

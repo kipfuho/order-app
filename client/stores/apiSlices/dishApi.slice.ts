@@ -30,11 +30,15 @@ export const dishApiSlice = createApi({
   // keepUnusedDataFor: 600,
   endpoints: (builder) => ({
     /** Dish Categories */
-    getDishCategories: builder.query<DishCategory[], string>({
-      queryFn: async (shopId) => {
+    getDishCategories: builder.query<
+      DishCategory[],
+      { shopId: string; isCustomerApp?: boolean }
+    >({
+      queryFn: async ({ shopId, isCustomerApp }) => {
         try {
           const dishCategories = await getDishCategoriesRequest({
             shopId,
+            isCustomerApp,
           });
 
           return { data: dishCategories };
@@ -82,7 +86,7 @@ export const dishApiSlice = createApi({
         const patchResult = dispatch(
           dishApiSlice.util.updateQueryData(
             "getDishCategories",
-            args.shopId,
+            { shopId: args.shopId },
             (draft) => {
               const index = draft.findIndex(
                 (dc) => dc.id === args.dishCategoryId
@@ -120,7 +124,7 @@ export const dishApiSlice = createApi({
         const patchResult = dispatch(
           dishApiSlice.util.updateQueryData(
             "getDishCategories",
-            args.shopId,
+            { shopId: args.shopId },
             (draft) => {
               return draft.filter((dc) => dc.id !== args.dishCategoryId);
             }
@@ -136,11 +140,15 @@ export const dishApiSlice = createApi({
     }),
 
     /** Dishes */
-    getDishes: builder.query<Dish[], string>({
-      queryFn: async (shopId) => {
+    getDishes: builder.query<
+      Dish[],
+      { shopId: string; isCustomerApp?: boolean }
+    >({
+      queryFn: async ({ shopId, isCustomerApp = false }) => {
         try {
           const dishes = await getDishesRequest({
             shopId,
+            isCustomerApp,
           });
 
           return { data: dishes };
@@ -182,7 +190,7 @@ export const dishApiSlice = createApi({
         const patchResult = dispatch(
           dishApiSlice.util.updateQueryData(
             "getDishes",
-            args.shopId,
+            { shopId: args.shopId },
             (draft) => {
               const index = draft.findIndex((d) => d.id === args.dishId);
               if (index !== -1) {
@@ -218,7 +226,7 @@ export const dishApiSlice = createApi({
         const patchResult = dispatch(
           dishApiSlice.util.updateQueryData(
             "getDishes",
-            args.shopId,
+            { shopId: args.shopId },
             (draft) => {
               return draft.filter((d) => d.id !== args.dishId);
             }
@@ -234,11 +242,15 @@ export const dishApiSlice = createApi({
     }),
 
     /** Dish Types */
-    getDishTypes: builder.query<string[], string>({
-      queryFn: async (shopId) => {
+    getDishTypes: builder.query<
+      string[],
+      { shopId: string; isCustomerApp?: boolean }
+    >({
+      queryFn: async ({ shopId, isCustomerApp = false }) => {
         try {
           const dishTypes = await getDishTypesRequest({
             shopId,
+            isCustomerApp,
           });
 
           return { data: dishTypes };

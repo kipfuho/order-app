@@ -21,17 +21,17 @@ export const shopApiSlice = createApi({
   tagTypes: ["Shops"],
   // keepUnusedDataFor: 600,
   endpoints: (builder) => ({
-    getShop: builder.query<Shop, string>({
-      queryFn: async (shopId) => {
+    getShop: builder.query<Shop, { shopId: string; isCustomerApp?: boolean }>({
+      queryFn: async ({ shopId, isCustomerApp = false }) => {
         try {
-          const shop = await getShopRequest(shopId);
+          const shop = await getShopRequest(shopId, isCustomerApp);
 
           return { data: shop };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-      providesTags: (_, __, id) => [{ type: "Shops", id }], // Enables cache invalidation
+      providesTags: (_, __, { shopId }) => [{ type: "Shops", shopId }], // Enables cache invalidation
     }),
 
     getShops: builder.query<Shop[], QueryShopsRequest>({

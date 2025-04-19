@@ -58,13 +58,13 @@ export const customerSlice = createSlice({
         dish.price;
 
       if (action.payload.quantity === 0) {
-        delete state.currentCartItem[dish.id];
+        delete state.currentCartItem[action.payload.id || dish.id];
         return;
       }
 
       state.currentCartItem[action.payload.id || dish.id] = {
         ...currentCartItem,
-        dish: dish.id,
+        dishId: dish.id,
         quantity: action.payload.quantity,
       };
     },

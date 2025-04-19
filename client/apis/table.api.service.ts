@@ -98,11 +98,13 @@ const deleteTablePositionRequest = async ({
 const getTableRequest = async ({
   shopId,
   tableId,
+  isCustomerApp = false,
 }: {
   tableId: string;
   shopId: string;
+  isCustomerApp: boolean;
 }) => {
-  const accessToken = await getAccessTokenLazily();
+  const accessToken = await getAccessTokenLazily(isCustomerApp);
 
   const result: {
     table: Table;
@@ -110,6 +112,7 @@ const getTableRequest = async ({
     method: "GET",
     endpoint: `/v1/shops/${shopId}/tables/${tableId}`,
     token: accessToken,
+    isCustomerApp,
   });
 
   return result.table;

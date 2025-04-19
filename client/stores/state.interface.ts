@@ -105,6 +105,7 @@ interface Customer {
   phone?: string;
   email?: string;
   tokens?: Tokens;
+  anonymous?: boolean;
 }
 
 interface Cart {
@@ -116,7 +117,7 @@ interface Cart {
 
 interface CartItem {
   id: string;
-  dish: string;
+  dishId: string;
   quantity: number;
   note?: string;
 }

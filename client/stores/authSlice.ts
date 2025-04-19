@@ -5,13 +5,11 @@ import { PURGE } from "redux-persist";
 interface AuthState {
   session: User | null;
   customerSession: Customer | null;
-  isCustomerApp: boolean;
 }
 
 const initialState: AuthState = {
   session: null,
   customerSession: null,
-  isCustomerApp: false,
 };
 
 const authSlice = createSlice({
@@ -32,9 +30,6 @@ const authSlice = createSlice({
     signOutForCustomer: (state) => {
       state.customerSession = null;
     },
-    setCustomerApp: (state, action: PayloadAction<boolean>) => {
-      state.isCustomerApp = action.payload;
-    },
   },
   extraReducers: (builder) => {
     builder.addCase(PURGE, () => {
@@ -43,11 +38,6 @@ const authSlice = createSlice({
   },
 });
 
-export const {
-  signIn,
-  signOut,
-  signInForCustomer,
-  signOutForCustomer,
-  setCustomerApp,
-} = authSlice.actions;
+export const { signIn, signOut, signInForCustomer, signOutForCustomer } =
+  authSlice.actions;
 export default authSlice.reducer;

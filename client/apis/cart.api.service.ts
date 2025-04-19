@@ -1,14 +1,15 @@
-import { Cart, CartItem } from "../stores/state.interface";
+import { Cart, CartItem, Order } from "../stores/state.interface";
 import { apiRequest } from "./api.service";
 import { getAccessTokenLazily } from "./auth.api.service";
 
-const getCartRequest = async (shopId: string) => {
-  const accessToken = await getAccessTokenLazily();
+const getCartRequest = async (shopId: string, isCustomerApp = false) => {
+  const accessToken = await getAccessTokenLazily(isCustomerApp);
 
   const result: { cart: Cart } = await apiRequest({
     method: "POST",
     endpoint: `/v1/shops/${shopId}/orders/get-cart`,
     token: accessToken,
+    isCustomerApp,
   });
 
   return result.cart;
@@ -17,11 +18,13 @@ const getCartRequest = async (shopId: string) => {
 const updateCartRequest = async ({
   shopId,
   cartItems,
+  isCustomerApp = false,
 }: {
   shopId: string;
   cartItems: CartItem[];
+  isCustomerApp?: boolean;
 }) => {
-  const accessToken = await getAccessTokenLazily();
+  const accessToken = await getAccessTokenLazily(isCustomerApp);
 
   await apiRequest({
     method: "POST",
@@ -30,6 +33,7 @@ const updateCartRequest = async ({
     data: {
       cartItems,
     },
+    isCustomerApp,
   });
 
   return true;
@@ -38,11 +42,13 @@ const updateCartRequest = async ({
 const checkoutCartRequest = async ({
   shopId,
   tableId,
+  isCustomerApp = false,
 }: {
   shopId: string;
   tableId: string;
+  isCustomerApp: boolean;
 }) => {
-  const accessToken = await getAccessTokenLazily();
+  const accessToken = await getAccessTokenLazily(isCustomerApp);
 
   await apiRequest({
     method: "POST",
@@ -51,6 +57,7 @@ const checkoutCartRequest = async ({
     data: {
       tableId,
     },
+    isCustomerApp,
   });
 
   return true;
@@ -58,23 +65,21 @@ const checkoutCartRequest = async ({
 
 const getCartCheckoutHistoryRequest = async ({
   shopId,
-  tableId,
+  isCustomerApp = false,
 }: {
   shopId: string;
-  tableId: string;
+  isCustomerApp?: boolean;
 }) => {
-  const accessToken = await getAccessTokenLazily();
+  const accessToken = await getAccessTokenLazily(isCustomerApp);
 
-  await apiRequest({
+  const result: { histories: Order[] } = await apiRequest({
     method: "POST",
     endpoint: `/v1/shops/${shopId}/orders/checkout-cart-history`,
     token: accessToken,
-    data: {
-      tableId,
-    },
+    isCustomerApp,
   });
 
-  return true;
+  return result.histories;
 };
 
 export {

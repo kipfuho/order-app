@@ -18,7 +18,7 @@ interface CreateDishCategoryRequest {
 
 interface GetDishCategoriesRequest {
   shopId: string;
-  rtk?: boolean;
+  isCustomerApp?: boolean;
 }
 
 interface UpdateDishCategoryRequest {
@@ -49,7 +49,7 @@ interface CreateDishRequest {
 
 interface GetDishesRequest {
   shopId: string;
-  rtk?: boolean;
+  isCustomerApp?: boolean;
 }
 
 interface UpdateDishRequest {
@@ -74,7 +74,7 @@ interface DeleteDishRequest {
 
 interface GetDishTypesRequest {
   shopId: string;
-  rtk?: boolean;
+  isCustomerApp?: boolean;
 }
 
 interface GetUnitsRequest {

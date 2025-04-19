@@ -3,12 +3,9 @@ import { persistor } from "../../stores/store";
 import { useEffect } from "react";
 import { useSession } from "../../hooks/useSession";
 import { loginForAnonymousCustomerRequest } from "../../apis/auth.api.service";
-import { useDispatch } from "react-redux";
-import { setCustomerApp } from "../../stores/authSlice";
 
 export default function CustomerAppLayout() {
   const { customerSession } = useSession();
-  const dispatch = useDispatch();
 
   useEffect(() => {
     const handleKeyDown = async (event: KeyboardEvent) => {
@@ -24,11 +21,6 @@ export default function CustomerAppLayout() {
     };
   }, []);
 
-  useEffect(() => {
-    dispatch(setCustomerApp(true));
-  }, []);
-
-  console.log(customerSession);
   if (!customerSession) {
     loginForAnonymousCustomerRequest();
     return <Redirect href="/order/home" />;

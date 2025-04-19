@@ -136,12 +136,16 @@ export const tableApiSlice = createApi({
     }),
 
     /** Tables */
-    getTable: builder.query<Table, { tableId: string; shopId: string }>({
-      queryFn: async ({ shopId, tableId }) => {
+    getTable: builder.query<
+      Table,
+      { tableId: string; shopId: string; isCustomerApp: boolean }
+    >({
+      queryFn: async ({ shopId, tableId, isCustomerApp = false }) => {
         try {
           const table = await getTableRequest({
             shopId,
             tableId,
+            isCustomerApp,
           });
 
           return { data: table };

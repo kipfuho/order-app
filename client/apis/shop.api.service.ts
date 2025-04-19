@@ -44,13 +44,14 @@ const createShopRequest = async ({
   return result.shop;
 };
 
-const getShopRequest = async (shopId: string) => {
-  const accessToken = await getAccessTokenLazily();
+const getShopRequest = async (shopId: string, isCustomerApp = false) => {
+  const accessToken = await getAccessTokenLazily(isCustomerApp);
 
   const result: { shop: Shop } = await apiRequest({
     method: "GET",
     endpoint: `/v1/shops/${shopId}`,
     token: accessToken,
+    isCustomerApp,
   });
 
   return result.shop;

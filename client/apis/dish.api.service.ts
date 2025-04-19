@@ -70,13 +70,15 @@ const createDishCategoryRequest = async ({
  */
 const getDishCategoriesRequest = async ({
   shopId,
+  isCustomerApp = false,
 }: GetDishCategoriesRequest) => {
-  const accessToken = await getAccessTokenLazily();
+  const accessToken = await getAccessTokenLazily(isCustomerApp);
 
   const result: { dishCategories: DishCategory[] } = await apiRequest({
     method: "GET",
     endpoint: `/v1/shops/${shopId}/dishCategories`,
     token: accessToken,
+    isCustomerApp,
   });
 
   return result.dishCategories;
@@ -173,13 +175,17 @@ const createDishRequest = async ({
  * Get dish
  * @param param0
  */
-const getDishesRequest = async ({ shopId }: GetDishesRequest) => {
-  const accessToken = await getAccessTokenLazily();
+const getDishesRequest = async ({
+  shopId,
+  isCustomerApp = false,
+}: GetDishesRequest) => {
+  const accessToken = await getAccessTokenLazily(isCustomerApp);
 
   const result: { dishes: Dish[] } = await apiRequest({
     method: "GET",
     endpoint: `/v1/shops/${shopId}/dishes`,
     token: accessToken,
+    isCustomerApp,
   });
 
   return result.dishes;
@@ -250,13 +256,17 @@ const deleteDishRequest = async ({ shopId, dishId }: DeleteDishRequest) => {
  * Get dish types
  * @param param0
  */
-const getDishTypesRequest = async ({ shopId }: GetDishTypesRequest) => {
-  const accessToken = await getAccessTokenLazily();
+const getDishTypesRequest = async ({
+  shopId,
+  isCustomerApp = false,
+}: GetDishTypesRequest) => {
+  const accessToken = await getAccessTokenLazily(isCustomerApp);
 
   const result: { dishTypes: string[] } = await apiRequest({
     method: "GET",
     endpoint: `/v1/shops/${shopId}/dishes/dishTypes`,
     token: accessToken,
+    isCustomerApp,
   });
 
   return result.dishTypes;

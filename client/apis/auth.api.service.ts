@@ -7,10 +7,10 @@ import {
   RegisterForCustomerRequest,
 } from "./auth.api.interface";
 
-export const getAccessTokenLazily = async () => {
+export const getAccessTokenLazily = async (isCustomerApp: boolean = false) => {
   const { getAccessToken } = await import("./utils.service");
 
-  return getAccessToken();
+  return getAccessToken(isCustomerApp);
 };
 
 const loginRequest = async ({
@@ -107,24 +107,30 @@ let loginForAnonymousCustomerRequestPromise: Promise<{
   tokens: Tokens;
 }> | null = null;
 
-const loginForAnonymousCustomerRequest = async () => {
+const loginForAnonymousCustomerRequest = async (customerId?: string) => {
   try {
     let response: { customer: Customer; tokens: Tokens };
     if (!loginForAnonymousCustomerRequestPromise) {
       loginForAnonymousCustomerRequestPromise = apiRequest({
         method: "POST",
         endpoint: "v1/auth/login-for-anonymous-customer",
+        data: {
+          customerId,
+        },
+        isCustomerApp: true,
       });
     }
 
     response = await loginForAnonymousCustomerRequestPromise;
 
-    require("../stores/store").default.dispatch(
-      signInForCustomer({ ...response.customer, tokens: response.tokens })
-    );
-    return true;
+    if (!customerId) {
+      require("../stores/store").default.dispatch(
+        signInForCustomer({ ...response.customer, tokens: response.tokens })
+      );
+    }
+    return response.tokens;
   } catch (error) {
-    return false;
+    return null;
   } finally {
     loginForAnonymousCustomerRequestPromise = null; // Reset the promise after resolving
   }

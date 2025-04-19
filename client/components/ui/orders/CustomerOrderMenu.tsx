@@ -37,10 +37,13 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
   const { shop, currentCartItem } = useSelector(
     (state: RootState) => state.customer
   ) as { shop: Shop; currentCartItem: Record<string, CartItem> };
-  const cartItemsGroupByDish = _.groupBy(currentCartItem, "dish");
+  const cartItemsGroupByDish = _.groupBy(currentCartItem, "dishId");
 
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
-    useGetDishCategoriesQuery(shop.id);
+    useGetDishCategoriesQuery({
+      shopId: shop.id,
+      isCustomerApp: true,
+    });
   const { availableDishCategories, dishesByCategory } = getDishByCategory(
     dishes,
     dishCategories
@@ -78,7 +81,7 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
       mergedCartItems.length === cartItems.length &&
       mergedCartItems.every((item, i) => {
         const other = cartItems[i];
-        return item.dish === other.dish && item.quantity === other.quantity;
+        return item.dishId === other.dishId && item.quantity === other.quantity;
       });
     if (!sameItems)
       debouncedUpdateCart({

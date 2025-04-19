@@ -1,4 +1,4 @@
-import { Button, Surface, Text } from "react-native-paper";
+import { Button, Divider, Surface, Text } from "react-native-paper";
 import { OrderSession } from "../../../stores/state.interface";
 import { View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
@@ -40,7 +40,7 @@ export function ActiveOrderSession({
   };
 
   return (
-    <Surface style={{ gap: 8 }}>
+    <Surface mode="flat" style={{ gap: 8 }}>
       <OrderCustomerInfo orderSession={activeOrderSession}>
         <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
           <Button mode="contained" style={{ flex: 1 }} onPress={onPaymentClick}>
@@ -55,6 +55,7 @@ export function ActiveOrderSession({
           </Button>
         </View>
       </OrderCustomerInfo>
+      <Divider />
     </Surface>
   );
 }
