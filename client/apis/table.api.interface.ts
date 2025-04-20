@@ -30,6 +30,8 @@ interface CreateTableRequest {
   shopId: string;
   name: string;
   tablePosition: TablePosition;
+  allowMultipleOrderSession?: boolean;
+  needApprovalWhenCustomerOrder?: boolean;
 }
 
 interface UpdateTableRequest {
@@ -37,6 +39,8 @@ interface UpdateTableRequest {
   shopId: string;
   name: string;
   tablePosition: TablePosition;
+  allowMultipleOrderSession?: boolean;
+  needApprovalWhenCustomerOrder?: boolean;
 }
 
 interface DeleteTableRequest {

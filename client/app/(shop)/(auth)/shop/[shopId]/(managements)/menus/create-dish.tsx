@@ -139,81 +139,75 @@ export default function CreateDishPage() {
             />
             {/* General Information Collapsible */}
             <Collapsible title={t("general_information")}>
-              <View style={{ padding: 16 }}>
-                <TextInput
-                  label={t("dish_name")}
-                  mode="outlined"
-                  value={name}
-                  onChangeText={setName}
-                  style={{ marginBottom: 20 }}
-                />
+              <TextInput
+                label={t("dish_name")}
+                mode="outlined"
+                value={name}
+                onChangeText={setName}
+                style={{ marginBottom: 20 }}
+              />
 
-                <DropdownMenu
-                  item={dishType}
-                  items={dishTypes}
-                  label={t("dish_type")}
-                  setItem={setDishType}
-                  getItemValue={(item: string) => item}
-                />
+              <DropdownMenu
+                item={dishType}
+                items={dishTypes}
+                label={t("dish_type")}
+                setItem={setDishType}
+                getItemValue={(item: string) => item}
+              />
 
-                <DropdownMenu
-                  item={category}
-                  items={dishCategories}
-                  label={t("dish_category")}
-                  setItem={setCategory}
-                  getItemValue={(item: DishCategory) => item?.name}
-                />
-              </View>
+              <DropdownMenu
+                item={category}
+                items={dishCategories}
+                label={t("dish_category")}
+                setItem={setCategory}
+                getItemValue={(item: DishCategory) => item?.name}
+              />
             </Collapsible>
 
             {/* Price Collapsible */}
             <Collapsible title={t("price_information")}>
-              <View style={{ padding: 16 }}>
-                <TextInput
-                  label={t("price")}
-                  mode="outlined"
-                  value={price}
-                  onChangeText={(text) =>
-                    setPrice(text.replace(/[^0-9.]/g, ""))
-                  } // Restrict input to numbers & decimal
-                  keyboardType="numeric" // Shows numeric keyboard
-                  style={{ marginBottom: 10 }}
-                />
-                <Surface
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: 20,
-                    boxShadow: "none",
-                  }}
-                >
-                  <Text style={{ marginRight: 16 }}>
-                    {t("price_include_tax")}
-                  </Text>
-                  <Switch
-                    value={isTaxIncludedPrice}
-                    onValueChange={() =>
-                      setIsTaxIncludedPrice(!isTaxIncludedPrice)
-                    }
-                  />
-                </Surface>
-                <DropdownMenu
-                  item={unit}
-                  items={units}
-                  label={t("unit")}
-                  setItem={setUnit}
-                  getItemValue={(item: Unit) => item?.name}
-                />
-                <TextInput
-                  mode="outlined"
-                  label={t("tax_rate")}
-                  value={taxRate}
-                  keyboardType="numeric" // Shows numeric keyboard
-                  onChangeText={(text) =>
-                    setTaxRate(text.replace(/[^0-9.]/g, ""))
-                  } // Restrict input to numbers & decimal
+              <TextInput
+                label={t("price")}
+                mode="outlined"
+                value={price}
+                onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
+                keyboardType="numeric" // Shows numeric keyboard
+                style={{ marginBottom: 10 }}
+              />
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginVertical: 20,
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text variant="titleMedium" style={{ marginRight: 16 }}>
+                  {t("price_include_tax")}
+                </Text>
+                <Switch
+                  value={isTaxIncludedPrice}
+                  onValueChange={() =>
+                    setIsTaxIncludedPrice(!isTaxIncludedPrice)
+                  }
                 />
               </View>
+              <DropdownMenu
+                item={unit}
+                items={units}
+                label={t("unit")}
+                setItem={setUnit}
+                getItemValue={(item: Unit) => item?.name}
+              />
+              <TextInput
+                mode="outlined"
+                label={t("tax_rate")}
+                value={taxRate}
+                keyboardType="numeric" // Shows numeric keyboard
+                onChangeText={(text) =>
+                  setTaxRate(text.replace(/[^0-9.]/g, ""))
+                } // Restrict input to numbers & decimal
+              />
             </Collapsible>
           </Surface>
         </ScrollView>

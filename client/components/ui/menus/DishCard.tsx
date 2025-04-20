@@ -9,6 +9,8 @@ import {
 } from "react-native-paper";
 import { useWindowDimensions } from "react-native";
 import { useEffect, useState } from "react";
+import { View } from "react-native";
+import { convertPaymentAmount } from "../../../constants/utils";
 
 export const DishCard = ({
   dish,
@@ -24,7 +26,7 @@ export const DishCard = ({
   const onToggleSwitch = () => setOnSale(!onSale);
 
   useEffect(() => {
-    setCardWidth(width > 600 ? 300 : width * 0.3);
+    setCardWidth(width > 600 ? 300 : width * 0.6);
   }, [width]);
 
   return (
@@ -34,12 +36,23 @@ export const DishCard = ({
       />
       <Card.Title
         title={
-          <Tooltip title={dish.name}>
-            <Text numberOfLines={2}>{dish.name}</Text>
+          <Tooltip title={dish.name} leaveTouchDelay={100}>
+            <Text numberOfLines={2} style={{ fontSize: 16 }}>
+              {dish.name}
+            </Text>
           </Tooltip>
         }
         titleNumberOfLines={2}
-        subtitle={`$${dish.price}`}
+        subtitle={
+          <Tooltip
+            title={convertPaymentAmount(dish.price)}
+            leaveTouchDelay={100}
+          >
+            <Text numberOfLines={1} style={{ fontSize: 16 }}>
+              {convertPaymentAmount(dish.price)}
+            </Text>
+          </Tooltip>
+        }
         right={(props) => (
           <IconButton
             {...props}
@@ -47,18 +60,21 @@ export const DishCard = ({
             onPress={(event) => openMenu(dish, event)}
           />
         )}
+        style={{ paddingLeft: 8 }}
       />
       <Card.Actions>
-        <Surface
+        <View
           style={{
+            flex: 1,
             flexDirection: "row",
             alignItems: "center",
-            marginBottom: 20,
+            justifyContent: "space-between",
+            margin: 0,
           }}
         >
-          <Text style={{ marginRight: 16 }}>On Sale</Text>
+          <Text>On Sale</Text>
           <Switch value={onSale} onValueChange={onToggleSwitch} />
-        </Surface>
+        </View>
       </Card.Actions>
     </Card>
   );

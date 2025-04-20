@@ -32,7 +32,7 @@ export default function UpdateShopPage() {
   const [location, setLocation] = useState(shop.location || "");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState(shop.email || "");
-  const [taxRate, setTaxRate] = useState("");
+  const [taxRate, setTaxRate] = useState(shop.taxRate?.toString() || "");
 
   const resetField = useCallback(async () => {
     setName("");

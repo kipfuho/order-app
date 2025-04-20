@@ -136,12 +136,21 @@ const createTableRequest = async ({
   shopId,
   name,
   tablePosition,
+  allowMultipleOrderSession = false,
+  needApprovalWhenCustomerOrder = false,
 }: CreateTableRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
     position: string;
-  } = { name, position: tablePosition.id };
+    allowMultipleOrderSession: boolean;
+    needApprovalWhenCustomerOrder: boolean;
+  } = {
+    name,
+    position: tablePosition.id,
+    allowMultipleOrderSession,
+    needApprovalWhenCustomerOrder,
+  };
 
   const result: { table: Table } = await apiRequest({
     method: "POST",
@@ -158,12 +167,21 @@ const updateTableRequest = async ({
   shopId,
   name,
   tablePosition,
+  allowMultipleOrderSession = false,
+  needApprovalWhenCustomerOrder = false,
 }: UpdateTableRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
     position: string;
-  } = { name, position: tablePosition.id };
+    allowMultipleOrderSession: boolean;
+    needApprovalWhenCustomerOrder: boolean;
+  } = {
+    name,
+    position: tablePosition.id,
+    allowMultipleOrderSession,
+    needApprovalWhenCustomerOrder,
+  };
 
   const result: { table: Table } = await apiRequest({
     method: "PATCH",

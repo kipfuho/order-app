@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { CartItem } from "../stores/state.interface";
+import { CartItem, DishOrder } from "../stores/state.interface";
 import store from "../stores/store";
 import { Countries, CurrencyText } from "./common";
 
@@ -13,8 +13,8 @@ const getCountryCurrency = () => {
   }
 };
 
-const convertPaymentAmount = (paymentAmount: number) => {
-  return `${paymentAmount.toLocaleString()}${getCountryCurrency()}`;
+const convertPaymentAmount = (paymentAmount: number = 0) => {
+  return `${paymentAmount.toLocaleString()} ${getCountryCurrency()}`;
 };
 
 const mergeCartItems = (currentCartItem: Record<string, CartItem>) => {

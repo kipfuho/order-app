@@ -5,6 +5,7 @@ import Toast from "react-native-toast-message";
 import {
   ActivityIndicator,
   Button,
+  Checkbox,
   Surface,
   Text,
   TextInput,
@@ -24,8 +25,9 @@ import {
 } from "../../../../../../../../../stores/apiSlices/tableApi.slice";
 import { goToTableList } from "../../../../../../../../../apis/navigate.service";
 import { LoaderBasic } from "../../../../../../../../../components/ui/Loader";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { Collapsible } from "../../../../../../../../../components/Collapsible";
 
 export default function UpdateTablePage() {
   const { tableId } = useLocalSearchParams();
@@ -48,12 +50,18 @@ export default function UpdateTablePage() {
 
   const [name, setName] = useState("");
   const [tablePosition, setTablePosition] = useState<TablePosition>();
+  const [allowMultipleOrderSession, setAllowMultipleOrderSession] =
+    useState(false);
+  const [needApprovalWhenCustomerOrder, setNeedApprovalWhenCustomerOrder] =
+    useState(false);
 
   useEffect(() => {
     if (!table) return;
 
     setName(table.name);
     setTablePosition(table.position);
+    setAllowMultipleOrderSession(table.allowMultipleOrderSession);
+    setNeedApprovalWhenCustomerOrder(table.needApprovalWhenCustomerOrder);
   }, [tableId, tableFetching]);
 
   const handleUpdateTable = async () => {
@@ -82,6 +90,8 @@ export default function UpdateTablePage() {
         shopId: shop.id,
         name,
         tablePosition,
+        allowMultipleOrderSession,
+        needApprovalWhenCustomerOrder,
       }).unwrap();
 
       // Navigate back to table position list
@@ -124,21 +134,67 @@ export default function UpdateTablePage() {
         goBack={() => goToTableList({ router, shopId: shop.id })}
       />
       <Surface style={{ flex: 1 }}>
-        <Surface style={{ flex: 1, padding: 16, boxShadow: "none" }}>
-          <TextInput
-            label={t("table_name")}
-            mode="outlined"
-            value={name}
-            onChangeText={setName}
-            style={{ marginBottom: 20 }}
-          />
-          <DropdownMenu
-            label={t("table_position")}
-            item={tablePosition}
-            setItem={setTablePosition}
-            items={tablePositions}
-            getItemValue={(tp: TablePosition) => tp?.name}
-          />
+        <Surface
+          mode="flat"
+          style={{
+            flex: 1,
+          }}
+        >
+          <ScrollView>
+            <Collapsible title={t("general_information")}>
+              {/* Table Name Input */}
+              <TextInput
+                label={t("table_name")}
+                mode="outlined"
+                value={name}
+                onChangeText={setName}
+                style={{ marginBottom: 20 }}
+              />
+
+              {/* Table Position Dropdown */}
+              <DropdownMenu
+                label={t("table_position")}
+                item={tablePosition}
+                setItem={setTablePosition}
+                items={tablePositions}
+                getItemValue={(tp: TablePosition) => tp?.name}
+              />
+            </Collapsible>
+            <Collapsible title={t("additional_settings")}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text>{t("allow_multiple_order_session")}</Text>
+                <Checkbox
+                  status={allowMultipleOrderSession ? "checked" : "unchecked"}
+                  onPress={() => {
+                    setAllowMultipleOrderSession((prev) => !prev);
+                  }}
+                />
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text>{t("need_approval_when_customer_order")}</Text>
+                <Checkbox
+                  status={
+                    needApprovalWhenCustomerOrder ? "checked" : "unchecked"
+                  }
+                  onPress={() => {
+                    setNeedApprovalWhenCustomerOrder((prev) => !prev);
+                  }}
+                />
+              </View>
+            </Collapsible>
+          </ScrollView>
         </Surface>
 
         <View style={{ marginVertical: 20 }}>

@@ -30,12 +30,15 @@ interface Shop {
     name: string;
     currency: string;
   };
+  taxRate: number;
 }
 
 interface Table {
   id: string;
   name: string;
   position: TablePosition;
+  allowMultipleOrderSession: boolean;
+  needApprovalWhenCustomerOrder: boolean;
 }
 
 interface TableForOrder extends Omit<Table, "position"> {

@@ -2,6 +2,7 @@ import _ from "lodash";
 import { TableForOrder } from "../../../stores/state.interface";
 import { Card, Icon, Surface, Text, useTheme } from "react-native-paper";
 import { TouchableOpacity, View } from "react-native";
+import { convertPaymentAmount } from "../../../constants/utils";
 
 const getTimeColorByCode = (code: number | undefined) => {
   if (code === 1) return "green";
@@ -57,12 +58,12 @@ const TableForOrderCurrentInfo = ({ table }: { table: TableForOrder }) => {
 
         {/* Total payment */}
         <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-          {(table.totalPaymentAmount ?? 0).toLocaleString()} đ
+          {convertPaymentAmount(table.totalPaymentAmount)}
         </Text>
 
         {/* Avg per customer */}
         <Text style={{ fontSize: 12, color: "grey" }}>
-          {(table.averagePaymentAmount ?? 0).toLocaleString()} đ / P
+          {convertPaymentAmount(table.averagePaymentAmount)} / P
         </Text>
       </Surface>
     );

@@ -3,6 +3,7 @@ import { OrderSession } from "../../../stores/state.interface";
 import { Divider, Surface, Text } from "react-native-paper";
 import _ from "lodash";
 import { ScrollView, View } from "react-native";
+import { convertPaymentAmount } from "../../../constants/utils";
 
 export default function OrderSessionDetailPage({
   orderSessionDetail,
@@ -44,7 +45,7 @@ export default function OrderSessionDetailPage({
               {t("total_payment_amount")}
             </Text>
             <Text style={{ fontSize: 18 }}>
-              {orderSessionDetail.paymentAmount.toLocaleString()}
+              {convertPaymentAmount(orderSessionDetail.paymentAmount)}
             </Text>
           </View>
 
@@ -59,11 +60,11 @@ export default function OrderSessionDetailPage({
             >
               <Text style={{ flex: 1, marginRight: 8 }}>
                 <Text style={{ fontSize: 16 }}>{dish.quantity}</Text>
-                <Text> x </Text>
-                <Text style={{ fontSize: 16 }}>{dish.name}</Text>
+                <Text style={{ marginLeft: 4, fontSize: 16 }}>x</Text>
+                <Text style={{ marginLeft: 8, fontSize: 16 }}>{dish.name}</Text>
               </Text>
               <Text style={{ fontSize: 16 }}>
-                {dish.price.toLocaleString()}
+                {convertPaymentAmount(dish.price)}
               </Text>
             </View>
           ))}
@@ -77,9 +78,9 @@ export default function OrderSessionDetailPage({
               marginTop: 6,
             }}
           >
-            <Text>{t("total")}</Text>
-            <Text>
-              {(orderSessionDetail.pretaxPaymentAmount || 0).toLocaleString()}
+            <Text style={{ fontSize: 16 }}>{t("total")}</Text>
+            <Text style={{ fontSize: 16 }}>
+              {convertPaymentAmount(orderSessionDetail.pretaxPaymentAmount)}
             </Text>
           </View>
 
@@ -90,9 +91,32 @@ export default function OrderSessionDetailPage({
               marginTop: 6,
             }}
           >
-            <Text>{t("discount")}</Text>
-            <Text>- 1000</Text>
+            <Text style={{ fontSize: 16 }}>{t("discount")}</Text>
+            <Text style={{ fontSize: 16 }}>
+              {convertPaymentAmount(
+                orderSessionDetail.totalDiscountAmountBeforeTax
+              )}
+            </Text>
           </View>
+
+          {orderSessionDetail.taxDetails.map((taxDetail, index) => (
+            <View
+              key={index}
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginTop: 6,
+                marginLeft: 16,
+              }}
+            >
+              <Text style={{ fontSize: 16 }}>{`${t("tax")}(${
+                taxDetail.taxRate
+              }%)`}</Text>
+              <Text style={{ fontSize: 16 }}>
+                {convertPaymentAmount(taxDetail.taxAmount)}
+              </Text>
+            </View>
+          ))}
 
           <View
             style={{
@@ -101,8 +125,10 @@ export default function OrderSessionDetailPage({
               marginTop: 6,
             }}
           >
-            <Text>{t("tax")}</Text>
-            <Text>10000</Text>
+            <Text style={{ fontSize: 16 }}>{t("tax")}</Text>
+            <Text style={{ fontSize: 16 }}>
+              {convertPaymentAmount(orderSessionDetail.totalTaxAmount)}
+            </Text>
           </View>
         </Surface>
       </ScrollView>

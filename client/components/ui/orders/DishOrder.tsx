@@ -2,6 +2,7 @@ import React from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Card, Text, useTheme, Icon, Surface } from "react-native-paper";
 import { DishOrder, Order } from "../../../stores/state.interface";
+import { convertPaymentAmount } from "../../../constants/utils";
 
 const ChildDishList = () => {
   return (
@@ -93,7 +94,7 @@ export default function DishOrderCard({
 
           <View style={styles.rightSection}>
             <Text variant="titleMedium" style={styles.price}>
-              {dishOrder.price.toLocaleString()}
+              {convertPaymentAmount(dishOrder.price)}
             </Text>
             <Text style={styles.timestamp}>{order.createdAt}</Text>
           </View>

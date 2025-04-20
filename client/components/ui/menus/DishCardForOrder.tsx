@@ -18,6 +18,7 @@ import { updateCurrentOrder } from "../../../stores/shop.slice";
 import { Dispatch } from "redux";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
+import { convertPaymentAmount } from "../../../constants/utils";
 
 function QuantityControl({
   dish,
@@ -175,7 +176,7 @@ export const DishCardForOrder = ({ dish }: { dish: Dish }) => {
           zIndex: 5,
         }}
       >
-        <Text>{(dish.price || 0).toLocaleString()}</Text>
+        <Text>{convertPaymentAmount(dish.price)}</Text>
       </Surface>
       <View>
         <Card.Cover

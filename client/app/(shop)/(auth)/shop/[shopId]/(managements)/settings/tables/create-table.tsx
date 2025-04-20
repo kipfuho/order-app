@@ -6,12 +6,15 @@ import { RootState } from "../../../../../../../../stores/store";
 import {
   ActivityIndicator,
   Button,
-  Menu,
+  Checkbox,
   Surface,
   Text,
   TextInput,
 } from "react-native-paper";
-import { Shop } from "../../../../../../../../stores/state.interface";
+import {
+  Shop,
+  TablePosition,
+} from "../../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../../components/AppBar";
 import Toast from "react-native-toast-message";
 import {
@@ -22,6 +25,8 @@ import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
 import { goToTableList } from "../../../../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
+import { Collapsible } from "../../../../../../../../components/Collapsible";
+import { DropdownMenu } from "../../../../../../../../components/DropdownMenu";
 
 export default function CreateTablePage() {
   const router = useRouter();
@@ -37,10 +42,10 @@ export default function CreateTablePage() {
 
   const [name, setName] = useState("table");
   const [tablePosition, setTablePosition] = useState(tablePositions[0]);
-  const [menuVisible, setMenuVisible] = useState(false);
-
-  const openMenu = () => setMenuVisible(true);
-  const closeMenu = () => setMenuVisible(false);
+  const [allowMultipleOrderSession, setAllowMultipleOrderSession] =
+    useState(false);
+  const [needApprovalWhenCustomerOrder, setNeedApprovalWhenCustomerOrder] =
+    useState(false);
 
   const handleCreateTable = async () => {
     if (!name.trim() || !tablePosition) {
@@ -56,7 +61,13 @@ export default function CreateTablePage() {
     }
 
     try {
-      await createTable({ shopId: shop.id, name, tablePosition }).unwrap();
+      await createTable({
+        shopId: shop.id,
+        name,
+        tablePosition,
+        allowMultipleOrderSession,
+        needApprovalWhenCustomerOrder,
+      }).unwrap();
       goToTableList({ router, shopId: shop.id });
     } catch (err) {
       Toast.show({
@@ -84,51 +95,65 @@ export default function CreateTablePage() {
         }}
       >
         <Surface
+          mode="flat"
           style={{
             flex: 1,
-            padding: 16,
-            boxShadow: "none",
           }}
         >
           <ScrollView>
-            {/* Table Name Input */}
-            <TextInput
-              label={t("table_name")}
-              mode="outlined"
-              value={name}
-              onChangeText={setName}
-              style={{ marginBottom: 20 }}
-            />
+            <Collapsible title={t("general_information")}>
+              {/* Table Name Input */}
+              <TextInput
+                label={t("table_name")}
+                mode="outlined"
+                value={name}
+                onChangeText={setName}
+                style={{ marginBottom: 20 }}
+              />
 
-            {/* Table Position Dropdown Label */}
-            <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
-              {t("table_position")}
-            </Text>
-            {/* Table Position Dropdown */}
-            <Menu
-              visible={menuVisible}
-              onDismiss={closeMenu}
-              anchor={
-                <Button
-                  mode="outlined"
-                  onPress={openMenu}
-                  style={{ marginBottom: 20 }}
-                >
-                  {tablePosition?.name || "Select Table Position"}
-                </Button>
-              }
-            >
-              {tablePositions.map((position) => (
-                <Menu.Item
-                  key={position.id}
+              {/* Table Position Dropdown */}
+              <DropdownMenu
+                label={t("table_position")}
+                item={tablePosition}
+                setItem={setTablePosition}
+                items={tablePositions}
+                getItemValue={(tp: TablePosition) => tp?.name}
+              />
+            </Collapsible>
+            <Collapsible title={t("additional_settings")}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text>{t("allow_multiple_order_session")}</Text>
+                <Checkbox
+                  status={allowMultipleOrderSession ? "checked" : "unchecked"}
                   onPress={() => {
-                    setTablePosition(position);
-                    closeMenu();
+                    setAllowMultipleOrderSession((prev) => !prev);
                   }}
-                  title={position.name}
                 />
-              ))}
-            </Menu>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text>{t("need_approval_when_customer_order")}</Text>
+                <Checkbox
+                  status={
+                    needApprovalWhenCustomerOrder ? "checked" : "unchecked"
+                  }
+                  onPress={() => {
+                    setNeedApprovalWhenCustomerOrder((prev) => !prev);
+                  }}
+                />
+              </View>
+            </Collapsible>
           </ScrollView>
         </Surface>
 
