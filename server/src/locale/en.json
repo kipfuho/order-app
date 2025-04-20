@@ -4,5 +4,6 @@
   "department.owner": "Owner",
   "notImage": "Please upload an image",
   "fileTooLarge": "Please upload file less than 5MB",
-  "reason.empty": "Reason is empty"
+  "reason.empty": "Reason is empty",
+  "table.alreadyHasCustomer": "Table already has customer"
 }

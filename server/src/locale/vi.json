@@ -4,5 +4,6 @@
   "department.owner": "Chủ nhà hàng",
   "notImage": "Vui lòng upload ảnh",
   "fileTooLarge": "Vui lòng upload file nhỏ hơn 5MB",
-  "reason.empty": "Reason is empty"
+  "reason.empty": "Vui lòng nhập lý do",
+  "table.alreadyHasCustomer": "Bàn đã có khách"
 }

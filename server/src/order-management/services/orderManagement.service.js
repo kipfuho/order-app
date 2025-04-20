@@ -269,7 +269,7 @@ const checkoutCart = async ({ customerId, shopId, requestBody }) => {
     await clearCart({ customerId, shopId });
   }
 
-  const orderSession = await orderUtilService.getOrCreateOrderSession({ tableId, shopId, customerId });
+  const orderSession = await orderUtilService.getOrCreateOrderSession({ tableId, shopId, customerId, isCustomerApp: true });
   const newOrder = await orderUtilService.createNewOrder({
     tableId,
     shopId,

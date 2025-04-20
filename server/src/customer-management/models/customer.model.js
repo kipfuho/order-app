@@ -40,6 +40,10 @@ const customerSchema = new mongoose.Schema(
       },
       private: true, // used by the toJSON plugin
     },
+    address: {
+      type: String,
+      trim: true,
+    },
     anonymous: {
       type: Boolean,
     },

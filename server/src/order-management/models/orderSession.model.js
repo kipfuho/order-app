@@ -77,9 +77,18 @@ const orderSessionSchema = new mongoose.Schema(
       reason: { type: String },
     },
     customerInfo: {
-      customerIds: {
+      customerId: {
         type: mongoose.Types.ObjectId,
         ref: 'Customer',
+      },
+      customerName: {
+        type: String,
+      },
+      customerPhone: {
+        type: String,
+      },
+      customerAddress: {
+        type: String,
       },
       numberOfCustomer: { type: Number },
     },
