@@ -123,13 +123,10 @@ export default function OrderManagementHistoryPage() {
           <ScrollView showsVerticalScrollIndicator={false}>
             <Surface style={{ gap: 16, boxShadow: "none" }}>
               {orderHistories?.map((orderHistory, index) => (
-                <>
-                  <OrderHistoryCard
-                    key={orderHistory.id}
-                    orderHistory={orderHistory}
-                  />
-                  <Divider />
-                </>
+                <View key={index}>
+                  <OrderHistoryCard orderHistory={orderHistory} />
+                  <Divider style={{ marginVertical: 8 }} />
+                </View>
               ))}
             </Surface>
           </ScrollView>

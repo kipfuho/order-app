@@ -15,7 +15,7 @@ import { ScrollView } from "react-native";
 import { ActiveOrderSession } from "../../../../../../../../../components/ui/orders/ActiveOrderSession";
 import { AppBar } from "../../../../../../../../../components/AppBar";
 import { goToTablesForOrderList } from "../../../../../../../../../apis/navigate.service";
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import { styles } from "../../../../../../../../_layout";
 import { useTranslation } from "react-i18next";
 import CreateOrder from "../../../../../../../../../components/ui/CreateOrderView";
@@ -23,6 +23,7 @@ import { useState } from "react";
 import Toast from "react-native-toast-message";
 import { CustomerInfoDialog } from "../../../../../../../../../components/ui/orders/CustomerInfoDialog";
 import { resetCurrentOrder } from "../../../../../../../../../stores/shop.slice";
+import _ from "lodash";
 
 export default function OrderTableCurrentOrderSessionsPage() {
   const router = useRouter();
@@ -61,6 +62,14 @@ export default function OrderTableCurrentOrderSessionsPage() {
 
   if (activeOrderSessionFetching) {
     return <LoaderBasic />;
+  }
+
+  if (!table.allowMultipleOrderSession && !_.isEmpty(activeOrderSessions)) {
+    return (
+      <Redirect
+        href={`/(shop)/(auth)/shop/${shop.id}/(managements)/orders/table/${table.id}/payment/${activeOrderSessions[0].id}`}
+      />
+    );
   }
 
   return (

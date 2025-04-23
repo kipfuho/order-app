@@ -1,82 +1,143 @@
 import { events } from "aws-amplify/api";
 import store from "../stores/store";
-import { connectAppSyncChannel, subscribeEventType } from "../stores/awsSlice";
-import { getDishCategoriesRequest, getDishesRequest } from "./dish.api.service";
-import {
-  getTablePositionsRequest,
-  getTablesRequest,
-} from "./table.api.service";
+import { connectAppSyncChannel } from "../stores/awsSlice";
+import { shopApiSlice } from "../stores/apiSlices/shopApi.slice";
+import { tableApiSlice } from "../stores/apiSlices/tableApi.slice";
+import { dishApiSlice } from "../stores/apiSlices/dishApi.slice";
+import { staffApiSlice } from "../stores/apiSlices/staffApi.slice";
+import { orderApiSlice } from "../stores/apiSlices/orderApi.slice";
+import Toast from "react-native-toast-message";
 
 const namespace = "default";
-const useappsync = false;
+const useappsync = true;
 
 export const AppSyncChannel = {
   TEST: () => `${namespace}/test`,
   SHOP: (shopId: string) => `${namespace}/shop/${shopId}`,
-  TABLE: (tableId: string) => `${namespace}/table/${tableId}`,
-  ORDERSESSION: (orderSessionId: string) =>
-    `${namespace}/orderSession/${orderSessionId}`,
+  CUSTOMER: (customerId: string) => `${namespace}/customer/${customerId}`,
+};
+
+export const AppSyncChannelType = {
+  SHOP: "SHOP",
+  CUSTOMER: "CUSTOMER",
 };
 
 export const EventType = {
-  UPDATE_SHOP: "UPDATE_SHOP",
-  UPDATE_DISH: "UPDATE_DISH",
-  UPDATE_DISH_CATEGORY: "UPDATE_DISH_CATEGORY",
-  UPDATE_TABLE: "UPDATE_TABLE",
-  UPDATE_TABLE_POSITION: "UPDATE_TABLE_POSITION",
-};
-
-const _getConnectionWithChannelId = (channelId: string) => {
-  const allConnections = store.getState().aws.connectionDetails;
-  const connection = allConnections.find(
-    (conn) => conn.channelId === channelId
-  );
-  return connection;
+  SHOP_CHANGED: "SHOP_CHANGED",
+  TABLE_CHANGED: "TABLE_CHANGED",
+  TABLE_POSITION_CHANGED: "TABLE_POSITION_CHANGED",
+  DISH_CHANGED: "DISH_CHANGED",
+  DISH_CATEGORY_CHANGED: "DISH_CATEGORY_CHANGED",
+  EMPLOYEE_CHANGED: "DISH_CATEGORY_CHANGED",
+  EMPLOYEE_POSITION_CHANGED: "DISH_CATEGORY_CHANGED",
+  DEPARTMENT_CHANGED: "DISH_CATEGORY_CHANGED",
+  PAYMENT_COMPLETE: "PAYMENT_COMPLETE",
+  ORDER_SESSION_UPDATE: "ORDER_SESSION_UPDATE",
 };
 
 /**
- * Ket noi den channel shop
+ * Kết nối đến channel shop cho màn quản lý
  */
 const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
   if (!useappsync) return;
 
   try {
     const channelId = AppSyncChannel.SHOP(shopId);
-    const previousConnection = _getConnectionWithChannelId(channelId);
-    if (previousConnection) {
-      return;
-    }
-
     const channel = await events.connect(channelId);
 
     const subscription = channel.subscribe({
-      next: async (data) => {
+      next: async ({ event }) => {
         try {
-          console.log("Received event:", data);
-          if (data.type === EventType.UPDATE_DISH) {
-            await getDishesRequest({ shopId });
+          console.log("Received event:", event);
+          const { type, data } = event;
+
+          if (type === EventType.SHOP_CHANGED) {
+            const { action, shop } = data;
+            store.dispatch(shopApiSlice.util.invalidateTags(["Shops"]));
             return;
           }
 
-          if (data.type === EventType.UPDATE_DISH_CATEGORY) {
-            await getDishCategoriesRequest({ shopId });
-            await getDishesRequest({ shopId });
+          if (type === EventType.TABLE_CHANGED) {
+            const { action, table } = data;
+            store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
             return;
           }
 
-          if (data.type === EventType.UPDATE_SHOP) {
-            // await ({ shopId });
+          if (type === EventType.TABLE_POSITION_CHANGED) {
+            const { action, tablePosition } = data;
+            store.dispatch(
+              tableApiSlice.util.invalidateTags(["TablePositions"])
+            );
             return;
           }
 
-          if (data.type === EventType.UPDATE_TABLE) {
-            await getTablesRequest({ shopId });
+          if (type === EventType.DISH_CHANGED) {
+            const { action, dish } = data;
+            store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
             return;
           }
 
-          if (data.type === EventType.UPDATE_TABLE_POSITION) {
-            await getTablePositionsRequest({ shopId });
-            await getTablesRequest({ shopId });
+          if (type === EventType.DISH_CATEGORY_CHANGED) {
+            const { action, dishCategory } = data;
+            store.dispatch(
+              dishApiSlice.util.invalidateTags(["DishCategories"])
+            );
+            return;
+          }
+
+          if (type === EventType.EMPLOYEE_CHANGED) {
+            const { action, employee } = data;
+            store.dispatch(staffApiSlice.util.invalidateTags(["Employees"]));
+            return;
+          }
+
+          if (type === EventType.EMPLOYEE_POSITION_CHANGED) {
+            const { action, employeePosition } = data;
+            store.dispatch(
+              staffApiSlice.util.invalidateTags(["EmployeePositions"])
+            );
+            return;
+          }
+
+          if (type === EventType.DEPARTMENT_CHANGED) {
+            const { action, department } = data;
+            store.dispatch(staffApiSlice.util.invalidateTags(["Departments"]));
+            return;
+          }
+
+          if (type === EventType.ORDER_SESSION_UPDATE) {
+            const {
+              orderSessionId,
+              tableId,
+            }: { orderSessionId: string; tableId: string } = data;
+            store.dispatch(
+              orderApiSlice.util.invalidateTags([
+                { type: "OrderSessions", id: orderSessionId },
+                { type: "ActiveOrderSessions", id: tableId },
+              ])
+            );
+            return;
+          }
+
+          if (type === EventType.PAYMENT_COMPLETE) {
+            const {
+              orderSessionId,
+              tableId,
+              billNo,
+            }: { orderSessionId: string; tableId: string; billNo: string } =
+              data;
+            Toast.show({
+              type: "success",
+              text1: "Payment completed",
+              text2: `Order session ${billNo} has been paid`,
+            });
+            store.dispatch(
+              orderApiSlice.util.invalidateTags([
+                { type: "OrderSessions", id: orderSessionId },
+                { type: "ActiveOrderSessions", id: tableId },
+                "TablesForOrder",
+              ])
+            );
             return;
           }
 
@@ -88,83 +149,16 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
       error: (err) => console.error("Subscription error:", err),
     });
 
-    store.dispatch(connectAppSyncChannel({ channelId, channel, subscription }));
-    // subscribeEventType()
+    store.dispatch(
+      connectAppSyncChannel({
+        type: AppSyncChannelType.SHOP,
+        channel,
+        subscription,
+      })
+    );
   } catch (err) {
     console.error("Connection error:", err);
   }
 };
 
-const connectAppSyncForTable = async ({ tableId }: { tableId: string }) => {
-  if (!useappsync) return;
-
-  try {
-    const channelId = AppSyncChannel.TABLE(tableId);
-    const previousConnection = _getConnectionWithChannelId(channelId);
-    if (previousConnection) {
-      return;
-    }
-
-    const channel = await events.connect(channelId);
-
-    const subscription = channel.subscribe({
-      next: async (data) => {
-        try {
-          console.log("Received event:", data);
-
-          console.log("Cannot match event type!~");
-        } catch (error) {
-          console.error("Error handling event:", error);
-        }
-      },
-      error: (err) => console.error("Subscription error:", err),
-    });
-
-    store.dispatch(connectAppSyncChannel({ channelId, channel, subscription }));
-    // subscribeEventType()
-  } catch (err) {
-    console.error("Connection error:", err);
-  }
-};
-
-const connectAppSyncForOrderSession = async ({
-  orderSessionId,
-}: {
-  orderSessionId: string;
-}) => {
-  if (!useappsync) return;
-
-  try {
-    const channelId = AppSyncChannel.ORDERSESSION(orderSessionId);
-    const previousConnection = _getConnectionWithChannelId(channelId);
-    if (previousConnection) {
-      return;
-    }
-
-    const channel = await events.connect(channelId);
-
-    const subscription = channel.subscribe({
-      next: async (data) => {
-        try {
-          console.log("Received event:", data);
-
-          console.log("Cannot match event type!~");
-        } catch (error) {
-          console.error("Error handling event:", error);
-        }
-      },
-      error: (err) => console.error("Subscription error:", err),
-    });
-
-    store.dispatch(connectAppSyncChannel({ channelId, channel, subscription }));
-    // subscribeEventType()
-  } catch (err) {
-    console.error("Connection error:", err);
-  }
-};
-
-export {
-  connectAppSyncForShop,
-  connectAppSyncForTable,
-  connectAppSyncForOrderSession,
-};
+export { connectAppSyncForShop };

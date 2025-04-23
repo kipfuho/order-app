@@ -21,6 +21,7 @@ import { DishCardForOrder } from "./menus/DishCardForOrder";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
 import { useCreateOrderMutation } from "../../stores/apiSlices/orderApi.slice";
+import { convertPaymentAmount } from "../../constants/utils";
 
 /**
  * wrapped in a modal
@@ -210,7 +211,7 @@ export default function CreateOrder({
             variant="bodyLarge"
             style={{ fontWeight: "bold", marginRight: 20 }}
           >
-            {currentOrderTotalAmount}
+            {convertPaymentAmount(currentOrderTotalAmount)}
           </Text>
           {createOrderLoading ? (
             <ActivityIndicator />

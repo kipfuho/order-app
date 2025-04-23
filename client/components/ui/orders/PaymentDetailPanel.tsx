@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { OrderSession } from "../../../stores/state.interface";
 import { Divider, Surface, Text } from "react-native-paper";
 import _ from "lodash";
-import { ScrollView, View } from "react-native";
+import { ScrollView, useWindowDimensions, View } from "react-native";
 import { convertPaymentAmount } from "../../../constants/utils";
 
 export default function OrderSessionDetailPage({
@@ -11,6 +11,7 @@ export default function OrderSessionDetailPage({
   orderSessionDetail: OrderSession | undefined;
 }) {
   const { t } = useTranslation();
+  const { height } = useWindowDimensions();
 
   if (!orderSessionDetail) {
     return;
@@ -27,7 +28,7 @@ export default function OrderSessionDetailPage({
         borderRadius: 10,
       }}
     >
-      <ScrollView>
+      <ScrollView style={{ maxHeight: height }}>
         <Surface mode="flat" style={{ flex: 1, boxShadow: "none" }}>
           <View
             style={{

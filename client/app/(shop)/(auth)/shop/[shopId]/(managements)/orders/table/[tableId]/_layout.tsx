@@ -6,7 +6,6 @@ import { useGetTablesQuery } from "../../../../../../../../../stores/apiSlices/t
 import { RootState } from "../../../../../../../../../stores/store";
 import { LoaderBasic } from "../../../../../../../../../components/ui/Loader";
 import { updateCurrentTable } from "../../../../../../../../../stores/shop.slice";
-import { connectAppSyncForTable } from "../../../../../../../../../apis/aws.service";
 import { styles } from "../../../../../../../../_layout";
 import { goToTablesForOrderList } from "../../../../../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
@@ -29,7 +28,6 @@ export default function TableCurrentOrderLayout() {
     if (!table) return;
 
     dispatch(updateCurrentTable(table));
-    connectAppSyncForTable({ tableId: table.id });
   }, [tableId, isLoading]);
 
   if (isLoading) {

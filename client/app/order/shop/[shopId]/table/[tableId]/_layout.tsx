@@ -5,7 +5,6 @@ import { Surface, Text, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { useGetTableQuery } from "../../../../../../stores/apiSlices/tableApi.slice";
 import { RootState } from "../../../../../../stores/store";
-import { connectAppSyncForTable } from "../../../../../../apis/aws.service";
 import { LoaderBasic } from "../../../../../../components/ui/Loader";
 import { styles } from "../../../../../_layout";
 import { updateTable } from "../../../../../../stores/customerSlice";
@@ -29,12 +28,6 @@ export default function TableCurrentOrderLayout() {
     tableId,
     isCustomerApp: true,
   });
-
-  useEffect(() => {
-    if (!table) return;
-
-    connectAppSyncForTable({ tableId: table.id });
-  }, [tableId, isLoading]);
 
   useEffect(() => {
     if (!table) return;

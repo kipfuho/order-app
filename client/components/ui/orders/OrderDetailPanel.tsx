@@ -9,7 +9,7 @@ import {
 } from "react-native-paper";
 import { DishOrder, OrderSession, Shop } from "../../../stores/state.interface";
 import { useTranslation } from "react-i18next";
-import { ScrollView, View } from "react-native";
+import { ScrollView, useWindowDimensions, View } from "react-native";
 import OrderCustomerInfo from "./OrderCutomerInfo";
 import DishOrderCard from "./DishOrder";
 import { useState } from "react";
@@ -37,6 +37,7 @@ export default function ActiveOrderSessionPage({
   const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch();
+  const { height } = useWindowDimensions();
 
   const { currentShop, currentOrderSession } = useSelector(
     (state: RootState) => state.shop
@@ -73,8 +74,6 @@ export default function ActiveOrderSessionPage({
 
   const handleChangeDishQuantity = async () => {
     if (!changeQuantityDishOrder) return;
-
-    console.log(changeQuantityDishOrder);
 
     try {
       await updateDishQuantity({
@@ -212,7 +211,10 @@ export default function ActiveOrderSessionPage({
         <Toast />
       </Portal>
       <Surface mode="flat" style={{ flex: 1, padding: 12, borderRadius: 10 }}>
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={{ flex: 1, maxHeight: height }}
+          showsVerticalScrollIndicator={false}
+        >
           <Surface mode="flat" style={{ flex: 1 }}>
             <OrderCustomerInfo orderSession={activeOrderSession} />
             <View

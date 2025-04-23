@@ -1,33 +1,45 @@
-import React, { PropsWithChildren, useState } from "react";
+import React, { PropsWithChildren, useRef } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
   View,
   LayoutChangeEvent,
 } from "react-native";
-import { Icon, Surface, Text, useTheme } from "react-native-paper";
+import { Icon, Surface, Text } from "react-native-paper";
 import Animated, {
   useSharedValue,
   withTiming,
   useAnimatedStyle,
   interpolate,
+  runOnUI,
 } from "react-native-reanimated";
 
 export function Collapsible({
   children,
   title,
 }: PropsWithChildren & { title: string }) {
-  const theme = useTheme();
-
-  const [contentHeight, setContentHeight] = useState(0);
   const isOpen = useSharedValue(1); // 1 = open, 0 = closed
+  const contentHeight = useSharedValue(0);
+  const contentRef = useRef<View>(null);
+
+  const measureContentHeight = () => {
+    const node = contentRef.current;
+    if (node) {
+      node.measure((_x, _y, _width, height) => {
+        runOnUI(() => {
+          contentHeight.value = height;
+        })();
+      });
+    }
+  };
 
   const handleToggle = () => {
+    measureContentHeight(); // recalculate before animation
     isOpen.value = withTiming(isOpen.value === 1 ? 0 : 1, { duration: 300 });
   };
 
   const animatedContainerStyle = useAnimatedStyle(() => ({
-    height: interpolate(isOpen.value, [0, 1], [0, contentHeight]),
+    height: interpolate(isOpen.value, [0, 1], [0, contentHeight.value]),
     opacity: isOpen.value,
     overflow: "hidden",
   }));
@@ -37,9 +49,8 @@ export function Collapsible({
   }));
 
   const onLayout = (event: LayoutChangeEvent) => {
-    if (contentHeight === 0) {
-      setContentHeight(event.nativeEvent.layout.height);
-    }
+    console.log(event);
+    contentHeight.value = event.nativeEvent.layout.height;
   };
 
   return (
@@ -60,16 +71,14 @@ export function Collapsible({
         </Text>
       </TouchableOpacity>
 
-      {/* Hidden measurement view */}
-      {contentHeight === 0 && (
-        <View style={styles.hidden} onLayout={onLayout}>
+      <Animated.View style={animatedContainerStyle}>
+        <View
+          ref={contentRef}
+          style={styles.content}
+          onLayout={measureContentHeight}
+        >
           {children}
         </View>
-      )}
-
-      {/* Animated collapsible section */}
-      <Animated.View style={[animatedContainerStyle]}>
-        <View style={styles.content}>{children}</View>
       </Animated.View>
     </Surface>
   );

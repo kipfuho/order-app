@@ -3,13 +3,17 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
 import { styles } from "../../../../_layout";
-import { connectAppSyncForShop } from "../../../../../apis/aws.service";
+import {
+  AppSyncChannelType,
+  connectAppSyncForShop,
+} from "../../../../../apis/aws.service";
 import { useGetShopsQuery } from "../../../../../stores/apiSlices/shopApi.slice";
 import { updateCurrentShop } from "../../../../../stores/shop.slice";
 import { RootState } from "../../../../../stores/store";
 import { LoaderBasic } from "../../../../../components/ui/Loader";
 import { goBackShopList } from "../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
+import { closeAppSyncChannel } from "../../../../../stores/awsSlice";
 
 export default function AppLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };
@@ -27,6 +31,10 @@ export default function AppLayout() {
 
     dispatch(updateCurrentShop(shop));
     connectAppSyncForShop({ shopId: shop.id });
+
+    return () => {
+      dispatch(closeAppSyncChannel({ type: AppSyncChannelType.SHOP }));
+    };
   }, [shopId, isLoading]);
 
   if (isLoading) {

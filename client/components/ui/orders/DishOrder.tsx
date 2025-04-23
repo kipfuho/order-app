@@ -52,8 +52,19 @@ export default function DishOrderCard({
     <Card style={styles.card} mode="outlined">
       <View style={{ padding: 16 }}>
         <View style={styles.header}>
-          <View style={styles.leftSection}>
-            <Icon source="store-outline" size={20} />
+          <View style={{ flex: 1 }}>
+            <View style={styles.leftSection}>
+              <Icon source="store-outline" size={20} />
+
+              <Text
+                variant="titleMedium"
+                style={styles.dishName}
+                numberOfLines={10}
+              >
+                {dishOrder.name}
+              </Text>
+            </View>
+
             <Surface style={styles.quantityBadge}>
               <TouchableOpacity
                 onPress={() =>
@@ -83,13 +94,6 @@ export default function DishOrderCard({
                 <Icon source="plus-circle-outline" size={14} />
               </TouchableOpacity>
             </Surface>
-            <Text
-              variant="titleMedium"
-              style={styles.dishName}
-              numberOfLines={10}
-            >
-              {dishOrder.name}
-            </Text>
           </View>
 
           <View style={styles.rightSection}>
@@ -126,6 +130,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flexDirection: "row",
     alignItems: "center",
+    alignSelf: "flex-start",
+    flexShrink: 1,
     gap: 2,
   },
   dishName: {
