@@ -1,5 +1,6 @@
+const _ = require('lodash');
 const { publishSingleAppSyncEvent } = require('../aws');
-const { getStringId } = require('../common');
+const { getStringId, formatOrderSessionNo } = require('../common');
 
 const namespace = 'default';
 
@@ -38,18 +39,24 @@ const notifyOrderSessionPaymentForCustomer = async ({ orderSession }) => {
     type: AppSyncEvent.PAYMENT_COMPLETE,
     data: {
       orderSessionId: orderSession.id,
+      tableId: orderSession.tableIds[0],
+      billNo: formatOrderSessionNo(orderSession),
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
 };
 
 const notifyOrderSessionPayment = async ({ orderSession }) => {
-  const { shopId } = orderSession;
-  const channel = getShopChannel(shopId);
+  if (_.isEmpty(orderSession)) {
+    return;
+  }
+
+  const channel = getShopChannel(getStringId({ object: orderSession, key: 'shop' }));
   const event = {
     type: AppSyncEvent.PAYMENT_COMPLETE,
     data: {
       orderSessionId: orderSession.id,
+      tableId: orderSession.tableIds[0],
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
@@ -57,7 +64,11 @@ const notifyOrderSessionPayment = async ({ orderSession }) => {
 };
 
 const notifyUpdateShop = async ({ action, shop }) => {
-  const channel = getShopChannel();
+  if (_.isEmpty(shop)) {
+    return;
+  }
+
+  const channel = getShopChannel(shop.id);
   const event = {
     type: AppSyncEvent.SHOP_CHANGED,
     data: {
@@ -69,6 +80,10 @@ const notifyUpdateShop = async ({ action, shop }) => {
 };
 
 const notifyUpdateTable = async ({ action, table }) => {
+  if (_.isEmpty(table)) {
+    return;
+  }
+
   const channel = getShopChannel(getStringId({ object: table, key: 'shop' }));
   const event = {
     type: AppSyncEvent.TABLE_CHANGED,
@@ -81,6 +96,10 @@ const notifyUpdateTable = async ({ action, table }) => {
 };
 
 const notifyUpdateTablePosition = async ({ action, tablePosition }) => {
+  if (_.isEmpty(tablePosition)) {
+    return;
+  }
+
   const channel = getShopChannel(getStringId({ object: tablePosition, key: 'shop' }));
   const event = {
     type: AppSyncEvent.TABLE_POSITION_CHANGED,
@@ -93,6 +112,10 @@ const notifyUpdateTablePosition = async ({ action, tablePosition }) => {
 };
 
 const notifyUpdateDish = async ({ action, dish }) => {
+  if (_.isEmpty(dish)) {
+    return;
+  }
+
   const channel = getShopChannel(getStringId({ object: dish, key: 'shop' }));
   const event = {
     type: AppSyncEvent.DISH_CHANGED,
@@ -105,6 +128,10 @@ const notifyUpdateDish = async ({ action, dish }) => {
 };
 
 const notifyUpdateDishCategory = async ({ action, dishCategory }) => {
+  if (_.isEmpty(dishCategory)) {
+    return;
+  }
+
   const channel = getShopChannel(getStringId({ object: dishCategory, key: 'shop' }));
   const event = {
     type: AppSyncEvent.DISH_CATEGORY_CHANGED,
@@ -117,6 +144,10 @@ const notifyUpdateDishCategory = async ({ action, dishCategory }) => {
 };
 
 const notifyUpdateEmployee = async ({ action, employee }) => {
+  if (_.isEmpty(employee)) {
+    return;
+  }
+
   const channel = getShopChannel(getStringId({ object: employee, key: 'shop' }));
   const event = {
     type: AppSyncEvent.EMPLOYEE_CHANGED,
@@ -129,6 +160,10 @@ const notifyUpdateEmployee = async ({ action, employee }) => {
 };
 
 const notifyUpdateEmployeePosition = async ({ action, employeePosition }) => {
+  if (_.isEmpty(employeePosition)) {
+    return;
+  }
+
   const channel = getShopChannel(getStringId({ object: employeePosition, key: 'shop' }));
   const event = {
     type: AppSyncEvent.EMPLOYEE_POSITION_CHANGED,
@@ -141,6 +176,10 @@ const notifyUpdateEmployeePosition = async ({ action, employeePosition }) => {
 };
 
 const notifyUpdateDepartment = async ({ action, department }) => {
+  if (_.isEmpty(department)) {
+    return;
+  }
+
   const channel = getShopChannel(getStringId({ object: department, key: 'shop' }));
   const event = {
     type: AppSyncEvent.DEPARTMENT_CHANGED,
@@ -152,13 +191,17 @@ const notifyUpdateDepartment = async ({ action, department }) => {
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateOrderSession = async ({ action, table, orderSession }) => {
-  const channel = getShopChannel(getStringId({ object: table, key: 'shop' }));
+const notifyUpdateOrderSession = async ({ orderSession }) => {
+  if (_.isEmpty(orderSession)) {
+    return;
+  }
+
+  const channel = getShopChannel(getStringId({ object: orderSession, key: 'shop' }));
   const event = {
     type: AppSyncEvent.ORDER_SESSION_UPDATE,
     data: {
-      action, // 'CREATE', 'UPDATE', 'DELETE'
-      orderSession,
+      orderSessionId: orderSession.id,
+      tableId: orderSession.tableIds[0],
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
