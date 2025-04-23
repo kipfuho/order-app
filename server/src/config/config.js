@@ -32,6 +32,8 @@ const envVarsSchema = Joi.object()
     AWS_ACCESS_KEY_ID: Joi.string().description('aws access key id'),
     AWS_SECRET_ACCESS_KEY: Joi.string().description('aws secret access key'),
     AWS_S3_BUCKET_NAME: Joi.string().description('aws s3 bucket name'),
+    AWS_APPSYNC_HTTP: Joi.string().description('aws appsync http endpoint'),
+    AWS_APPSYNC_API_KEY: Joi.string().description('aws appsync api key'),
   })
   .unknown();
 
@@ -80,5 +82,7 @@ module.exports = {
     accessKeyId: envVars.AWS_ACCESS_KEY_ID,
     secretAccessKey: envVars.AWS_SECRET_ACCESS_KEY,
     s3BucketName: envVars.AWS_S3_BUCKET_NAME,
+    appsyncHttp: envVars.AWS_APPSYNC_HTTP,
+    appsyncApiKey: envVars.AWS_APPSYNC_API_KEY,
   },
 };

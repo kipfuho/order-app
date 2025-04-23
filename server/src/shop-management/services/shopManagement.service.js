@@ -4,6 +4,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { TableDepartmentPermissions, CashierDepartmentPermissions, PermissionType, Status } = require('../../utils/constant');
 const { getShopFromCache } = require('../../metadata/shopMetadata.service');
+const { notifyUpdateShop, EventActionType } = require('../../utils/awsUtils/appsync.utils');
 
 const getShop = async (shopId) => {
   const shop = await getShopFromCache({ shopId });
@@ -70,18 +71,27 @@ const createShop = async ({ createBody, ownerUserId }) => {
     user: ownerUserId,
     name: getMessageByLocale({ key: 'shop.owner' }),
   });
-  return shop;
+
+  const shopJson = shop.toJSON();
+  notifyUpdateShop({ shop: shopJson, type: EventActionType.CREATE });
+  return shopJson;
 };
 
 const updateShop = async ({ shopId, updateBody }) => {
   const shop = await Shop.findByIdAndUpdate(shopId, { $set: updateBody }, { new: true });
   throwBadRequest(!shop, 'Không tìm thấy nhà hàng');
-  return shop;
+
+  const shopJson = shop.toJSON();
+  notifyUpdateShop({ shop: shopJson, type: EventActionType.UPDATE });
+  return shopJson;
 };
 
 const deleteShop = async (shopId) => {
   const shop = await Shop.findByIdAndDelete({ _id: shopId });
-  return shop;
+
+  const shopJson = shop.toJSON();
+  notifyUpdateShop({ shop: shopJson, type: EventActionType.CREATE });
+  return shopJson;
 };
 
 module.exports = {

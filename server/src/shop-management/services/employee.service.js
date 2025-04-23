@@ -9,6 +9,11 @@ const {
 } = require('../../metadata/employeeMetadata.service');
 const { getUserFromDatabase } = require('../../metadata/userMetadata.service');
 const { EmployeePosition, Employee } = require('../../models');
+const {
+  notifyUpdateEmployee,
+  EventActionType,
+  notifyUpdateEmployeePosition,
+} = require('../../utils/awsUtils/appsync.utils');
 const { PermissionType } = require('../../utils/constant');
 const { throwBadRequest } = require('../../utils/errorHandling');
 
@@ -40,17 +45,40 @@ const createEmployee = async ({ shopId, createBody }) => {
     shop: shopId,
     user: user._id,
   });
-  return employee;
+
+  await employee.populate('user').populate('position').populate('department');
+  const employeeJson = employee.toJSON();
+  notifyUpdateEmployee({
+    employee: employeeJson,
+    type: EventActionType.CREATE,
+  });
+  return employeeJson;
 };
 
 const updateEmployee = async ({ shopId, employeeId, updateBody }) => {
   const employee = await Employee.findOneAndUpdate({ _id: employeeId, shop: shopId }, { $set: updateBody }, { new: true });
   throwBadRequest(!employee, 'Không tìm thấy nhân viên');
-  return employee;
+
+  await employee.populate('user').populate('position').populate('department');
+  const employeeJson = employee.toJSON();
+  notifyUpdateEmployee({
+    employee: employeeJson,
+    type: EventActionType.UPDATE,
+  });
+  return employeeJson;
 };
 
 const deleteEmployee = async ({ shopId, employeeId }) => {
-  await Employee.deleteOne({ _id: employeeId, shop: shopId });
+  const employee = await Employee.findOneAndDelete({ _id: employeeId, shop: shopId });
+  throwBadRequest(!employee, 'Không tìm thấy nhân viên');
+
+  await employee.populate('user').populate('position').populate('department');
+  const employeeJson = employee.toJSON();
+  notifyUpdateEmployee({
+    employee: employeeJson,
+    type: EventActionType.DELETE,
+  });
+  return employeeJson;
 };
 
 const getEmployeePosition = async ({ shopId, employeePositionId }) => {
@@ -66,7 +94,13 @@ const getEmployeePositions = async ({ shopId }) => {
 
 const createEmployeePosition = async ({ shopId, createBody }) => {
   const employeePosition = await EmployeePosition.create({ ...createBody, shop: shopId });
-  return employeePosition;
+
+  const employeePositionJson = employeePosition.toJSON();
+  notifyUpdateEmployeePosition({
+    employeePosition: employeePositionJson,
+    type: EventActionType.CREATE,
+  });
+  return employeePositionJson;
 };
 
 const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody }) => {
@@ -76,11 +110,24 @@ const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody }
     { new: true }
   );
   throwBadRequest(!employeePosition, 'Không tìm thấy vị trí nhân viên');
-  return employeePosition;
+
+  const employeePositionJson = employeePosition.toJSON();
+  notifyUpdateEmployeePosition({
+    employeePosition: employeePositionJson,
+    type: EventActionType.UPDATE,
+  });
+  return employeePositionJson;
 };
 
 const deleteEmployeePosition = async ({ shopId, employeePositionId }) => {
-  await EmployeePosition.deleteOne({ _id: employeePositionId, shop: shopId });
+  const employeePosition = await EmployeePosition.findOneAndDelete({ _id: employeePositionId, shop: shopId });
+
+  const employeePositionJson = employeePosition.toJSON();
+  notifyUpdateEmployeePosition({
+    employeePosition: employeePositionJson,
+    type: EventActionType.DELETE,
+  });
+  return employeePositionJson;
 };
 
 const getAllPermissionTypes = async () => {

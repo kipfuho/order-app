@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const sharp = require('sharp');
 const AWS = require('@aws-sdk/client-s3');
+const axios = require('axios');
 const logger = require('../config/logger');
 const config = require('../config/config');
 const { ALLOWED_IMAGE_MIME_TYPES, MAX_FILE_SIZE } = require('./constant');
@@ -86,8 +87,37 @@ const deleteObjectFromS3 = async (key) => {
   }
 };
 
+const publishAppSyncEvents = async ({ channel, events }) => {
+  try {
+    const response = await axios.post(`${config.aws.appsyncHttp}/event`, {
+      headers: {
+        'x-api-key': config.aws.appsyncApiKey,
+      },
+      data: {
+        channel,
+        events: _.map(events, (e) => JSON.stringify(e)),
+      },
+    });
+
+    logger.debug('AppSync event published successfully:', response.data);
+
+    return true;
+  } catch (error) {
+    logger.error('Error publishing AppSync event:', error);
+  }
+};
+
+const publishSingleAppSyncEvent = async ({ channel, event }) => {
+  return publishAppSyncEvents({
+    channel,
+    events: [event],
+  });
+};
+
 module.exports = {
   getS3ObjectKey,
   uploadFileBufferToS3,
   deleteObjectFromS3,
+  publishAppSyncEvents,
+  publishSingleAppSyncEvent,
 };

@@ -9,9 +9,11 @@ const {
   getRoundDishPrice,
   getRoundDiscountAmount,
   createSearchByDateOptionWithShopTimezone,
+  getStringId,
 } = require('../../utils/common');
 const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
+const { notifyOrderSessionPayment } = require('../../utils/awsUtils/appsync.utils');
 
 const createOrder = async ({ shopId, requestBody }) => {
   const { tableId, orderSessionId, dishOrders } = requestBody;
@@ -164,7 +166,7 @@ const payOrderSession = async ({ shopId, requestBody }) => {
 
   const updatedOrderSession = await orderUtilService.updateOrderSession({
     orderSessionId,
-    shopId,
+    shopId: getStringId({ object: orderSessionJson, key: 'shop' }),
     updateBody: {
       $set: {
         status: OrderSessionStatus.paid,
@@ -173,6 +175,8 @@ const payOrderSession = async ({ shopId, requestBody }) => {
       $unset: {},
     },
   });
+
+  await notifyOrderSessionPayment({ orderSession: updatedOrderSession });
 
   return updatedOrderSession;
 };

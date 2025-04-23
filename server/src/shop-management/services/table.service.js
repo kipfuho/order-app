@@ -7,6 +7,7 @@ const {
 } = require('../../metadata/tableMetadata.service');
 const { TablePosition, Table } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
+const { notifyUpdateTable, EventActionType, notifyUpdateTablePosition } = require('../../utils/awsUtils/appsync.utils');
 
 const getTable = async ({ shopId, tableId }) => {
   const table = await getTableFromCache({
@@ -33,18 +34,35 @@ const createTable = async ({ shopId, createBody }) => {
     _.find(tables, (table) => table.name === createBody.name && table.position === createBody.position),
     'Bàn đã tồn tại'
   );
+
   const table = await Table.create({ ...createBody, shop: shopId });
-  return table;
+  await table.populate('position');
+  const tableJson = table.toJSON();
+  notifyUpdateTable({ table: tableJson, type: EventActionType.CREATE });
+  return tableJson;
 };
 
 const updateTable = async ({ shopId, tableId, updateBody }) => {
   const table = await Table.findOneAndUpdate({ _id: tableId, shop: shopId }, { $set: updateBody }, { new: true });
   throwBadRequest(!table, 'Không tìm thấy bàn');
-  return table;
+
+  await table.populate('position');
+  const tableJson = table.toJSON();
+  notifyUpdateTable({ table: tableJson, type: EventActionType.UPDATE });
+  return tableJson;
 };
 
 const deleteTable = async ({ shopId, tableId }) => {
-  await Table.deleteOne({ _id: tableId, shop: shopId });
+  const table = await Table.findOneAndDelete({ _id: tableId, shop: shopId });
+  throwBadRequest(!table, 'Không tìm thấy bàn');
+
+  await table.populate('position');
+  const tableJson = table.toJSON();
+  notifyUpdateTable({
+    table: tableJson,
+    type: EventActionType.DELETE,
+  });
+  return tableJson;
 };
 
 const getTablePosition = async ({ shopId, tablePositionId }) => {
@@ -69,7 +87,10 @@ const createTablePosition = async ({ shopId, createBody }) => {
     ...createBody,
     shop: shopId,
   });
-  return tablePosition;
+
+  const tablePositionJson = tablePosition.toJSON();
+  notifyUpdateTablePosition({ tablePosition: tablePositionJson, type: EventActionType.CREATE });
+  return tablePositionJson;
 };
 
 const updateTablePosition = async ({ shopId, tablePositionId, updateBody }) => {
@@ -84,11 +105,22 @@ const updateTablePosition = async ({ shopId, tablePositionId, updateBody }) => {
     { new: true }
   );
   throwBadRequest(!tablePosition, 'Không tìm thấy vị trí bàn');
-  return tablePosition;
+
+  const tablePositionJson = tablePosition.toJSON();
+  notifyUpdateTablePosition({ tablePosition: tablePositionJson, type: EventActionType.UPDATE });
+  return tablePositionJson;
 };
 
 const deleteTablePosition = async ({ shopId, tablePositionId }) => {
-  await TablePosition.deleteOne({ _id: tablePositionId, shop: shopId });
+  const tablePosition = await TablePosition.findOneAndDelete({ _id: tablePositionId, shop: shopId });
+  throwBadRequest(!tablePosition, 'Không tìm thấy vị trí bàn');
+
+  const tablePositionJson = tablePosition.toJSON();
+  notifyUpdateTablePosition({
+    tablePosition: tablePositionJson,
+    type: EventActionType.UPDATE,
+  });
+  return tablePositionJson;
 };
 
 module.exports = {
