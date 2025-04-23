@@ -4,7 +4,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { TableDepartmentPermissions, CashierDepartmentPermissions, PermissionType, Status } = require('../../utils/constant');
 const { getShopFromCache } = require('../../metadata/shopMetadata.service');
-const { notifyUpdateShop, EventActionType } = require('../../utils/awsUtils/appsync.utils');
+const { notifyUpdateShop, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 
 const getShop = async (shopId) => {
   const shop = await getShopFromCache({ shopId });

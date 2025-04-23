@@ -13,7 +13,7 @@ const {
 } = require('../../utils/common');
 const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
-const { notifyOrderSessionPayment } = require('../../utils/awsUtils/appsync.utils');
+const { notifyOrderSessionPayment } = require('../../utils/awsUtils/appSync.utils');
 
 const createOrder = async ({ shopId, requestBody }) => {
   const { tableId, orderSessionId, dishOrders } = requestBody;
