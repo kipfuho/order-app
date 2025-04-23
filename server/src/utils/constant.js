@@ -56,6 +56,7 @@ const DiscountValueType = {
 const PaymentMethod = {
   CASH: 'CASH',
   BANK_TRANSFER: 'BANK_TRANSFER',
+  VNPAY: 'VNPAY',
 };
 
 const PermissionType = {

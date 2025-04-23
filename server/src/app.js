@@ -6,6 +6,7 @@ const compression = require('compression');
 const cors = require('cors');
 const passport = require('passport');
 const httpStatus = require('http-status');
+const path = require('path');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
 const { jwtStrategy } = require('./config/passport');
@@ -57,6 +58,25 @@ if (config.env === 'production') {
 app.use('/v1', routes);
 
 app.get('/', (req, res) => res.send('Express on Vercel'));
+
+// serve static files
+const staticFolder = path.join(__dirname, 'static');
+
+app.get('/payment/success', function (_, res) {
+  res.sendFile(`${staticFolder}/payment_success.html`, function (err) {
+    if (err) {
+      res.status(500).send(err);
+    }
+  });
+});
+
+app.get('/payment/failed', function (_, res) {
+  res.sendFile(`${staticFolder}/payment_failed.html`, function (err) {
+    if (err) {
+      res.status(500).send(err);
+    }
+  });
+});
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
