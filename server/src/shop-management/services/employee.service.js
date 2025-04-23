@@ -19,7 +19,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 
 const getEmployee = async ({ shopId, employeeId }) => {
   const employee = await getEmployeeFromCache({ employeeId, shopId });
-  throwBadRequest(!employee, 'Không tìm thấy nhân viên');
+  throwBadRequest(!employee, getMessageByLocale({ key: 'employee.notFound' }));
   return employee;
 };
 
@@ -57,7 +57,7 @@ const createEmployee = async ({ shopId, createBody }) => {
 
 const updateEmployee = async ({ shopId, employeeId, updateBody }) => {
   const employee = await Employee.findOneAndUpdate({ _id: employeeId, shop: shopId }, { $set: updateBody }, { new: true });
-  throwBadRequest(!employee, 'Không tìm thấy nhân viên');
+  throwBadRequest(!employee, getMessageByLocale({ key: 'employee.notFound' }));
 
   await employee.populate('user').populate('position').populate('department');
   const employeeJson = employee.toJSON();
@@ -70,7 +70,7 @@ const updateEmployee = async ({ shopId, employeeId, updateBody }) => {
 
 const deleteEmployee = async ({ shopId, employeeId }) => {
   const employee = await Employee.findOneAndDelete({ _id: employeeId, shop: shopId });
-  throwBadRequest(!employee, 'Không tìm thấy nhân viên');
+  throwBadRequest(!employee, getMessageByLocale({ key: 'employee.notFound' }));
 
   await employee.populate('user').populate('position').populate('department');
   const employeeJson = employee.toJSON();
@@ -83,7 +83,7 @@ const deleteEmployee = async ({ shopId, employeeId }) => {
 
 const getEmployeePosition = async ({ shopId, employeePositionId }) => {
   const employeePosition = await getEmployeePositionFromCache({ employeePositionId, shopId });
-  throwBadRequest(!employeePosition, 'Không tìm thấy vị trí nhân viên');
+  throwBadRequest(!employeePosition, getMessageByLocale({ key: 'employeePosition.notFound' }));
   return employeePosition;
 };
 
@@ -109,7 +109,7 @@ const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody }
     { $set: updateBody },
     { new: true }
   );
-  throwBadRequest(!employeePosition, 'Không tìm thấy vị trí nhân viên');
+  throwBadRequest(!employeePosition, getMessageByLocale({ key: 'employeePosition.notFound' }));
 
   const employeePositionJson = employeePosition.toJSON();
   notifyUpdateEmployeePosition({

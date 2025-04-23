@@ -8,7 +8,7 @@ const { notifyUpdateShop, EventActionType } = require('../../utils/awsUtils/apps
 
 const getShop = async (shopId) => {
   const shop = await getShopFromCache({ shopId });
-  throwBadRequest(!shop, 'Không tìm thấy nhà hàng');
+  throwBadRequest(!shop, getMessageByLocale({ key: 'shop.notFound' }));
   return shop;
 };
 
@@ -79,7 +79,7 @@ const createShop = async ({ createBody, ownerUserId }) => {
 
 const updateShop = async ({ shopId, updateBody }) => {
   const shop = await Shop.findByIdAndUpdate(shopId, { $set: updateBody }, { new: true });
-  throwBadRequest(!shop, 'Không tìm thấy nhà hàng');
+  throwBadRequest(!shop, getMessageByLocale({ key: 'shop.notFound' }));
 
   const shopJson = shop.toJSON();
   notifyUpdateShop({ shop: shopJson, action: EventActionType.UPDATE });

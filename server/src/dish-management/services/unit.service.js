@@ -1,10 +1,11 @@
 const { Unit } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getUnitFromCache, getUnitsFromCache } = require('../../metadata/unitMetadata.service');
+const { getMessageByLocale } = require('../../locale');
 
 const getUnit = async ({ shopId, unitId }) => {
   const unit = await getUnitFromCache({ shopId, unitId });
-  throwBadRequest(!unit, 'Không tìm thấy đơn vị');
+  throwBadRequest(!unit, getMessageByLocale({ key: 'unit.notFound' }));
   return unit;
 };
 
@@ -30,7 +31,7 @@ const updateUnit = async ({ shopId, unitId, updateBody }) => {
   // eslint-disable-next-line no-param-reassign
   updateBody.shop = shopId;
   const unit = await Unit.findByIdAndUpdate({ unitId, shop: shopId }, { $set: updateBody }, { new: true });
-  throwBadRequest(!unit, 'Không tìm thấy đơn vị');
+  throwBadRequest(!unit, getMessageByLocale({ key: 'unit.notFound' }));
   return unit;
 };
 

@@ -1,3 +1,4 @@
+const { getMessageByLocale } = require('../../locale');
 const { getDepartmentFromCache, getDepartmentsFromCache } = require('../../metadata/departmentMetadata.service');
 const { Department } = require('../../models');
 const { notifyUpdateDepartment, EventActionType } = require('../../utils/awsUtils/appsync.utils');
@@ -5,7 +6,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 
 const getDepartment = async ({ shopId, departmentId }) => {
   const department = await getDepartmentFromCache({ departmentId, shopId });
-  throwBadRequest(!department, 'Không tìm thấy bộ phận');
+  throwBadRequest(!department, getMessageByLocale({ key: 'department.notFound' }));
   return department;
 };
 
@@ -31,7 +32,7 @@ const updateDepartment = async ({ shopId, departmentId, updateBody }) => {
     { $set: updateBody },
     { new: true }
   );
-  throwBadRequest(!department, 'Không tìm thấy bộ phận');
+  throwBadRequest(!department, getMessageByLocale({ key: 'department.notFound' }));
 
   const departmentJson = department.toJSON();
   await notifyUpdateDepartment({

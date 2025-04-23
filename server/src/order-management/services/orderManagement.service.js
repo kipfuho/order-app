@@ -15,9 +15,14 @@ const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const { notifyOrderSessionPayment } = require('../../utils/awsUtils/appsync.utils');
 
+const _validateBeforeCreateOrder = (orderSession) => {
+  throwBadRequest(orderSession.status === OrderSessionStatus.paid, getMessageByLocale({ key: 'orderSession.alreadyPaid' }));
+};
+
 const createOrder = async ({ shopId, requestBody }) => {
   const { tableId, orderSessionId, dishOrders } = requestBody;
   const orderSession = await orderUtilService.getOrCreateOrderSession({ orderSessionId, tableId, shopId });
+  _validateBeforeCreateOrder(orderSession);
   const newOrder = await orderUtilService.createNewOrder({ tableId, shopId, orderSession, dishOrders });
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSession.id);
   orderSessionJson.orders = _.filter(orderSessionJson.orders, (order) => order.id === newOrder.id);
@@ -153,9 +158,10 @@ const getOrderSessionDetail = async ({ shopId, orderSessionId }) => {
 };
 
 const _validateBeforePayment = (orderSession, paymentDetails) => {
+  throwBadRequest(orderSession.status === OrderSessionStatus.paid, getMessageByLocale({ key: 'orderSession.alreadyPaid' }));
   throwBadRequest(
     orderSession.paymentAmount > _.sumBy(paymentDetails, 'paymentAmount'),
-    'Số tiền thanh toán không khớp số tiền đơn'
+    getMessageByLocale({ key: 'orderSession.paymentAmountNotMatch' })
   );
 };
 
@@ -260,7 +266,7 @@ const checkoutCart = async ({ customerId, shopId, requestBody }) => {
   const table = await getTableFromCache({ shopId, tableId });
   throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
   const cart = await orderUtilService.getCart({ shopId, customerId });
-  throwBadRequest(_.isEmpty(cart.cartItems), 'Giỏ hàng rỗng');
+  throwBadRequest(_.isEmpty(cart.cartItems), getMessageByLocale({ key: 'cart.empty' }));
 
   // Nếu bàn cần xác nhận của nhân viên thì không gắn order session
   if (table.needApprovalWhenCustomerOrder) {

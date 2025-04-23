@@ -1,11 +1,11 @@
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
-const httpStatus = require('http-status');
 const config = require('../../config/config');
 const { Token } = require('../../models');
-const ApiError = require('../../utils/ApiError');
 const { tokenTypes } = require('../../config/tokens');
 const { getUserFromDatabase } = require('../../metadata/userMetadata.service');
+const { throwBadRequest } = require('../../utils/errorHandling');
+const { getMessageByLocale } = require('../../locale');
 
 /**
  * Generate token
@@ -95,9 +95,7 @@ const generateAuthTokens = async (user, isCustomer = false) => {
  */
 const generateResetPasswordToken = async (email) => {
   const user = await getUserFromDatabase({ email });
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'No users found with this email');
-  }
+  throwBadRequest(!user, getMessageByLocale({ key: 'user.notFound' }));
   const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
   const resetPasswordToken = generateToken(user.id, expires, tokenTypes.RESET_PASSWORD);
   await saveToken(resetPasswordToken, user.id, expires, tokenTypes.RESET_PASSWORD);

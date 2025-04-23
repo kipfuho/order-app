@@ -9,10 +9,11 @@ const { refineFileNameForUploading } = require('../../utils/common');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
 const { notifyUpdateDish, EventActionType } = require('../../utils/awsUtils/appsync.utils');
+const { getMessageByLocale } = require('../../locale');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
-  throwBadRequest(!dish, 'Không tìm thấy món ăn');
+  throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
   return dish;
 };
 
@@ -38,7 +39,7 @@ const updateDish = async ({ shopId, dishId, updateBody }) => {
   // eslint-disable-next-line no-param-reassign
   updateBody.shop = shopId;
   const dish = await Dish.findOneAndUpdate({ _id: dishId, shop: shopId }, { $set: updateBody }, { new: true });
-  throwBadRequest(!dish, 'Không tìm thấy món ăn');
+  throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
   const dishJson = dish.toJSON();
   dishJson.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.category });
 
@@ -58,7 +59,7 @@ const updateDish = async ({ shopId, dishId, updateBody }) => {
 
 const deleteDish = async ({ shopId, dishId }) => {
   const dish = await Dish.findOneAndDelete({ _id: dishId, shopId });
-  throwBadRequest(!dish, 'Không tìm thấy món ăn');
+  throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
 
   const dishJson = dish.toJSON();
   notifyUpdateDish({
