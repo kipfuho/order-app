@@ -2,6 +2,7 @@ const _ = require('lodash');
 const { getDishCategoryFromCache, getDishCategoriesFromCache } = require('../../metadata/dishMetadata.service');
 const { DishCategory } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
+const { notifyUpdateDishCategory, EventActionType } = require('../../utils/awsUtils/appsync.utils');
 
 const getDishCategory = async ({ shopId, dishCategoryId }) => {
   const dishCategory = await getDishCategoryFromCache({ shopId, dishCategoryId });
@@ -22,7 +23,12 @@ const createDishCategory = async ({ shopId, createBody }) => {
     'Danh mục đã tồn tại'
   );
   const dishCategory = await DishCategory.create({ ...createBody, shop: shopId });
-  return dishCategory;
+  const dishCategoryJson = dishCategory.toJSON();
+  notifyUpdateDishCategory({
+    action: EventActionType.CREATE,
+    dishCategory: dishCategoryJson,
+  });
+  return dishCategoryJson;
 };
 
 const updateDishCategory = async ({ shopId, dishCategoryId, updateBody }) => {
@@ -37,11 +43,25 @@ const updateDishCategory = async ({ shopId, dishCategoryId, updateBody }) => {
     { new: true }
   );
   throwBadRequest(!dishCategory, 'Không tìm thấy danh mục');
-  return dishCategory;
+
+  const dishCategoryJson = dishCategory.toJSON();
+  notifyUpdateDishCategory({
+    action: EventActionType.CREATE,
+    dishCategory: dishCategoryJson,
+  });
+  return dishCategoryJson;
 };
 
 const deleteDishCategory = async ({ shopId, dishCategoryId }) => {
-  await DishCategory.deleteOne({ _id: dishCategoryId, shop: shopId });
+  const dishCategory = await DishCategory.findOneAndDelete({ _id: dishCategoryId, shop: shopId });
+  throwBadRequest(!dishCategory, 'Không tìm thấy danh mục');
+
+  const dishCategoryJson = dishCategory.toJSON();
+  notifyUpdateDishCategory({
+    action: EventActionType.CREATE,
+    dishCategory: dishCategoryJson,
+  });
+  return dishCategoryJson;
 };
 
 module.exports = {

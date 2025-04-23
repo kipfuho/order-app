@@ -13,7 +13,7 @@ const {
   notifyUpdateEmployee,
   EventActionType,
   notifyUpdateEmployeePosition,
-} = require('../../utils/awsUtils/appSync.utils');
+} = require('../../utils/awsUtils/appsync.utils');
 const { PermissionType } = require('../../utils/constant');
 const { throwBadRequest } = require('../../utils/errorHandling');
 
@@ -50,7 +50,7 @@ const createEmployee = async ({ shopId, createBody }) => {
   const employeeJson = employee.toJSON();
   notifyUpdateEmployee({
     employee: employeeJson,
-    type: EventActionType.CREATE,
+    action: EventActionType.CREATE,
   });
   return employeeJson;
 };
@@ -63,7 +63,7 @@ const updateEmployee = async ({ shopId, employeeId, updateBody }) => {
   const employeeJson = employee.toJSON();
   notifyUpdateEmployee({
     employee: employeeJson,
-    type: EventActionType.UPDATE,
+    action: EventActionType.UPDATE,
   });
   return employeeJson;
 };
@@ -76,7 +76,7 @@ const deleteEmployee = async ({ shopId, employeeId }) => {
   const employeeJson = employee.toJSON();
   notifyUpdateEmployee({
     employee: employeeJson,
-    type: EventActionType.DELETE,
+    action: EventActionType.DELETE,
   });
   return employeeJson;
 };
@@ -98,7 +98,7 @@ const createEmployeePosition = async ({ shopId, createBody }) => {
   const employeePositionJson = employeePosition.toJSON();
   notifyUpdateEmployeePosition({
     employeePosition: employeePositionJson,
-    type: EventActionType.CREATE,
+    action: EventActionType.CREATE,
   });
   return employeePositionJson;
 };
@@ -114,7 +114,7 @@ const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody }
   const employeePositionJson = employeePosition.toJSON();
   notifyUpdateEmployeePosition({
     employeePosition: employeePositionJson,
-    type: EventActionType.UPDATE,
+    action: EventActionType.UPDATE,
   });
   return employeePositionJson;
 };
@@ -125,7 +125,7 @@ const deleteEmployeePosition = async ({ shopId, employeePositionId }) => {
   const employeePositionJson = employeePosition.toJSON();
   notifyUpdateEmployeePosition({
     employeePosition: employeePositionJson,
-    type: EventActionType.DELETE,
+    action: EventActionType.DELETE,
   });
   return employeePositionJson;
 };

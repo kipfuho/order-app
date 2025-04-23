@@ -8,6 +8,7 @@ const { DishTypes } = require('../../utils/constant');
 const { refineFileNameForUploading } = require('../../utils/common');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
+const { notifyUpdateDish, EventActionType } = require('../../utils/awsUtils/appsync.utils');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -26,6 +27,10 @@ const createDish = async ({ shopId, createBody }) => {
   const dish = await Dish.create(createBody);
   const dishJson = dish.toJSON();
   dishJson.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.category });
+  notifyUpdateDish({
+    action: EventActionType.CREATE,
+    dish: dishJson,
+  });
   return dishJson;
 };
 
@@ -44,11 +49,23 @@ const updateDish = async ({ shopId, dishId, updateBody }) => {
       keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
+  notifyUpdateDish({
+    action: EventActionType.UPDATE,
+    dish: dishJson,
+  });
   return dishJson;
 };
 
 const deleteDish = async ({ shopId, dishId }) => {
-  await Dish.deleteOne({ _id: dishId, shopId });
+  const dish = await Dish.findOneAndDelete({ _id: dishId, shopId });
+  throwBadRequest(!dish, 'Không tìm thấy món ăn');
+
+  const dishJson = dish.toJSON();
+  notifyUpdateDish({
+    action: EventActionType.DELETE,
+    dish: dishJson,
+  });
+  return dishJson;
 };
 
 // eslint-disable-next-line no-unused-vars

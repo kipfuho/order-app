@@ -1,6 +1,6 @@
 const { getDepartmentFromCache, getDepartmentsFromCache } = require('../../metadata/departmentMetadata.service');
 const { Department } = require('../../models');
-const { notifyUpdateDepartment, EventActionType } = require('../../utils/awsUtils/appSync.utils');
+const { notifyUpdateDepartment, EventActionType } = require('../../utils/awsUtils/appsync.utils');
 const { throwBadRequest } = require('../../utils/errorHandling');
 
 const getDepartment = async ({ shopId, departmentId }) => {
@@ -20,7 +20,7 @@ const createDepartment = async ({ shopId, createBody }) => {
   const departmentJson = department.toJSON();
   await notifyUpdateDepartment({
     department: departmentJson,
-    type: EventActionType.CREATE,
+    action: EventActionType.CREATE,
   });
   return departmentJson;
 };
@@ -36,7 +36,7 @@ const updateDepartment = async ({ shopId, departmentId, updateBody }) => {
   const departmentJson = department.toJSON();
   await notifyUpdateDepartment({
     department: departmentJson,
-    type: EventActionType.UPDATE,
+    action: EventActionType.UPDATE,
   });
   return departmentJson;
 };
@@ -47,7 +47,7 @@ const deleteDepartment = async ({ shopId, departmentId }) => {
   const departmentJson = department.toJSON();
   await notifyUpdateDepartment({
     department: departmentJson,
-    type: EventActionType.DELETE,
+    action: EventActionType.DELETE,
   });
   return departmentJson;
 };

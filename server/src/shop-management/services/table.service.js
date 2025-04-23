@@ -7,7 +7,7 @@ const {
 } = require('../../metadata/tableMetadata.service');
 const { TablePosition, Table } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
-const { notifyUpdateTable, EventActionType, notifyUpdateTablePosition } = require('../../utils/awsUtils/appSync.utils');
+const { notifyUpdateTable, EventActionType, notifyUpdateTablePosition } = require('../../utils/awsUtils/appsync.utils');
 
 const getTable = async ({ shopId, tableId }) => {
   const table = await getTableFromCache({
@@ -38,7 +38,7 @@ const createTable = async ({ shopId, createBody }) => {
   const table = await Table.create({ ...createBody, shop: shopId });
   await table.populate('position');
   const tableJson = table.toJSON();
-  notifyUpdateTable({ table: tableJson, type: EventActionType.CREATE });
+  notifyUpdateTable({ table: tableJson, action: EventActionType.CREATE });
   return tableJson;
 };
 
@@ -48,7 +48,7 @@ const updateTable = async ({ shopId, tableId, updateBody }) => {
 
   await table.populate('position');
   const tableJson = table.toJSON();
-  notifyUpdateTable({ table: tableJson, type: EventActionType.UPDATE });
+  notifyUpdateTable({ table: tableJson, action: EventActionType.UPDATE });
   return tableJson;
 };
 
@@ -60,7 +60,7 @@ const deleteTable = async ({ shopId, tableId }) => {
   const tableJson = table.toJSON();
   notifyUpdateTable({
     table: tableJson,
-    type: EventActionType.DELETE,
+    action: EventActionType.DELETE,
   });
   return tableJson;
 };
@@ -89,7 +89,7 @@ const createTablePosition = async ({ shopId, createBody }) => {
   });
 
   const tablePositionJson = tablePosition.toJSON();
-  notifyUpdateTablePosition({ tablePosition: tablePositionJson, type: EventActionType.CREATE });
+  notifyUpdateTablePosition({ tablePosition: tablePositionJson, action: EventActionType.CREATE });
   return tablePositionJson;
 };
 
@@ -107,7 +107,7 @@ const updateTablePosition = async ({ shopId, tablePositionId, updateBody }) => {
   throwBadRequest(!tablePosition, 'Không tìm thấy vị trí bàn');
 
   const tablePositionJson = tablePosition.toJSON();
-  notifyUpdateTablePosition({ tablePosition: tablePositionJson, type: EventActionType.UPDATE });
+  notifyUpdateTablePosition({ tablePosition: tablePositionJson, action: EventActionType.UPDATE });
   return tablePositionJson;
 };
 
@@ -118,7 +118,7 @@ const deleteTablePosition = async ({ shopId, tablePositionId }) => {
   const tablePositionJson = tablePosition.toJSON();
   notifyUpdateTablePosition({
     tablePosition: tablePositionJson,
-    type: EventActionType.UPDATE,
+    action: EventActionType.UPDATE,
   });
   return tablePositionJson;
 };
