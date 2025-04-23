@@ -52,6 +52,7 @@
   ],
   "dependencies": {
     "@aws-sdk/client-s3": "^3.772.0",
+    "axios": "^1.8.4",
     "bcryptjs": "^2.4.3",
     "cls-hooked": "^4.2.2",
     "compression": "^1.7.4",
@@ -84,6 +85,7 @@
     "swagger-ui-express": "^4.1.6",
     "tough-cookie": "^4.1.4",
     "validator": "^13.0.0",
+    "vnpay": "^2.2.0",
     "winston": "^3.2.1",
     "xss-clean": "^0.1.1"
   },
