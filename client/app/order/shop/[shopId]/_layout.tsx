@@ -3,12 +3,16 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Surface, Text, useTheme } from "react-native-paper";
 import { styles } from "../../../_layout";
-import { connectAppSyncForShop } from "../../../../apis/aws.service";
+import {
+  AppSyncChannelType,
+  connectAppSyncForShopForCustomer,
+} from "../../../../apis/aws.service";
 import { useGetShopQuery } from "../../../../stores/apiSlices/shopApi.slice";
 import { RootState } from "../../../../stores/store";
 import { LoaderBasic } from "../../../../components/ui/Loader";
 import { useTranslation } from "react-i18next";
 import { updateShop } from "../../../../stores/customerSlice";
+import { closeAppSyncChannel } from "../../../../stores/awsSlice";
 
 export default function AppLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };
@@ -27,7 +31,11 @@ export default function AppLayout() {
     if (!shop) return;
 
     dispatch(updateShop(shop));
-    connectAppSyncForShop({ shopId: shop.id });
+    connectAppSyncForShopForCustomer({ shopId: shop.id });
+
+    return () => {
+      dispatch(closeAppSyncChannel({ type: AppSyncChannelType.CUSTOMER }));
+    };
   }, [shopId, isFetching]);
 
   if (isLoading) {

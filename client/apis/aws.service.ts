@@ -12,14 +12,15 @@ const namespace = "default";
 const useappsync = true;
 
 export const AppSyncChannel = {
-  TEST: () => `${namespace}/test`,
   SHOP: (shopId: string) => `${namespace}/shop/${shopId}`,
-  CUSTOMER: (customerId: string) => `${namespace}/customer/${customerId}`,
+  CUSTOMER: (shopId: string) => `${namespace}/shop/${shopId}/customer`,
+  ONLINE_PAYMENT: (customerId: string) => `${namespace}/payment/${customerId}`,
 };
 
 export const AppSyncChannelType = {
   SHOP: "SHOP",
   CUSTOMER: "CUSTOMER",
+  ONLINE_PAYMENT: "ONLINE_PAYMENT",
 };
 
 export const EventType = {
@@ -48,7 +49,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
     const subscription = channel.subscribe({
       next: async ({ event }) => {
         try {
-          console.log("Received event:", event);
+          console.log("Received event for shop:", event);
           const { type, data } = event;
 
           if (type === EventType.SHOP_CHANGED) {
@@ -161,4 +162,138 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
   }
 };
 
-export { connectAppSyncForShop };
+/**
+ * Kết nối đến channel shop cho khách hàng
+ */
+const connectAppSyncForShopForCustomer = async ({
+  shopId,
+}: {
+  shopId: string;
+}) => {
+  if (!useappsync) return;
+
+  try {
+    const channelId = AppSyncChannel.CUSTOMER(shopId);
+    const channel = await events.connect(channelId);
+
+    const subscription = channel.subscribe({
+      next: async ({ event }) => {
+        try {
+          console.log("Received event for customer:", event);
+          const { type, data } = event;
+
+          if (type === EventType.SHOP_CHANGED) {
+            const { action, shop } = data;
+            store.dispatch(
+              shopApiSlice.util.invalidateTags([
+                { type: "Shops", id: shop?.id },
+              ])
+            );
+            return;
+          }
+
+          if (type === EventType.TABLE_CHANGED) {
+            const { action, table } = data;
+            store.dispatch(
+              tableApiSlice.util.invalidateTags([
+                { type: "Tables", id: table?.id },
+              ])
+            );
+            return;
+          }
+
+          if (type === EventType.TABLE_POSITION_CHANGED) {
+            const { action, tablePosition } = data;
+            store.dispatch(
+              tableApiSlice.util.invalidateTags([
+                { type: "TablePositions", id: tablePosition?.id },
+              ])
+            );
+            return;
+          }
+
+          if (type === EventType.DISH_CHANGED) {
+            const { action, dish } = data;
+            store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
+            return;
+          }
+
+          if (type === EventType.DISH_CATEGORY_CHANGED) {
+            const { action, dishCategory } = data;
+            store.dispatch(
+              dishApiSlice.util.invalidateTags(["DishCategories"])
+            );
+            return;
+          }
+
+          console.log("Cannot match event type!~");
+        } catch (error) {
+          console.error("Error handling event:", error);
+        }
+      },
+      error: (err) => console.error("Subscription error:", err),
+    });
+
+    store.dispatch(
+      connectAppSyncChannel({
+        type: AppSyncChannelType.CUSTOMER,
+        channel,
+        subscription,
+      })
+    );
+  } catch (err) {
+    console.error("Connection error:", err);
+  }
+};
+
+/**
+ * Kết nối đến channel shop cho khách hàng
+ */
+const connectAppSyncForOnlinePayment = async ({
+  customerId,
+}: {
+  customerId: string;
+}) => {
+  if (!useappsync) return;
+
+  try {
+    const channelId = AppSyncChannel.ONLINE_PAYMENT(customerId);
+    const channel = await events.connect(channelId);
+
+    const subscription = channel.subscribe({
+      next: async ({ event }) => {
+        try {
+          console.log("Received event for online payment:", event);
+          const { type, data } = event;
+
+          if (type === EventType.PAYMENT_COMPLETE) {
+            const { action, shop } = data;
+
+            return;
+          }
+
+          console.log("Cannot match event type!~");
+        } catch (error) {
+          console.error("Error handling event:", error);
+        }
+      },
+      error: (err) => console.error("Subscription error:", err),
+    });
+
+    store.dispatch(
+      connectAppSyncChannel({
+        type: AppSyncChannelType.ONLINE_PAYMENT,
+        channel,
+        subscription,
+      })
+    );
+  } catch (err) {
+    console.error("Connection error:", err);
+  }
+};
+
+export {
+  connectAppSyncForShop,
+  connectAppSyncForShopForCustomer,
+  connectAppSyncForOnlinePayment,
+};
