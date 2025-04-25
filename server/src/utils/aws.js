@@ -89,15 +89,19 @@ const deleteObjectFromS3 = async (key) => {
 
 const publishAppSyncEvents = async ({ channel, events }) => {
   try {
-    const response = await axios.post(`${config.aws.appsyncHttp}/event`, {
-      headers: {
-        'x-api-key': config.aws.appsyncApiKey,
-      },
-      data: {
+    const response = await axios.post(
+      `${config.aws.appsyncHttp}/event`,
+      {
         channel,
         events: _.map(events, (e) => JSON.stringify(e)),
       },
-    });
+      {
+        headers: {
+          'x-api-key': config.aws.appsyncApiKey,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     logger.debug('AppSync event published successfully:', response.data);
 

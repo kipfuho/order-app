@@ -5,7 +5,8 @@ const { getStringId, formatOrderSessionNo } = require('../common');
 const namespace = 'default';
 
 const getShopChannel = (shopId) => `${namespace}/shop/${shopId}`;
-const getCustomerChannel = (customerId) => `${namespace}/customer/${customerId}`;
+const getCustomerChannel = (shopId) => `${namespace}/${shopId}/customer`;
+const getOnlinePaymentChannel = (customerId) => `${namespace}/payment/${customerId}`;
 
 const AppSyncEvent = {
   SHOP_CHANGED: 'SHOP_CHANGED',
@@ -34,7 +35,7 @@ const notifyOrderSessionPaymentForCustomer = async ({ orderSession }) => {
   }
 
   const { customerId } = customerInfo;
-  const channel = getCustomerChannel(customerId);
+  const channel = getOnlinePaymentChannel(customerId);
   const event = {
     type: AppSyncEvent.PAYMENT_COMPLETE,
     data: {
@@ -63,6 +64,22 @@ const notifyOrderSessionPayment = async ({ orderSession }) => {
   await notifyOrderSessionPaymentForCustomer({ orderSession });
 };
 
+const _notifyUpdateShopForCustomer = async ({ action, shop }) => {
+  if (_.isEmpty(shop)) {
+    return;
+  }
+
+  const channel = getCustomerChannel(shop.id);
+  const event = {
+    type: AppSyncEvent.SHOP_CHANGED,
+    data: {
+      action, // 'CREATE', 'UPDATE', 'DELETE'
+      shop,
+    },
+  };
+  return publishSingleAppSyncEvent({ channel, event });
+};
+
 const notifyUpdateShop = async ({ action, shop }) => {
   if (_.isEmpty(shop)) {
     return;
@@ -74,6 +91,23 @@ const notifyUpdateShop = async ({ action, shop }) => {
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       shop,
+    },
+  };
+  await publishSingleAppSyncEvent({ channel, event });
+  await _notifyUpdateShopForCustomer({ action, shop });
+};
+
+const _notifyUpdateTableForCustomer = async ({ action, table }) => {
+  if (_.isEmpty(table)) {
+    return;
+  }
+
+  const channel = getCustomerChannel(getStringId({ object: table, key: 'shop' }));
+  const event = {
+    type: AppSyncEvent.TABLE_CHANGED,
+    data: {
+      action, // 'CREATE', 'UPDATE', 'DELETE'
+      table,
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
@@ -92,7 +126,8 @@ const notifyUpdateTable = async ({ action, table }) => {
       table,
     },
   };
-  return publishSingleAppSyncEvent({ channel, event });
+  await publishSingleAppSyncEvent({ channel, event });
+  await _notifyUpdateTableForCustomer({ action, table });
 };
 
 const notifyUpdateTablePosition = async ({ action, tablePosition }) => {
@@ -111,6 +146,22 @@ const notifyUpdateTablePosition = async ({ action, tablePosition }) => {
   return publishSingleAppSyncEvent({ channel, event });
 };
 
+const _notifyUpdateDishForCustomer = async ({ action, dish }) => {
+  if (_.isEmpty(dish)) {
+    return;
+  }
+
+  const channel = getCustomerChannel(getStringId({ object: dish, key: 'shop' }));
+  const event = {
+    type: AppSyncEvent.DISH_CHANGED,
+    data: {
+      action, // 'CREATE', 'UPDATE', 'DELETE'
+      dish,
+    },
+  };
+  return publishSingleAppSyncEvent({ channel, event });
+};
+
 const notifyUpdateDish = async ({ action, dish }) => {
   if (_.isEmpty(dish)) {
     return;
@@ -122,6 +173,23 @@ const notifyUpdateDish = async ({ action, dish }) => {
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       dish,
+    },
+  };
+  await publishSingleAppSyncEvent({ channel, event });
+  await _notifyUpdateDishForCustomer({ action, dish });
+};
+
+const _notifyUpdateDishCategoryForCustomer = async ({ action, dishCategory }) => {
+  if (_.isEmpty(dishCategory)) {
+    return;
+  }
+
+  const channel = getCustomerChannel(getStringId({ object: dishCategory, key: 'shop' }));
+  const event = {
+    type: AppSyncEvent.DISH_CATEGORY_CHANGED,
+    data: {
+      action, // 'CREATE', 'UPDATE', 'DELETE'
+      dishCategory,
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
@@ -140,7 +208,8 @@ const notifyUpdateDishCategory = async ({ action, dishCategory }) => {
       dishCategory,
     },
   };
-  return publishSingleAppSyncEvent({ channel, event });
+  await publishSingleAppSyncEvent({ channel, event });
+  await _notifyUpdateDishCategoryForCustomer({ action, dishCategory });
 };
 
 const notifyUpdateEmployee = async ({ action, employee }) => {
