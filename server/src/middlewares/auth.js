@@ -7,6 +7,7 @@ const { getShopFromCache } = require('../metadata/shopMetadata.service');
 const { getEmployeeWithPermissionByUserId } = require('../metadata/employeeMetadata.service');
 const { PermissionType } = require('../utils/constant');
 const { setEmployeePermissions } = require('./clsHooked');
+const { getMessageByLocale } = require('../locale');
 
 const _verifyAdmin = (req, requiredRights) => {
   const { user } = req;
@@ -25,7 +26,7 @@ const _verifyAdmin = (req, requiredRights) => {
 const verifyCallback = (req, resolve, reject, requiredRights) => async (err, user, info) => {
   try {
     if (err || !user) {
-      return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
+      return reject(new ApiError(httpStatus.UNAUTHORIZED, getMessageByLocale({ key: 'auth.required' })));
     }
     req.user = user;
 
@@ -49,6 +50,9 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
     req.shop = shop;
 
     if (req.isCustomerRequest) {
+      if (_.includes(requiredRights, PermissionType.SHOP_APP)) {
+        return reject(new ApiError(httpStatus.FORBIDDEN, getMessageByLocale({ key: 'permission.missing' })));
+      }
       resolve();
       return;
     }
@@ -56,12 +60,12 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
     if (shop.owner.toString() !== user.id) {
       const { employee, permissions } = await getEmployeeWithPermissionByUserId({ userId: user.id, shopId });
       if (!employee) {
-        return reject(new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy nhân viên'));
+        return reject(new ApiError(httpStatus.NOT_FOUND, getMessageByLocale({ key: 'employee.notFound' })));
       }
       req.employee = employee;
       const hasPermissions = requiredRights.every((right) => permissions.includes(right));
       if (!hasPermissions) {
-        return reject(new ApiError(httpStatus.FORBIDDEN, 'Không có đủ quyền'));
+        return reject(new ApiError(httpStatus.FORBIDDEN, getMessageByLocale({ key: 'permission.missing' })));
       }
     } else {
       const permissions = Object.values(PermissionType);

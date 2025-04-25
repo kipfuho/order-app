@@ -20,6 +20,7 @@ const dishOrderSchema = new mongoose.Schema({
   paymentAmount: { type: Number }, // after discount, after tax
   status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
   returnedAt: { type: Date },
+  note: { type: String },
 });
 
 const orderSchema = new mongoose.Schema(
@@ -34,6 +35,9 @@ const orderSchema = new mongoose.Schema(
     totalQuantity: { type: Number },
     totalBeforeTaxAmount: { type: Number },
     totalAfterTaxAmount: { type: Number },
+    approvedBy: { type: mongoose.Types.ObjectId, ref: 'User' },
+    cancelledBy: { type: mongoose.Types.ObjectId, ref: 'User' },
+    status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
   },
   {
     timestamps: true,

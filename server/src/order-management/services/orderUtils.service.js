@@ -139,7 +139,15 @@ const _getCustomerInfoForCreatingOrderSession = async ({ customerId, numberOfCus
   return customerInfo;
 };
 
-const getOrCreateOrderSession = async ({ orderSessionId, tableId, shopId, customerId, numberOfCustomer, isCustomerApp }) => {
+const getOrCreateOrderSession = async ({
+  orderSessionId,
+  tableId,
+  shopId,
+  customerId,
+  numberOfCustomer,
+  isCustomerApp,
+  isApproveOrder,
+}) => {
   const table = await getTableFromCache({ shopId, tableId });
   throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
 
@@ -161,7 +169,7 @@ const getOrCreateOrderSession = async ({ orderSessionId, tableId, shopId, custom
     }
   }
 
-  if (isCustomerApp) {
+  if (isCustomerApp || isApproveOrder) {
     const orderSession = await getActiveOrderSessionByTable({ tableId, shopId, customerId });
     if (orderSession) {
       return orderSession;

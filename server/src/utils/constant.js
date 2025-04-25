@@ -60,6 +60,7 @@ const PaymentMethod = {
 };
 
 const PermissionType = {
+  SHOP_APP: 'shop_app',
   VIEW_SHOP: 'shop_view_shop',
   UPDATE_SHOP: 'shop_update_shop',
   CREATE_EMPLOYEE: 'shop_create_employee',
@@ -69,8 +70,7 @@ const PermissionType = {
   UPDATE_ORDER: 'shop_update_order',
   CANCEL_ORDER: 'shop_cancel_order_session',
   CANCEL_ORDER_PAID_STATUS: 'shop_cancel_paid_status',
-  INCREASE_DISH_ORDER: 'shop_increase_dishOrder_quantity',
-  DECREASE_DISH_ORDER: 'shop_decrease_dishOrder_quantity',
+  CHANGE_DISH_ORDER: 'shop_increase_dishOrder_quantity',
   PAYMENT_ORDER: 'shop_payment_order',
   APPROVE_ORDER: 'shop_approve_order',
   VIEW_ORDER: 'shop_view_order',
@@ -88,15 +88,13 @@ const TableDepartmentPermissions = [
   PermissionType.VIEW_MENU,
   PermissionType.UPDATE_MENU,
   PermissionType.CANCEL_ORDER,
-  PermissionType.INCREASE_DISH_ORDER,
-  PermissionType.DECREASE_DISH_ORDER,
+  PermissionType.CHANGE_DISH_ORDER,
 ];
 
 const CashierDepartmentPermissions = [
   PermissionType.UPDATE_ORDER,
   PermissionType.CANCEL_ORDER,
-  PermissionType.INCREASE_DISH_ORDER,
-  PermissionType.DECREASE_DISH_ORDER,
+  PermissionType.CHANGE_DISH_ORDER,
   PermissionType.APPROVE_ORDER,
   PermissionType.VIEW_ORDER,
   PermissionType.PAYMENT_ORDER,

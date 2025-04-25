@@ -3,7 +3,7 @@ const { Order, OrderSession, Cart } = require('../../models');
 const orderUtilService = require('./orderUtils.service');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
-const { OrderSessionStatus, OrderSessionDiscountType, DiscountValueType } = require('../../utils/constant');
+const { OrderSessionStatus, OrderSessionDiscountType, DiscountValueType, Status } = require('../../utils/constant');
 const { getTablesFromCache, getTableFromCache } = require('../../metadata/tableMetadata.service');
 const {
   getRoundDishPrice,
@@ -14,6 +14,7 @@ const {
 const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const { notifyOrderSessionPayment } = require('../../utils/awsUtils/appsync.utils');
+const { getCustomerFromCache } = require('../../metadata/customerMetadata.service');
 
 const _validateBeforeCreateOrder = (orderSession) => {
   throwBadRequest(orderSession.status === OrderSessionStatus.paid, getMessageByLocale({ key: 'orderSession.alreadyPaid' }));
@@ -396,7 +397,7 @@ const getTableActiveOrderSessions = async ({ shopId, tableId }) => {
     tables: tableId,
     status: { $in: orderUtilService.getActiveOrderSessionStatus() },
   });
-  const allOrders = await Order.find({ orderSessionId: { $in: _.map(activeOrderSessions, '_id') } });
+  const allOrders = await Order.find({ orderSessionId: { $in: _.map(activeOrderSessions, '_id') }, status: Status.enabled });
   const shop = await getShopFromCache({ shopId });
   const tables = await getTablesFromCache({ shopId });
   const tableById = _.keyBy(tables, 'id');
@@ -432,6 +433,89 @@ const getCheckoutCartHistory = async ({ customerId, shopId }) => {
   return orderHistories;
 };
 
+const getOrderNeedApproval = async ({ shopId }) => {
+  const orders = await Order.find({
+    shop: shopId,
+    orderSessionId: null,
+  });
+
+  const orderNeedApprovalDetails = Promise.all(
+    _.map(orders, async (order) => {
+      const orderJson = order.toJSON();
+      const customer = await getCustomerFromCache({ customerId: orderJson.customerId });
+      orderJson.customer = customer;
+      return orderJson;
+    })
+  );
+  return orderNeedApprovalDetails;
+};
+
+// cập nhật đơn hàng chưa xác nhận
+const updateUnconfirmedOrder = async ({ shopId, orderId, updateDishOrders }) => {
+  const order = await Order.findOne({ _id: orderId, shop: shopId });
+  throwBadRequest(!order, getMessageByLocale({ key: 'order.notFound' }));
+  throwBadRequest(order.status === Status.disabled, getMessageByLocale({ key: 'order.disabled' }));
+
+  const orderJson = order.toJSON();
+  const updateDishOrderById = _.keyBy(updateDishOrders, 'dishOrderId');
+  const dishOrders = _.map(orderJson.dishOrders, (dishOrder) => {
+    const updateDishOrder = updateDishOrderById[dishOrder.id];
+    if (updateDishOrder) {
+      return {
+        ...dishOrder,
+        quantity: updateDishOrder.quantity,
+        note: updateDishOrder.note,
+      };
+    }
+  });
+
+  const updatedOrder = await Order.findOneAndUpdate(
+    {
+      _id: orderId,
+      shop: shopId,
+    },
+    { $set: { dishOrders } },
+    { new: true }
+  );
+  return updatedOrder.toJSON();
+};
+
+const cancelUnconfirmedOrder = async ({ userId, shopId, orderId }) => {
+  const order = await Order.findOneAndUpdate(
+    {
+      _id: orderId,
+      shop: shopId,
+    },
+    { status: Status.disabled, cancelledBy: userId },
+    { new: true }
+  );
+  throwBadRequest(!order, getMessageByLocale({ key: 'order.notFound' }));
+  return order.toJSON();
+};
+
+const approveUnconfirmedOrder = async ({ userId, shopId, orderId, orderSessionId }) => {
+  const order = await Order.findOne({ _id: orderId, shop: shopId });
+  throwBadRequest(!order, getMessageByLocale({ key: 'order.notFound' }));
+  throwBadRequest(order.status === Status.disabled, getMessageByLocale({ key: 'order.disabled' }));
+
+  const orderSession = await orderUtilService.getOrCreateOrderSession({
+    customerId: order.customerId,
+    tableId: order.table,
+    shopId,
+    orderSessionId,
+    isApproveOrder: true,
+  });
+  const updatedOrder = await Order.findOneAndUpdate(
+    {
+      _id: orderId,
+      shop: shopId,
+    },
+    { $set: { approvedBy: userId, orderSessionId: orderSession.id } },
+    { new: true }
+  );
+  return updatedOrder.toJSON();
+};
+
 module.exports = {
   createOrder,
   changeDishQuantity,
@@ -450,4 +534,8 @@ module.exports = {
   discountDishOrder,
   discountOrderSession,
   getCheckoutCartHistory,
+  getOrderNeedApproval,
+  updateUnconfirmedOrder,
+  cancelUnconfirmedOrder,
+  approveUnconfirmedOrder,
 };

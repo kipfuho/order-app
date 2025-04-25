@@ -137,6 +137,45 @@ const getCheckoutCartHistory = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ message: 'OK', histories });
 });
 
+const getUnconfirmedOrder = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const unconfirmedOrders = await orderManagementService.getOrderNeedApproval({
+    shopId,
+  });
+  res.status(httpStatus.OK).send({ message: 'OK', unconfirmedOrders });
+});
+
+const updateUnconfirmedOrder = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  await orderManagementService.updateUnconfirmedOrder({
+    ...req.body,
+    shopId,
+  });
+  res.status(httpStatus.OK).send({ message: 'OK' });
+});
+
+const cancelUnconfirmedOrder = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const userId = _.get(req, 'user.id');
+  await orderManagementService.cancelUnconfirmedOrder({
+    ...req.body,
+    shopId,
+    userId,
+  });
+  res.status(httpStatus.OK).send({ message: 'OK' });
+});
+
+const approveUnconfirmedOrder = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const userId = _.get(req, 'user.id');
+  await orderManagementService.approveUnconfirmedOrder({
+    ...req.body,
+    userId,
+    shopId,
+  });
+  res.status(httpStatus.OK).send({ message: 'OK' });
+});
+
 module.exports = {
   createOrder,
   changeDishQuantity,
@@ -155,4 +194,8 @@ module.exports = {
   clearCart,
   checkoutCart,
   getCheckoutCartHistory,
+  getUnconfirmedOrder,
+  updateUnconfirmedOrder,
+  cancelUnconfirmedOrder,
+  approveUnconfirmedOrder,
 };
