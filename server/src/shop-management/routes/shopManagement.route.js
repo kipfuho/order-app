@@ -9,6 +9,7 @@ const dishRoute = require('../../dish-management/routes/dish.route');
 const dishCategoryRoute = require('../../dish-management/routes/dishCategory.route');
 const unitRoute = require('../../dish-management/routes/unit.route');
 const orderRoute = require('../../order-management/routes/orderManagement.route');
+const paymentRoute = require('../../payment-management/routes/payment.route');
 const auth = require('../../middlewares/auth');
 
 const router = express.Router();
@@ -49,6 +50,10 @@ const defaultRoutes = [
   {
     path: 'orders',
     route: orderRoute,
+  },
+  {
+    path: 'payment',
+    route: paymentRoute,
   },
 ];
 

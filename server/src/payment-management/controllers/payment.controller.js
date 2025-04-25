@@ -1,64 +1,34 @@
-const { ProductCode, VnpLocale, dateFormat } = require('vnpay');
-const { getOrderSessionById } = require('../../order-management/services/orderUtils.service');
-const { formatOrderSessionNo } = require('../../utils/common');
-const { vnpay, vnpayConfig } = require('../configs/vnpay.config');
-const logger = require('../../config/logger');
-const { payOrderSession } = require('../../order-management/services/orderManagement.service');
-const { PaymentMethod } = require('../../utils/constant');
+const _ = require('lodash');
+const httpStatus = require('http-status');
+const catchAsync = require('../../utils/catchAsync');
+const paymentService = require('../services/payment.service');
 
-const getPaymentVnpayUrl = async (req, res) => {
+const getPaymentVnpayUrl = catchAsync(async (req, res) => {
   const { orderSessionId } = req.body;
 
-  try {
-    const orderSession = await getOrderSessionById(orderSessionId);
+  const ipAddress =
+    req.headers['x-forwarded-for'] ||
+    req.connection.remoteAddress ||
+    req.socket.remoteAddress ||
+    req.connection.socket.remoteAddress;
 
-    const ipAddr =
-      req.headers['x-forwarded-for'] ||
-      req.connection.remoteAddress ||
-      req.socket.remoteAddress ||
-      req.connection.socket.remoteAddress;
+  const vnPayUrl = await paymentService.getPaymentVnpayUrl({ orderSessionId, ipAddress });
 
-    const createDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+  return res.status(201).json({ url: vnPayUrl, pid: orderSessionId });
+});
 
-    const url = vnpay.buildPaymentUrl({
-      vnp_Amount: orderSession.paymentAmount * 100,
-      vnp_IpAddr: ipAddr,
-      vnp_TxnRef: orderSession.id,
-      vnp_OrderInfo: `Thanh toan cho ma GD: ${formatOrderSessionNo(orderSession)}`,
-      vnp_OrderType: ProductCode.Other,
-      vnp_ReturnUrl: vnpayConfig.returnUrl,
-      vnp_Locale: VnpLocale.EN,
-      vnp_CreateDate: dateFormat(createDate, 'yyyyMMddHHmmss'),
-    });
+const vnpayIpn = catchAsync(async (req, res) => {
+  const orderSessionId = req.query.vnp_TxnRef;
 
-    return res.status(201).json({ url, pid: orderSessionId });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
+  const vnpayPaymentAmount = _.get(req, 'query.vnp_Amount', 0);
+  const error = await paymentService.vnpayIpn({ orderSessionId, vnpayPaymentAmount });
+
+  if (error) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ RspCode: '99', Message: error.message });
+  } else {
+    res.status(httpStatus.OK).send({ RspCode: '00', Message: 'Success' });
   }
-};
-
-const vnpayIpn = async (req, res) => {
-  try {
-    const orderSessionId = req.query.vnp_TxnRef;
-    logger.info(`Recieved VNPAY IPN: ${orderSessionId}`);
-
-    await payOrderSession({
-      requestBody: {
-        orderSessionId,
-        paymentDetails: [
-          {
-            paymentMethod: PaymentMethod.VNPAY,
-            paymentAmount: req.query.vnp_Amount / 100,
-          },
-        ],
-      },
-    });
-
-    return res.status(200).json({ RspCode: '00', Message: 'Success' });
-  } catch (error) {
-    return res.status(500).json({ RspCode: '99', Message: error.message });
-  }
-};
+});
 
 module.exports = {
   getPaymentVnpayUrl,
