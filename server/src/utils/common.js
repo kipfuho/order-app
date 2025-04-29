@@ -143,6 +143,11 @@ const createSearchByDateOptionWithShopTimezone = ({ from, to, filterKey = 'creat
   return options;
 };
 
+const getDayOfWeek = (date) => {
+  const day = new Date(date).getDay();
+  return day;
+};
+
 module.exports = {
   sleep,
   getStartTimeOfToday,
@@ -155,4 +160,5 @@ module.exports = {
   refineFileNameForUploading,
   formatOrderSessionNo,
   createSearchByDateOptionWithShopTimezone,
+  getDayOfWeek,
 };

@@ -343,6 +343,40 @@ const _getOrderSessionJson = async ({ orderSessionId, shopId }) => {
   };
 };
 
+const getOrderSessionJsonWithLimit = async ({ shopId, limit }) => {
+  const orderSessionDocuments = await OrderSession.find({ shop: shopId }).sort({ _id: -1 }).limit(limit);
+
+  const orderSessionIds = _.map(orderSessionDocuments, 'id');
+  const orders = await Order.find({ orderSessionId: { $in: orderSessionIds } });
+
+  const orderMapByOrderSessionId = _.groupBy(orders, 'orderSessionId');
+
+  const shop = await getShopFromCache({ shopId });
+  const tables = await getTablesFromCache({ shopId });
+  const tableById = _.keyBy(tables, 'id');
+  const dishes = await getDishesFromCache({ shopId });
+  const dishById = _.keyBy(dishes, 'id');
+
+  const orderSessionJsons = _.map(orderSessionDocuments, (orderSessionDocument) => {
+    const orderSessionJson = orderSessionDocument.toJSON();
+    const orderJsons = _.map(orderMapByOrderSessionId[orderSessionJson.id], (order) => {
+      const orderJson = order.toJSON();
+      _.map(orderJson.dishOrders, (dishOrder) => {
+        if (dishOrder.dish) {
+          // eslint-disable-next-line no-param-reassign
+          dishOrder.dish = dishById[dishOrder.dish];
+        }
+      });
+      return orderJson;
+    });
+    orderSessionJson.shop = shop;
+    orderSessionJson.orders = orderJsons;
+    orderSessionJson.tables = _.map(orderSessionJson.tables, (tableId) => tableById[tableId]);
+  });
+
+  return orderSessionJsons;
+};
+
 const calculateTax = async ({ orderSessionJson, dishOrders, calculateTaxDirectly = false }) => {
   let totalTaxAmount = 0;
   const taxAmountByTaxRate = {};
@@ -562,4 +596,5 @@ module.exports = {
   mergeCartItems,
   getCart,
   getActiveOrderSessionStatus,
+  getOrderSessionJsonWithLimit,
 };
