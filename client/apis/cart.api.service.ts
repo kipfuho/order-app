@@ -1,4 +1,4 @@
-import { Cart, CartItem, Order } from "../stores/state.interface";
+import { Cart, CartItem, Dish, Order } from "../stores/state.interface";
 import { apiRequest } from "./api.service";
 import { getAccessTokenLazily } from "./auth.api.service";
 
@@ -84,9 +84,31 @@ const getCartCheckoutHistoryRequest = async ({
   return result.histories;
 };
 
+const getRecommendationDishesRequest = async ({
+  shopId,
+  isCustomerApp = false,
+}: {
+  shopId: string;
+  isCustomerApp?: boolean;
+}) => {
+  const accessToken = await getAccessTokenLazily(isCustomerApp);
+
+  const result: {
+    dishes: Dish[];
+  } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/suggestion`,
+    token: accessToken,
+    isCustomerApp,
+  });
+
+  return result.dishes;
+};
+
 export {
   getCartRequest,
   updateCartRequest,
   checkoutCartRequest,
   getCartCheckoutHistoryRequest,
+  getRecommendationDishesRequest,
 };

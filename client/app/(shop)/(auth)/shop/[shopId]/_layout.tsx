@@ -35,7 +35,7 @@ export default function AppLayout() {
     return () => {
       dispatch(closeAppSyncChannel({ type: AppSyncChannelType.SHOP }));
     };
-  }, [shopId, isLoading]);
+  }, [shops, shopId, isLoading]);
 
   if (isLoading) {
     return <LoaderBasic />;

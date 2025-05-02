@@ -1,13 +1,16 @@
 import React from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../../stores/store";
-import { Button, useTheme, List, Surface } from "react-native-paper";
+import { Button, useTheme, List, Surface, Text } from "react-native-paper";
 import _ from "lodash";
 import { Shop } from "../../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../../components/AppBar";
-import { useGetTablesQuery } from "../../../../../../../../stores/apiSlices/tableApi.slice";
+import {
+  useGetTablePositionsQuery,
+  useGetTablesQuery,
+} from "../../../../../../../../stores/apiSlices/tableApi.slice";
 import {
   goBackShopSetting,
   goToCreateTable,
@@ -18,7 +21,6 @@ import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
 
 export default function TablesManagementPage() {
   const router = useRouter();
-  const theme = useTheme();
   const { t } = useTranslation();
 
   const shop = useSelector(
@@ -27,8 +29,11 @@ export default function TablesManagementPage() {
   const { data: tables = [], isLoading: tableLoading } = useGetTablesQuery(
     shop.id
   );
+  const { data: tablePositions = [], isLoading: tablePositionLoading } =
+    useGetTablePositionsQuery(shop.id);
+  const tableByPostion = _.groupBy(tables, "position.id");
 
-  if (tableLoading) {
+  if (tableLoading || tablePositionLoading) {
     return <LoaderBasic />;
   }
 
@@ -48,21 +53,40 @@ export default function TablesManagementPage() {
         <ScrollView>
           {/* List of Table Positions */}
           <List.Section>
-            {tables.map((item) => (
-              <List.Item
-                title={item.name}
-                titleStyle={{ color: theme.colors.onSecondaryContainer }}
-                style={{
-                  backgroundColor: theme.colors.secondaryContainer,
-                  borderRadius: 8,
-                  marginBottom: 8,
-                }}
-                left={(props) => <List.Icon {...props} icon="table" />}
-                onPress={() =>
-                  goToUpdateTable({ router, shopId: shop.id, tableId: item.id })
-                }
-              />
-            ))}
+            {tablePositions.map((position) => {
+              if (_.isEmpty(tableByPostion[position.id])) return;
+
+              return (
+                <View key={position.id}>
+                  <Text
+                    variant="titleLarge"
+                    style={{
+                      marginBottom: 8,
+                      marginTop: 16,
+                    }}
+                  >
+                    {position.name}
+                  </Text>
+
+                  {(tableByPostion[position.id] || []).map((item) => (
+                    <List.Item
+                      key={item.id}
+                      title={item.name}
+                      left={(props) => (
+                        <List.Icon {...props} icon="table-furniture" />
+                      )}
+                      onPress={() =>
+                        goToUpdateTable({
+                          router,
+                          shopId: shop.id,
+                          tableId: item.id,
+                        })
+                      }
+                    />
+                  ))}
+                </View>
+              );
+            })}
           </List.Section>
         </ScrollView>
 

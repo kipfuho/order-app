@@ -27,9 +27,12 @@ import _ from "lodash";
 import { useTranslation } from "react-i18next";
 import ImageSlider from "../../../components/ImageSlider";
 import CustomerOrderMenu from "../../../components/ui/orders/CustomerOrderMenu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CustomerAppBar } from "../../../components/ui/customer/CustomerAppBar";
-import { useGetCartQuery } from "../../../stores/apiSlices/cartApi.slice";
+import {
+  useGetCartQuery,
+  useGetRecommendationDishesQuery,
+} from "../../../stores/apiSlices/cartApi.slice";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 const getButtonSize = (width: number) => {
@@ -64,6 +67,8 @@ export default function CustomerHomePage() {
       shopId: shop.id,
       isCustomerApp: true,
     });
+  const { data: recommendationDishes, isLoading: recommendationDishLoading } =
+    useGetRecommendationDishesQuery(shop.id);
   const { isLoading: cartLoading } = useGetCartQuery(shop.id);
 
   const { availableDishTypes, dishGroupByDishType } = getDishGroupByDishType(
@@ -86,6 +91,10 @@ export default function CustomerHomePage() {
       Keyboard.dismiss();
     })
   );
+
+  useEffect(() => {
+    console.log(recommendationDishes);
+  }, [recommendationDishLoading]);
 
   if (dishLoading || dishTypeLoading || cartLoading) {
     return <LoaderBasic />;

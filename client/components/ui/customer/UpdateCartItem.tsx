@@ -10,7 +10,7 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
-import { CartItem, Dish } from "../../../stores/state.interface";
+import { Dish } from "../../../stores/state.interface";
 import { Image, Pressable, ScrollView, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { updateCartSingleDish } from "../../../stores/customerSlice";
@@ -36,31 +36,21 @@ export default function UpdateCartItem({
   );
 
   const [note, setNote] = useState("");
+  const [currentItemQuantity, setCurrentQuantity] = useState(
+    cartItem?.quantity ?? 0
+  );
 
-  const handleDecrease = () => {
-    if (!cartItem || !dish) return;
-
-    if (cartItem?.quantity > 0) {
-      dispatch(
-        updateCartSingleDish({
-          id: cartItemId,
-          dish,
-          quantity: cartItem.quantity - 1,
-        })
-      );
-    }
-  };
-
-  const handleIncrease = () => {
+  const handleUpdateCartItem = () => {
     if (!cartItem || !dish) return;
 
     dispatch(
       updateCartSingleDish({
         id: cartItemId,
         dish,
-        quantity: (cartItem?.quantity ?? 0) + 1,
+        quantity: currentItemQuantity,
       })
     );
+    setVisible(false);
   };
 
   if (!cartItem || !dish) {
@@ -129,7 +119,9 @@ export default function UpdateCartItem({
                   backgroundColor: theme.colors.onBackground,
                   borderRadius: 20,
                 }}
-                onPress={handleDecrease}
+                onPress={() =>
+                  setCurrentQuantity((prev) => Math.max(prev - 1, 0))
+                }
               >
                 <Icon
                   source="minus"
@@ -158,7 +150,7 @@ export default function UpdateCartItem({
                   backgroundColor: theme.colors.onBackground,
                   borderRadius: 20,
                 }}
-                onPress={handleIncrease}
+                onPress={() => setCurrentQuantity((prev) => prev + 1)}
               >
                 <Icon source="plus" size={24} color={theme.colors.background} />
               </TouchableRipple>
@@ -200,7 +192,7 @@ export default function UpdateCartItem({
         <Button
           mode="contained"
           icon="cart"
-          onPress={() => {}}
+          onPress={handleUpdateCartItem}
           style={{ flex: 1, borderRadius: 8 }}
         >
           {t("update_cart")}

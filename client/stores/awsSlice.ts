@@ -60,7 +60,6 @@ const awsSlice = createSlice({
 
       if (index === -1) return;
       const connectionDetail = state.connectionDetails[index];
-      console.log("Closing connection:", connectionDetail);
       connectionDetail.connection.close();
       state.connectionDetails.splice(index, 1);
     },

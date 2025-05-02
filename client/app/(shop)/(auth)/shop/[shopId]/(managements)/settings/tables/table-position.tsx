@@ -50,13 +50,11 @@ export default function TablePositionsManagementPage() {
             {tablePositions.map((item) => (
               <List.Item
                 title={item.name}
-                titleStyle={{ color: theme.colors.onSecondaryContainer }}
                 style={{
-                  backgroundColor: theme.colors.secondaryContainer,
                   borderRadius: 8,
                   marginBottom: 8,
                 }}
-                left={(props) => <List.Icon {...props} icon="table" />}
+                left={(props) => <List.Icon {...props} icon="layers" />}
                 onPress={() =>
                   goToUpdateTablePosition({
                     router,
