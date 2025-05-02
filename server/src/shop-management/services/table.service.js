@@ -9,6 +9,7 @@ const { TablePosition, Table } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { notifyUpdateTable, EventActionType, notifyUpdateTablePosition } = require('../../utils/awsUtils/appsync.utils');
 const { getMessageByLocale } = require('../../locale');
+const { getStringId } = require('../../utils/common');
 
 const getTable = async ({ shopId, tableId }) => {
   const table = await getTableFromCache({
@@ -32,11 +33,16 @@ const createTable = async ({ shopId, createBody }) => {
     shopId,
   });
   throwBadRequest(
-    _.find(tables, (table) => table.name === createBody.name && table.position === createBody.position),
+    _.find(
+      tables,
+      (table) =>
+        _.toLower(table.name) === _.toLower(createBody.name) &&
+        getStringId({ object: table, key: 'position' }) === createBody.position
+    ),
     getMessageByLocale({ key: 'table.alreadyExist' })
   );
 
-  const table = await Table.create({ ...createBody, shop: shopId });
+  const table = await Table.create({ ...createBody, name: _.toUpper(createBody.name), shop: shopId });
   await table.populate('position');
   const tableJson = table.toJSON();
   notifyUpdateTable({ table: tableJson, action: EventActionType.CREATE });
@@ -44,7 +50,25 @@ const createTable = async ({ shopId, createBody }) => {
 };
 
 const updateTable = async ({ shopId, tableId, updateBody }) => {
-  const table = await Table.findOneAndUpdate({ _id: tableId, shop: shopId }, { $set: updateBody }, { new: true });
+  const tables = await getTablesFromCache({
+    shopId,
+  });
+  throwBadRequest(
+    _.find(
+      tables,
+      (table) =>
+        _.toLower(table.name) === _.toLower(updateBody.name) &&
+        getStringId({ object: table, key: 'position' }) === updateBody.position &&
+        table.id !== tableId
+    ),
+    getMessageByLocale({ key: 'table.alreadyExist' })
+  );
+
+  const table = await Table.findOneAndUpdate(
+    { _id: tableId, shop: shopId },
+    { $set: { ...updateBody, name: _.toUpper(updateBody.name) } },
+    { new: true }
+  );
   throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
 
   await table.populate('position');
@@ -81,11 +105,12 @@ const getTablePositions = async ({ shopId }) => {
 const createTablePosition = async ({ shopId, createBody }) => {
   const tablePostions = await getTablePositionsFromCache({ shopId });
   throwBadRequest(
-    _.find(tablePostions, (tablePosition) => tablePosition.name === createBody.name),
+    _.find(tablePostions, (tablePosition) => _.toLower(tablePosition.name) === _.toLower(createBody.name)),
     getMessageByLocale({ key: 'tablePosition.alreadyExist' })
   );
   const tablePosition = await TablePosition.create({
     ...createBody,
+    name: _.toUpper(createBody.name),
     shop: shopId,
   });
 
@@ -97,12 +122,15 @@ const createTablePosition = async ({ shopId, createBody }) => {
 const updateTablePosition = async ({ shopId, tablePositionId, updateBody }) => {
   const tablePostions = await getTablePositionsFromCache({ shopId });
   throwBadRequest(
-    _.find(tablePostions, (tablePosition) => tablePosition.name === updateBody.name && tablePosition.id !== tablePositionId),
+    _.find(
+      tablePostions,
+      (tablePosition) => _.toLower(tablePosition.name) === _.toLower(updateBody.name) && tablePosition.id !== tablePositionId
+    ),
     getMessageByLocale({ key: 'tablePosition.alreadyExist' })
   );
   const tablePosition = await TablePosition.findOneAndUpdate(
     { _id: tablePositionId, shop: shopId },
-    { $set: updateBody },
+    { $set: { ...updateBody, name: _.toUpper(updateBody.name) } },
     { new: true }
   );
   throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));

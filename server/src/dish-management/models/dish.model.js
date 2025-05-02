@@ -35,6 +35,7 @@ const dishSchema = new mongoose.Schema(
     hideForEmployees: { type: Boolean },
     outOfStockNotification: { type: Boolean },
     description: { type: String },
+    soldCount: { type: Number },
   },
   {
     timestamps: true,

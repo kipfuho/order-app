@@ -372,6 +372,7 @@ const getOrderSessionJsonWithLimit = async ({ shopId, limit }) => {
     orderSessionJson.shop = shop;
     orderSessionJson.orders = orderJsons;
     orderSessionJson.tables = _.map(orderSessionJson.tables, (tableId) => tableById[tableId]);
+    return orderSessionJson;
   });
 
   return orderSessionJsons;

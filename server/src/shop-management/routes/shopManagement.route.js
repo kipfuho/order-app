@@ -10,6 +10,7 @@ const dishCategoryRoute = require('../../dish-management/routes/dishCategory.rou
 const unitRoute = require('../../dish-management/routes/unit.route');
 const orderRoute = require('../../order-management/routes/orderManagement.route');
 const paymentRoute = require('../../payment-management/routes/payment.route');
+const suggestionRoute = require('../../suggestion-system/routes/suggestion.route');
 const auth = require('../../middlewares/auth');
 
 const router = express.Router();
@@ -54,6 +55,10 @@ const defaultRoutes = [
   {
     path: 'payment',
     route: paymentRoute,
+  },
+  {
+    path: 'suggestion',
+    route: suggestionRoute,
   },
 ];
 

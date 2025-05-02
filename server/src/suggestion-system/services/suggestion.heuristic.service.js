@@ -1,15 +1,16 @@
 const _ = require('lodash');
-const { getDayOfWeek } = require('../../utils/common');
+const { getDayOfWeek, getStringId } = require('../../utils/common');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const { getOrderSessionJsonWithLimit } = require('../../order-management/services/orderUtils.service');
 
-const getPopularDishes = async (orderSessions) => {
+const getPopularDishes = (orderSessions) => {
   const dishCount = {};
 
   _.forEach(orderSessions, (session) => {
     _.forEach(session.orders, (order) => {
       _.forEach(order.dishOrders, (dishOrder) => {
-        dishCount[dishOrder.dish.id] = (dishCount[dishOrder.dish.id] || 0) + dishOrder.quantity;
+        dishCount[getStringId({ object: dishOrder, key: 'dish' })] =
+          (dishCount[getStringId({ object: dishOrder, key: 'dish' })] || 0) + dishOrder.quantity;
       });
     });
   });
@@ -61,11 +62,12 @@ const getCustomerPreferences = ({ orderSessions, customerId }) => {
   const preferredDishes = {};
 
   _(orderSessions)
-    .filter((session) => session.customerInfo.customerId === customerId)
+    .filter((session) => _.get(session, 'customerInfo.customerId') === customerId)
     .forEach((session) => {
       _.forEach(session.orders, (order) => {
         _.forEach(order.dishOrders, (dishOrder) => {
-          preferredDishes[dishOrder.dish.id] = (preferredDishes[dishOrder.dish.id] || 0) + dishOrder.quantity;
+          preferredDishes[getStringId({ object: dishOrder, key: 'dish' })] =
+            (preferredDishes[getStringId({ object: dishOrder, key: 'dish' })] || 0) + dishOrder.quantity;
         });
       });
     });
@@ -87,8 +89,8 @@ const getCustomerOrderPatterns = ({ orderSessions, customerId }) => {
           if (!orderPatterns[orderDay]) {
             orderPatterns[orderDay] = {};
           }
-          orderPatterns[orderDay][dishOrder.dish.id] =
-            (orderPatterns[orderDay][dishOrder.dish.id] || 0) + dishOrder.quantity;
+          orderPatterns[orderDay][getStringId({ object: dishOrder, key: 'dish' })] =
+            (orderPatterns[orderDay][getStringId({ object: dishOrder, key: 'dish' })] || 0) + dishOrder.quantity;
         });
       });
     });
@@ -101,12 +103,12 @@ const getSeasonalRecommendations = ({ allDishes }) => {
   const currentMonth = new Date().getMonth(); // 0 = January, 11 = December
   const seasonalDishes = [];
 
-  allDishes.forEach((dish) => {
+  _.forEach(allDishes, (dish) => {
     // Assume we have a 'season' tag or keyword in the dish description for simplicity
-    if (dish.description.includes('winter') && (currentMonth >= 11 || currentMonth <= 1)) {
+    if (_.includes(dish.description, 'winter') && (currentMonth >= 11 || currentMonth <= 1)) {
       seasonalDishes.push(dish);
     }
-    if (dish.description.includes('summer') && currentMonth >= 5 && currentMonth <= 7) {
+    if (_.includes(dish.description, 'summer') && currentMonth >= 5 && currentMonth <= 7) {
       seasonalDishes.push(dish);
     }
   });
@@ -122,21 +124,21 @@ const getContextualRecommendations = ({ allDishes }) => {
   if (currentHour >= 6 && currentHour < 10) {
     // Recommend breakfast items in the morning
     _.forEach(allDishes, (dish) => {
-      if (dish.description.includes('breakfast')) {
+      if (_.includes(dish.description, 'breakfast')) {
         contextualDishes.push(dish);
       }
     });
   } else if (currentHour >= 11 && currentHour < 14) {
     // Recommend lunch items around lunch time
     _.forEach(allDishes, (dish) => {
-      if (dish.description.includes('lunch')) {
+      if (_.includes(dish.description, 'lunch')) {
         contextualDishes.push(dish);
       }
     });
   } else if (currentHour >= 18 && currentHour < 22) {
     // Recommend dinner items in the evening
     _.forEach(allDishes, (dish) => {
-      if (dish.description.includes('dinner')) {
+      if (_.includes(dish.description, 'dinner')) {
         contextualDishes.push(dish);
       }
     });
@@ -166,7 +168,7 @@ const recommendByDayPattern = ({ orderSessions, customerId, dishById }) => {
   return recommendedDishes;
 };
 
-const getOrderSessionsForRecommendation = async ({ shopId, limit = 1000 }) => {
+const getOrderSessionsForRecommendation = async ({ shopId, limit = 10000 }) => {
   return getOrderSessionJsonWithLimit({ shopId, limit });
 };
 
