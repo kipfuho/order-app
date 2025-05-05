@@ -1,14 +1,12 @@
 const { VNPay } = require('vnpay');
 const config = require('./config');
 
-const baseUrl = 'https://order-app-ten-smoky.vercel.app/';
-
 const vnpayConfig = {
   url: 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
   terminalId: config.vnpay.terminalId,
   hashSecret: config.vnpay.secret,
-  returnUrl: `${baseUrl}/payment/success`,
-  ipnUrl: `${baseUrl}/v1/payment/vnpay/ipn`,
+  returnUrl: `${config.baseUrl}/v1/webhooks/vnpay-return`,
+  ipnUrl: `${config.baseUrl}/v1/payment/vnpay/ipn`,
 };
 
 const vnpay = new VNPay({
