@@ -1,4 +1,8 @@
-import { OrderSession, OrderSessionHistory, TableForOrder } from "../stores/state.interface";
+import {
+  OrderSession,
+  OrderSessionHistory,
+  TableForOrder,
+} from "../stores/state.interface";
 import { apiRequest } from "./api.service";
 import { getAccessTokenLazily } from "./auth.api.service";
 import {
@@ -275,6 +279,28 @@ const discountOrderSessionRequest = async ({
   });
 };
 
+const getVnPayUrl = async ({
+  shopId,
+  orderSessionId,
+}: {
+  shopId: string;
+  orderSessionId: string;
+}) => {
+  const accessToken = await getAccessTokenLazily();
+
+  // pid: orderSessionId
+  const result: { url: string; pid: string } = await apiRequest({
+    method: "POST",
+    endpoint: `/v1/shops/${shopId}/payment/vnpay-url`,
+    token: accessToken,
+    data: {
+      orderSessionId,
+    },
+  });
+
+  return result.url;
+};
+
 export {
   getTablesForOrderRequest,
   getActiveOrderSessionsRequest,
@@ -287,4 +313,5 @@ export {
   cancelOrderSessionPaidStatusRequest,
   discountDishOrderRequest,
   discountOrderSessionRequest,
+  getVnPayUrl,
 };

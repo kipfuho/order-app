@@ -51,6 +51,31 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
         try {
           console.log("Received event for shop:", event);
           const { type, data } = event;
+
+          // unskippable events
+          if (type === EventType.PAYMENT_COMPLETE) {
+            const {
+              orderSessionId,
+              tableId,
+              billNo,
+            }: { orderSessionId: string; tableId: string; billNo: string } =
+              data;
+            Toast.show({
+              type: "success",
+              text1: "Payment completed",
+              text2: `Order session ${billNo} has been paid`,
+            });
+            store.dispatch(
+              orderApiSlice.util.invalidateTags([
+                { type: "OrderSessions", id: orderSessionId },
+                { type: "ActiveOrderSessions", id: tableId },
+                "TablesForOrder",
+              ])
+            );
+            return;
+          }
+
+          // skippable events
           const { userId } = data;
           if (store.getState().auth.session?.id === userId) {
             console.log("Skipped event for shop:", event);
@@ -120,28 +145,6 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
               orderApiSlice.util.invalidateTags([
                 { type: "OrderSessions", id: orderSessionId },
                 { type: "ActiveOrderSessions", id: tableId },
-              ])
-            );
-            return;
-          }
-
-          if (type === EventType.PAYMENT_COMPLETE) {
-            const {
-              orderSessionId,
-              tableId,
-              billNo,
-            }: { orderSessionId: string; tableId: string; billNo: string } =
-              data;
-            Toast.show({
-              type: "success",
-              text1: "Payment completed",
-              text2: `Order session ${billNo} has been paid`,
-            });
-            store.dispatch(
-              orderApiSlice.util.invalidateTags([
-                { type: "OrderSessions", id: orderSessionId },
-                { type: "ActiveOrderSessions", id: tableId },
-                "TablesForOrder",
               ])
             );
             return;

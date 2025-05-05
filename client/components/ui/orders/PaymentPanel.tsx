@@ -1,13 +1,9 @@
+import { Modal, Portal, Surface, Text, useTheme } from "react-native-paper";
 import {
-  Portal,
-  Surface,
-  Text,
-  TextInput,
-  TouchableRipple,
-  useTheme,
-} from "react-native-paper";
-import { PaymentMethod } from "../../../constants/paymentMethod";
-import { ScrollView, View } from "react-native";
+  PaymentComponentMap,
+  PaymentMethod,
+} from "../../../constants/paymentMethod";
+import { ScrollView } from "react-native";
 import { usePayOrderSessionMutation } from "../../../stores/apiSlices/orderApi.slice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../stores/store";
@@ -19,9 +15,9 @@ import { useState } from "react";
 import { resetCurrentTable } from "../../../stores/shop.slice";
 import { goToTablesForOrderList } from "../../../apis/navigate.service";
 import { useRouter } from "expo-router";
+import QRCode from "react-native-qrcode-svg";
 
 export default function PaymentMethodPage() {
-  const theme = useTheme();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const router = useRouter();
@@ -37,6 +33,8 @@ export default function PaymentMethodPage() {
     usePayOrderSessionMutation();
 
   const [paymentDialogVisible, setPaymentDialogVisible] = useState(false);
+  const [watingVisible, setWaitingVisible] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState("");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
 
   const handlePayOrderSession = async () => {
@@ -78,33 +76,47 @@ export default function PaymentMethodPage() {
           }}
           onConfirmClick={handlePayOrderSession}
         />
+
+        <Modal
+          visible={watingVisible}
+          onDismiss={() => setWaitingVisible(false)}
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          contentContainerStyle={{
+            boxShadow: "none",
+          }}
+        >
+          <Surface
+            style={{ padding: 32, borderRadius: 15, alignItems: "center" }}
+          >
+            <Text
+              style={{ marginBottom: 16, fontSize: 18, textAlign: "center" }}
+            >
+              {t("please_scan_qr_to_pay")}
+            </Text>
+            {paymentUrl ? (
+              <QRCode value={paymentUrl} size={200} />
+            ) : (
+              <Text>{t("creating_qr_code")}</Text>
+            )}
+          </Surface>
+        </Modal>
         <Toast />
       </Portal>
       <Surface mode="flat" style={{ flex: 1, padding: 12, borderRadius: 10 }}>
         <ScrollView style={{ flex: 1 }}>
           <Surface mode="flat" style={{ flex: 1, gap: 12 }}>
-            {paymentMethods.map((paymentMethod) => (
-              <TouchableRipple
-                key={paymentMethod}
-                onPress={() => {
-                  setSelectedPaymentMethod(paymentMethod);
-                  setPaymentDialogVisible(true);
-                }}
-                style={{
-                  flex: 1,
-                  borderRadius: 4,
-                  backgroundColor: theme.colors.primary,
-                  paddingVertical: 12,
-                  paddingHorizontal: 8,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: theme.colors.onPrimary }}>
-                  {paymentMethod}
-                </Text>
-              </TouchableRipple>
-            ))}
+            {paymentMethods.map((paymentMethod) =>
+              PaymentComponentMap[paymentMethod]({
+                paymentMethod,
+                setPaymentDialogVisible,
+                setSelectedPaymentMethod,
+                setWaitingVisible,
+                setPaymentUrl,
+              })
+            )}
           </Surface>
         </ScrollView>
       </Surface>
