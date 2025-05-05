@@ -47,9 +47,7 @@ export default function StaffEmployeePositionPage() {
             {employeePositions.map((item) => (
               <List.Item
                 title={item.name}
-                titleStyle={{ color: theme.colors.onSecondaryContainer }}
                 style={{
-                  backgroundColor: theme.colors.secondaryContainer,
                   borderRadius: 8,
                   marginBottom: 8,
                 }}

@@ -35,7 +35,7 @@ const LoginScreen = () => {
     try {
       const result = await loginRequest({ email, password });
       if (result) {
-        router.replace("/");
+        router.push("/");
       }
     } catch (error) {
       Toast.show({

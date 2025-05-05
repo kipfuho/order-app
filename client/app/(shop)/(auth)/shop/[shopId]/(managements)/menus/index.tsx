@@ -1,6 +1,15 @@
-import { Redirect, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect } from "react";
 
 export default function ShopRedirect() {
   const { shopId } = useLocalSearchParams();
-  return <Redirect href={`/shop/${shopId}/menus/dishes`} />;
+  const router = useRouter();
+
+  useEffect(() => {
+    if (shopId) {
+      router.push(`/shop/${shopId}/menus/dishes`);
+    }
+  }, [shopId]);
+
+  return null;
 }

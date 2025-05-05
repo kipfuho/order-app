@@ -24,7 +24,7 @@ export default function ShopsPage() {
       <AppBar title={t("shop")}>
         <Button
           mode="contained-tonal"
-          onPress={() => router.replace("/create-shop")}
+          onPress={() => router.push("/create-shop")}
         >
           {t("create_shop")}
         </Button>

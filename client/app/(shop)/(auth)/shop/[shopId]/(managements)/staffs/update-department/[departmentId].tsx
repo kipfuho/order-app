@@ -23,6 +23,7 @@ import {
 import { goToDepartmentList } from "../../../../../../../../apis/navigate.service";
 import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
 import { AppBar } from "../../../../../../../../components/AppBar";
+import { Collapsible } from "../../../../../../../../components/Collapsible";
 
 export default function UpdateDepartmentPage() {
   const { departmentId } = useLocalSearchParams() as { departmentId: string };
@@ -133,22 +134,22 @@ export default function UpdateDepartmentPage() {
               style={{ marginBottom: 20 }}
             />
 
-            {/* Permission Checkboxes */}
-            <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-              {t("permissions")}
-            </Text>
-            <View style={{ marginBottom: 32 }}>
-              {permissionTypes.map((perm) => (
-                <Checkbox.Item
-                  key={perm}
-                  label={t(perm)}
-                  status={
-                    selectedPermissions.includes(perm) ? "checked" : "unchecked"
-                  }
-                  onPress={() => togglePermission(perm)}
-                />
-              ))}
-            </View>
+            <Collapsible title={t("permissions")}>
+              <View style={{ marginBottom: 32 }}>
+                {permissionTypes.map((perm) => (
+                  <Checkbox.Item
+                    key={perm}
+                    label={t(perm)}
+                    status={
+                      selectedPermissions.includes(perm)
+                        ? "checked"
+                        : "unchecked"
+                    }
+                    onPress={() => togglePermission(perm)}
+                  />
+                ))}
+              </View>
+            </Collapsible>
           </ScrollView>
         </Surface>
 

@@ -14,17 +14,17 @@ export const goBack = (
   }
 ) => {
   if (params) {
-    router.replace({
+    router.push({
       pathname: path,
       params,
     });
     return;
   }
 
-  router.replace(path);
+  router.push(path);
 };
 
-const goBackShopList = ({ router }: { router: Router }) => router.replace("/");
+const goBackShopList = ({ router }: { router: Router }) => router.push("/");
 
 const goBackShopHome = ({
   router,
@@ -33,7 +33,7 @@ const goBackShopHome = ({
   router: Router;
   shopId: string;
 }) =>
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/home",
     params: { shopId },
   });
@@ -45,7 +45,7 @@ const goBackShopDishList = ({
   router: Router;
   shopId: string;
 }) =>
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/menus/dishes",
     params: { shopId },
   });
@@ -57,7 +57,7 @@ const goBackShopSetting = ({
   router: Router;
   shopId: string;
 }) =>
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/settings",
     params: { shopId },
   });
@@ -71,7 +71,7 @@ const goToDishUpdatePage = ({
   shopId: string;
   dishId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/menus/update-dish/[dishId]",
     params: { shopId, dishId },
   });
@@ -84,7 +84,7 @@ const goToTableList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/settings/tables",
     params: { shopId },
   });
@@ -97,7 +97,7 @@ const goToTablePositionList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/settings/tables/table-position",
     params: { shopId },
   });
@@ -112,7 +112,7 @@ const goToUpdateDishCategory = ({
   shopId: string;
   dishCategoryId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/menus/update-dish-category/[dishCategoryId]",
     params: { shopId, dishCategoryId },
   });
@@ -125,7 +125,7 @@ const goToDishCategoryList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/menus/categories",
     params: { shopId },
   });
@@ -138,7 +138,7 @@ const goToCreateTablePosition = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/settings/tables/create-table-position",
     params: { shopId },
   });
@@ -153,7 +153,7 @@ const goToUpdateTablePosition = ({
   shopId: string;
   tablePositionId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname:
       "/shop/[shopId]/settings/tables/update-table-position/[tablePositionId]",
     params: { shopId, tablePositionId },
@@ -167,7 +167,7 @@ const goToCreateTable = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/settings/tables/create-table",
     params: { shopId },
   });
@@ -182,7 +182,7 @@ const goToUpdateTable = ({
   shopId: string;
   tableId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/settings/tables/update-table/[tableId]",
     params: { shopId, tableId },
   });
@@ -195,7 +195,7 @@ const goToCreateDish = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/menus/create-dish",
     params: { shopId },
   });
@@ -208,7 +208,7 @@ const goToCreateDishCategory = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/menus/create-dish-category",
     params: { shopId },
   });
@@ -221,7 +221,7 @@ const goToTablesForOrderList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/orders",
     params: { shopId },
   });
@@ -236,7 +236,7 @@ const goToTableCurrentOrderSessions = ({
   shopId: string;
   tableId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/orders/table/[tableId]/current-orders",
     params: { shopId, tableId },
   });
@@ -253,7 +253,7 @@ const goToOrderSessionPayment = ({
   tableId: string;
   orderSessionId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/orders/table/[tableId]/payment/[orderSessionId]",
     params: { shopId, tableId, orderSessionId },
   });
@@ -266,7 +266,7 @@ const goToEmployeeList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/staffs",
     params: { shopId },
   });
@@ -279,7 +279,7 @@ const goToEmployeePositionList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/staffs/employee-positions",
     params: { shopId },
   });
@@ -292,7 +292,7 @@ const goToDepartmentList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/staffs/departments",
     params: { shopId },
   });
@@ -305,7 +305,7 @@ const goToCreateEmployee = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/staffs/create-employee",
     params: { shopId },
   });
@@ -318,7 +318,7 @@ const goToCreateEmployeePosition = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/staffs/create-employee-position",
     params: { shopId },
   });
@@ -331,7 +331,7 @@ const goToCreateDepartment = ({
   router: Router;
   shopId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/staffs/create-department",
     params: { shopId },
   });
@@ -346,7 +346,7 @@ const goToUpdateEmployee = ({
   shopId: string;
   employeeId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname: "/shop/[shopId]/staffs/update-employee/[employeeId]",
     params: { shopId, employeeId },
   });
@@ -361,7 +361,7 @@ const goToUpdateEmployeePosition = ({
   shopId: string;
   employeePositionId: string;
 }) => {
-  router.replace({
+  router.push({
     pathname:
       "/shop/[shopId]/staffs/update-employee-position/[employeePositionId]",
     params: { shopId, employeePositionId },

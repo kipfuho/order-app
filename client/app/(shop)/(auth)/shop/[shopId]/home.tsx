@@ -88,7 +88,7 @@ export default function ShopPage() {
 
   const handleUpdate = () => {
     setModalVisible(false);
-    router.replace({
+    router.push({
       pathname: "/shop/[shopId]/update-shop",
       params: { shopId: shop.id },
     });
@@ -107,7 +107,7 @@ export default function ShopPage() {
   const confirmDelete = async () => {
     await deleteShop(shop.id).unwrap();
     setConfirmModalVisible(false);
-    router.replace("/");
+    router.push("/");
   };
 
   return (
@@ -181,7 +181,7 @@ export default function ShopPage() {
                 key={item.route}
                 mode="contained-tonal"
                 onPress={() =>
-                  router.replace({
+                  router.push({
                     pathname: `/shop/[shopId]/${item.route}`,
                     params: { shopId: shop.id },
                   })

@@ -1,8 +1,11 @@
-import { Button, List, Surface, useTheme } from "react-native-paper";
+import { Button, List, Surface, Text, useTheme } from "react-native-paper";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
-import { useGetEmployeesQuery } from "../../../../../../../stores/apiSlices/staffApi.slice";
+import { ScrollView, View } from "react-native";
+import {
+  useGetDepartmentsQuery,
+  useGetEmployeesQuery,
+} from "../../../../../../../stores/apiSlices/staffApi.slice";
 import { useRouter } from "expo-router";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import {
@@ -13,6 +16,7 @@ import {
 import { RootState } from "../../../../../../../stores/store";
 import { useSelector } from "react-redux";
 import { Shop } from "../../../../../../../stores/state.interface";
+import _ from "lodash";
 
 export default function StaffEmployeePage() {
   const theme = useTheme();
@@ -24,8 +28,11 @@ export default function StaffEmployeePage() {
   ) as Shop;
   const { data: employees = [], isLoading: employeeLoading } =
     useGetEmployeesQuery(shop.id);
+  const { data: departments = [], isLoading: departmentLoading } =
+    useGetDepartmentsQuery(shop.id);
+  const employeeByDepartment = _.groupBy(employees, "departmentId");
 
-  if (employeeLoading) {
+  if (employeeLoading || departmentLoading) {
     return <LoaderBasic />;
   }
 
@@ -44,25 +51,43 @@ export default function StaffEmployeePage() {
         <ScrollView>
           {/* List of Table Positions */}
           <List.Section>
-            {employees.map((item) => (
-              <List.Item
-                title={item.name}
-                titleStyle={{ color: theme.colors.onSecondaryContainer }}
-                style={{
-                  backgroundColor: theme.colors.secondaryContainer,
-                  borderRadius: 8,
-                  marginBottom: 8,
-                }}
-                left={(props) => <List.Icon {...props} icon="table" />}
-                onPress={() => {
-                  goToUpdateEmployee({
-                    router,
-                    shopId: shop.id,
-                    employeeId: item.id,
-                  });
-                }}
-              />
-            ))}
+            {departments.map((department) => {
+              if (_.isEmpty(employeeByDepartment[department.id])) return;
+
+              return (
+                <View key={department.id}>
+                  <Text
+                    variant="titleLarge"
+                    style={{
+                      marginBottom: 8,
+                      marginTop: 16,
+                    }}
+                  >
+                    {department.name}
+                  </Text>
+
+                  {(employeeByDepartment[department.id] || []).map((item) => (
+                    <List.Item
+                      title={item.name}
+                      style={{
+                        borderRadius: 8,
+                        marginBottom: 8,
+                      }}
+                      left={(props) => (
+                        <List.Icon {...props} icon="face-agent" />
+                      )}
+                      onPress={() => {
+                        goToUpdateEmployee({
+                          router,
+                          shopId: shop.id,
+                          employeeId: item.id,
+                        });
+                      }}
+                    />
+                  ))}
+                </View>
+              );
+            })}
           </List.Section>
         </ScrollView>
 
