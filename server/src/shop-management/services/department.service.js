@@ -19,7 +19,7 @@ const createDepartment = async ({ shopId, createBody, userId }) => {
   const department = await Department.create({ ...createBody, shop: shopId });
 
   const departmentJson = department.toJSON();
-  await notifyUpdateDepartment({
+  notifyUpdateDepartment({
     department: departmentJson,
     action: EventActionType.CREATE,
     userId,
@@ -36,7 +36,7 @@ const updateDepartment = async ({ shopId, departmentId, updateBody, userId }) =>
   throwBadRequest(!department, getMessageByLocale({ key: 'department.notFound' }));
 
   const departmentJson = department.toJSON();
-  await notifyUpdateDepartment({
+  notifyUpdateDepartment({
     department: departmentJson,
     action: EventActionType.UPDATE,
     userId,
@@ -48,7 +48,7 @@ const deleteDepartment = async ({ shopId, departmentId, userId }) => {
   const department = await Department.findOneAndDelete({ _id: departmentId, shop: shopId });
 
   const departmentJson = department.toJSON();
-  await notifyUpdateDepartment({
+  notifyUpdateDepartment({
     department: departmentJson,
     action: EventActionType.DELETE,
     userId,

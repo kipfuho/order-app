@@ -183,7 +183,7 @@ const payOrderSession = async ({ shopId, requestBody, userId }) => {
     },
   });
 
-  await notifyOrderSessionPayment({ orderSession: updatedOrderSession, userId });
+  notifyOrderSessionPayment({ orderSession: updatedOrderSession, userId });
 
   return updatedOrderSession;
 };

@@ -40,7 +40,7 @@ const notifyOrderSessionPaymentForCustomer = async ({ orderSession }) => {
     type: AppSyncEvent.PAYMENT_COMPLETE,
     data: {
       orderSessionId: orderSession.id,
-      tableId: orderSession.tableIds[0],
+      tableId: getStringId({ object: orderSession.tables, key: '0' }),
       billNo: formatOrderSessionNo(orderSession),
     },
   };
@@ -57,7 +57,7 @@ const notifyOrderSessionPayment = async ({ orderSession, userId }) => {
     type: AppSyncEvent.PAYMENT_COMPLETE,
     data: {
       orderSessionId: orderSession.id,
-      tableId: orderSession.tableIds[0],
+      tableId: getStringId({ object: orderSession.tables, key: '0' }),
       userId,
     },
   };
@@ -296,7 +296,7 @@ const notifyUpdateOrderSession = async ({ orderSession, userId }) => {
     type: AppSyncEvent.ORDER_SESSION_UPDATE,
     data: {
       orderSessionId: orderSession.id,
-      tableId: orderSession.tableIds[0],
+      tableId: getStringId({ object: orderSession.tables, key: '0' }),
       userId,
     },
   };
