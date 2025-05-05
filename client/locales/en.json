@@ -11,7 +11,7 @@
   "check_in": "Check in",
   "check_out": "Check out",
   "total_payment_amount": "Total payment amount",
-  "total": "Total payment amount",
+  "total": "Total",
   "discount": "Discount",
   "tax": "Tax",
   "guest": "Guest",
@@ -105,5 +105,16 @@
   "employee_position_not_found": "Employee position not found",
   "employee_not_found": "Employee not found",
   "department_not_found": "Department not found",
-  "email_exist_cannot_enter_password": "Email has been used, therefore cannot enter new password"
+  "email_exist_cannot_enter_password": "Email has been used, therefore cannot enter new password",
+  "FOOD": "Food",
+  "DRINK": "Drink",
+  "search_dish": "Search dishes",
+  "dish_item": "Items",
+  "cart_items": "Cart items",
+  "update_cart": "Update cart",
+  "note": "Note",
+  "order_history": "Order history",
+  "allow_multiple_order_session": "Allow multiple active order sessions",
+  "need_approval_when_customer_order": "Need employee approval for customer's order",
+  "additional_settings": "Additional settings"
 }

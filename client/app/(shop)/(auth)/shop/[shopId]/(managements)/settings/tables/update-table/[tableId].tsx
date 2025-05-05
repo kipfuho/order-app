@@ -96,10 +96,6 @@ export default function UpdateTablePage() {
 
       // Navigate back to table position list
       goToTableList({ router, shopId: shop.id });
-
-      // Clear input fields
-      setName("");
-      setTablePosition(undefined);
     } catch (error: any) {
       Toast.show({
         type: "error",

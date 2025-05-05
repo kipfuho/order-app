@@ -105,5 +105,16 @@
   "employee_position_not_found": "Không tìm thấy vị trí",
   "employee_not_found": "Không tìm thấy nhân viên",
   "department_not_found": "Không tìm thấy bộ phận",
-  "email_exist_cannot_enter_password": "Email đã được sử dụng, không thể điền mật khẩu mới"
+  "email_exist_cannot_enter_password": "Email đã được sử dụng, không thể điền mật khẩu mới",
+  "FOOD": "Thức ăn",
+  "DRINK": "Đồ uống",
+  "search_dish": "Tìm món ăn",
+  "dish_item": "Món",
+  "cart_items": "Sản phẩm trong rỏ",
+  "update_cart": "Cập nhật",
+  "note": "Ghi chú",
+  "order_history": "Lịch sử order",
+  "allow_multiple_order_session": "Cho phép nhiều đơn cùng một lúc",
+  "need_approval_when_customer_order": "Cần nhân viên xác nhận khách order",
+  "additional_settings": "Cài đặt mở rộng"
 }

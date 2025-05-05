@@ -49,6 +49,7 @@ export default function TablePositionsManagementPage() {
           <List.Section>
             {tablePositions.map((item) => (
               <List.Item
+                key={item.id}
                 title={item.name}
                 style={{
                   borderRadius: 8,

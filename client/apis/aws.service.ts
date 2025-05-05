@@ -51,6 +51,11 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
         try {
           console.log("Received event for shop:", event);
           const { type, data } = event;
+          const { userId } = data;
+          if (store.getState().auth.session?.id === userId) {
+            console.log("Skipped event for shop:", event);
+            return;
+          }
 
           if (type === EventType.SHOP_CHANGED) {
             const { action, shop } = data;
