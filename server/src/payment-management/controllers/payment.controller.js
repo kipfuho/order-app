@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
 const paymentService = require('../services/payment.service');
@@ -14,23 +13,9 @@ const getPaymentVnpayUrl = catchAsync(async (req, res) => {
 
   const vnPayUrl = await paymentService.getPaymentVnpayUrl({ orderSessionId, ipAddress });
 
-  return res.status(201).json({ url: vnPayUrl, pid: orderSessionId });
-});
-
-const vnpayIpn = catchAsync(async (req, res) => {
-  const orderSessionId = req.query.vnp_TxnRef;
-
-  const vnpayPaymentAmount = _.get(req, 'query.vnp_Amount', 0);
-  const error = await paymentService.vnpayIpn({ orderSessionId, vnpayPaymentAmount });
-
-  if (error) {
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ RspCode: '99', Message: error.message });
-  } else {
-    res.status(httpStatus.OK).send({ RspCode: '00', Message: 'Success' });
-  }
+  return res.status(httpStatus.CREATED).json({ url: vnPayUrl, pid: orderSessionId });
 });
 
 module.exports = {
   getPaymentVnpayUrl,
-  vnpayIpn,
 };

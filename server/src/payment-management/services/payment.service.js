@@ -1,10 +1,7 @@
 const { ProductCode, VnpLocale, dateFormat } = require('vnpay');
 const { getOrderSessionById } = require('../../order-management/services/orderUtils.service');
 const { formatOrderSessionNo } = require('../../utils/common');
-const { vnpay, vnpayConfig } = require('../configs/vnpay.config');
-const logger = require('../../config/logger');
-const { payOrderSession } = require('../../order-management/services/orderManagement.service');
-const { PaymentMethod } = require('../../utils/constant');
+const { vnpay, vnpayConfig } = require('../../config/vnpay.config');
 
 const getPaymentVnpayUrl = async ({ orderSessionId, ipAddress }) => {
   const orderSession = await getOrderSessionById(orderSessionId);
@@ -25,27 +22,6 @@ const getPaymentVnpayUrl = async ({ orderSessionId, ipAddress }) => {
   return url;
 };
 
-const vnpayIpn = async ({ orderSessionId, vnpayPaymentAmount }) => {
-  try {
-    logger.info(`Recieved VNPAY IPN: ${orderSessionId}`);
-
-    await payOrderSession({
-      requestBody: {
-        orderSessionId,
-        paymentDetails: [
-          {
-            paymentMethod: PaymentMethod.VNPAY,
-            paymentAmount: vnpayPaymentAmount / 100,
-          },
-        ],
-      },
-    });
-  } catch (error) {
-    return error;
-  }
-};
-
 module.exports = {
   getPaymentVnpayUrl,
-  vnpayIpn,
 };

@@ -1,5 +1,5 @@
 const { VNPay } = require('vnpay');
-const config = require('../../config/config');
+const config = require('./config');
 
 const baseUrl = 'https://order-app-ten-smoky.vercel.app/';
 
