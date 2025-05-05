@@ -1,5 +1,5 @@
 import _, { debounce } from "lodash";
-import { SetStateAction, useCallback, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { Button, Dialog, Text, TextInput } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { updateCurrentCustomerInfo } from "../../../stores/shop.slice";
@@ -12,7 +12,7 @@ export function CustomerInfoDialog({
   onCustomerInfoConfirmClick,
 }: {
   customerDialogVisible: boolean;
-  setCustomerDialogVisible: SetStateAction<any>;
+  setCustomerDialogVisible: Dispatch<SetStateAction<boolean>>;
   onCustomerInfoConfirmClick: () => void;
 }) {
   const dispatch = useDispatch();

@@ -7,14 +7,14 @@ import { ScrollView, View } from "react-native";
 import { LoaderBasic } from "../Loader";
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
-import { SetStateAction } from "react";
+import { Dispatch, SetStateAction } from "react";
 import VerticalDivider from "../VerticalDivider";
 import { convertPaymentAmount } from "../../../constants/utils";
 
 export default function CartCheckoutHistory({
   setVisible,
 }: {
-  setVisible: SetStateAction<any>;
+  setVisible: Dispatch<SetStateAction<boolean>>;
 }) {
   const { t } = useTranslation();
 
@@ -68,13 +68,9 @@ export default function CartCheckoutHistory({
             >
               {t("total")}
             </Text>
-            <Text variant="titleMedium">{`${0} ${t(
-              "dish_item"
-            )}`}</Text>
+            <Text variant="titleMedium">{`${0} ${t("dish_item")}`}</Text>
             <VerticalDivider />
-            <Text variant="titleMedium">
-              {convertPaymentAmount(0)}
-            </Text>
+            <Text variant="titleMedium">{convertPaymentAmount(0)}</Text>
           </View>
         </View>
       </Surface>

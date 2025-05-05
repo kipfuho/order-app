@@ -22,7 +22,7 @@ import { LoaderBasic } from "../Loader";
 import _ from "lodash";
 import { convertPaymentAmount } from "../../../constants/utils";
 import { useGetDishesQuery } from "../../../stores/apiSlices/dishApi.slice";
-import { SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useTranslation } from "react-i18next";
 import VerticalDivider from "../VerticalDivider";
 import UpdateCartItem from "./UpdateCartItem";
@@ -75,7 +75,7 @@ const CartItemCard = ({
 export default function CartDetail({
   setCartDetailVisible,
 }: {
-  setCartDetailVisible: SetStateAction<any>;
+  setCartDetailVisible: Dispatch<SetStateAction<boolean>>;
 }) {
   const { t } = useTranslation();
   const theme = useTheme();

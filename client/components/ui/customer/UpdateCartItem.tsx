@@ -1,4 +1,4 @@
-import { SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import {
   Button,
   Divider,
@@ -25,7 +25,7 @@ export default function UpdateCartItem({
 }: {
   cartItemId: string;
   dish?: Dish;
-  setVisible: SetStateAction<any>;
+  setVisible: Dispatch<SetStateAction<boolean>>;
 }) {
   const dispatch = useDispatch();
   const theme = useTheme();

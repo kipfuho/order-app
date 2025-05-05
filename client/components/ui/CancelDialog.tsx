@@ -1,4 +1,4 @@
-import { ReactNode, SetStateAction } from "react";
+import { Dispatch, ReactNode, SetStateAction } from "react";
 import { ActivityIndicator, Button, Dialog } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
@@ -16,7 +16,7 @@ export function ConfirmCancelDialog({
   isLoading: boolean;
   children?: ReactNode;
   dialogVisible: boolean;
-  setDialogVisible: SetStateAction<any>;
+  setDialogVisible: Dispatch<SetStateAction<boolean>>;
   onConfirmClick: () => void;
   onCancelClick: () => void;
 }) {

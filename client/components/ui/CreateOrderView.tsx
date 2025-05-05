@@ -6,7 +6,7 @@ import {
   Text,
 } from "react-native-paper";
 import { styles } from "../../app/_layout";
-import { SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   useGetDishCategoriesQuery,
   useGetDishesQuery,
@@ -30,7 +30,7 @@ import { convertPaymentAmount } from "../../constants/utils";
 export default function CreateOrder({
   setCreateOrderVisible,
 }: {
-  setCreateOrderVisible: SetStateAction<any>;
+  setCreateOrderVisible: Dispatch<SetStateAction<boolean>>;
 }) {
   const {
     currentShop,
