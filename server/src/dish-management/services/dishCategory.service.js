@@ -2,7 +2,7 @@ const _ = require('lodash');
 const { getDishCategoryFromCache, getDishCategoriesFromCache } = require('../../metadata/dishMetadata.service');
 const { DishCategory } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
-const { notifyUpdateDishCategory, EventActionType } = require('../../utils/awsUtils/appsync.utils');
+const { notifyUpdateDishCategory, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
 
 const getDishCategory = async ({ shopId, dishCategoryId }) => {

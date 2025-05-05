@@ -34,6 +34,8 @@ const envVarsSchema = Joi.object()
     AWS_S3_BUCKET_NAME: Joi.string().description('aws s3 bucket name'),
     AWS_APPSYNC_HTTP: Joi.string().description('aws appsync http endpoint'),
     AWS_APPSYNC_API_KEY: Joi.string().description('aws appsync api key'),
+    VNPAY_TERMINAL_ID: Joi.string().description('vnpay terminal id'),
+    VNPAY_SECRET: Joi.string().description('vnpay hash secret'),
   })
   .unknown();
 
@@ -84,5 +86,9 @@ module.exports = {
     s3BucketName: envVars.AWS_S3_BUCKET_NAME,
     appsyncHttp: envVars.AWS_APPSYNC_HTTP,
     appsyncApiKey: envVars.AWS_APPSYNC_API_KEY,
+  },
+  vnpay: {
+    terminalId: envVars.VNPAY_TERMINAL_ID,
+    secret: envVars.VNPAY_SECRET,
   },
 };

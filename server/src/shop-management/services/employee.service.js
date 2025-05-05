@@ -13,7 +13,7 @@ const {
   notifyUpdateEmployee,
   EventActionType,
   notifyUpdateEmployeePosition,
-} = require('../../utils/awsUtils/appsync.utils');
+} = require('../../utils/awsUtils/appSync.utils');
 const { PermissionType } = require('../../utils/constant');
 const { throwBadRequest } = require('../../utils/errorHandling');
 

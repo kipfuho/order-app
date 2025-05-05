@@ -8,7 +8,7 @@ const { DishTypes } = require('../../utils/constant');
 const { refineFileNameForUploading } = require('../../utils/common');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
-const { notifyUpdateDish, EventActionType } = require('../../utils/awsUtils/appsync.utils');
+const { notifyUpdateDish, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
 
 const getDish = async ({ shopId, dishId }) => {

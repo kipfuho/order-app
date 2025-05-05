@@ -7,7 +7,7 @@ const {
 } = require('../../metadata/tableMetadata.service');
 const { TablePosition, Table } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
-const { notifyUpdateTable, EventActionType, notifyUpdateTablePosition } = require('../../utils/awsUtils/appsync.utils');
+const { notifyUpdateTable, EventActionType, notifyUpdateTablePosition } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
 const { getStringId } = require('../../utils/common');
 

@@ -1,7 +1,7 @@
 const { getMessageByLocale } = require('../../locale');
 const { getDepartmentFromCache, getDepartmentsFromCache } = require('../../metadata/departmentMetadata.service');
 const { Department } = require('../../models');
-const { notifyUpdateDepartment, EventActionType } = require('../../utils/awsUtils/appsync.utils');
+const { notifyUpdateDepartment, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 const { throwBadRequest } = require('../../utils/errorHandling');
 
 const getDepartment = async ({ shopId, departmentId }) => {
