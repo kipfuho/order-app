@@ -28,7 +28,7 @@ const getEmployees = async ({ shopId }) => {
   return employees;
 };
 
-const createEmployee = async ({ shopId, createBody }) => {
+const createEmployee = async ({ shopId, createBody, userId }) => {
   const { name, email, password, positionId, departmentId, permissions } = createBody;
 
   let user = await getUserFromDatabase({ email });
@@ -51,11 +51,12 @@ const createEmployee = async ({ shopId, createBody }) => {
   notifyUpdateEmployee({
     employee: employeeJson,
     action: EventActionType.CREATE,
+    userId,
   });
   return employeeJson;
 };
 
-const updateEmployee = async ({ shopId, employeeId, updateBody }) => {
+const updateEmployee = async ({ shopId, employeeId, updateBody, userId }) => {
   const employee = await Employee.findOneAndUpdate({ _id: employeeId, shop: shopId }, { $set: updateBody }, { new: true });
   throwBadRequest(!employee, getMessageByLocale({ key: 'employee.notFound' }));
 
@@ -64,11 +65,12 @@ const updateEmployee = async ({ shopId, employeeId, updateBody }) => {
   notifyUpdateEmployee({
     employee: employeeJson,
     action: EventActionType.UPDATE,
+    userId,
   });
   return employeeJson;
 };
 
-const deleteEmployee = async ({ shopId, employeeId }) => {
+const deleteEmployee = async ({ shopId, employeeId, userId }) => {
   const employee = await Employee.findOneAndDelete({ _id: employeeId, shop: shopId });
   throwBadRequest(!employee, getMessageByLocale({ key: 'employee.notFound' }));
 
@@ -77,6 +79,7 @@ const deleteEmployee = async ({ shopId, employeeId }) => {
   notifyUpdateEmployee({
     employee: employeeJson,
     action: EventActionType.DELETE,
+    userId,
   });
   return employeeJson;
 };
@@ -92,18 +95,19 @@ const getEmployeePositions = async ({ shopId }) => {
   return employeePositions;
 };
 
-const createEmployeePosition = async ({ shopId, createBody }) => {
+const createEmployeePosition = async ({ shopId, createBody, userId }) => {
   const employeePosition = await EmployeePosition.create({ ...createBody, shop: shopId });
 
   const employeePositionJson = employeePosition.toJSON();
   notifyUpdateEmployeePosition({
     employeePosition: employeePositionJson,
     action: EventActionType.CREATE,
+    userId,
   });
   return employeePositionJson;
 };
 
-const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody }) => {
+const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody, userId }) => {
   const employeePosition = await EmployeePosition.findOneAndUpdate(
     { _id: employeePositionId, shop: shopId },
     { $set: updateBody },
@@ -115,23 +119,26 @@ const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody }
   notifyUpdateEmployeePosition({
     employeePosition: employeePositionJson,
     action: EventActionType.UPDATE,
+    userId,
   });
   return employeePositionJson;
 };
 
-const deleteEmployeePosition = async ({ shopId, employeePositionId }) => {
+const deleteEmployeePosition = async ({ shopId, employeePositionId, userId }) => {
   const employeePosition = await EmployeePosition.findOneAndDelete({ _id: employeePositionId, shop: shopId });
 
   const employeePositionJson = employeePosition.toJSON();
   notifyUpdateEmployeePosition({
     employeePosition: employeePositionJson,
     action: EventActionType.DELETE,
+    userId,
   });
   return employeePositionJson;
 };
 
 const getAllPermissionTypes = async () => {
-  return Object.values(PermissionType);
+  const allPermissionTypes = Object.values(PermissionType);
+  return allPermissionTypes.filter((type) => type !== PermissionType.SHOP_APP);
 };
 
 module.exports = {

@@ -37,10 +37,10 @@ const queryShop = async (query) => {
   return shops;
 };
 
-const createShop = async ({ createBody, ownerUserId }) => {
+const createShop = async ({ createBody, userId }) => {
   const shop = await Shop.create({
     ...createBody,
-    owner: ownerUserId,
+    owner: userId,
   });
 
   const shopId = shop._id;
@@ -68,29 +68,29 @@ const createShop = async ({ createBody, ownerUserId }) => {
   await Employee.create({
     shop: shopId,
     department: ownerDepartment._id,
-    user: ownerUserId,
+    user: userId,
     name: getMessageByLocale({ key: 'shop.owner' }),
   });
 
   const shopJson = shop.toJSON();
-  notifyUpdateShop({ shop: shopJson, action: EventActionType.CREATE });
+  notifyUpdateShop({ shop: shopJson, action: EventActionType.CREATE, userId });
   return shopJson;
 };
 
-const updateShop = async ({ shopId, updateBody }) => {
+const updateShop = async ({ shopId, updateBody, userId }) => {
   const shop = await Shop.findByIdAndUpdate(shopId, { $set: updateBody }, { new: true });
   throwBadRequest(!shop, getMessageByLocale({ key: 'shop.notFound' }));
 
   const shopJson = shop.toJSON();
-  notifyUpdateShop({ shop: shopJson, action: EventActionType.UPDATE });
+  notifyUpdateShop({ shop: shopJson, action: EventActionType.UPDATE, userId });
   return shopJson;
 };
 
-const deleteShop = async (shopId) => {
+const deleteShop = async ({ shopId, userId }) => {
   const shop = await Shop.findByIdAndDelete({ _id: shopId });
 
   const shopJson = shop.toJSON();
-  notifyUpdateShop({ shop: shopJson, action: EventActionType.CREATE });
+  notifyUpdateShop({ shop: shopJson, action: EventActionType.CREATE, userId });
   return shopJson;
 };
 

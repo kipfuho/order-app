@@ -15,18 +15,19 @@ const getDepartments = async ({ shopId }) => {
   return departments;
 };
 
-const createDepartment = async ({ shopId, createBody }) => {
+const createDepartment = async ({ shopId, createBody, userId }) => {
   const department = await Department.create({ ...createBody, shop: shopId });
 
   const departmentJson = department.toJSON();
   await notifyUpdateDepartment({
     department: departmentJson,
     action: EventActionType.CREATE,
+    userId,
   });
   return departmentJson;
 };
 
-const updateDepartment = async ({ shopId, departmentId, updateBody }) => {
+const updateDepartment = async ({ shopId, departmentId, updateBody, userId }) => {
   const department = await Department.findOneAndUpdate(
     { _id: departmentId, shop: shopId },
     { $set: updateBody },
@@ -38,17 +39,19 @@ const updateDepartment = async ({ shopId, departmentId, updateBody }) => {
   await notifyUpdateDepartment({
     department: departmentJson,
     action: EventActionType.UPDATE,
+    userId,
   });
   return departmentJson;
 };
 
-const deleteDepartment = async ({ shopId, departmentId }) => {
+const deleteDepartment = async ({ shopId, departmentId, userId }) => {
   const department = await Department.findOneAndDelete({ _id: departmentId, shop: shopId });
 
   const departmentJson = department.toJSON();
   await notifyUpdateDepartment({
     department: departmentJson,
     action: EventActionType.DELETE,
+    userId,
   });
   return departmentJson;
 };

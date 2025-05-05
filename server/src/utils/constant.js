@@ -70,7 +70,7 @@ const PermissionType = {
   UPDATE_ORDER: 'shop_update_order',
   CANCEL_ORDER: 'shop_cancel_order_session',
   CANCEL_ORDER_PAID_STATUS: 'shop_cancel_paid_status',
-  CHANGE_DISH_ORDER: 'shop_increase_dishOrder_quantity',
+  CHANGE_DISH_ORDER: 'shop_change_dishOrder_quantity',
   PAYMENT_ORDER: 'shop_payment_order',
   APPROVE_ORDER: 'shop_approve_order',
   VIEW_ORDER: 'shop_view_order',

@@ -17,7 +17,7 @@ const getDishCategories = async ({ shopId }) => {
   return dishCategories;
 };
 
-const createDishCategory = async ({ shopId, createBody }) => {
+const createDishCategory = async ({ shopId, createBody, userId }) => {
   const dishCategories = await getDishCategoriesFromCache({ shopId });
   throwBadRequest(
     _.find(dishCategories, (dishCategory) => dishCategory.name === createBody.name),
@@ -28,11 +28,12 @@ const createDishCategory = async ({ shopId, createBody }) => {
   notifyUpdateDishCategory({
     action: EventActionType.CREATE,
     dishCategory: dishCategoryJson,
+    userId,
   });
   return dishCategoryJson;
 };
 
-const updateDishCategory = async ({ shopId, dishCategoryId, updateBody }) => {
+const updateDishCategory = async ({ shopId, dishCategoryId, updateBody, userId }) => {
   const dishCategories = await getDishCategoriesFromCache({ shopId });
   throwBadRequest(
     _.find(dishCategories, (dishCategory) => dishCategory.name === updateBody.name && dishCategory.id !== dishCategoryId),
@@ -49,11 +50,12 @@ const updateDishCategory = async ({ shopId, dishCategoryId, updateBody }) => {
   notifyUpdateDishCategory({
     action: EventActionType.CREATE,
     dishCategory: dishCategoryJson,
+    userId,
   });
   return dishCategoryJson;
 };
 
-const deleteDishCategory = async ({ shopId, dishCategoryId }) => {
+const deleteDishCategory = async ({ shopId, dishCategoryId, userId }) => {
   const dishCategory = await DishCategory.findOneAndDelete({ _id: dishCategoryId, shop: shopId });
   throwBadRequest(!dishCategory, getMessageByLocale({ key: 'dishCategory.notFound' }));
 
@@ -61,6 +63,7 @@ const deleteDishCategory = async ({ shopId, dishCategoryId }) => {
   notifyUpdateDishCategory({
     action: EventActionType.CREATE,
     dishCategory: dishCategoryJson,
+    userId,
   });
   return dishCategoryJson;
 };

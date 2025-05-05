@@ -22,7 +22,7 @@ const getDishes = async ({ shopId }) => {
   return dishes;
 };
 
-const createDish = async ({ shopId, createBody }) => {
+const createDish = async ({ shopId, createBody, userId }) => {
   // eslint-disable-next-line no-param-reassign
   createBody.shop = shopId;
   const dish = await Dish.create(createBody);
@@ -31,11 +31,12 @@ const createDish = async ({ shopId, createBody }) => {
   notifyUpdateDish({
     action: EventActionType.CREATE,
     dish: dishJson,
+    userId,
   });
   return dishJson;
 };
 
-const updateDish = async ({ shopId, dishId, updateBody }) => {
+const updateDish = async ({ shopId, dishId, updateBody, userId }) => {
   // eslint-disable-next-line no-param-reassign
   updateBody.shop = shopId;
   const dish = await Dish.findOneAndUpdate({ _id: dishId, shop: shopId }, { $set: updateBody }, { new: true });
@@ -53,11 +54,12 @@ const updateDish = async ({ shopId, dishId, updateBody }) => {
   notifyUpdateDish({
     action: EventActionType.UPDATE,
     dish: dishJson,
+    userId,
   });
   return dishJson;
 };
 
-const deleteDish = async ({ shopId, dishId }) => {
+const deleteDish = async ({ shopId, dishId, userId }) => {
   const dish = await Dish.findOneAndDelete({ _id: dishId, shopId });
   throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
 
@@ -65,6 +67,7 @@ const deleteDish = async ({ shopId, dishId }) => {
   notifyUpdateDish({
     action: EventActionType.DELETE,
     dish: dishJson,
+    userId,
   });
   return dishJson;
 };

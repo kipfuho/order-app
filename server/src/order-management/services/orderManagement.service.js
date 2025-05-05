@@ -166,7 +166,7 @@ const _validateBeforePayment = (orderSession, paymentDetails) => {
   );
 };
 
-const payOrderSession = async ({ shopId, requestBody }) => {
+const payOrderSession = async ({ shopId, requestBody, userId }) => {
   const { orderSessionId, paymentDetails } = requestBody;
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSessionId, shopId);
   _validateBeforePayment(orderSessionJson, paymentDetails);
@@ -183,7 +183,7 @@ const payOrderSession = async ({ shopId, requestBody }) => {
     },
   });
 
-  await notifyOrderSessionPayment({ orderSession: updatedOrderSession });
+  await notifyOrderSessionPayment({ orderSession: updatedOrderSession, userId });
 
   return updatedOrderSession;
 };

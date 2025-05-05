@@ -28,7 +28,7 @@ const getTables = async ({ shopId }) => {
   return tables;
 };
 
-const createTable = async ({ shopId, createBody }) => {
+const createTable = async ({ shopId, createBody, userId }) => {
   const tables = await getTablesFromCache({
     shopId,
   });
@@ -45,11 +45,11 @@ const createTable = async ({ shopId, createBody }) => {
   const table = await Table.create({ ...createBody, shop: shopId });
   await table.populate('position');
   const tableJson = table.toJSON();
-  notifyUpdateTable({ table: tableJson, action: EventActionType.CREATE });
+  notifyUpdateTable({ table: tableJson, action: EventActionType.CREATE, userId });
   return tableJson;
 };
 
-const updateTable = async ({ shopId, tableId, updateBody }) => {
+const updateTable = async ({ shopId, tableId, updateBody, userId }) => {
   const tables = await getTablesFromCache({
     shopId,
   });
@@ -69,11 +69,11 @@ const updateTable = async ({ shopId, tableId, updateBody }) => {
 
   await table.populate('position');
   const tableJson = table.toJSON();
-  notifyUpdateTable({ table: tableJson, action: EventActionType.UPDATE });
+  notifyUpdateTable({ table: tableJson, action: EventActionType.UPDATE, userId });
   return tableJson;
 };
 
-const deleteTable = async ({ shopId, tableId }) => {
+const deleteTable = async ({ shopId, tableId, userId }) => {
   const table = await Table.findOneAndDelete({ _id: tableId, shop: shopId });
   throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
 
@@ -82,6 +82,7 @@ const deleteTable = async ({ shopId, tableId }) => {
   notifyUpdateTable({
     table: tableJson,
     action: EventActionType.DELETE,
+    userId,
   });
   return tableJson;
 };
@@ -98,7 +99,7 @@ const getTablePositions = async ({ shopId }) => {
   return tablePositions;
 };
 
-const createTablePosition = async ({ shopId, createBody }) => {
+const createTablePosition = async ({ shopId, createBody, userId }) => {
   const tablePostions = await getTablePositionsFromCache({ shopId });
   throwBadRequest(
     _.find(tablePostions, (tablePosition) => _.toLower(tablePosition.name) === _.toLower(createBody.name)),
@@ -110,11 +111,11 @@ const createTablePosition = async ({ shopId, createBody }) => {
   });
 
   const tablePositionJson = tablePosition.toJSON();
-  notifyUpdateTablePosition({ tablePosition: tablePositionJson, action: EventActionType.CREATE });
+  notifyUpdateTablePosition({ tablePosition: tablePositionJson, action: EventActionType.CREATE, userId });
   return tablePositionJson;
 };
 
-const updateTablePosition = async ({ shopId, tablePositionId, updateBody }) => {
+const updateTablePosition = async ({ shopId, tablePositionId, updateBody, userId }) => {
   const tablePostions = await getTablePositionsFromCache({ shopId });
   throwBadRequest(
     _.find(
@@ -131,11 +132,11 @@ const updateTablePosition = async ({ shopId, tablePositionId, updateBody }) => {
   throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));
 
   const tablePositionJson = tablePosition.toJSON();
-  notifyUpdateTablePosition({ tablePosition: tablePositionJson, action: EventActionType.UPDATE });
+  notifyUpdateTablePosition({ tablePosition: tablePositionJson, action: EventActionType.UPDATE, userId });
   return tablePositionJson;
 };
 
-const deleteTablePosition = async ({ shopId, tablePositionId }) => {
+const deleteTablePosition = async ({ shopId, tablePositionId, userId }) => {
   const tablePosition = await TablePosition.findOneAndDelete({ _id: tablePositionId, shop: shopId });
   throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));
 
@@ -143,6 +144,7 @@ const deleteTablePosition = async ({ shopId, tablePositionId }) => {
   notifyUpdateTablePosition({
     tablePosition: tablePositionJson,
     action: EventActionType.UPDATE,
+    userId,
   });
   return tablePositionJson;
 };

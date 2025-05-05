@@ -47,7 +47,7 @@ const notifyOrderSessionPaymentForCustomer = async ({ orderSession }) => {
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyOrderSessionPayment = async ({ orderSession }) => {
+const notifyOrderSessionPayment = async ({ orderSession, userId }) => {
   if (_.isEmpty(orderSession)) {
     return;
   }
@@ -58,6 +58,7 @@ const notifyOrderSessionPayment = async ({ orderSession }) => {
     data: {
       orderSessionId: orderSession.id,
       tableId: orderSession.tableIds[0],
+      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
@@ -80,7 +81,7 @@ const _notifyUpdateShopForCustomer = async ({ action, shop }) => {
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateShop = async ({ action, shop }) => {
+const notifyUpdateShop = async ({ action, shop, userId }) => {
   if (_.isEmpty(shop)) {
     return;
   }
@@ -91,6 +92,7 @@ const notifyUpdateShop = async ({ action, shop }) => {
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       shop,
+      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
@@ -113,7 +115,7 @@ const _notifyUpdateTableForCustomer = async ({ action, table }) => {
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateTable = async ({ action, table }) => {
+const notifyUpdateTable = async ({ action, table, userId }) => {
   if (_.isEmpty(table)) {
     return;
   }
@@ -124,13 +126,30 @@ const notifyUpdateTable = async ({ action, table }) => {
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       table,
+      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
   await _notifyUpdateTableForCustomer({ action, table });
 };
 
-const notifyUpdateTablePosition = async ({ action, tablePosition }) => {
+const _notifyUpdateTablePositionForCustomer = async ({ action, tablePosition }) => {
+  if (_.isEmpty(tablePosition)) {
+    return;
+  }
+
+  const channel = getCustomerChannel(getStringId({ object: tablePosition, key: 'shop' }));
+  const event = {
+    type: AppSyncEvent.TABLE_POSITION_CHANGED,
+    data: {
+      action, // 'CREATE', 'UPDATE', 'DELETE'
+      tablePosition,
+    },
+  };
+  return publishSingleAppSyncEvent({ channel, event });
+};
+
+const notifyUpdateTablePosition = async ({ action, tablePosition, userId }) => {
   if (_.isEmpty(tablePosition)) {
     return;
   }
@@ -141,9 +160,11 @@ const notifyUpdateTablePosition = async ({ action, tablePosition }) => {
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       tablePosition,
+      userId,
     },
   };
-  return publishSingleAppSyncEvent({ channel, event });
+  await publishSingleAppSyncEvent({ channel, event });
+  await _notifyUpdateTablePositionForCustomer({ action, tablePosition });
 };
 
 const _notifyUpdateDishForCustomer = async ({ action, dish }) => {
@@ -162,7 +183,7 @@ const _notifyUpdateDishForCustomer = async ({ action, dish }) => {
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateDish = async ({ action, dish }) => {
+const notifyUpdateDish = async ({ action, dish, userId }) => {
   if (_.isEmpty(dish)) {
     return;
   }
@@ -173,6 +194,7 @@ const notifyUpdateDish = async ({ action, dish }) => {
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       dish,
+      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
@@ -195,7 +217,7 @@ const _notifyUpdateDishCategoryForCustomer = async ({ action, dishCategory }) =>
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateDishCategory = async ({ action, dishCategory }) => {
+const notifyUpdateDishCategory = async ({ action, dishCategory, userId }) => {
   if (_.isEmpty(dishCategory)) {
     return;
   }
@@ -206,13 +228,14 @@ const notifyUpdateDishCategory = async ({ action, dishCategory }) => {
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       dishCategory,
+      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
   await _notifyUpdateDishCategoryForCustomer({ action, dishCategory });
 };
 
-const notifyUpdateEmployee = async ({ action, employee }) => {
+const notifyUpdateEmployee = async ({ action, employee, userId }) => {
   if (_.isEmpty(employee)) {
     return;
   }
@@ -223,12 +246,13 @@ const notifyUpdateEmployee = async ({ action, employee }) => {
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       employee,
+      userId,
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateEmployeePosition = async ({ action, employeePosition }) => {
+const notifyUpdateEmployeePosition = async ({ action, employeePosition, userId }) => {
   if (_.isEmpty(employeePosition)) {
     return;
   }
@@ -239,12 +263,13 @@ const notifyUpdateEmployeePosition = async ({ action, employeePosition }) => {
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       employeePosition,
+      userId,
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateDepartment = async ({ action, department }) => {
+const notifyUpdateDepartment = async ({ action, department, userId }) => {
   if (_.isEmpty(department)) {
     return;
   }
@@ -255,12 +280,13 @@ const notifyUpdateDepartment = async ({ action, department }) => {
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       department,
+      userId,
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateOrderSession = async ({ orderSession }) => {
+const notifyUpdateOrderSession = async ({ orderSession, userId }) => {
   if (_.isEmpty(orderSession)) {
     return;
   }
@@ -271,6 +297,7 @@ const notifyUpdateOrderSession = async ({ orderSession }) => {
     data: {
       orderSessionId: orderSession.id,
       tableId: orderSession.tableIds[0],
+      userId,
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
