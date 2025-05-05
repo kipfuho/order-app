@@ -18,6 +18,7 @@
   "email.alreadyTaken": "Email already taken",
   "email.invalid": "Email already taken",
   "order.notFound": "Order not found",
+  "order.disabled": "Order already cancelled",
   "cart.empty": "Cart is empty",
   "orderSession.notFound": "Order session not found",
   "table.notFound": "Table not found",
@@ -32,5 +33,6 @@
   "password.resetFailed": "Password reset failed",
   "auth.required": "Please authenticate",
   "notFound": "Not found",
-  "auth.incorrectCredential": "Incorrect username or password"
+  "auth.incorrectCredential": "Incorrect username or password",
+  "permission.missing": "Missing permission to do the operation"
 }

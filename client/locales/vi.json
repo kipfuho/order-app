@@ -116,5 +116,22 @@
   "order_history": "Lịch sử order",
   "allow_multiple_order_session": "Cho phép nhiều đơn cùng một lúc",
   "need_approval_when_customer_order": "Cần nhân viên xác nhận khách order",
-  "additional_settings": "Cài đặt mở rộng"
+  "additional_settings": "Cài đặt mở rộng",
+  "shop_view_shop": "Xem thông tin cửa hàng",
+  "shop_update_shop": "Cập nhật cửa hàng",
+  "shop_create_employee": "Tạo nhân viên",
+  "shop_update_employee": "Cập nhật nhân viên",
+  "shop_view_employee": "Xem thông tin nhân viên",
+  "shop_create_order": "Tạo order",
+  "shop_update_order": "Cập nhật order",
+  "shop_cancel_order_session": "Huỷ order",
+  "shop_cancel_paid_status": "Huỷ thanh toán order",
+  "shop_change_dishOrder_quantity": "Thay đổi số lượng món trong đơn",
+  "shop_payment_order": "Thanh toán đơn",
+  "shop_approve_order": "Xác nhận order",
+  "shop_view_order": "Xem thông tin order",
+  "shop_view_menu": "Xem thông tin menu",
+  "shop_create_menu": "Tạo menu",
+  "shop_update_menu": "Cập nhật menu",
+  "shop_view_report": "Xem báo cáo"
 }

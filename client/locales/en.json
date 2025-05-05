@@ -116,5 +116,22 @@
   "order_history": "Order history",
   "allow_multiple_order_session": "Allow multiple active order sessions",
   "need_approval_when_customer_order": "Need employee approval for customer's order",
-  "additional_settings": "Additional settings"
+  "additional_settings": "Additional settings",
+  "shop_view_shop": "View shop",
+  "shop_update_shop": "Update shop",
+  "shop_create_employee": "Create employee",
+  "shop_update_employee": "Update employee",
+  "shop_view_employee": "View employee",
+  "shop_create_order": "Create order",
+  "shop_update_order": "Update order",
+  "shop_cancel_order_session": "Cancel order",
+  "shop_cancel_paid_status": "Cancel order paid status",
+  "shop_change_dishOrder_quantity": "Change order's dish quantity",
+  "shop_payment_order": "Pay order",
+  "shop_approve_order": "Approve order",
+  "shop_view_order": "View order",
+  "shop_view_menu": "View menu",
+  "shop_create_menu": "Create menu",
+  "shop_update_menu": "Update menu",
+  "shop_view_report": "View report"
 }

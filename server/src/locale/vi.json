@@ -18,6 +18,7 @@
   "email.alreadyTaken": "Email đã được sử dụng",
   "email.invalid": "Email đã được sử dụng",
   "order.notFound": "Không tìm thấy order",
+  "order.disabled": "Order đã bị huỷ",
   "cart.empty": "Giỏ hàng rỗng",
   "orderSession.notFound": "Không tìm thấy order session",
   "table.notFound": "Không tìm thấy bàn",
@@ -32,5 +33,6 @@
   "password.resetFailed": "Reset mật khẩu thất bại",
   "auth.required": "Vui lòng đăng nhập",
   "notFound": "Không tìm thấy",
-  "auth.incorrectCredential": "Tên đăng nhập hoặc mật khẩu không đúng"
+  "auth.incorrectCredential": "Tên đăng nhập hoặc mật khẩu không đúng",
+  "permission.missing": "Không có đủ quyền để thực hiện thao tác"
 }
