@@ -10,8 +10,9 @@ import {
 import Toast from "react-native-toast-message";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { View, KeyboardAvoidingView, Platform, Image } from "react-native";
+import { View, KeyboardAvoidingView, Platform } from "react-native";
 import { loginRequest } from "../../../apis/auth.api.service";
+import Logo from "../../../assets/svg/logo.svg";
 
 const LoginScreen = () => {
   const { t } = useTranslation();
@@ -64,10 +65,7 @@ const LoginScreen = () => {
         }}
       >
         <View style={{ alignItems: "center", marginBottom: 32 }}>
-          <Image
-            source={require("../../../assets/images/icon.png")}
-            style={{ width: 80, height: 80, borderRadius: 20 }}
-          />
+          <Logo width={240} height={240} fill="#2e7d32" />
           <Text variant="headlineMedium" style={{ marginTop: 16 }}>
             {t("login")}
           </Text>
