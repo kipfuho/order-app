@@ -23,7 +23,6 @@ router.get('/:dishId', auth(), dishController.getDish);
 router.route('/').get(auth(), dishController.getDishes).post(auth(), dishController.createDish);
 router.patch('/:dishId', auth(), dishController.updateDish);
 router.delete('/:dishId', auth(), dishController.deleteDish);
-router.post('/upload', auth(), upload.single('image'), dishController.uploadImage);
-router.post('/remove', auth(), dishController.removeImage);
+router.post('/upload-image', auth(), upload.single('image'), dishController.uploadImage);
 
 module.exports = router;

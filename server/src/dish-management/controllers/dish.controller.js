@@ -54,12 +54,6 @@ const uploadImage = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ url });
 });
 
-const removeImage = catchAsync(async (req, res) => {
-  const shopId = _.get(req, 'shop.id');
-  const url = await dishService.removeImage({ shopId, ...req.body });
-  res.status(httpStatus.OK).send({ url });
-});
-
 module.exports = {
   getDish,
   getDishes,
@@ -68,5 +62,4 @@ module.exports = {
   deleteDish,
   getDishTypes,
   uploadImage,
-  removeImage,
 };

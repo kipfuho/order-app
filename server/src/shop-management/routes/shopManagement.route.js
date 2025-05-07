@@ -1,4 +1,6 @@
 const express = require('express');
+const multer = require('multer');
+const httpStatus = require('http-status');
 const shopManagementController = require('../controllers/shopManagement.controller');
 const tableRoute = require('./table.route');
 const tablePositionRoute = require('./tablePosition.route');
@@ -12,6 +14,9 @@ const orderRoute = require('../../order-management/routes/orderManagement.route'
 const paymentRoute = require('../../payment-management/routes/payment.route');
 const suggestionRoute = require('../../suggestion-system/routes/suggestion.route');
 const auth = require('../../middlewares/auth');
+const { MAX_FILE_SIZE } = require('../../utils/constant');
+const ApiError = require('../../utils/ApiError');
+const { getMessageByLocale } = require('../../locale');
 
 const router = express.Router();
 
@@ -73,9 +78,21 @@ defaultRoutes.forEach((route) => {
   );
 });
 
+const upload = multer({
+  limits: { fileSize: MAX_FILE_SIZE },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(new ApiError(httpStatus.BAD_REQUEST, getMessageByLocale('notImage')));
+    }
+    return cb(undefined, true);
+  },
+});
+
 router.get('/:shopId', auth(), shopManagementController.getShop);
 router.route('/').get(auth(), shopManagementController.queryShop).post(auth(), shopManagementController.createShop);
 router.patch('/:shopId', auth(), shopManagementController.updateShop);
 router.delete('/:shopId', auth(), shopManagementController.deleteShop);
+router.post('/upload-image', auth(), upload.single('image'), shopManagementController.uploadImage);
+router.post('/remove-image', auth(), shopManagementController.removeImage);
 
 module.exports = router;

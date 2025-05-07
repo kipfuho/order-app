@@ -7,6 +7,22 @@ const employeeService = require('../services/employee.service');
 const departmentService = require('../services/department.service');
 const { convertEmployeeForResponse } = require('../converters/employee.converter');
 
+const uploadImage = catchAsync(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No file uploaded');
+  }
+
+  const shopId = _.get(req, 'shop.id');
+  const url = await shopManagementService.uploadImage({ shopId, image: req.file });
+  res.status(httpStatus.OK).send({ url });
+});
+
+const removeImage = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const url = await shopManagementService.removeImage({ shopId, ...req.body });
+  res.status(httpStatus.OK).send({ url });
+});
+
 const getShop = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const shop = await shopManagementService.getShop(shopId);
@@ -242,6 +258,8 @@ const getPermissionTypes = catchAsync(async (req, res) => {
 });
 
 module.exports = {
+  uploadImage,
+  removeImage,
   getShop,
   queryShop,
   createShop,

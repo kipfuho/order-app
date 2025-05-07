@@ -9,7 +9,7 @@ const getPaymentVnpayUrl = async ({ orderSessionId, ipAddress }) => {
   const createDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
 
   const url = vnpay.buildPaymentUrl({
-    vnp_Amount: orderSession.paymentAmount * 100,
+    vnp_Amount: orderSession.paymentAmount,
     vnp_IpAddr: ipAddress,
     vnp_TxnRef: orderSession.id,
     vnp_OrderInfo: `Thanh toan cho ma GD: ${formatOrderSessionNo(orderSession)}`,

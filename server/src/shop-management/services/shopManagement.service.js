@@ -1,10 +1,13 @@
 const _ = require('lodash');
+const crypto = require('crypto');
 const { Shop, Unit, Department, Employee } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { TableDepartmentPermissions, CashierDepartmentPermissions, PermissionType, Status } = require('../../utils/constant');
 const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { notifyUpdateShop, EventActionType } = require('../../utils/awsUtils/appSync.utils');
+const { refineFileNameForUploading } = require('../../utils/common');
+const aws = require('../../utils/aws');
 
 const getShop = async (shopId) => {
   const shop = await getShopFromCache({ shopId });
@@ -94,10 +97,26 @@ const deleteShop = async ({ shopId, userId }) => {
   return shopJson;
 };
 
+const uploadImage = async ({ image }) => {
+  const fileName = `${crypto.randomBytes(3).toString('hex')}_${refineFileNameForUploading(image.originalname)}`;
+  const url = await aws.uploadFileBufferToS3({
+    fileBuffer: image.buffer,
+    targetFilePath: `shops/${fileName}`,
+    mimeType: image.mimetype,
+  });
+  return url;
+};
+
+const removeImage = async ({ url }) => {
+  await aws.deleteObjectFromS3(aws.getS3ObjectKey(url));
+};
+
 module.exports = {
   getShop,
   queryShop,
   createShop,
   updateShop,
   deleteShop,
+  uploadImage,
+  removeImage,
 };

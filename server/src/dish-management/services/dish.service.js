@@ -87,10 +87,6 @@ const uploadImage = async ({ shopId, image }) => {
   return url;
 };
 
-const removeImage = async ({ url }) => {
-  await aws.deleteObjectFromS3(aws.getS3ObjectKey(url));
-};
-
 module.exports = {
   getDish,
   createDish,
@@ -99,5 +95,4 @@ module.exports = {
   getDishes,
   getDishTypes,
   uploadImage,
-  removeImage,
 };
