@@ -6,8 +6,7 @@ const config = require('../config/config');
 const { receiveJobMessage } = require('./jobUtils');
 const { SESSION_NAME_SPACE } = require('../utils/constant');
 const common = require('../utils/common');
-const { JobTypes } = require('./constant');
-const S3Log = require('../models/s3.model');
+const { processJob } = require('./job.service');
 
 // initial setup
 let retry = 0;
@@ -21,14 +20,6 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
 });
 
 // end initial setup
-
-const _processJob = async (jobPayload) => {
-  const { type, data } = jobPayload;
-
-  if (type === JobTypes.CONFIRM_S3_OBJECT_USAGE) {
-    await S3Log.updateInUseKeys(data);
-  }
-};
 
 const fetchJobAndExecute = async () => {
   // neu co mot job nao do dang chay thi ko chay job nay
@@ -49,7 +40,7 @@ const fetchJobAndExecute = async () => {
     }
     jobPayload = JSON.stringify(jobDataString);
     logger.debug(`fetched job...${jobPayload}`);
-    await _processJob(jobPayload);
+    await processJob(jobPayload);
   } catch (err) {
     logger.error(`error process job. ${jobPayload}. ${err.stack}`);
   } finally {

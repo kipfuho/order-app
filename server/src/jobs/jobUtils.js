@@ -1,9 +1,10 @@
 const redis = require('../utils/redis');
 const logger = require('../config/logger');
 const config = require('../config/config');
+const { processJob } = require('./job.service');
 
 const _sendJobMessage = async ({ messageBody }) => {
-  if (config.env === 'test' || config.env === 'local') {
+  if (config.env !== 'batch') {
     logger.debug(messageBody);
     return;
   }
@@ -35,6 +36,7 @@ const _registerJob = async (jobData) => {
     const jobMessage = JSON.stringify(jobData);
     logger.info(`registerJob: ${jobMessage}`);
     await _sendJobMessage({ messageBody: jobMessage });
+    processJob(jobData);
   } catch (err) {
     logger.error(`error registerJob. ${err}`);
   }

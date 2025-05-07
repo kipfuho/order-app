@@ -8,6 +8,8 @@ const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { notifyUpdateShop, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 const { refineFileNameForUploading } = require('../../utils/common');
 const aws = require('../../utils/aws');
+const { registerJob } = require('../../jobs/jobUtils');
+const { JobTypes } = require('../../jobs/constant');
 
 const getShop = async (shopId) => {
   const shop = await getShopFromCache({ shopId });
@@ -76,6 +78,13 @@ const createShop = async ({ createBody, userId }) => {
   });
 
   const shopJson = shop.toJSON();
+  // job to update s3 logs -> inUse = true
+  registerJob({
+    type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
+    data: {
+      keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
+    },
+  });
   notifyUpdateShop({ shop: shopJson, action: EventActionType.CREATE, userId });
   return shopJson;
 };
@@ -85,6 +94,13 @@ const updateShop = async ({ shopId, updateBody, userId }) => {
   throwBadRequest(!shop, getMessageByLocale({ key: 'shop.notFound' }));
 
   const shopJson = shop.toJSON();
+  // job to update s3 logs -> inUse = true
+  registerJob({
+    type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
+    data: {
+      keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
+    },
+  });
   notifyUpdateShop({ shop: shopJson, action: EventActionType.UPDATE, userId });
   return shopJson;
 };
@@ -93,6 +109,13 @@ const deleteShop = async ({ shopId, userId }) => {
   const shop = await Shop.findByIdAndDelete({ _id: shopId });
 
   const shopJson = shop.toJSON();
+  // job to update s3 logs -> inUse = true
+  registerJob({
+    type: JobTypes.DISABLE_S3_OBJECT_USAGE,
+    data: {
+      keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
+    },
+  });
   notifyUpdateShop({ shop: shopJson, action: EventActionType.CREATE, userId });
   return shopJson;
 };

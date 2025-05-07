@@ -23,6 +23,16 @@ s3LogSchema.statics.updateInUseKeys = async function ({ keys }) {
   return this.bulkWrite(bulkOps);
 };
 
+s3LogSchema.statics.disableInUseKeys = async function ({ keys }) {
+  const bulkOps = _.map(keys, (key) => ({
+    updateOne: {
+      filter: { key },
+      update: { $set: { inUse: false } },
+    },
+  }));
+  return this.bulkWrite(bulkOps);
+};
+
 s3LogSchema.plugin(toJSON);
 
 const S3Log = mongoose.model('S3log', s3LogSchema);

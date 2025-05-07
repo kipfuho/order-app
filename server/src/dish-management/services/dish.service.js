@@ -28,6 +28,14 @@ const createDish = async ({ shopId, createBody, userId }) => {
   const dish = await Dish.create(createBody);
   const dishJson = dish.toJSON();
   dishJson.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.category });
+
+  // job to update s3 logs -> inUse = true
+  registerJob({
+    type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
+    data: {
+      keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
+    },
+  });
   notifyUpdateDish({
     action: EventActionType.CREATE,
     dish: dishJson,
@@ -64,6 +72,13 @@ const deleteDish = async ({ shopId, dishId, userId }) => {
   throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
 
   const dishJson = dish.toJSON();
+  // job to update s3 logs -> inUse = true
+  registerJob({
+    type: JobTypes.DISABLE_S3_OBJECT_USAGE,
+    data: {
+      keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
+    },
+  });
   notifyUpdateDish({
     action: EventActionType.DELETE,
     dish: dishJson,
