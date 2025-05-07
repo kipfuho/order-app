@@ -1,15 +1,26 @@
 const express = require('express');
 const shopManagementController = require('../controllers/shopManagement.controller');
 const auth = require('../../middlewares/auth');
+const { PermissionType } = require('../../utils/constant');
 
 const router = express.Router();
 
-router.get('/:employeePositionId', auth(), shopManagementController.getEmployeePosition);
+router
+  .route('/:employeePositionId')
+  .get(auth(PermissionType.VIEW_EMPLOYEE), shopManagementController.getEmployeePosition)
+  .patch(
+    '/:employeePositionId',
+    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE),
+    shopManagementController.updateEmployeePosition
+  )
+  .delete(
+    '/:employeePositionId',
+    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE),
+    shopManagementController.deleteEmployeePosition
+  );
 router
   .route('/')
-  .get(auth(), shopManagementController.getEmployeePositions)
-  .post(auth(), shopManagementController.createEmployeePosition);
-router.patch('/:employeePositionId', auth(), shopManagementController.updateEmployeePosition);
-router.delete('/:employeePositionId', auth(), shopManagementController.deleteEmployeePosition);
+  .get(auth(PermissionType.VIEW_EMPLOYEE), shopManagementController.getEmployeePositions)
+  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE), shopManagementController.createEmployeePosition);
 
 module.exports = router;

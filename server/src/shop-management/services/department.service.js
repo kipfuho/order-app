@@ -3,6 +3,7 @@ const { getDepartmentFromCache, getDepartmentsFromCache } = require('../../metad
 const { Department } = require('../../models');
 const { notifyUpdateDepartment, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 const { throwBadRequest } = require('../../utils/errorHandling');
+const { validatePermissionsUpdate } = require('./employee.service');
 
 const getDepartment = async ({ shopId, departmentId }) => {
   const department = await getDepartmentFromCache({ departmentId, shopId });
@@ -16,6 +17,7 @@ const getDepartments = async ({ shopId }) => {
 };
 
 const createDepartment = async ({ shopId, createBody, userId }) => {
+  validatePermissionsUpdate(createBody);
   const department = await Department.create({ ...createBody, shop: shopId });
 
   const departmentJson = department.toJSON();
@@ -28,6 +30,7 @@ const createDepartment = async ({ shopId, createBody, userId }) => {
 };
 
 const updateDepartment = async ({ shopId, departmentId, updateBody, userId }) => {
+  validatePermissionsUpdate(updateBody);
   const department = await Department.findOneAndUpdate(
     { _id: departmentId, shop: shopId },
     { $set: updateBody },

@@ -1,16 +1,33 @@
 const express = require('express');
 const dishCategoryController = require('../controllers/dishCategory.controller');
 const auth = require('../../middlewares/auth');
+const { PermissionType } = require('../../utils/constant');
 
 const router = express.Router();
 
-router.get('/:dishCategoryId', auth(), dishCategoryController.getDishCategory);
+router.post(
+  '/import',
+  auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU),
+  dishCategoryController.importDishCategories
+);
+
+///
+router
+  .route('/:dishCategoryId')
+  .get(auth(PermissionType.VIEW_MENU), dishCategoryController.getDishCategory)
+  .patch(
+    '/:dishCategoryId',
+    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU),
+    dishCategoryController.updateDishCategory
+  )
+  .delete(
+    '/:dishCategoryId',
+    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU),
+    dishCategoryController.deleteDishCategory
+  );
 router
   .route('/')
-  .get(auth(), dishCategoryController.getDishCategories)
-  .post(auth(), dishCategoryController.createDishCategory);
-router.patch('/:dishCategoryId', auth(), dishCategoryController.updateDishCategory);
-router.delete('/:dishCategoryId', auth(), dishCategoryController.deleteDishCategory);
-router.post('/import', auth(), dishCategoryController.importDishCategories);
+  .get(auth(PermissionType.VIEW_MENU), dishCategoryController.getDishCategories)
+  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishCategoryController.createDishCategory);
 
 module.exports = router;

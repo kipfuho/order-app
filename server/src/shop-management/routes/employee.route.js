@@ -1,13 +1,27 @@
 const express = require('express');
 const shopManagementController = require('../controllers/shopManagement.controller');
 const auth = require('../../middlewares/auth');
+const { PermissionType } = require('../../utils/constant');
 
 const router = express.Router();
 
 router.get('/permissionTypes', auth(), shopManagementController.getPermissionTypes);
-router.get('/:employeeId', auth(), shopManagementController.getEmployee);
-router.route('/').get(auth(), shopManagementController.getEmployees).post(auth(), shopManagementController.createEmployee);
-router.patch('/:employeeId', auth(), shopManagementController.updateEmployee);
-router.delete('/:employeeId', auth(), shopManagementController.deleteEmployee);
+router
+  .route('/:employeeId')
+  .get(auth(PermissionType.VIEW_EMPLOYEE), shopManagementController.getEmployee)
+  .patch(
+    '/:employeeId',
+    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE),
+    shopManagementController.updateEmployee
+  )
+  .delete(
+    '/:employeeId',
+    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE),
+    shopManagementController.deleteEmployee
+  );
+router
+  .route('/')
+  .get(auth(PermissionType.VIEW_EMPLOYEE), shopManagementController.getEmployees)
+  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE), shopManagementController.createEmployee);
 
 module.exports = router;

@@ -3,7 +3,7 @@ const multer = require('multer');
 const httpStatus = require('http-status');
 const dishController = require('../controllers/dish.controller');
 const auth = require('../../middlewares/auth');
-const { MAX_FILE_SIZE } = require('../../utils/constant');
+const { MAX_FILE_SIZE, PermissionType } = require('../../utils/constant');
 const ApiError = require('../../utils/ApiError');
 const { getMessageByLocale } = require('../../locale');
 
@@ -19,11 +19,23 @@ const upload = multer({
 });
 
 router.get('/dishTypes', auth(), dishController.getDishTypes);
-router.get('/:dishId', auth(), dishController.getDish);
-router.route('/').get(auth(), dishController.getDishes).post(auth(), dishController.createDish);
-router.patch('/:dishId', auth(), dishController.updateDish);
-router.delete('/:dishId', auth(), dishController.deleteDish);
-router.post('/upload-image', auth(), upload.single('image'), dishController.uploadImage);
-router.post('/import', auth(), dishController.importDishes);
+router.post(
+  '/upload-image',
+  auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU),
+  upload.single('image'),
+  dishController.uploadImage
+);
+router.post('/import', auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishController.importDishes);
+
+///
+router
+  .route('/:dishId')
+  .get(auth(PermissionType.VIEW_MENU), dishController.getDish)
+  .patch('/:dishId', auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishController.updateDish)
+  .delete('/:dishId', auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishController.deleteDish);
+router
+  .route('/')
+  .get(auth(PermissionType.VIEW_MENU), dishController.getDishes)
+  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishController.createDish);
 
 module.exports = router;

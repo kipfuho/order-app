@@ -61,8 +61,9 @@ const PaymentMethod = {
 
 const PermissionType = {
   SHOP_APP: 'shop_app',
-  VIEW_SHOP: 'shop_view_shop',
-  UPDATE_SHOP: 'shop_update_shop',
+  VIEW_SHOP: 'shop_view',
+  UPDATE_SHOP: 'shop_update',
+  DELETE_SHOP: 'shop_delete',
   CREATE_EMPLOYEE: 'shop_create_employee',
   UPDATE_EMPLOYEE: 'shop_update_employee',
   VIEW_EMPLOYEE: 'shop_view_employee',

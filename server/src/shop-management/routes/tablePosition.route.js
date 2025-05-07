@@ -1,15 +1,26 @@
 const express = require('express');
 const shopManagementController = require('../controllers/shopManagement.controller');
 const auth = require('../../middlewares/auth');
+const { PermissionType } = require('../../utils/constant');
 
 const router = express.Router();
 
-router.get('/:tablePositionId', auth(), shopManagementController.getTablePosition);
+router
+  .route('/:tablePositionId')
+  .get(auth(PermissionType.VIEW_SHOP), shopManagementController.getTablePosition)
+  .patch(
+    '/:tablePositionId',
+    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP),
+    shopManagementController.updateTablePosition
+  )
+  .delete(
+    '/:tablePositionId',
+    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP),
+    shopManagementController.deleteTablePosition
+  );
 router
   .route('/')
-  .get(auth(), shopManagementController.getTablePositions)
-  .post(auth(), shopManagementController.createTablePosition);
-router.patch('/:tablePositionId', auth(), shopManagementController.updateTablePosition);
-router.delete('/:tablePositionId', auth(), shopManagementController.deleteTablePosition);
+  .get(auth(PermissionType.VIEW_SHOP), shopManagementController.getTablePositions)
+  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP), shopManagementController.createTablePosition);
 
 module.exports = router;

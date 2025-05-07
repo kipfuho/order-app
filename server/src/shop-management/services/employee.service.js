@@ -8,6 +8,7 @@ const {
   getEmployeesFromCache,
 } = require('../../metadata/employeeMetadata.service');
 const { getUserFromDatabase } = require('../../metadata/userMetadata.service');
+const { getEmployeePermissions } = require('../../middlewares/clsHooked');
 const { EmployeePosition, Employee } = require('../../models');
 const {
   notifyUpdateEmployee,
@@ -28,8 +29,17 @@ const getEmployees = async ({ shopId }) => {
   return employees;
 };
 
+const validatePermissionsUpdate = ({ permissions = [] }) => {
+  const operatorPermissions = getEmployeePermissions();
+  const operatorPermissionSet = new Set(operatorPermissions);
+  const operatorHasEnoughPermission = permissions.every((p) => operatorPermissionSet.has(p));
+  throwBadRequest(!operatorHasEnoughPermission, getMessageByLocale({ key: 'permission.missing' }));
+};
+
 const createEmployee = async ({ shopId, createBody, userId }) => {
   const { name, email, password, positionId, departmentId, permissions } = createBody;
+  // xem operator có đủ quyền để thêm cho nhân viên không
+  validatePermissionsUpdate({ permissions });
 
   let user = await getUserFromDatabase({ email });
   if (!user) {
@@ -57,6 +67,8 @@ const createEmployee = async ({ shopId, createBody, userId }) => {
 };
 
 const updateEmployee = async ({ shopId, employeeId, updateBody, userId }) => {
+  // xem operator có đủ quyền để thêm cho nhân viên không
+  validatePermissionsUpdate(updateBody);
   const employee = await Employee.findOneAndUpdate({ _id: employeeId, shop: shopId }, { $set: updateBody }, { new: true });
   throwBadRequest(!employee, getMessageByLocale({ key: 'employee.notFound' }));
 
@@ -153,4 +165,5 @@ module.exports = {
   updateEmployeePosition,
   deleteEmployeePosition,
   getAllPermissionTypes,
+  validatePermissionsUpdate,
 };

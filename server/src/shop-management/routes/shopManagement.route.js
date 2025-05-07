@@ -14,7 +14,7 @@ const orderRoute = require('../../order-management/routes/orderManagement.route'
 const paymentRoute = require('../../payment-management/routes/payment.route');
 const suggestionRoute = require('../../suggestion-system/routes/suggestion.route');
 const auth = require('../../middlewares/auth');
-const { MAX_FILE_SIZE } = require('../../utils/constant');
+const { MAX_FILE_SIZE, PermissionType } = require('../../utils/constant');
 const ApiError = require('../../utils/ApiError');
 const { getMessageByLocale } = require('../../locale');
 
@@ -88,11 +88,23 @@ const upload = multer({
   },
 });
 
-router.get('/:shopId', auth(), shopManagementController.getShop);
-router.route('/').get(auth(), shopManagementController.queryShop).post(auth(), shopManagementController.createShop);
-router.patch('/:shopId', auth(), shopManagementController.updateShop);
-router.delete('/:shopId', auth(), shopManagementController.deleteShop);
-router.post('/upload-image', auth(), upload.single('image'), shopManagementController.uploadImage);
-router.post('/remove-image', auth(), shopManagementController.removeImage);
+router.get('/:shopId', auth(PermissionType.VIEW_SHOP), shopManagementController.getShop);
+router
+  .route('/')
+  .get(auth(PermissionType.VIEW_SHOP), shopManagementController.queryShop)
+  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP), shopManagementController.createShop);
+router.patch('/:shopId', auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP), shopManagementController.updateShop);
+router.delete('/:shopId', auth(PermissionType.SHOP_APP, PermissionType.DELETE_SHOP), shopManagementController.deleteShop);
+router.post(
+  '/upload-image',
+  auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP),
+  upload.single('image'),
+  shopManagementController.uploadImage
+);
+router.post(
+  '/remove-image',
+  auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP),
+  shopManagementController.removeImage
+);
 
 module.exports = router;
