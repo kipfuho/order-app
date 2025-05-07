@@ -38,10 +38,18 @@ const deleteDishCategory = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
 });
 
+const importDishCategories = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const { dishCategories } = req.body;
+  const errorDishCategories = await dishCategoryService.importDishCategories({ shopId, dishCategories });
+  res.status(httpStatus.OK).send({ message: 'Thành công', errorDishCategories });
+});
+
 module.exports = {
   getDishCategory,
   getDishCategories,
   createDishCategory,
   updateDishCategory,
   deleteDishCategory,
+  importDishCategories,
 };

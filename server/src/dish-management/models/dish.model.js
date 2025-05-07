@@ -10,6 +10,7 @@ const dishSchema = new mongoose.Schema(
   {
     shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     name: { type: String },
+    code: { type: String },
     unit: { type: mongoose.Types.ObjectId, ref: 'Unit' },
     price: {
       type: Number,

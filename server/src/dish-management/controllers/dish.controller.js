@@ -54,6 +54,13 @@ const uploadImage = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ url });
 });
 
+const importDishes = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const { dishes } = req.body;
+  const errorDishes = await dishService.importDishes({ shopId, dishes });
+  res.status(httpStatus.OK).send({ message: 'Thành công', errorDishes });
+});
+
 module.exports = {
   getDish,
   getDishes,
@@ -62,4 +69,5 @@ module.exports = {
   deleteDish,
   getDishTypes,
   uploadImage,
+  importDishes,
 };

@@ -11,5 +11,6 @@ router
   .post(auth(), dishCategoryController.createDishCategory);
 router.patch('/:dishCategoryId', auth(), dishCategoryController.updateDishCategory);
 router.delete('/:dishCategoryId', auth(), dishCategoryController.deleteDishCategory);
+router.post('/import', auth(), dishCategoryController.importDishCategories);
 
 module.exports = router;

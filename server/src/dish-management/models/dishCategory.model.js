@@ -10,6 +10,7 @@ const dishCategorySchema = new mongoose.Schema(
   {
     shop: { type: mongoose.Types.ObjectId, ref: 'Shop' },
     name: { type: String },
+    code: { type: String },
     status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
   },
   {

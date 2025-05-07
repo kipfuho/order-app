@@ -68,10 +68,44 @@ const deleteDishCategory = async ({ shopId, dishCategoryId, userId }) => {
   return dishCategoryJson;
 };
 
+const importDishCategories = async ({ dishCategories, shopId }) => {
+  const currentDishCategories = await getDishCategoriesFromCache({ shopId });
+  const dishCategoryByName = _.keyBy(currentDishCategories, 'name');
+
+  const bulkOps = [];
+  const errorDishCategories = [];
+  _.forEach(dishCategories, (dishCategory) => {
+    const { code, name } = dishCategory;
+
+    if (!code) {
+      errorDishCategories.push({ dishCategory, message: getMessageByLocale({ key: 'import.missingCode' }) });
+      return;
+    }
+
+    if (dishCategoryByName[name]) {
+      errorDishCategories.push({ dishCategory, message: getMessageByLocale({ key: 'dishCategory.alreadyExist' }) });
+      return;
+    }
+
+    const updateBody = _.cloneDeep(dishCategory);
+    bulkOps.push({
+      updateOne: {
+        filter: { shop: shopId, code },
+        update: { $set: updateBody },
+        upsert: true,
+      },
+    });
+  });
+
+  await DishCategory.bulkWrite(bulkOps);
+  return errorDishCategories;
+};
+
 module.exports = {
   getDishCategory,
   getDishCategories,
   createDishCategory,
   updateDishCategory,
   deleteDishCategory,
+  importDishCategories,
 };

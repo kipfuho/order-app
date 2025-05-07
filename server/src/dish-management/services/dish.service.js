@@ -3,13 +3,19 @@ const crypto = require('crypto');
 const aws = require('../../utils/aws');
 const { Dish } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
-const { getDishFromCache, getDishesFromCache, getDishCategoryFromCache } = require('../../metadata/dishMetadata.service');
+const {
+  getDishFromCache,
+  getDishesFromCache,
+  getDishCategoryFromCache,
+  getDishCategoriesFromCache,
+} = require('../../metadata/dishMetadata.service');
 const { DishTypes } = require('../../utils/constant');
 const { refineFileNameForUploading } = require('../../utils/common');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
 const { notifyUpdateDish, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
+const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -102,6 +108,57 @@ const uploadImage = async ({ shopId, image }) => {
   return url;
 };
 
+const importDishes = async ({ dishes, shopId }) => {
+  const dishCategories = await getDishCategoriesFromCache({ shopId });
+  const dishCategoryByName = _.keyBy(dishCategories, 'name');
+  const dishCategoryById = _.keyBy(dishCategories, 'id');
+  const units = await getUnitsFromCache({ shopId });
+  const unitByName = _.keyBy(units, 'name');
+  const unitById = _.keyBy(units, 'id');
+
+  const bulkOps = [];
+  const errorDishes = [];
+  _.forEach(dishes, (dish) => {
+    const { code, dishCategoryId, dishCategoryName, unitId, unitName } = dish;
+
+    if (!code) {
+      errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingCode' }) });
+      return;
+    }
+
+    const dishCategory = dishCategoryById[dishCategoryId] || dishCategoryByName[dishCategoryName];
+    const unit = unitById[unitId] || unitByName[unitName];
+
+    if (!dishCategory) {
+      errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingDishCategory' }) });
+      return;
+    }
+    if (!unit) {
+      errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingUnit' }) });
+      return;
+    }
+
+    const updateBody = _.cloneDeep(dish);
+    updateBody.shop = shopId;
+    updateBody.unit = unit.id;
+    updateBody.category = dishCategory.id;
+    delete updateBody.dishCategoryId;
+    delete updateBody.dishCategoryName;
+    delete updateBody.unitId;
+    delete updateBody.unitName;
+    bulkOps.push({
+      updateOne: {
+        filter: { shop: shopId, code: dish.code },
+        update: { $set: updateBody },
+        upsert: true,
+      },
+    });
+  });
+
+  await Dish.bulkWrite(bulkOps);
+  return errorDishes;
+};
+
 module.exports = {
   getDish,
   createDish,
@@ -110,4 +167,5 @@ module.exports = {
   getDishes,
   getDishTypes,
   uploadImage,
+  importDishes,
 };
