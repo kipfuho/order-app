@@ -18,7 +18,6 @@ import { useTranslation } from "react-i18next";
 
 export default function CategoriesManagementPage() {
   const router = useRouter();
-  const theme = useTheme();
   const { t } = useTranslation();
 
   const shop = useSelector(
@@ -45,9 +44,7 @@ export default function CategoriesManagementPage() {
               <List.Item
                 key={item.id}
                 title={item.name}
-                titleStyle={{ color: theme.colors.onSecondaryContainer }}
                 style={{
-                  backgroundColor: theme.colors.secondaryContainer,
                   borderRadius: 8,
                   marginBottom: 8,
                 }}

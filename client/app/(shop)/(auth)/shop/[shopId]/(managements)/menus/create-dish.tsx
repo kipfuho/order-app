@@ -32,6 +32,7 @@ import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import { goBackShopDishList } from "../../../../../../../apis/navigate.service";
 import { View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { uploadDishImageRequest } from "../../../../../../../apis/dish.api.service";
 
 export default function CreateDishPage() {
   const router = useRouter();
@@ -72,6 +73,14 @@ export default function CreateDishPage() {
     setUnit(units[0]);
     setTaxRate("");
     setImages([]);
+  };
+
+  const uploadDishImage = async (formData: FormData) => {
+    const imageUrl = await uploadDishImageRequest({
+      formData,
+      shopId: shop.id,
+    });
+    return imageUrl;
   };
 
   const handleCreateDish = async () => {
@@ -135,7 +144,7 @@ export default function CreateDishPage() {
             <UploadImages
               images={images}
               setImages={setImages}
-              shopId={shop.id}
+              uploadImage={uploadDishImage}
             />
             {/* General Information Collapsible */}
             <Collapsible title={t("general_information")}>

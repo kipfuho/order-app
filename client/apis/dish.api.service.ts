@@ -14,14 +14,17 @@ import {
   RemoveImageRequest,
   UpdateDishCategoryRequest,
   UpdateDishRequest,
-  UploadImageRequest,
+  UploadDishImageRequest,
 } from "./dish.api.interface";
 import { getAccessTokenLazily } from "./auth.api.service";
 
-const uploadImageRequest = async ({ shopId, formData }: UploadImageRequest) => {
+const uploadDishImageRequest = async ({
+  shopId,
+  formData,
+}: UploadDishImageRequest) => {
   const accessToken = await getAccessTokenLazily();
   const result: { url: string } = await apiFormDataRequest({
-    endpoint: `/v1/shops/${shopId}/dishes/upload`,
+    endpoint: `/v1/shops/${shopId}/dishes/upload-image`,
     formData,
     token: accessToken,
   });
@@ -29,11 +32,11 @@ const uploadImageRequest = async ({ shopId, formData }: UploadImageRequest) => {
   return result.url;
 };
 
-const removeImageRequest = async ({ shopId, url }: RemoveImageRequest) => {
+const removeImageRequest = async ({ url }: RemoveImageRequest) => {
   const accessToken = await getAccessTokenLazily();
   await apiRequest({
     method: "POST",
-    endpoint: `/v1/shops/${shopId}/dishes/remove`,
+    endpoint: `/v1/shops/remove-image`,
     data: {
       url,
     },
@@ -301,7 +304,7 @@ const createDefaultUnitsRequest = async ({
 };
 
 export {
-  uploadImageRequest,
+  uploadDishImageRequest,
   removeImageRequest,
   createDishCategoryRequest,
   getDishCategoriesRequest,

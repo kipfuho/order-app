@@ -14,6 +14,8 @@ import { ScrollView, View } from "react-native";
 import { goBackShopList } from "../../../apis/navigate.service";
 import { useCreateShopMutation } from "../../../stores/apiSlices/shopApi.slice";
 import { useTranslation } from "react-i18next";
+import UploadImages from "../../../components/ui/UploadImage";
+import { uploadImageRequest } from "../../../apis/shop.api.service";
 
 export default function CreateShopPage() {
   const router = useRouter();
@@ -27,6 +29,7 @@ export default function CreateShopPage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [taxRate, setTaxRate] = useState("");
+  const [images, setImages] = useState<{ uri: string; loading: boolean }[]>([]);
 
   const resetField = useCallback(async () => {
     setName("");
@@ -35,6 +38,11 @@ export default function CreateShopPage() {
     setEmail("");
     setTaxRate("");
   }, []);
+
+  const uploadImage = async (formData: FormData) => {
+    const imageUrl = await uploadImageRequest({ formData });
+    return imageUrl;
+  };
 
   const handleCreateShop = async () => {
     if (!name.trim() || !email.trim()) {
@@ -46,6 +54,15 @@ export default function CreateShopPage() {
       return;
     }
 
+    if (_.some(images, (image) => image.loading)) {
+      Toast.show({
+        type: "error",
+        text1: t("create_failed"),
+        text2: t("image_uploading_error"),
+      });
+      return;
+    }
+
     try {
       await createNewShop({
         email,
@@ -53,6 +70,7 @@ export default function CreateShopPage() {
         phone,
         taxRate: _.toNumber(taxRate),
         location,
+        imageUrls: _.map(images, "uri"),
       }).unwrap();
 
       goBackShopList({ router });
@@ -71,6 +89,13 @@ export default function CreateShopPage() {
       <Surface style={{ flex: 1 }}>
         <Surface style={[styles.baseContainer, { boxShadow: "none" }]}>
           <ScrollView>
+            <UploadImages
+              images={images}
+              setImages={setImages}
+              uploadImage={uploadImage}
+              allowsMultipleSelection={false}
+            />
+
             <TextInput
               mode="outlined"
               label={t("shop_name")}

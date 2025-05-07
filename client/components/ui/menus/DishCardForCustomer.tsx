@@ -13,6 +13,7 @@ import _ from "lodash";
 import { convertPaymentAmount } from "../../../constants/utils";
 import { useDispatch } from "react-redux";
 import { updateCartSingleDish } from "../../../stores/customerSlice";
+import { Image } from "expo-image";
 
 function QuantityControlForCustomer({
   dish,
@@ -155,16 +156,15 @@ export const DishCardForCustomer = ({
       }}
       mode="contained"
     >
-      <View>
-        <Card.Cover
-          source={{ uri: dish.imageUrls[0] || "https://picsum.photos/700" }}
-          style={{
-            width: cardWidth,
-            height: Math.min(cardWidth, 200),
-            borderRadius: 5,
-          }}
-        />
-      </View>
+      <Image
+        source={dish.imageUrls[0] || require("@assets/images/savora.png")}
+        style={{
+          width: "100%",
+          height: Math.min(cardWidth, 200),
+          borderTopLeftRadius: 12,
+          borderTopRightRadius: 12,
+        }}
+      />
       <QuantityControlForCustomer dish={dish} cartItems={cartItems} />
       <Card.Title
         title={

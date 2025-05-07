@@ -23,6 +23,7 @@ import { createDefaultUnitsRequest } from "../../../../../apis/dish.api.service"
 import { useDeleteShopMutation } from "../../../../../stores/apiSlices/shopApi.slice";
 import { LoaderBasic } from "../../../../../components/ui/Loader";
 import { useTranslation } from "react-i18next";
+import { Image } from "expo-image";
 
 interface Item {
   title: string;
@@ -144,16 +145,15 @@ export default function ShopPage() {
                   elevation: 5, // Shadow effect
                 }}
               >
-                <Card.Cover
-                  source={{
-                    uri: shop.imageUrls?.[0] ?? "https://picsum.photos/700",
-                  }}
+                <Image
+                  source={
+                    shop.imageUrls?.[0] || require("@assets/images/savora.png")
+                  }
                   style={{
                     width: 100,
                     height: 100,
                     borderRadius: 100,
                   }}
-                  resizeMode="cover"
                 />
               </Card>
 

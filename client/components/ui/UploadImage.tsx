@@ -1,8 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
-import {
-  removeImageRequest,
-  uploadImageRequest,
-} from "../../apis/dish.api.service";
+import { removeImageRequest } from "../../apis/dish.api.service";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import _ from "lodash";
@@ -15,13 +12,15 @@ import {
 import { BLURHASH } from "../../constants/common";
 
 export default function UploadImages({
-  shopId,
   images,
+  allowsMultipleSelection = true,
   setImages,
+  uploadImage,
 }: {
-  shopId: string;
   images: { uri: string; loading: boolean }[];
   setImages: Dispatch<SetStateAction<{ uri: string; loading: boolean }[]>>;
+  allowsMultipleSelection?: boolean;
+  uploadImage: (formData: FormData) => Promise<string>;
 }) {
   const uploadImageToServer = async (uri: string, index: number) => {
     try {
@@ -32,10 +31,7 @@ export default function UploadImages({
       formData.append("image", blob, `image_${Date.now()}.jpg`); // Properly append file
 
       // Replace with your server URL
-      const imageUrl = await uploadImageRequest({
-        shopId,
-        formData,
-      });
+      const imageUrl = await uploadImage(formData);
 
       if (imageUrl) {
         setImages((prev) =>
@@ -56,16 +52,25 @@ export default function UploadImages({
   const pickImages = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
-      allowsMultipleSelection: true,
+      allowsMultipleSelection,
       quality: 1,
     });
 
     if (!result.canceled) {
+      // nếu chỉ chọn 1 ảnh thì remove ảnh cũ đi
+      if (!allowsMultipleSelection && images[0]) {
+        removeImageRequest({ url: images[0].uri });
+        setImages([]);
+      }
       const newImages = result.assets.map((asset) => ({
         uri: asset.uri,
         loading: true, // Mark as loading initially
       }));
-      setImages((prev) => [...prev, ...newImages]);
+      setImages((prev) => {
+        console.log(prev);
+        console.log(newImages);
+        return [...prev, ...newImages];
+      });
 
       // Start uploading each image
       newImages.forEach((image, index) =>
@@ -77,12 +82,20 @@ export default function UploadImages({
   const removeImage = (index: number) => {
     const image = _.find(images, (_, i) => i === index);
     setImages(_.filter(images, (_, i) => i !== index));
-    removeImageRequest({ shopId, url: image!.uri });
+    removeImageRequest({ url: image!.uri });
   };
 
   return (
     <>
-      <Surface style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
+      <Surface
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+        mode="flat"
+      >
         {images.map((image, index) => {
           if (image.loading) {
             return (
@@ -106,10 +119,15 @@ export default function UploadImages({
                 position: "relative",
                 marginRight: 10,
               }}
+              mode="flat"
             >
               <Image
                 source={{ uri: image.uri }}
-                style={{ width: 200, height: 150, borderRadius: 10 }}
+                style={{
+                  width: 150,
+                  height: 150,
+                  borderRadius: allowsMultipleSelection ? 10 : 200,
+                }}
                 placeholder={{ blurhash: BLURHASH }}
                 contentFit="cover"
                 transition={1000}

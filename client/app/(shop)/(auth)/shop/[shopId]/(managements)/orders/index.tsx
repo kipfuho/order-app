@@ -184,7 +184,7 @@ export default function OrderManagementOrderPage() {
               return (
                 <Surface key={positionId} style={{ boxShadow: "none" }}>
                   <Text variant="titleLarge">
-                    {tablePositionById[positionId].name}
+                    {tablePositionById[positionId]?.name}
                   </Text>
                   <Surface
                     style={{

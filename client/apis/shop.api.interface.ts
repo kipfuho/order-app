@@ -1,11 +1,16 @@
 import { User } from "../stores/state.interface";
 
+interface UploadImageRequest {
+  formData: FormData;
+}
+
 interface CreateShopRequest {
   name: string;
   email: string;
   phone?: string;
   taxRate?: number;
   location?: string;
+  imageUrls?: string[];
 }
 
 interface QueryShopsRequest {
@@ -23,6 +28,7 @@ interface UpdateShopRequest {
   phone?: string;
   taxRate?: number;
   location?: string;
+  imageUrls?: string[];
 }
 
 interface DeleteShopRequest {
@@ -34,4 +40,5 @@ export {
   QueryShopsRequest,
   UpdateShopRequest,
   DeleteShopRequest,
+  UploadImageRequest,
 };

@@ -1,38 +1,42 @@
 import { Dish } from "../../../stores/state.interface";
-import {
-  Card,
-  IconButton,
-  Surface,
-  Switch,
-  Text,
-  Tooltip,
-} from "react-native-paper";
-import { useWindowDimensions } from "react-native";
+import { Card, IconButton, Switch, Text, Tooltip } from "react-native-paper";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { Image, View } from "react-native";
 import { convertPaymentAmount } from "../../../constants/utils";
 
 export const DishCard = ({
   dish,
   openMenu,
+  containerWidth = 0,
 }: {
   dish: Dish;
   openMenu: (dish: Dish, event: any) => void;
+  containerWidth?: number;
 }) => {
-  const { width } = useWindowDimensions();
   const [cardWidth, setCardWidth] = useState(300);
   const [onSale, setOnSale] = useState(false);
 
   const onToggleSwitch = () => setOnSale(!onSale);
 
   useEffect(() => {
-    setCardWidth(width > 600 ? 300 : width * 0.6);
-  }, [width]);
+    setCardWidth(Math.min(300, containerWidth * 0.48));
+  }, [containerWidth]);
 
   return (
     <Card style={{ width: cardWidth }}>
-      <Card.Cover
-        source={{ uri: dish.imageUrls[0] || "https://picsum.photos/700" }}
+      <Image
+        source={
+          dish.imageUrls[0]
+            ? { uri: dish.imageUrls[0] }
+            : require("@assets/images/savora.png")
+        }
+        style={{
+          width: "100%",
+          height: 180,
+          borderTopLeftRadius: 12,
+          borderTopRightRadius: 12,
+        }}
+        resizeMode="cover"
       />
       <Card.Title
         title={

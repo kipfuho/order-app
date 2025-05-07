@@ -2,7 +2,11 @@ import React, { useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
-import { Dish, Shop } from "../../../../../../../stores/state.interface";
+import {
+  Dish,
+  DishCategory,
+  Shop,
+} from "../../../../../../../stores/state.interface";
 import { DishCard } from "../../../../../../../components/ui/menus/DishCard";
 import { AppBar } from "../../../../../../../components/AppBar";
 import {
@@ -14,11 +18,13 @@ import {
   Portal,
   Dialog,
   ActivityIndicator,
+  TouchableRipple,
 } from "react-native-paper";
 import {
   GestureResponderEvent,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { deleteDishRequest } from "../../../../../../../apis/dish.api.service";
@@ -36,10 +42,108 @@ import {
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
 
+function CategoryList({
+  dishCategories = [],
+  scrollToCategory,
+}: {
+  dishCategories: DishCategory[];
+  scrollToCategory: (id: string) => void;
+}) {
+  const theme = useTheme();
+  const { width } = useWindowDimensions();
+
+  if (width < 600) {
+    return (
+      <Surface
+        style={{
+          backgroundColor: theme.colors.background,
+        }}
+      >
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            flex: 1,
+            flexDirection: "column",
+            width: "25%",
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row", // layout items in a row
+              gap: 8, // spacing between items (RN 0.71+ supports `gap`)
+              paddingVertical: 8,
+            }}
+          >
+            {dishCategories.map((category) => (
+              <TouchableRipple
+                key={category.id}
+                onPress={() => scrollToCategory(category.id)}
+                style={{
+                  backgroundColor: theme.colors.primaryContainer,
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  borderRadius: 4,
+                }}
+              >
+                <Text
+                  variant="bodyMedium"
+                  style={{
+                    flexWrap: "wrap",
+                    maxWidth: 200, // optional: to allow wrapping in long labels
+                  }}
+                >
+                  {category.name}
+                </Text>
+              </TouchableRipple>
+            ))}
+          </View>
+        </ScrollView>
+      </Surface>
+    );
+  }
+
+  return (
+    <Surface
+      style={[styles.sidebar, { backgroundColor: theme.colors.background }]}
+    >
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={{ gap: 1 }}>
+          {dishCategories.map((category) => {
+            return (
+              <TouchableRipple
+                key={category.id}
+                onPress={() => scrollToCategory(category.id)}
+                style={{
+                  backgroundColor: theme.colors.primaryContainer,
+                  paddingVertical: 12,
+                  paddingHorizontal: 8,
+                  borderRadius: 4,
+                }}
+              >
+                <Text
+                  variant="bodyMedium"
+                  style={{
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {category.name}
+                </Text>
+              </TouchableRipple>
+            );
+          })}
+        </View>
+      </ScrollView>
+    </Surface>
+  );
+}
+
 export default function DishesManagementPage() {
   const router = useRouter();
-  const theme = useTheme();
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+  const [dishCardContainerWidth, setDishCardContainerWidth] =
+    React.useState<number>();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
@@ -173,35 +277,14 @@ export default function DishesManagementPage() {
       </Portal>
 
       <Surface style={{ flex: 1 }}>
-        <Surface style={styles.content}>
+        <Surface
+          style={{ flex: 1, flexDirection: width >= 600 ? "row" : "column" }}
+        >
           {/* Left Sidebar for Categories */}
-          <Surface
-            style={[
-              styles.sidebar,
-              { backgroundColor: theme.colors.background },
-            ]}
-          >
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={{ gap: 1 }}>
-                {dishCategories.map((category) => {
-                  console.log(category);
-                  return (
-                    <Button
-                      key={category.id}
-                      mode="contained-tonal"
-                      onPress={() => scrollToCategory(category.id)}
-                      style={styles.categoryButton}
-                      labelStyle={{
-                        marginHorizontal: 0,
-                      }}
-                    >
-                      {category.name}
-                    </Button>
-                  );
-                })}
-              </View>
-            </ScrollView>
-          </Surface>
+          <CategoryList
+            dishCategories={dishCategories}
+            scrollToCategory={scrollToCategory}
+          />
 
           {/* Right Section for Dishes */}
           <Surface style={{ flex: 1 }}>
@@ -222,6 +305,10 @@ export default function DishesManagementPage() {
                       boxShadow: "none",
                       gap: 10,
                     }}
+                    onLayout={(event) => {
+                      const { width } = event.nativeEvent.layout;
+                      setDishCardContainerWidth(width);
+                    }}
                   >
                     {_.get(dishesGroupByCategoryId, category.id, []).map(
                       (dish) => (
@@ -229,6 +316,7 @@ export default function DishesManagementPage() {
                           key={dish.id}
                           dish={dish}
                           openMenu={openMenu}
+                          containerWidth={dishCardContainerWidth}
                         />
                       )
                     )}
@@ -253,10 +341,6 @@ export default function DishesManagementPage() {
 }
 
 const styles = StyleSheet.create({
-  content: {
-    flexDirection: "row",
-    flex: 1,
-  },
   sidebar: {
     width: 120,
   },

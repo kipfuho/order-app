@@ -1,12 +1,11 @@
 import { DishCategory, Unit } from "../stores/state.interface";
 
-interface UploadImageRequest {
+interface UploadDishImageRequest {
   shopId: string;
   formData: FormData;
 }
 
 interface RemoveImageRequest {
-  shopId: string;
   url: string;
 }
 
@@ -88,7 +87,7 @@ interface CreateDefaultUnitsRequest {
 }
 
 export {
-  UploadImageRequest,
+  UploadDishImageRequest,
   RemoveImageRequest,
   CreateDishCategoryRequest,
   GetDishCategoriesRequest,

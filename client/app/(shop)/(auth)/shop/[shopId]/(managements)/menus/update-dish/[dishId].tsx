@@ -32,6 +32,7 @@ import {
 import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
 import { goBackShopDishList } from "../../../../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
+import { uploadDishImageRequest } from "../../../../../../../../apis/dish.api.service";
 
 export default function UpdateDishPage() {
   const { dishId } = useLocalSearchParams();
@@ -64,9 +65,15 @@ export default function UpdateDishPage() {
   const [unit, setUnit] = useState(units[0]);
   const [taxRate, setTaxRate] = useState("");
   const [images, setImages] = useState<{ uri: string; loading: boolean }[]>([]);
-
   const [isTaxIncludedPrice, setIsTaxIncludedPrice] = useState(false);
-  const onToggleSwitch = () => setIsTaxIncludedPrice(!isTaxIncludedPrice);
+
+  const uploadDishImage = async (formData: FormData) => {
+    const imageUrl = await uploadDishImageRequest({
+      formData,
+      shopId: shop.id,
+    });
+    return imageUrl;
+  };
 
   const handleUpdateDish = async () => {
     if (!dish) {
@@ -87,6 +94,15 @@ export default function UpdateDishPage() {
           ]),
           ","
         )}`,
+      });
+      return;
+    }
+
+    if (_.some(images, (image) => image.loading)) {
+      Toast.show({
+        type: "error",
+        text1: t("create_failed"),
+        text2: t("image_uploading_error"),
       });
       return;
     }
@@ -157,7 +173,7 @@ export default function UpdateDishPage() {
             <UploadImages
               images={images}
               setImages={setImages}
-              shopId={shop.id}
+              uploadImage={uploadDishImage}
             />
             {/* General Information Collapsible */}
             <Collapsible title={t("general_information")}>

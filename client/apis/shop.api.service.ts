@@ -1,12 +1,24 @@
 import { Shop } from "../stores/state.interface";
-import { apiRequest } from "./api.service";
+import { apiFormDataRequest, apiRequest } from "./api.service";
 import { getAccessTokenLazily } from "./auth.api.service";
 import {
   CreateShopRequest,
   DeleteShopRequest,
   QueryShopsRequest,
   UpdateShopRequest,
+  UploadImageRequest,
 } from "./shop.api.interface";
+
+const uploadImageRequest = async ({ formData }: UploadImageRequest) => {
+  const accessToken = await getAccessTokenLazily();
+  const result: { url: string } = await apiFormDataRequest({
+    endpoint: `/v1/shops/upload-image`,
+    formData,
+    token: accessToken,
+  });
+
+  return result.url;
+};
 
 const createShopRequest = async ({
   name,
@@ -14,6 +26,7 @@ const createShopRequest = async ({
   email,
   taxRate,
   location,
+  imageUrls,
 }: CreateShopRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
@@ -22,6 +35,7 @@ const createShopRequest = async ({
     phone?: string;
     taxRate?: number;
     location?: string;
+    imageUrls?: string[];
   } = { name, email };
 
   if (location) {
@@ -32,6 +46,9 @@ const createShopRequest = async ({
   }
   if (taxRate) {
     body.taxRate = taxRate;
+  }
+  if (imageUrls) {
+    body.imageUrls = imageUrls;
   }
 
   const result: { shop: Shop } = await apiRequest({
@@ -97,6 +114,7 @@ const updateShopRequest = async ({
   email,
   taxRate,
   location,
+  imageUrls,
 }: UpdateShopRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
@@ -105,6 +123,7 @@ const updateShopRequest = async ({
     phone?: string;
     taxRate?: number;
     location?: string;
+    imageUrls?: string[];
   } = { name, email };
 
   if (location) {
@@ -115,6 +134,9 @@ const updateShopRequest = async ({
   }
   if (taxRate) {
     body.taxRate = taxRate;
+  }
+  if (imageUrls) {
+    body.imageUrls = imageUrls;
   }
 
   const response: { shop: Shop } = await apiRequest({
@@ -145,4 +167,5 @@ export {
   queryShopsRequest,
   updateShopRequest,
   deleteShopRequest,
+  uploadImageRequest,
 };

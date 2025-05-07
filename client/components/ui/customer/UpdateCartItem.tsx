@@ -63,7 +63,7 @@ export default function UpdateCartItem({
         {/* Top image with close icon */}
         <View style={{ position: "relative" }}>
           <Image
-            source={{ uri: dish.imageUrls[0] || "https://picsum.photos/700" }}
+            source={dish.imageUrls[0] || require("@assets/images/savora.png")}
             style={{ width: "100%", height: 200 }}
             resizeMode="cover"
           />

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
@@ -17,6 +17,8 @@ import { ScrollView, View } from "react-native";
 import { styles } from "../../../../_layout";
 import { useUpdateShopMutation } from "../../../../../stores/apiSlices/shopApi.slice";
 import { useTranslation } from "react-i18next";
+import UploadImages from "../../../../../components/ui/UploadImage";
+import { uploadImageRequest } from "../../../../../apis/shop.api.service";
 
 export default function UpdateShopPage() {
   const { t } = useTranslation();
@@ -28,26 +30,33 @@ export default function UpdateShopPage() {
   const [updateShop, { isLoading: updateShopLoading }] =
     useUpdateShopMutation();
 
-  const [name, setName] = useState(shop.name || "");
-  const [location, setLocation] = useState(shop.location || "");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState(shop.email || "");
-  const [taxRate, setTaxRate] = useState(shop.taxRate?.toString() || "");
+  const [name, setName] = useState<string>();
+  const [location, setLocation] = useState<string>();
+  const [phone, setPhone] = useState<string>();
+  const [email, setEmail] = useState<string>();
+  const [taxRate, setTaxRate] = useState<string>();
+  const [images, setImages] = useState<{ uri: string; loading: boolean }[]>([]);
 
-  const resetField = useCallback(async () => {
-    setName("");
-    setLocation("");
-    setPhone("");
-    setEmail("");
-    setTaxRate("");
-  }, []);
+  const uploadImage = async (formData: FormData) => {
+    const imageUrl = await uploadImageRequest({ formData });
+    return imageUrl;
+  };
 
   const handleUpdateShop = async () => {
-    if (!name.trim() || !email.trim()) {
+    if (!name || !email || !name.trim() || !email.trim()) {
       Toast.show({
         type: "error",
         text1: t("create_failed"),
         text2: `${t("required")}: ${_.join([t("shop_name"), t("email")], ",")}`,
+      });
+      return;
+    }
+
+    if (_.some(images, (image) => image.loading)) {
+      Toast.show({
+        type: "error",
+        text1: t("create_failed"),
+        text2: t("image_uploading_error"),
       });
       return;
     }
@@ -60,14 +69,27 @@ export default function UpdateShopPage() {
         location,
         phone,
         taxRate: _.toNumber(taxRate),
+        imageUrls: _.map(images, "uri"),
       }).unwrap();
 
       goBackShopHome({ router, shopId: shop.id });
-      resetField();
     } catch (err) {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    if (!shop) {
+      return;
+    }
+
+    setName(shop.name);
+    setLocation(shop.location);
+    setPhone(shop.phone);
+    setEmail(shop.email);
+    setTaxRate(shop.taxRate?.toString());
+    setImages(_.map(shop.imageUrls, (url) => ({ uri: url, loading: false })));
+  }, [shop]);
 
   return (
     <>
@@ -77,6 +99,13 @@ export default function UpdateShopPage() {
       />
       <Surface style={styles.baseContainer}>
         <ScrollView>
+          <UploadImages
+            images={images}
+            setImages={setImages}
+            uploadImage={uploadImage}
+            allowsMultipleSelection={false}
+          />
+
           <TextInput
             mode="outlined"
             label={t("shop_name")}
