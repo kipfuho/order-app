@@ -88,13 +88,6 @@ const upload = multer({
   },
 });
 
-router.get('/:shopId', auth(PermissionType.VIEW_SHOP), shopManagementController.getShop);
-router
-  .route('/')
-  .get(auth(PermissionType.VIEW_SHOP), shopManagementController.queryShop)
-  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP), shopManagementController.createShop);
-router.patch('/:shopId', auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP), shopManagementController.updateShop);
-router.delete('/:shopId', auth(PermissionType.SHOP_APP, PermissionType.DELETE_SHOP), shopManagementController.deleteShop);
 router.post(
   '/upload-image',
   auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP),
@@ -106,5 +99,16 @@ router.post(
   auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP),
   shopManagementController.removeImage
 );
+
+///
+router
+  .route('/:shopId')
+  .get(auth(PermissionType.VIEW_SHOP), shopManagementController.getShop)
+  .patch(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP), shopManagementController.updateShop)
+  .delete(auth(PermissionType.SHOP_APP, PermissionType.DELETE_SHOP), shopManagementController.deleteShop);
+router
+  .route('/')
+  .get(auth(PermissionType.VIEW_SHOP), shopManagementController.queryShop)
+  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP), shopManagementController.createShop);
 
 module.exports = router;

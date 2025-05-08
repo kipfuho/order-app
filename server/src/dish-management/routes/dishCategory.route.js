@@ -15,16 +15,8 @@ router.post(
 router
   .route('/:dishCategoryId')
   .get(auth(PermissionType.VIEW_MENU), dishCategoryController.getDishCategory)
-  .patch(
-    '/:dishCategoryId',
-    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU),
-    dishCategoryController.updateDishCategory
-  )
-  .delete(
-    '/:dishCategoryId',
-    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU),
-    dishCategoryController.deleteDishCategory
-  );
+  .patch(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishCategoryController.updateDishCategory)
+  .delete(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishCategoryController.deleteDishCategory);
 router
   .route('/')
   .get(auth(PermissionType.VIEW_MENU), dishCategoryController.getDishCategories)

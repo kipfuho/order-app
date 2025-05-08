@@ -31,8 +31,8 @@ router.post('/import', auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU)
 router
   .route('/:dishId')
   .get(auth(PermissionType.VIEW_MENU), dishController.getDish)
-  .patch('/:dishId', auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishController.updateDish)
-  .delete('/:dishId', auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishController.deleteDish);
+  .patch(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishController.updateDish)
+  .delete(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishController.deleteDish);
 router
   .route('/')
   .get(auth(PermissionType.VIEW_MENU), dishController.getDishes)

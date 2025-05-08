@@ -9,16 +9,8 @@ router.get('/permissionTypes', auth(), shopManagementController.getPermissionTyp
 router
   .route('/:employeeId')
   .get(auth(PermissionType.VIEW_EMPLOYEE), shopManagementController.getEmployee)
-  .patch(
-    '/:employeeId',
-    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE),
-    shopManagementController.updateEmployee
-  )
-  .delete(
-    '/:employeeId',
-    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE),
-    shopManagementController.deleteEmployee
-  );
+  .patch(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE), shopManagementController.updateEmployee)
+  .delete(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE), shopManagementController.deleteEmployee);
 router
   .route('/')
   .get(auth(PermissionType.VIEW_EMPLOYEE), shopManagementController.getEmployees)

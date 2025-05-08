@@ -34,5 +34,9 @@
   "auth.required": "Vui lòng đăng nhập",
   "notFound": "Không tìm thấy",
   "auth.incorrectCredential": "Tên đăng nhập hoặc mật khẩu không đúng",
-  "permission.missing": "Không có đủ quyền để thực hiện thao tác"
+  "permission.missing": "Không có đủ quyền để thực hiện thao tác",
+  "import.missingCode": "Thiếu mã",
+  "import.missingDishCategory": "Thiếu danh mục",
+  "import.missingUnit": "Thiếu đơn vị",
+  "success": "Thành công"
 }

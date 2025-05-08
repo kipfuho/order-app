@@ -8,16 +8,8 @@ const router = express.Router();
 router
   .route('/:employeePositionId')
   .get(auth(PermissionType.VIEW_EMPLOYEE), shopManagementController.getEmployeePosition)
-  .patch(
-    '/:employeePositionId',
-    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE),
-    shopManagementController.updateEmployeePosition
-  )
-  .delete(
-    '/:employeePositionId',
-    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE),
-    shopManagementController.deleteEmployeePosition
-  );
+  .patch(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE), shopManagementController.updateEmployeePosition)
+  .delete(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE), shopManagementController.deleteEmployeePosition);
 router
   .route('/')
   .get(auth(PermissionType.VIEW_EMPLOYEE), shopManagementController.getEmployeePositions)

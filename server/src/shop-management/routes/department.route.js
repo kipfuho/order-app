@@ -8,16 +8,8 @@ const router = express.Router();
 router
   .route('/:departmentId')
   .get(auth(PermissionType.VIEW_SHOP), shopManagementController.getDepartment)
-  .patch(
-    '/:departmentId',
-    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP),
-    shopManagementController.updateDepartment
-  )
-  .delete(
-    '/:departmentId',
-    auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP),
-    shopManagementController.deleteDepartment
-  );
+  .patch(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP), shopManagementController.updateDepartment)
+  .delete(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP), shopManagementController.deleteDepartment);
 router
   .route('/')
   .get(auth(PermissionType.VIEW_SHOP), shopManagementController.getDepartments)

@@ -56,7 +56,7 @@ shopSchema.post('save', async function (doc) {
   }
 });
 
-shopSchema.post(new RegExp('.*update.*', 'i'), async function () {
+shopSchema.post(new RegExp('.*(update|delete).*', 'i'), async function () {
   try {
     const filter = this.getFilter();
     const shopId = _.get(filter, '_id');

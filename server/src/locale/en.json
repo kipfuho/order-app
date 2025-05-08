@@ -34,5 +34,9 @@
   "auth.required": "Please authenticate",
   "notFound": "Not found",
   "auth.incorrectCredential": "Incorrect username or password",
-  "permission.missing": "Missing permission to do the operation"
+  "permission.missing": "Missing permission to do the operation",
+  "import.missingCode": "Code is required",
+  "import.missingDishCategory": "Dish category is required",
+  "import.missingUnit": "Unit is required",
+  "success": "Success"
 }

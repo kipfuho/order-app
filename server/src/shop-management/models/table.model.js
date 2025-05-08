@@ -33,7 +33,7 @@ tableSchema.post('save', async function (doc) {
   }
 });
 
-tableSchema.post(new RegExp('.*update.*', 'i'), async function () {
+tableSchema.post(new RegExp('.*(update|delete).*', 'i'), async function () {
   try {
     const filter = this.getFilter();
     let shopId = _.get(filter, 'shop');

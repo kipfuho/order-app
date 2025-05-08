@@ -31,7 +31,7 @@ employeePositionSchema.post('save', async function (doc) {
   }
 });
 
-employeePositionSchema.post(new RegExp('.*update.*', 'i'), async function () {
+employeePositionSchema.post(new RegExp('.*(update|delete).*', 'i'), async function () {
   try {
     const filter = this.getFilter();
     let shopId = _.get(filter, 'shop');

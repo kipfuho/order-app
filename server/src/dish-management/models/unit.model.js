@@ -190,7 +190,7 @@ unitSchema.post('save', async function (doc) {
   }
 });
 
-unitSchema.post(new RegExp('.*update.*', 'i'), async function () {
+unitSchema.post(new RegExp('.*(update|delete).*', 'i'), async function () {
   try {
     const filter = this.getFilter();
     let shopId = _.get(filter, 'shop');

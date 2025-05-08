@@ -27,7 +27,7 @@ if (config.env !== 'test') {
 app.use(helmet());
 
 // parse json request body
-app.use(express.json());
+app.use(express.json({ limit: 1024 * 1024 }));
 
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));

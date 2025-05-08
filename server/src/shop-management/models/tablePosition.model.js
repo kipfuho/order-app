@@ -38,7 +38,7 @@ tablePositionSchema.post('save', async function (doc) {
   }
 });
 
-tablePositionSchema.post(new RegExp('.*update.*', 'i'), async function () {
+tablePositionSchema.post(new RegExp('.*(update|delete).*', 'i'), async function () {
   try {
     const filter = this.getFilter();
     let shopId = _.get(filter, 'shop');

@@ -1,5 +1,8 @@
 const _ = require('lodash');
 const crypto = require('crypto');
+const { default: axios } = require('axios');
+const path = require('path');
+const mime = require('mime');
 const aws = require('../../utils/aws');
 const { Dish } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
@@ -16,6 +19,7 @@ const { JobTypes } = require('../../jobs/constant');
 const { notifyUpdateDish, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
+const logger = require('../../config/logger');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -74,7 +78,7 @@ const updateDish = async ({ shopId, dishId, updateBody, userId }) => {
 };
 
 const deleteDish = async ({ shopId, dishId, userId }) => {
-  const dish = await Dish.findOneAndDelete({ _id: dishId, shopId });
+  const dish = await Dish.findOneAndDelete({ _id: dishId, shop: shopId });
   throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
 
   const dishJson = dish.toJSON();
@@ -108,6 +112,39 @@ const uploadImage = async ({ shopId, image }) => {
   return url;
 };
 
+const downloadAndUploadSingleImage = async ({ shopId, url }) => {
+  const response = await axios.get(url, { responseType: 'arraybuffer' });
+
+  const extension = path.extname(new URL(url).pathname) || '';
+  const originalname = `image${extension}`;
+  const mimetype = response.headers['content-type'] || mime.lookup(extension) || 'application/octet-stream';
+
+  const buffer = Buffer.from(response.data);
+
+  return uploadImage({
+    shopId,
+    image: {
+      originalname,
+      mimetype,
+      buffer,
+    },
+  });
+};
+
+const downloadAndUploadDishImages = async ({ shopId, imageUrls = [] }) => {
+  const results = await Promise.allSettled(imageUrls.map((url) => downloadAndUploadSingleImage({ shopId, url })));
+
+  const uploadedUrls = results.map((result, index) => {
+    if (result.status === 'fulfilled') {
+      return result.value;
+    }
+    logger.error(`Failed to process image at index ${index}:`, result.reason);
+    return null;
+  });
+
+  return uploadedUrls.filter(Boolean);
+};
+
 const importDishes = async ({ dishes, shopId }) => {
   const dishCategories = await getDishCategoriesFromCache({ shopId });
   const dishCategoryByName = _.keyBy(dishCategories, 'name');
@@ -118,44 +155,73 @@ const importDishes = async ({ dishes, shopId }) => {
 
   const bulkOps = [];
   const errorDishes = [];
-  _.forEach(dishes, (dish) => {
-    const { code, dishCategoryId, dishCategoryName, unitId, unitName } = dish;
+  const newImageUrls = [];
 
-    if (!code) {
-      errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingCode' }) });
-      return;
-    }
+  await Promise.allSettled(
+    dishes.map(async (dish) => {
+      const { code, dishCategoryId, dishCategoryName, unitId, unitName, images } = dish;
 
-    const dishCategory = dishCategoryById[dishCategoryId] || dishCategoryByName[dishCategoryName];
-    const unit = unitById[unitId] || unitByName[unitName];
+      // eslint-disable-next-line no-await-in-loop
+      const imageUrls = await downloadAndUploadDishImages({ imageUrls: images, shopId });
 
-    if (!dishCategory) {
-      errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingDishCategory' }) });
-      return;
-    }
-    if (!unit) {
-      errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingUnit' }) });
-      return;
-    }
+      if (!code) {
+        errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingCode' }) });
+        return;
+      }
 
-    const updateBody = _.cloneDeep(dish);
-    updateBody.shop = shopId;
-    updateBody.unit = unit.id;
-    updateBody.category = dishCategory.id;
-    delete updateBody.dishCategoryId;
-    delete updateBody.dishCategoryName;
-    delete updateBody.unitId;
-    delete updateBody.unitName;
-    bulkOps.push({
-      updateOne: {
-        filter: { shop: shopId, code: dish.code },
-        update: { $set: updateBody },
-        upsert: true,
-      },
-    });
-  });
+      const dishCategory = dishCategoryById[dishCategoryId] || dishCategoryByName[dishCategoryName];
+      const unit = unitById[unitId] || unitByName[unitName];
+
+      if (!dishCategory) {
+        errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingDishCategory' }) });
+        return;
+      }
+      if (!unit) {
+        errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingUnit' }) });
+        return;
+      }
+
+      const updateBody = _.cloneDeep(dish);
+      updateBody.shop = shopId;
+      updateBody.unit = unit.id;
+      updateBody.category = dishCategory.id;
+      updateBody.imageUrls = imageUrls;
+      if (imageUrls) {
+        newImageUrls.push(...imageUrls);
+        registerJob({
+          type: JobTypes.DISABLE_S3_OBJECT_USAGE,
+          data: {
+            keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
+          },
+        });
+      }
+      delete updateBody.dishCategoryId;
+      delete updateBody.dishCategoryName;
+      delete updateBody.unitId;
+      delete updateBody.unitName;
+      bulkOps.push({
+        updateOne: {
+          filter: { shop: shopId, code: dish.code },
+          update: { $set: updateBody },
+          upsert: true,
+        },
+      });
+    })
+  );
 
   await Dish.bulkWrite(bulkOps);
+  registerJob({
+    type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
+    data: {
+      keys: _.map(newImageUrls, (url) => aws.getS3ObjectKey(url)),
+    },
+  });
+  notifyUpdateDish({
+    action: EventActionType.UPDATE,
+    dish: {
+      shop: shopId,
+    },
+  });
   return errorDishes;
 };
 

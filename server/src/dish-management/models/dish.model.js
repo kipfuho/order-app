@@ -52,7 +52,7 @@ dishSchema.post('save', async function (doc) {
   }
 });
 
-dishSchema.post(new RegExp('.*update.*', 'i'), async function () {
+dishSchema.post(new RegExp('.*(update|delete).*', 'i'), async function () {
   try {
     const filter = this.getFilter();
     let shopId = _.get(filter, 'shop');
