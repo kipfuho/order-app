@@ -209,27 +209,48 @@ const updateDishRequest = async ({
   unit,
   isTaxIncludedPrice = false,
   imageUrls = [],
+  status,
 }: UpdateDishRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
-    name: string;
-    category: string;
-    type: string;
-    price: number;
-    taxRate: number;
-    unit: string;
-    isTaxIncludedPrice: boolean;
-    imageUrls: string[];
-  } = {
-    name,
-    category: category.id,
-    type: dishType,
-    price,
-    taxRate,
-    unit: unit.id,
-    isTaxIncludedPrice,
-    imageUrls,
-  };
+    name?: string;
+    category?: string;
+    type?: string;
+    price?: number;
+    taxRate?: number;
+    unit?: string;
+    isTaxIncludedPrice?: boolean;
+    imageUrls?: string[];
+    status?: string;
+  } = {};
+
+  if (name) {
+    body.name = name;
+  }
+  if (category) {
+    body.category = category.id;
+  }
+  if (dishType) {
+    body.type = dishType;
+  }
+  if (price) {
+    body.price = price;
+  }
+  if (taxRate) {
+    body.taxRate = taxRate;
+  }
+  if (unit) {
+    body.unit = unit.id;
+  }
+  if (isTaxIncludedPrice) {
+    body.isTaxIncludedPrice = isTaxIncludedPrice;
+  }
+  if (imageUrls) {
+    body.imageUrls = imageUrls;
+  }
+  if (status) {
+    body.status = status;
+  }
 
   const result: { dish: Dish } = await apiRequest({
     method: "PATCH",

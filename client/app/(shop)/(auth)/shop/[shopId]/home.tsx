@@ -24,6 +24,7 @@ import { useDeleteShopMutation } from "../../../../../stores/apiSlices/shopApi.s
 import { LoaderBasic } from "../../../../../components/ui/Loader";
 import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
+import { BLURHASH } from "../../../../../constants/common";
 
 interface Item {
   title: string;
@@ -149,6 +150,7 @@ export default function ShopPage() {
                   source={
                     shop.imageUrls?.[0] || require("@assets/images/savora.png")
                   }
+                  placeholder={{ blurhash: BLURHASH }}
                   style={{
                     width: 100,
                     height: 100,

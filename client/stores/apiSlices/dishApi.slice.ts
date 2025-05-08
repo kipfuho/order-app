@@ -228,7 +228,8 @@ export const dishApiSlice = createApi({
             "getDishes",
             { shopId: args.shopId },
             (draft) => {
-              return draft.filter((d) => d.id !== args.dishId);
+              const index = draft.findIndex((d) => d.id === args.dishId);
+              if (index !== -1) draft.splice(index, 1);
             }
           )
         );

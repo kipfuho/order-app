@@ -1,4 +1,4 @@
-import { CartItem, Dish, Shop } from "../../../stores/state.interface";
+import { CartItem, Dish } from "../../../stores/state.interface";
 import {
   Card,
   Icon,
@@ -14,6 +14,7 @@ import { convertPaymentAmount } from "../../../constants/utils";
 import { useDispatch } from "react-redux";
 import { updateCartSingleDish } from "../../../stores/customerSlice";
 import { Image } from "expo-image";
+import { BLURHASH } from "../../../constants/common";
 
 function QuantityControlForCustomer({
   dish,
@@ -158,6 +159,7 @@ export const DishCardForCustomer = ({
     >
       <Image
         source={dish.imageUrls[0] || require("@assets/images/savora.png")}
+        placeholder={{ blurhash: BLURHASH }}
         style={{
           width: "100%",
           height: Math.min(cardWidth, 200),

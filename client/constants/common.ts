@@ -23,3 +23,8 @@ export const Countries = {
     currency: "VND",
   },
 };
+
+export enum DishStatus {
+  activated = "activated",
+  deactivated = "deactivated",
+}

@@ -11,12 +11,14 @@ import {
   useTheme,
 } from "react-native-paper";
 import { Dish } from "../../../stores/state.interface";
-import { Image, Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { updateCartSingleDish } from "../../../stores/customerSlice";
 import { convertPaymentAmount } from "../../../constants/utils";
 import { useTranslation } from "react-i18next";
 import { RootState } from "../../../stores/store";
+import { Image } from "expo-image";
+import { BLURHASH } from "../../../constants/common";
 
 export default function UpdateCartItem({
   cartItemId,
@@ -65,7 +67,7 @@ export default function UpdateCartItem({
           <Image
             source={dish.imageUrls[0] || require("@assets/images/savora.png")}
             style={{ width: "100%", height: 200 }}
-            resizeMode="cover"
+            placeholder={{ blurhash: BLURHASH }}
           />
           <IconButton
             icon="close"

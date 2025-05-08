@@ -87,6 +87,7 @@ interface Unit {
 interface Dish {
   id: string;
   name: string;
+  shop: string;
   category: DishCategory;
   unit: Unit;
   price: number;
@@ -95,6 +96,7 @@ interface Dish {
   taxRate: number;
   imageUrls: string[];
   description: string;
+  status: string;
 }
 
 interface DishCategory {

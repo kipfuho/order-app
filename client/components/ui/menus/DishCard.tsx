@@ -1,8 +1,13 @@
 import { Dish } from "../../../stores/state.interface";
 import { Card, IconButton, Switch, Text, Tooltip } from "react-native-paper";
-import { useEffect, useState } from "react";
-import { Image, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { View } from "react-native";
 import { convertPaymentAmount } from "../../../constants/utils";
+import { Image } from "expo-image";
+import { BLURHASH, DishStatus } from "../../../constants/common";
+import { useTranslation } from "react-i18next";
+import { useUpdateDishMutation } from "../../../stores/apiSlices/dishApi.slice";
+import { debounce } from "lodash";
 
 export const DishCard = ({
   dish,
@@ -13,10 +18,32 @@ export const DishCard = ({
   openMenu: (dish: Dish, event: any) => void;
   containerWidth?: number;
 }) => {
+  const { t } = useTranslation();
   const [cardWidth, setCardWidth] = useState(300);
-  const [onSale, setOnSale] = useState(false);
+  const [onSale, setOnSale] = useState(dish.status === DishStatus.activated);
 
-  const onToggleSwitch = () => setOnSale(!onSale);
+  const [updateDish, { isLoading: updateDishLoading }] =
+    useUpdateDishMutation();
+
+  const onToggleSwitch = () => {
+    setOnSale(!onSale);
+    updateDishStatus(!onSale);
+  };
+
+  const updateDishStatus = useCallback(
+    debounce(async (activated) => {
+      if (updateDishLoading) {
+        return;
+      }
+
+      await updateDish({
+        dishId: dish.id,
+        shopId: dish.shop,
+        status: activated ? DishStatus.activated : DishStatus.deactivated,
+      }).unwrap();
+    }, 500),
+    []
+  );
 
   useEffect(() => {
     setCardWidth(Math.min(300, containerWidth * 0.48));
@@ -25,18 +52,14 @@ export const DishCard = ({
   return (
     <Card style={{ width: cardWidth }}>
       <Image
-        source={
-          dish.imageUrls[0]
-            ? { uri: dish.imageUrls[0] }
-            : require("@assets/images/savora.png")
-        }
+        source={dish.imageUrls[0] || require("@assets/images/savora.png")}
+        placeholder={{ blurhash: BLURHASH }}
         style={{
           width: "100%",
           height: 180,
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
         }}
-        resizeMode="cover"
       />
       <Card.Title
         title={
@@ -76,7 +99,7 @@ export const DishCard = ({
             margin: 0,
           }}
         >
-          <Text>On Sale</Text>
+          <Text>{t("on_sale")}</Text>
           <Switch value={onSale} onValueChange={onToggleSwitch} />
         </View>
       </Card.Actions>

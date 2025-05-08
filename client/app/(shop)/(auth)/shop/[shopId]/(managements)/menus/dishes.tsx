@@ -17,7 +17,6 @@ import {
   Menu,
   Portal,
   Dialog,
-  ActivityIndicator,
   TouchableRipple,
 } from "react-native-paper";
 import {
@@ -27,9 +26,9 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { deleteDishRequest } from "../../../../../../../apis/dish.api.service";
 import Toast from "react-native-toast-message";
 import {
+  useDeleteDishMutation,
   useGetDishCategoriesQuery,
   useGetDishesQuery,
 } from "../../../../../../../stores/apiSlices/dishApi.slice";
@@ -41,6 +40,7 @@ import {
 } from "../../../../../../../apis/navigate.service";
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
+import { ConfirmCancelDialog } from "../../../../../../../components/ui/CancelDialog";
 
 function CategoryList({
   dishCategories = [],
@@ -153,9 +153,10 @@ export default function DishesManagementPage() {
   });
   const { data: dishCategories = [], isLoading: categoryLoading } =
     useGetDishCategoriesQuery({ shopId: shop.id });
+  const [deleteDish, { isLoading: deleteDishLoading }] =
+    useDeleteDishMutation();
   const dishesGroupByCategoryId = _.groupBy(dishes, "category.id");
 
-  const [loading, setLoading] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [selectedDish, setSelectedDish] = useState<Dish>();
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -169,7 +170,6 @@ export default function DishesManagementPage() {
 
   const confirmDelete = async () => {
     try {
-      setLoading(true);
       if (!selectedDish) {
         Toast.show({
           type: "error",
@@ -178,14 +178,13 @@ export default function DishesManagementPage() {
         });
         return;
       }
-      await deleteDishRequest({
+      await deleteDish({
         shopId: shop.id,
         dishId: selectedDish.id,
-      });
+      }).unwrap();
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
       setDialogVisible(false);
       setMenuVisible(false);
     }
@@ -226,37 +225,22 @@ export default function DishesManagementPage() {
 
       {/* Delete Confirmation Dialog */}
       <Portal>
-        <Dialog
-          visible={dialogVisible}
-          style={{ width: "60%", alignSelf: "center" }}
-          onDismiss={() => setDialogVisible(false || loading)}
+        <ConfirmCancelDialog
+          title={t("delete_confirm")}
+          isLoading={deleteDishLoading}
+          dialogVisible={dialogVisible}
+          setDialogVisible={setDialogVisible}
+          onCancelClick={() => {
+            setDialogVisible(false);
+          }}
+          onConfirmClick={confirmDelete}
         >
-          <Dialog.Title>Confirm Delete</Dialog.Title>
           <Dialog.Content>
-            <Text>Are you sure you want to delete {selectedDish?.name}?</Text>
+            <Text>
+              {t("delete_confirm_detail")} {selectedDish?.name}?
+            </Text>
           </Dialog.Content>
-          <Dialog.Actions>
-            {loading ? (
-              <ActivityIndicator />
-            ) : (
-              <>
-                <Button
-                  mode="contained"
-                  onPress={() => setDialogVisible(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  mode="contained-tonal"
-                  onPress={confirmDelete}
-                  textColor="red"
-                >
-                  Delete
-                </Button>
-              </>
-            )}
-          </Dialog.Actions>
-        </Dialog>
+        </ConfirmCancelDialog>
 
         <Menu
           visible={menuVisible}
@@ -289,45 +273,52 @@ export default function DishesManagementPage() {
           {/* Right Section for Dishes */}
           <Surface style={{ flex: 1 }}>
             <ScrollView ref={scrollViewRef} style={styles.dishList}>
-              {dishCategories.map((category) => (
-                <View
-                  key={category.id}
-                  ref={(el) => (categoryRefs.current[category.id] = el)}
-                  style={styles.categoryContainer}
-                >
-                  <Text variant="titleMedium" style={styles.categoryTitle}>
-                    {category.name}
-                  </Text>
-                  <Surface
-                    style={{
-                      flexDirection: "row",
-                      flexWrap: "wrap",
-                      boxShadow: "none",
-                      gap: 10,
-                    }}
-                    onLayout={(event) => {
-                      const { width } = event.nativeEvent.layout;
-                      setDishCardContainerWidth(width);
-                    }}
+              {dishCategories.map((category) => {
+                const categoryDishes = _.get(
+                  dishesGroupByCategoryId,
+                  category.id
+                );
+                if (_.isEmpty(categoryDishes)) {
+                  return;
+                }
+                return (
+                  <View
+                    key={category.id}
+                    ref={(el) => (categoryRefs.current[category.id] = el)}
+                    style={styles.categoryContainer}
                   >
-                    {_.get(dishesGroupByCategoryId, category.id, []).map(
-                      (dish) => (
+                    <Text variant="titleMedium" style={styles.categoryTitle}>
+                      {category.name}
+                    </Text>
+                    <Surface
+                      style={{
+                        flexDirection: "row",
+                        flexWrap: "wrap",
+                        boxShadow: "none",
+                        gap: 10,
+                      }}
+                      onLayout={(event) => {
+                        const { width } = event.nativeEvent.layout;
+                        setDishCardContainerWidth(width);
+                      }}
+                    >
+                      {categoryDishes.map((dish) => (
                         <DishCard
                           key={dish.id}
                           dish={dish}
                           openMenu={openMenu}
                           containerWidth={dishCardContainerWidth}
                         />
-                      )
-                    )}
-                  </Surface>
-                </View>
-              ))}
+                      ))}
+                    </Surface>
+                  </View>
+                );
+              })}
             </ScrollView>
 
             {/* Create Dish Button */}
             <Button
-              mode="contained-tonal"
+              mode="contained"
               onPress={() => goToCreateDish({ router, shopId: shop.id })}
               style={styles.createButton}
             >

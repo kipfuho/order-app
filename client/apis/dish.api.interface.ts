@@ -54,14 +54,15 @@ interface GetDishesRequest {
 interface UpdateDishRequest {
   shopId: string;
   dishId: string;
-  name: string;
-  category: DishCategory;
-  dishType: string;
-  price: number;
-  taxRate: number;
-  unit: Unit;
-  isTaxIncludedPrice: boolean;
-  imageUrls: string[];
+  name?: string;
+  category?: DishCategory;
+  dishType?: string;
+  price?: number;
+  taxRate?: number;
+  unit?: Unit;
+  isTaxIncludedPrice?: boolean;
+  imageUrls?: string[];
+  status?: string;
   rtk?: boolean;
 }
 
