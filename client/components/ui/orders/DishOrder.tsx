@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Card, Text, useTheme, Icon, Surface } from "react-native-paper";
 import { DishOrder, Order } from "../../../stores/state.interface";
 import { convertPaymentAmount } from "../../../constants/utils";
+import { DishOrderStatus } from "../../../constants/common";
 
 const ChildDishList = () => {
   return (
@@ -13,25 +14,51 @@ const ChildDishList = () => {
   );
 };
 
-const DishOrderStatus = () => {
-  const theme = useTheme();
-
-  return (
-    <View style={styles.stepper}>
-      <Icon source="clock-outline" size={24} color={theme.colors.primary} />
-      <View style={styles.stepDivider} />
-      <Icon
-        source="check-circle-outline"
-        size={24}
-        color={theme.colors.primary}
-      />
-      <View style={styles.stepDivider} />
-      <Icon source="pot-mix" size={24} color={theme.colors.primary} />
-      <View style={styles.stepDivider} />
-      <Icon source="noodles" size={24} color={theme.colors.primary} />
-    </View>
-  );
+type Step = {
+  icon: string;
+  label: DishOrderStatus;
 };
+
+const steps: Step[] = [
+  { icon: "clock-outline", label: DishOrderStatus.confirmed },
+  { icon: "pot-mix", label: DishOrderStatus.cooked },
+  { icon: "noodles", label: DishOrderStatus.served },
+];
+
+const DishOrderStepper = React.memo(
+  ({ status }: { status: DishOrderStatus | string }) => {
+    const theme = useTheme();
+
+    const currentStep = useMemo(() => {
+      return steps.findIndex((step) => step.label === status);
+    }, [status]);
+
+    return (
+      <View style={styles.stepper}>
+        {steps.map((step, index) => (
+          <React.Fragment key={step.label}>
+            <Icon
+              source={index <= currentStep ? "check-circle" : step.icon}
+              size={24}
+              color={index <= currentStep ? theme.colors.primary : "#ccc"}
+            />
+            {index < steps.length - 1 && (
+              <View
+                style={[
+                  styles.stepDivider,
+                  {
+                    backgroundColor:
+                      index < currentStep ? theme.colors.primary : "#ccc",
+                  },
+                ]}
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </View>
+    );
+  }
+);
 
 export default function DishOrderCard({
   order,
@@ -104,7 +131,7 @@ export default function DishOrderCard({
           </View>
         </View>
         {/* <ChildDishList /> */}
-        {/* <DishOrderStatus /> */}
+        <DishOrderStepper status={dishOrder.status} />
       </View>
     </Card>
   );

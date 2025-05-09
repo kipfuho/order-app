@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, TouchableRipple, useTheme } from "react-native-paper";
 
 export default function GeneralPayment({
@@ -11,6 +12,7 @@ export default function GeneralPayment({
   setPaymentDialogVisible: Dispatch<SetStateAction<boolean>>;
 }) {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   return (
     <TouchableRipple
@@ -29,7 +31,7 @@ export default function GeneralPayment({
         alignItems: "center",
       }}
     >
-      <Text style={{ color: theme.colors.onPrimary }}>{paymentMethod}</Text>
+      <Text style={{ color: theme.colors.onPrimary }}>{t(paymentMethod)}</Text>
     </TouchableRipple>
   );
 }

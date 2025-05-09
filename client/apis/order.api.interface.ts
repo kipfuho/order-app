@@ -1,4 +1,4 @@
-import { DiscountType } from "../constants/common";
+import { DiscountValueType } from "../constants/common";
 import { DishOrder, PaymentDetail } from "../stores/state.interface";
 
 interface GetTablesForOrderRequest {
@@ -60,7 +60,7 @@ interface DiscountDishOrderRequest {
   orderId: string;
   discountReason?: string;
   discountValue: number;
-  discountType: DiscountType;
+  discountType: DiscountValueType;
   discountAfterTax: boolean;
 }
 
@@ -69,8 +69,14 @@ interface DiscountOrderSessionRequest {
   orderSessionId: string;
   discountReason?: string;
   discountValue: number;
-  discountType: DiscountType;
+  discountType: DiscountValueType;
   discountAfterTax: boolean;
+}
+
+interface RemoveDiscountFromOrderSessionRequest {
+  shopId: string;
+  orderSessionId: string;
+  discountId: string;
 }
 
 export {
@@ -85,4 +91,5 @@ export {
   CancelOrderSessionPaidStatusRequest,
   DiscountDishOrderRequest,
   DiscountOrderSessionRequest,
+  RemoveDiscountFromOrderSessionRequest,
 };

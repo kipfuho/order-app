@@ -17,6 +17,7 @@ import {
   GetOrderSessionHistoryRequest,
   GetTablesForOrderRequest,
   PayOrderSessionRequest,
+  RemoveDiscountFromOrderSessionRequest,
 } from "./order.api.interface";
 
 /**
@@ -279,6 +280,28 @@ const discountOrderSessionRequest = async ({
   });
 };
 
+/**
+ * remove discount from order session
+ * @param param0
+ */
+const removeDiscountFromOrderSessionRequest = async ({
+  shopId,
+  orderSessionId,
+  discountId,
+}: RemoveDiscountFromOrderSessionRequest) => {
+  const accessToken = await getAccessTokenLazily();
+
+  await apiRequest({
+    method: "POST",
+    endpoint: `/v1/shops/${shopId}/orders/remove-discount`,
+    token: accessToken,
+    data: {
+      orderSessionId,
+      discountId,
+    },
+  });
+};
+
 const getVnPayUrl = async ({
   shopId,
   orderSessionId,
@@ -313,5 +336,6 @@ export {
   cancelOrderSessionPaidStatusRequest,
   discountDishOrderRequest,
   discountOrderSessionRequest,
+  removeDiscountFromOrderSessionRequest,
   getVnPayUrl,
 };

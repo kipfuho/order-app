@@ -6,68 +6,23 @@ import {
   View,
 } from "react-native";
 import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
-import { DishCard } from "./ui/menus/DishCard";
-import { Fragment, useRef, useState } from "react";
+import { Dispatch, Fragment, SetStateAction, useState } from "react";
 import { ScrollView } from "react-native";
-import { Dish } from "../stores/state.interface";
-import { DishCardForOrder } from "./ui/menus/DishCardForOrder";
-
-export enum ItemTypeFlatList {
-  DISH_CARD = "dishCard",
-  DISH_CARD_ORDER = "dishCardOrder",
-}
-
-export const ItemTypeFlatListProperties = {
-  [ItemTypeFlatList.DISH_CARD]: {
-    MAX_WIDTH: 300,
-    HEADER_HEIGHT: 24,
-    ROW_HEIGHT: 288,
-  },
-  [ItemTypeFlatList.DISH_CARD_ORDER]: {
-    MAX_WIDTH: 200,
-    HEADER_HEIGHT: 24,
-    ROW_HEIGHT: 250,
-  },
-};
-
-export const ItemTypeMap = {
-  [ItemTypeFlatList.DISH_CARD]: ({
-    dish,
-    openMenu,
-    containerWidth,
-  }: {
-    dish: Dish;
-    openMenu?: (dish: Dish, event: any) => void;
-    containerWidth?: number;
-  }) => {
-    if (!openMenu) return;
-
-    return (
-      <DishCard
-        dish={dish}
-        openMenu={openMenu}
-        containerWidth={containerWidth}
-      />
-    );
-  },
-
-  [ItemTypeFlatList.DISH_CARD_ORDER]: ({
-    dish,
-    containerWidth,
-  }: {
-    dish: Dish;
-    containerWidth?: number;
-  }) => {
-    return <DishCardForOrder dish={dish} containerWidth={containerWidth} />;
-  },
-};
+import {
+  flatListStyles,
+  ItemTypeFlatList,
+  ItemTypeFlatListProperties,
+  ItemTypeMap,
+} from "./FlatListWithScroll";
 
 function GroupList({
   groups = [],
-  scrollToGroup,
+  selectedGroup,
+  setSelectedGroup,
 }: {
   groups: any[];
-  scrollToGroup: (id: string) => void;
+  selectedGroup: string;
+  setSelectedGroup: Dispatch<SetStateAction<string>>;
 }) {
   const theme = useTheme();
   const { width } = useWindowDimensions();
@@ -99,9 +54,14 @@ function GroupList({
             {groups.map((g) => (
               <TouchableRipple
                 key={g.id}
-                onPress={() => scrollToGroup(g.id)}
+                onPress={() =>
+                  setSelectedGroup((id) => (id === g.id ? "" : g.id))
+                }
                 style={{
-                  backgroundColor: theme.colors.primaryContainer,
+                  backgroundColor:
+                    selectedGroup === g.id
+                      ? theme.colors.primary
+                      : theme.colors.primaryContainer,
                   paddingVertical: 12,
                   paddingHorizontal: 16,
                   borderRadius: 4,
@@ -112,6 +72,7 @@ function GroupList({
                   style={{
                     flexWrap: "wrap",
                     maxWidth: 200,
+                    color: selectedGroup === g.id ? theme.colors.onPrimary : "",
                   }}
                 >
                   {g.name}
@@ -138,9 +99,14 @@ function GroupList({
             return (
               <TouchableRipple
                 key={g.id}
-                onPress={() => scrollToGroup(g.id)}
+                onPress={() =>
+                  setSelectedGroup((id) => (id === g.id ? "" : g.id))
+                }
                 style={{
-                  backgroundColor: theme.colors.primaryContainer,
+                  backgroundColor:
+                    selectedGroup === g.id
+                      ? theme.colors.primary
+                      : theme.colors.primaryContainer,
                   paddingVertical: 12,
                   paddingHorizontal: 8,
                   borderRadius: 4,
@@ -150,6 +116,7 @@ function GroupList({
                   variant="bodyMedium"
                   style={{
                     flexWrap: "wrap",
+                    color: selectedGroup === g.id ? theme.colors.onPrimary : "",
                   }}
                 >
                   {g.name}
@@ -170,7 +137,7 @@ interface Item {
   items?: any[];
 }
 
-export default function FlatListWithScroll({
+export default function FlatListWithoutScroll({
   groups,
   itemByGroup,
   openMenu,
@@ -178,10 +145,12 @@ export default function FlatListWithScroll({
 }: {
   groups: any[];
   itemByGroup: Record<string, any[]>;
-  openMenu: (item: any, event: GestureResponderEvent) => void;
   itemType: ItemTypeFlatList;
+  openMenu?: (item: any, event: GestureResponderEvent) => void;
 }) {
   const { width } = useWindowDimensions();
+
+  const [selectedGroup, setSelectGroup] = useState("");
   const [itemContainerWidth, setItemContainerWidth] = useState<number>(1);
   const numColumns =
     Math.floor(
@@ -192,8 +161,11 @@ export default function FlatListWithScroll({
         )
     ) || 0;
 
-  const flatListRef = useRef<FlatList<any>>(null);
   const flatListData = groups.flatMap((g) => {
+    if (selectedGroup && g.id !== selectedGroup) {
+      return [];
+    }
+
     const items = itemByGroup[g.id] || [];
 
     const itemRows: Item[] = [];
@@ -209,14 +181,6 @@ export default function FlatListWithScroll({
     return [{ type: "header", id: `header-${g.id}`, group: g }, ...itemRows];
   });
 
-  // For scrollToCategory
-  const indexMap: Record<string, number> = {};
-  flatListData.forEach((item: Item, index) => {
-    if (item.type === "header") {
-      indexMap[item.group!.id] = index;
-    }
-  });
-
   const renderItem = ({ item }: { item: Item }) => {
     if (item.type === "header") {
       return (
@@ -225,6 +189,7 @@ export default function FlatListWithScroll({
     }
 
     if (item.type === "row") {
+      console.log(numColumns);
       return (
         <View
           style={{
@@ -255,59 +220,20 @@ export default function FlatListWithScroll({
     return null;
   };
 
-  const scrollToCategory = (categoryId: string) => {
-    const index = indexMap[categoryId];
-    if (index !== undefined && flatListRef.current) {
-      flatListRef.current.scrollToIndex({ index, animated: true });
-    }
-  };
-
-  const getItemLayout = (
-    _: ArrayLike<Item> | null | undefined,
-    index: number
-  ) => {
-    // Alternate between headers and rows
-    const HEADER_HEIGHT = ItemTypeFlatListProperties[itemType].HEADER_HEIGHT;
-    const ROW_HEIGHT = ItemTypeFlatListProperties[itemType].ROW_HEIGHT;
-    const MARGIN_BOTTOM = 8;
-
-    // You must be able to calculate item height based on index or item type
-    const offset = flatListData
-      .slice(0, index)
-      .reduce(
-        (sum, item) =>
-          sum +
-          (item.type === "header" ? HEADER_HEIGHT : ROW_HEIGHT) +
-          MARGIN_BOTTOM,
-        0
-      );
-
-    const length =
-      flatListData[index].type === "header" ? HEADER_HEIGHT : ROW_HEIGHT;
-
-    return { length, offset, index };
-  };
-
   return (
     <Surface
       mode="flat"
       style={{ flex: 1, flexDirection: width >= 600 ? "row" : "column" }}
     >
-      <GroupList groups={groups} scrollToGroup={scrollToCategory} />
+      <GroupList
+        groups={groups}
+        selectedGroup={selectedGroup}
+        setSelectedGroup={setSelectGroup}
+      />
       <FlatList
-        ref={flatListRef}
         data={flatListData}
         renderItem={renderItem}
-        getItemLayout={getItemLayout}
         keyExtractor={(item) => item.id}
-        onScrollToIndexFailed={(info) => {
-          setTimeout(() => {
-            flatListRef.current?.scrollToIndex({
-              index: info.index,
-              animated: true,
-            });
-          }, 100);
-        }}
         onLayout={(event) => {
           const { width } = event.nativeEvent.layout;
           setItemContainerWidth(width - 20);
@@ -317,15 +243,3 @@ export default function FlatListWithScroll({
     </Surface>
   );
 }
-
-export const flatListStyles = StyleSheet.create({
-  sidebar: {
-    width: 120,
-  },
-  categoryTitle: {
-    marginBottom: 8,
-    height: 24,
-    fontWeight: "bold",
-    fontSize: 20,
-  },
-});

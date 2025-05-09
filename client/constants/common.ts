@@ -28,3 +28,14 @@ export enum DishStatus {
   activated = "activated",
   deactivated = "deactivated",
 }
+
+export enum DiscountValueType {
+  PERCENTAGE = "PERCENTAGE",
+  ABSOLUTE = "ABSOLUTE",
+}
+
+export enum DishOrderStatus {
+  confirmed = "confirmed",
+  cooked = "cooked",
+  served = "served",
+}

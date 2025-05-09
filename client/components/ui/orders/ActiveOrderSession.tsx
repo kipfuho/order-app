@@ -1,4 +1,4 @@
-import { Button, Divider, Surface, Text } from "react-native-paper";
+import { Button, Divider, Surface } from "react-native-paper";
 import { OrderSession } from "../../../stores/state.interface";
 import { View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,7 +6,6 @@ import { updateCurrentOrderSession } from "../../../stores/shop.slice";
 import { useRouter } from "expo-router";
 import { goToOrderSessionPayment } from "../../../apis/navigate.service";
 import { RootState } from "../../../stores/store";
-import { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import OrderCustomerInfo from "./OrderCutomerInfo";
 
@@ -19,6 +18,7 @@ export function ActiveOrderSession({
 }) {
   const dispatch = useDispatch();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const { currentShop, currentTable } = useSelector(
     (state: RootState) => state.shop
@@ -44,14 +44,14 @@ export function ActiveOrderSession({
       <OrderCustomerInfo orderSession={activeOrderSession}>
         <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
           <Button mode="contained" style={{ flex: 1 }} onPress={onPaymentClick}>
-            Thanh toán
+            {t("payment")}
           </Button>
           <Button
             mode="contained-tonal"
             style={{ flex: 1 }}
             onPress={onAddProductClick}
           >
-            Thêm sản phẩm
+            {t("add_product")}
           </Button>
         </View>
       </OrderCustomerInfo>

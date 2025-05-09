@@ -140,6 +140,7 @@ interface OrderSessionDiscountProduct {
 }
 
 interface OrderSessionDiscount {
+  id: string;
   name: string;
   discountType: string;
   discountValue: number;

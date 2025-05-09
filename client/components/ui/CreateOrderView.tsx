@@ -16,12 +16,14 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../stores/store";
 import { Dish, Shop } from "../../stores/state.interface";
 import { LoaderBasic } from "./Loader";
-import { ScrollView, View } from "react-native";
-import { DishCardForOrder } from "./menus/DishCardForOrder";
+import { ScrollView } from "react-native";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
 import { useCreateOrderMutation } from "../../stores/apiSlices/orderApi.slice";
 import { convertPaymentAmount } from "../../constants/utils";
+import { useTranslation } from "react-i18next";
+import { ItemTypeFlatList } from "../FlatListWithScroll";
+import FlatListWithoutScroll from "../FlatListWithoutScroll";
 
 /**
  * wrapped in a modal
@@ -32,6 +34,8 @@ export default function CreateOrder({
 }: {
   setCreateOrderVisible: Dispatch<SetStateAction<boolean>>;
 }) {
+  const { t } = useTranslation();
+
   const {
     currentShop,
     currentOrderTotalAmount,
@@ -51,9 +55,10 @@ export default function CreateOrder({
   const [createOrder, { isLoading: createOrderLoading }] =
     useCreateOrderMutation();
 
-  const [selectedCategory, setCategory] = useState<string>("");
   const [selectedDishType, setDishType] = useState<string>("ALL");
-  const [filteredDishes, setFilteredDishes] = useState<Dish[]>([]);
+  const [filteredDishesByCategory, setFilteredDishesByCategory] = useState<
+    Record<string, Dish[]>
+  >({});
 
   const handleCreateOrder = async () => {
     if (currentOrderTotalAmount === 0) {
@@ -83,22 +88,14 @@ export default function CreateOrder({
 
   useEffect(() => {
     const filteredDishes = _.filter(dishes, (d) => {
-      if (selectedCategory && selectedDishType !== "ALL") {
-        return (
-          d.category.id === selectedCategory && d.type === selectedDishType
-        );
-      }
-      if (selectedCategory) {
-        return d.category.id === selectedCategory;
-      }
       if (selectedDishType !== "ALL") {
         return d.type === selectedDishType;
       }
       return true;
     });
 
-    setFilteredDishes(filteredDishes);
-  }, [selectedCategory, selectedDishType, dishLoading]);
+    setFilteredDishesByCategory(_.groupBy(filteredDishes, "category.id"));
+  }, [selectedDishType, dishLoading]);
 
   if (dishLoading || dishCategoryLoading || dishTypeLoading) {
     return <LoaderBasic />;
@@ -128,7 +125,7 @@ export default function CreateOrder({
                 alignSelf: "center",
               }}
             >
-              All
+              {t("all")}
             </Button>
             {dishTypes.map((dishType) => (
               <Button
@@ -152,51 +149,12 @@ export default function CreateOrder({
           </ScrollView>
         </Surface>
 
-        <Surface style={{ height: 50, marginBottom: 10, boxShadow: "none" }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingLeft: 5,
-            }}
-          >
-            {dishCategories.map((cat) => (
-              <Button
-                key={cat.id}
-                mode={
-                  selectedCategory === cat.id ? "outlined" : "contained-tonal"
-                }
-                onPress={() =>
-                  setCategory((prevCat) => (prevCat === cat.id ? "" : cat.id))
-                }
-                style={{
-                  width: "auto",
-                  borderRadius: 10,
-                  marginRight: 5,
-                  alignSelf: "center",
-                }}
-              >
-                {cat.name}
-              </Button>
-            ))}
-          </ScrollView>
-        </Surface>
-        <Surface style={{ flex: 1, boxShadow: "none" }}>
-          <ScrollView>
-            <View
-              style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                boxShadow: "0 0 0",
-                justifyContent: "center",
-              }}
-            >
-              {filteredDishes.map((d) => (
-                <DishCardForOrder key={d.id} dish={d} />
-              ))}
-            </View>
-          </ScrollView>
-        </Surface>
+        <FlatListWithoutScroll
+          groups={dishCategories}
+          itemByGroup={filteredDishesByCategory}
+          itemType={ItemTypeFlatList.DISH_CARD_ORDER}
+        />
+
         <Surface
           style={{
             flexDirection: "row",
@@ -221,7 +179,7 @@ export default function CreateOrder({
               onPress={handleCreateOrder}
               style={{ width: "auto" }}
             >
-              Create order
+              {t("create_order")}
             </Button>
           )}
         </Surface>

@@ -12,6 +12,7 @@ import {
   getOrderSessionHistoryRequest,
   getTablesForOrderRequest,
   payOrderSessionRequest,
+  removeDiscountFromOrderSessionRequest,
 } from "../../apis/order.api.service";
 import {
   OrderSession,
@@ -30,6 +31,7 @@ import {
   GetOrderSessionDetailRequest,
   GetOrderSessionHistoryRequest,
   PayOrderSessionRequest,
+  RemoveDiscountFromOrderSessionRequest,
 } from "../../apis/order.api.interface";
 import { resetCurrentOrder, resetCurrentTable } from "../shop.slice";
 
@@ -308,6 +310,29 @@ export const orderApiSlice = createApi({
         "TablesForOrder",
       ], // Enables cache invalidation
     }),
+
+    removeDiscountFromOrderSession: builder.mutation<
+      boolean,
+      RemoveDiscountFromOrderSessionRequest
+    >({
+      queryFn: async ({ shopId, orderSessionId, discountId }) => {
+        try {
+          await removeDiscountFromOrderSessionRequest({
+            shopId,
+            orderSessionId,
+            discountId,
+          });
+
+          return { data: true };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      invalidatesTags: (_, __, { orderSessionId }) => [
+        { type: "OrderSessions", id: orderSessionId },
+        "TablesForOrder",
+      ], // Enables cache invalidation
+    }),
   }),
 });
 
@@ -323,4 +348,5 @@ export const {
   useCancelOrderSessionPaidStatusMutation,
   useDiscountDishOrderMutation,
   useDiscountOrderSessionMutation,
+  useRemoveDiscountFromOrderSessionMutation,
 } = orderApiSlice;

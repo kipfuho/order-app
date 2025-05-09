@@ -3,6 +3,7 @@ import { Text, TouchableRipple, useTheme } from "react-native-paper";
 import { getVnPayUrl } from "../../../apis/order.api.service";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../stores/store";
+import { useTranslation } from "react-i18next";
 
 export default function BankTransferPayment({
   paymentMethod,
@@ -15,6 +16,7 @@ export default function BankTransferPayment({
   setPaymentUrl: Dispatch<SetStateAction<string>>;
 }) {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const { currentShop, currentOrderSession } = useSelector(
     (state: RootState) => state.shop
@@ -46,7 +48,7 @@ export default function BankTransferPayment({
         alignItems: "center",
       }}
     >
-      <Text style={{ color: theme.colors.onPrimary }}>{paymentMethod}</Text>
+      <Text style={{ color: theme.colors.onPrimary }}>{t(paymentMethod)}</Text>
     </TouchableRipple>
   );
 }
