@@ -36,6 +36,11 @@ const Status = {
   activated: 'activated',
   deactivated: 'deactivated',
 };
+const DishOrderStatus = {
+  confirmed: 'confirmed',
+  cooked: 'cooked',
+  served: 'served',
+};
 
 const OrderSessionStatus = {
   unpaid: 'unpaid',
@@ -125,4 +130,5 @@ module.exports = {
   TableDepartmentPermissions,
   CashierDepartmentPermissions,
   DishTypes,
+  DishOrderStatus,
 };

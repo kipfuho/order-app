@@ -62,6 +62,11 @@ router.post(
   orderManagementController.discountOrderSession
 );
 router.post(
+  '/remove-discount',
+  auth(PermissionType.SHOP_APP, PermissionType.UPDATE_ORDER),
+  orderManagementController.removeDiscountFromOrderSession
+);
+router.post(
   '/get-ordersession-history',
   auth(PermissionType.SHOP_APP, PermissionType.VIEW_ORDER),
   orderManagementController.getOrderSessionHistory

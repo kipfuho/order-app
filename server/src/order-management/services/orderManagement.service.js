@@ -375,8 +375,7 @@ const discountOrderSession = async ({ shopId, requestBody }) => {
     (discount) => discount.discountType === OrderSessionDiscountType.INVOICE
   );
   if (
-    discountValue &&
-    _.get(previousDiscount, 'discountValueType') !== discountType &&
+    (discountValue && _.get(previousDiscount, 'discountValueType') !== discountType) ||
     _.get(previousDiscount, 'discountValue') !== discountValue
   ) {
     discounts.push({
@@ -387,6 +386,18 @@ const discountOrderSession = async ({ shopId, requestBody }) => {
       discountReason,
     });
 
+    await OrderSession.findByIdAndUpdate(orderSessionId, { $set: { discounts, totalDiscountAmount: 0 } });
+  }
+};
+
+const removeDiscountFromOrderSession = async ({ shopId, requestBody }) => {
+  const { orderSessionId, discountId } = requestBody;
+
+  const orderSessionJson = await orderUtilService.getOrderSessionById(orderSessionId, shopId);
+  throwBadRequest(!orderSessionJson, getMessageByLocale({ key: 'orderSession.notFound' }));
+
+  const discounts = _.filter(orderSessionJson.discounts, (discount) => discount.id !== discountId);
+  if (_.size(discounts) !== _.size(orderSessionJson.discounts)) {
     await OrderSession.findByIdAndUpdate(orderSessionId, { $set: { discounts, totalDiscountAmount: 0 } });
   }
 };
@@ -533,6 +544,7 @@ module.exports = {
   checkoutCart,
   discountDishOrder,
   discountOrderSession,
+  removeDiscountFromOrderSession,
   getCheckoutCartHistory,
   getOrderNeedApproval,
   updateUnconfirmedOrder,

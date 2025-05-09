@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { toJSON } = require('../../utils/plugins');
-const { Status } = require('../../utils/constant');
+const { Status, DishOrderStatus } = require('../../utils/constant');
 
 const dishOrderSchema = new mongoose.Schema({
   dish: { type: mongoose.Types.ObjectId, ref: 'Dish' },
@@ -18,7 +18,11 @@ const dishOrderSchema = new mongoose.Schema({
   afterTaxTotalDiscountAmount: { type: Number },
   taxTotalDiscountAmount: { type: Number },
   paymentAmount: { type: Number }, // after discount, after tax
-  status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
+  status: {
+    type: String,
+    enum: [DishOrderStatus.confirmed, DishOrderStatus.cooked, DishOrderStatus.served],
+    default: DishOrderStatus.confirmed,
+  },
   returnedAt: { type: Date },
   note: { type: String },
 });
