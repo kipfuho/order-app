@@ -8,7 +8,7 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
-import { Pressable, useWindowDimensions, View } from "react-native";
+import { Pressable, View } from "react-native";
 import _ from "lodash";
 import { convertPaymentAmount } from "../../../constants/utils";
 import { useDispatch } from "react-redux";
@@ -26,7 +26,6 @@ function QuantityControlForCustomer({
   const dispatch = useDispatch();
   const theme = useTheme();
 
-  const totalQuantity = _.sumBy(cartItems, "quantity");
   const cartItem = _.find(cartItems, (item) => item.quantity > 0);
 
   const handleDecrease = () => {
@@ -58,7 +57,7 @@ function QuantityControlForCustomer({
       <TouchableRipple
         style={{
           position: "absolute",
-          top: 85,
+          bottom: 0,
           right: 0,
           padding: 5,
           borderRadius: 5,
@@ -135,13 +134,14 @@ function QuantityControlForCustomer({
 export const DishCardForCustomer = ({
   dish,
   cartItems,
+  containerWidth = 0,
 }: {
   dish: Dish;
   cartItems: CartItem[];
+  containerWidth?: number;
 }) => {
   const theme = useTheme();
-  const { width } = useWindowDimensions();
-  const cardWidth = (width * 0.75 - 10) / 2 - 10;
+  const cardWidth = Math.min(200, containerWidth * 0.48);
 
   if (!dish) {
     return;
@@ -157,17 +157,19 @@ export const DishCardForCustomer = ({
       }}
       mode="contained"
     >
-      <Image
-        source={dish.imageUrls[0] || require("@assets/images/savora.png")}
-        placeholder={{ blurhash: BLURHASH }}
-        style={{
-          width: "100%",
-          height: Math.min(cardWidth, 200),
-          borderTopLeftRadius: 12,
-          borderTopRightRadius: 12,
-        }}
-      />
-      <QuantityControlForCustomer dish={dish} cartItems={cartItems} />
+      <View>
+        <Image
+          source={dish.imageUrls[0] || require("@assets/images/savora.png")}
+          placeholder={{ blurhash: BLURHASH }}
+          style={{
+            width: cardWidth,
+            height: cardWidth,
+            borderTopLeftRadius: 12,
+            borderTopRightRadius: 12,
+          }}
+        />
+        <QuantityControlForCustomer dish={dish} cartItems={cartItems} />
+      </View>
       <Card.Title
         title={
           <View style={{ flex: 1 }}>

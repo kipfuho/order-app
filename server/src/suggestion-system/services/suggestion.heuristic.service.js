@@ -44,7 +44,7 @@ const cosineSimilarity = (vecA, vecB) => {
 };
 
 const getSimilarDishesTFIDF = ({ dishId, allDishes }) => {
-  const tfidfScores = computeTFIDF(allDishes.map((dish) => dish.description));
+  const tfidfScores = computeTFIDF(allDishes.map((dish) => dish.description || ''));
   const baseDishIndex = _.findIndex(allDishes, (dish) => dish.id === dishId);
 
   const similarities = _.map(allDishes, (dish, index) => ({

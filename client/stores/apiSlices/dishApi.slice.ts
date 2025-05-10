@@ -172,12 +172,12 @@ export const dishApiSlice = createApi({
       invalidatesTags: ["Dishes"],
     }),
 
-    updateDish: builder.mutation<Dish, UpdateDishRequest>({
+    updateDish: builder.mutation<boolean, UpdateDishRequest>({
       queryFn: async (args) => {
         try {
-          const dish = await updateDishRequest(args);
+          await updateDishRequest(args);
 
-          return { data: dish };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }

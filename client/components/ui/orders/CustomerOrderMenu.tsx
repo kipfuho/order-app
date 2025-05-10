@@ -1,7 +1,6 @@
-import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
-import { useCallback, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { ScrollView, View } from "react-native";
+import { Surface } from "react-native-paper";
+import { useCallback, useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import _, { debounce } from "lodash";
 import { LoaderBasic } from "../../../components/ui/Loader";
 import { RootState } from "../../../stores/store";
@@ -12,31 +11,36 @@ import {
   Shop,
 } from "../../../stores/state.interface";
 import { useGetDishCategoriesQuery } from "../../../stores/apiSlices/dishApi.slice";
-import { DishCardForCustomer } from "../menus/DishCardForCustomer";
-import { useTranslation } from "react-i18next";
 import {
   useGetCartQuery,
   useUpdateCartMutation,
 } from "../../../stores/apiSlices/cartApi.slice";
 import { mergeCartItems } from "../../../constants/utils";
+import FlatListWithoutScroll from "../../FlatListWithoutScroll";
+import { ItemTypeFlatList } from "../../FlatListWithScroll";
+import { t } from "i18next";
+import { updateIsUpdateCartDebouncing } from "../../../stores/customerSlice";
 
 const getDishByCategory = (dishes: Dish[], categories: DishCategory[]) => {
   const dishesByCategory = _.groupBy(dishes, "category.id");
   dishesByCategory["all"] = dishes;
   const availableDishCategories = _.concat(
-    [{ id: "all", name: "all" }],
+    [{ id: "all", name: t("all") }],
     _.filter(categories, (c) => !_.isEmpty(dishesByCategory[c.id]))
   );
   return { availableDishCategories, dishesByCategory };
 };
 
 export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
-  const { t } = useTranslation();
-  const theme = useTheme();
+  const dispatch = useDispatch();
 
-  const { shop, currentCartItem } = useSelector(
+  const { shop, currentCartItem, currentCartAmount } = useSelector(
     (state: RootState) => state.customer
-  ) as { shop: Shop; currentCartItem: Record<string, CartItem> };
+  ) as {
+    shop: Shop;
+    currentCartItem: Record<string, CartItem>;
+    currentCartAmount: number;
+  };
   const cartItemsGroupByDish = _.groupBy(currentCartItem, "dishId");
 
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
@@ -56,17 +60,17 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
 
   const [updateCart, { isLoading: updateCartLoading }] =
     useUpdateCartMutation();
-  const [selectedCategory, setCategory] = useState<string>("all");
 
   const debouncedUpdateCart = useCallback(
     debounce(
       ({ shopId, cartItems }: { shopId: string; cartItems: CartItem[] }) => {
+        dispatch(updateIsUpdateCartDebouncing(false));
         if (!updateCartLoading) {
           updateCart({ cartItems, shopId });
         }
       },
-      2000
-    ), // 2s delay
+      1000
+    ),
     [updateCart]
   );
 
@@ -74,20 +78,26 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
     if (cartFetching) {
       return;
     }
-    const mergedCartItems = mergeCartItems(currentCartItem);
-    const cartItems = cart?.cartItems || [];
+    // const mergedCartItems = mergeCartItems(currentCartItem);
+    // const cartItems = cart?.cartItems || [];
 
-    const sameItems =
-      mergedCartItems.length === cartItems.length &&
-      mergedCartItems.every((item, i) => {
-        const other = cartItems[i];
-        return item.dishId === other.dishId && item.quantity === other.quantity;
-      });
-    if (!sameItems)
+    // const sameItems =
+    //   mergedCartItems.length === cartItems.length &&
+    //   mergedCartItems.every((item, i) => {
+    //     const other = cartItems[i];
+    //     return item.dishId === other.dishId && item.quantity === other.quantity;
+    //   });
+
+    const isSameCart =
+      currentCartAmount === cart?.totalAmount &&
+      Object.values(currentCartItem).length === cart?.cartItems?.length;
+    if (!isSameCart) {
+      dispatch(updateIsUpdateCartDebouncing(true));
       debouncedUpdateCart({
         shopId: shop.id,
-        cartItems: mergedCartItems,
+        cartItems: mergeCartItems(currentCartItem),
       });
+    }
   }, [currentCartItem, cartFetching]);
 
   if (dishCategoryLoading || cartLoading) {
@@ -96,72 +106,12 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
 
   return (
     <Surface style={{ flex: 1, flexDirection: "row" }}>
-      <Surface
-        style={{
-          boxShadow: "none",
-          width: "25%",
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            flex: 1,
-            flexDirection: "column",
-            width: "25%",
-          }}
-        >
-          {availableDishCategories.map((cat) => (
-            <TouchableRipple
-              key={cat.id}
-              onPress={() => setCategory(cat.id)}
-              style={{
-                borderRadius: 0,
-                backgroundColor:
-                  cat.id === selectedCategory
-                    ? theme.colors.primaryContainer
-                    : theme.colors.background,
-                paddingVertical: 15,
-                paddingHorizontal: 5,
-                alignItems: "center",
-              }}
-            >
-              <Text
-                style={{
-                  color:
-                    cat.id === selectedCategory
-                      ? theme.colors.onPrimaryContainer
-                      : theme.colors.onBackground,
-                }}
-              >
-                {cat.id === "all" ? t(cat.name) : cat.name}
-              </Text>
-            </TouchableRipple>
-          ))}
-        </ScrollView>
-      </Surface>
-      <Surface style={{ flex: 1, boxShadow: "none" }}>
-        <ScrollView>
-          <View
-            style={{
-              flex: 1,
-              flexDirection: "row",
-              flexWrap: "wrap",
-              boxShadow: "0 0 0",
-              justifyContent: "center",
-            }}
-          >
-            {dishesByCategory[selectedCategory].map((d) => (
-              <DishCardForCustomer
-                key={d.id}
-                dish={d}
-                cartItems={cartItemsGroupByDish[d.id]}
-              />
-            ))}
-          </View>
-        </ScrollView>
-      </Surface>
+      <FlatListWithoutScroll
+        groups={availableDishCategories}
+        itemByGroup={dishesByCategory}
+        itemType={ItemTypeFlatList.DISH_CARD_CUSTOMER}
+        additionalDatas={{ cartItemsGroupByDish }}
+      />
     </Surface>
   );
 }

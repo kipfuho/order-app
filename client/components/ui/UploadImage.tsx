@@ -66,15 +66,14 @@ export default function UploadImages({
         uri: asset.uri,
         loading: true, // Mark as loading initially
       }));
+      const currentImagesLength = images.length;
       setImages((prev) => {
-        console.log(prev);
-        console.log(newImages);
         return [...prev, ...newImages];
       });
 
       // Start uploading each image
       newImages.forEach((image, index) =>
-        uploadImageToServer(image.uri, index)
+        uploadImageToServer(image.uri, index + currentImagesLength)
       );
     }
   };
@@ -93,6 +92,7 @@ export default function UploadImages({
           flexDirection: "row",
           flexWrap: "wrap",
           justifyContent: "center",
+          gap: 8,
         }}
         mode="flat"
       >

@@ -19,6 +19,7 @@ import _ from "lodash";
 import CartDetail from "./CartDetail";
 import Toast from "react-native-toast-message";
 import CartCheckoutHistory from "./CartCheckoutHistory";
+import { useTranslation } from "react-i18next";
 
 export function CustomerAppBar({
   children,
@@ -28,7 +29,9 @@ export function CustomerAppBar({
   goBack?: () => void;
 }) {
   const theme = useTheme();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
+
   const { shop, table, currentCartItem } = useSelector(
     (state: RootState) => state.customer
   );
@@ -167,7 +170,7 @@ export function CustomerAppBar({
                 </Badge>
               )}
             </View>
-            <Text variant="titleMedium">Cart</Text>
+            <Text variant="titleMedium">{t("cart")}</Text>
           </View>
         </TouchableRipple>
         <TouchableRipple
@@ -192,7 +195,7 @@ export function CustomerAppBar({
             }}
           >
             <Icon source="history" size={28} />
-            <Text variant="titleMedium">History</Text>
+            <Text variant="titleMedium">{t("history")}</Text>
           </View>
         </TouchableRipple>
       </View>

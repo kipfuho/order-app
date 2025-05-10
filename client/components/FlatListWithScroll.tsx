@@ -9,14 +9,16 @@ import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
 import { DishCard } from "./ui/menus/DishCard";
 import { Fragment, useRef, useState } from "react";
 import { ScrollView } from "react-native";
-import { Dish } from "../stores/state.interface";
+import { CartItem, Dish } from "../stores/state.interface";
 import { DishCardForOrder } from "./ui/menus/DishCardForOrder";
+import { DishCardForCustomer } from "./ui/menus/DishCardForCustomer";
 
 export const UNIVERSAL_WIDTH_PIVOT = 600;
 
 export enum ItemTypeFlatList {
   DISH_CARD = "dishCard",
   DISH_CARD_ORDER = "dishCardOrder",
+  DISH_CARD_CUSTOMER = "dishCardCustomer",
 }
 
 export const ItemTypeFlatListProperties = {
@@ -29,6 +31,11 @@ export const ItemTypeFlatListProperties = {
     MAX_WIDTH: 200,
     HEADER_HEIGHT: 24,
     ROW_HEIGHT: 250,
+  },
+  [ItemTypeFlatList.DISH_CARD_CUSTOMER]: {
+    MAX_WIDTH: 200,
+    HEADER_HEIGHT: 24,
+    ROW_HEIGHT: 294,
   },
 };
 
@@ -61,6 +68,26 @@ export const ItemTypeMap = {
     containerWidth?: number;
   }) => {
     return <DishCardForOrder dish={dish} containerWidth={containerWidth} />;
+  },
+
+  [ItemTypeFlatList.DISH_CARD_CUSTOMER]: ({
+    dish,
+    containerWidth,
+    additionalDatas,
+  }: {
+    dish: Dish;
+    containerWidth?: number;
+    additionalDatas: {
+      cartItemsGroupByDish: Record<string, CartItem[]>;
+    };
+  }) => {
+    return (
+      <DishCardForCustomer
+        dish={dish}
+        containerWidth={containerWidth}
+        cartItems={additionalDatas.cartItemsGroupByDish[dish.id]}
+      />
+    );
   },
 };
 
@@ -177,10 +204,12 @@ export default function FlatListWithScroll({
   itemByGroup,
   openMenu,
   itemType,
+  additionalDatas,
 }: {
   groups: any[];
   itemByGroup: Record<string, any[]>;
   openMenu: (item: any, event: GestureResponderEvent) => void;
+  additionalDatas?: any;
   itemType: ItemTypeFlatList;
 }) {
   const { width } = useWindowDimensions();
@@ -242,6 +271,7 @@ export default function FlatListWithScroll({
                 dish: item,
                 openMenu,
                 containerWidth: itemContainerWidth,
+                additionalDatas,
               })}
             </Fragment>
           ))}

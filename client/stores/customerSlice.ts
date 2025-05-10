@@ -9,6 +9,7 @@ interface CustomerState {
   user: Customer | null;
   currentCartItem: Record<string, CartItem>;
   currentCartAmount: number;
+  isUpdateCartDebouncing: boolean;
 }
 
 // Initial state
@@ -18,6 +19,7 @@ const initialState: CustomerState = {
   user: null,
   currentCartItem: {},
   currentCartAmount: 0,
+  isUpdateCartDebouncing: false,
 };
 
 // Create Slice
@@ -79,6 +81,10 @@ export const customerSlice = createSlice({
       if (!_.get(action, "payload")) return;
       state.user = action.payload;
     },
+
+    updateIsUpdateCartDebouncing: (state, action: PayloadAction<boolean>) => {
+      state.isUpdateCartDebouncing = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(PURGE, () => {
@@ -95,6 +101,7 @@ export const {
   updateCurrentCartAmount,
   updateCartSingleDish,
   updateCustomer,
+  updateIsUpdateCartDebouncing,
 } = customerSlice.actions;
 
 export default customerSlice.reducer;

@@ -1,8 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Cart, CartItem, Dish, Order, Shop } from "../state.interface";
-import { updateShopRequest } from "../../apis/shop.api.service";
+import { Cart, CartItem, Dish, Order } from "../state.interface";
 import { API_BASE_URL } from "../../apis/api.service";
-import { UpdateShopRequest } from "../../apis/shop.api.interface";
 import {
   checkoutCartRequest,
   getCartCheckoutHistoryRequest,
@@ -36,7 +34,7 @@ export const cartApiSlice = createApi({
       boolean,
       { shopId: string; cartItems: CartItem[] }
     >({
-      queryFn: async ({ cartItems, shopId }) => {
+      queryFn: async ({ cartItems, shopId }, api) => {
         try {
           await updateCartRequest({
             shopId,
@@ -44,12 +42,13 @@ export const cartApiSlice = createApi({
             isCustomerApp: true,
           });
 
-          return { data: true };
+          const state = api.getState() as any;
+          return { data: !state?.customer?.isUpdateCartDebouncing };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-      invalidatesTags: ["Cart"],
+      invalidatesTags: (result) => (result ? ["Cart"] : []),
     }),
 
     checkoutCart: builder.mutation<

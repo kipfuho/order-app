@@ -46,15 +46,15 @@ function Main({
   }
 
   return (
-    <ScrollView>
-      <Surface
-        style={{
-          flex: 1,
-          padding: 12,
-          backgroundColor: theme.colors.background,
-          gap: 12,
-        }}
-      >
+    <Surface
+      style={{
+        flex: 1,
+        padding: 12,
+        backgroundColor: theme.colors.background,
+        gap: 12,
+      }}
+    >
+      <ScrollView>
         <Collapsible title={t("order_detail")}>
           <ActiveOrderSessionPage activeOrderSession={currentOrderSession} />
         </Collapsible>
@@ -64,8 +64,8 @@ function Main({
         <Collapsible title={t("payment")}>
           <PaymentMethodPage />
         </Collapsible>
-      </Surface>
-    </ScrollView>
+      </ScrollView>
+    </Surface>
   );
 }
 

@@ -252,14 +252,12 @@ const updateDishRequest = async ({
     body.status = status;
   }
 
-  const result: { dish: Dish } = await apiRequest({
+  await apiRequest({
     method: "PATCH",
     endpoint: `/v1/shops/${shopId}/dishes/${dishId}`,
     token: accessToken,
     data: body,
   });
-
-  return result.dish;
 };
 
 /**

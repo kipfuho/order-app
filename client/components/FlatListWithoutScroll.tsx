@@ -6,7 +6,7 @@ import {
   View,
 } from "react-native";
 import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
-import { Dispatch, Fragment, SetStateAction, useState } from "react";
+import { Dispatch, Fragment, SetStateAction, useRef, useState } from "react";
 import { ScrollView } from "react-native";
 import {
   flatListStyles,
@@ -143,12 +143,15 @@ export default function FlatListWithoutScroll({
   itemByGroup,
   openMenu,
   itemType,
+  additionalDatas,
 }: {
   groups: any[];
   itemByGroup: Record<string, any[]>;
   itemType: ItemTypeFlatList;
+  additionalDatas?: any;
   openMenu?: (item: any, event: GestureResponderEvent) => void;
 }) {
+  const flatListRef = useRef<FlatList<any>>(null);
   const { width } = useWindowDimensions();
 
   const [selectedGroup, setSelectGroup] = useState("");
@@ -190,7 +193,6 @@ export default function FlatListWithoutScroll({
     }
 
     if (item.type === "row") {
-      console.log(numColumns);
       return (
         <View
           style={{
@@ -206,6 +208,7 @@ export default function FlatListWithoutScroll({
                 dish: item,
                 openMenu,
                 containerWidth: itemContainerWidth,
+                additionalDatas,
               })}
             </Fragment>
           ))}
@@ -232,9 +235,13 @@ export default function FlatListWithoutScroll({
       <GroupList
         groups={groups}
         selectedGroup={selectedGroup}
-        setSelectedGroup={setSelectGroup}
+        setSelectedGroup={(id) => {
+          setSelectGroup(id);
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+        }}
       />
       <FlatList
+        ref={flatListRef}
         data={flatListData}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}

@@ -63,7 +63,6 @@ export default function UpdateDepartmentPage() {
       });
       return;
     }
-    console.log(selectedPermissions);
 
     try {
       await updateDepartment({
