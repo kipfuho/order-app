@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import _ from "lodash";
 import { ScrollView } from "react-native";
-import { TableForOrderCard } from "../../../../../../../components/ui/menus/TableForOrderCard";
+import { TableForOrderCard } from "../../../../../../../components/ui/orders/TableForOrderCard";
 import { AppBar } from "../../../../../../../components/AppBar";
 import {
   Shop,
@@ -36,8 +36,11 @@ export default function OrderManagementOrderPage() {
   const { currentShop } = useSelector((state: RootState) => state.shop);
   const shop = currentShop as Shop;
 
-  const { data: tablesForOrder = [], isLoading: tableForOrderLoading } =
-    useGetTablesForOrderQuery(shop.id);
+  const {
+    data: tablesForOrder = [],
+    isLoading: tableForOrderLoading,
+    isFetching: tableForOrderFetching,
+  } = useGetTablesForOrderQuery(shop.id);
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
     useGetTablePositionsQuery(shop.id);
   const { data: tables = [], isLoading: tableLoading } = useGetTablesQuery(
@@ -48,7 +51,7 @@ export default function OrderManagementOrderPage() {
   const tablePositionById = _.keyBy(tablePositions, "id");
   tablePositionById["ALL"] = {
     id: "ALL",
-    name: "Tất cả",
+    name: t("all"),
     shop: "",
     dishCategories: [],
   };
@@ -94,7 +97,7 @@ export default function OrderManagementOrderPage() {
     if (_.isEmpty(tablesForOrder)) return;
 
     setFilteredTables(tablesGroupByPosition);
-  }, [tablesForOrder, tableForOrderLoading]);
+  }, [tablesForOrder, tableForOrderFetching]);
 
   if (tableForOrderLoading || tablePositionLoading || tableLoading) {
     return <LoaderBasic />;

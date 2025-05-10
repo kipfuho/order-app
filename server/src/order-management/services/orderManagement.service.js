@@ -278,9 +278,15 @@ const checkoutCart = async ({ customerId, shopId, requestBody }) => {
       customerId,
     });
     await clearCart({ customerId, shopId });
+    return;
   }
 
-  const orderSession = await orderUtilService.getOrCreateOrderSession({ tableId, shopId, customerId, isCustomerApp: true });
+  const orderSession = await orderUtilService.getOrCreateOrderSession({
+    tableId,
+    shopId,
+    customerId,
+    isCustomerApp: true,
+  });
   const newOrder = await orderUtilService.createNewOrder({
     tableId,
     shopId,
@@ -454,6 +460,7 @@ const getOrderNeedApproval = async ({ shopId }) => {
     _.map(orders, async (order) => {
       const orderJson = order.toJSON();
       const customer = await getCustomerFromCache({ customerId: orderJson.customerId });
+      delete orderJson.customerId;
       orderJson.customer = customer;
       return orderJson;
     })
@@ -467,28 +474,18 @@ const updateUnconfirmedOrder = async ({ shopId, orderId, updateDishOrders }) => 
   throwBadRequest(!order, getMessageByLocale({ key: 'order.notFound' }));
   throwBadRequest(order.status === Status.disabled, getMessageByLocale({ key: 'order.disabled' }));
 
-  const orderJson = order.toJSON();
   const updateDishOrderById = _.keyBy(updateDishOrders, 'dishOrderId');
-  const dishOrders = _.map(orderJson.dishOrders, (dishOrder) => {
+  // eslint-disable-next-line no-restricted-syntax
+  for (const dishOrder of order.dishOrders) {
     const updateDishOrder = updateDishOrderById[dishOrder.id];
-    if (updateDishOrder) {
-      return {
-        ...dishOrder,
-        quantity: updateDishOrder.quantity,
-        note: updateDishOrder.note,
-      };
-    }
-  });
+    dishOrder.quantity = updateDishOrder.quantity;
+    dishOrder.beforeTaxTotalPrice = dishOrder.price * dishOrder.quantity;
+    dishOrder.afterTaxTotalPrice = dishOrder.taxIncludedPrice * dishOrder.quantity;
+    dishOrder.note = updateDishOrder.note;
+  }
 
-  const updatedOrder = await Order.findOneAndUpdate(
-    {
-      _id: orderId,
-      shop: shopId,
-    },
-    { $set: { dishOrders } },
-    { new: true }
-  );
-  return updatedOrder.toJSON();
+  await order.save();
+  return order.toJSON();
 };
 
 const cancelUnconfirmedOrder = async ({ userId, shopId, orderId }) => {
@@ -516,15 +513,10 @@ const approveUnconfirmedOrder = async ({ userId, shopId, orderId, orderSessionId
     orderSessionId,
     isApproveOrder: true,
   });
-  const updatedOrder = await Order.findOneAndUpdate(
-    {
-      _id: orderId,
-      shop: shopId,
-    },
-    { $set: { approvedBy: userId, orderSessionId: orderSession.id } },
-    { new: true }
-  );
-  return updatedOrder.toJSON();
+  order.approvedBy = userId;
+  order.orderSessionId = orderSession.id;
+  await order.save();
+  return orderUtilService.getOrderSessionById(orderSession.id);
 };
 
 module.exports = {

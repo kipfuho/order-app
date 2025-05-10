@@ -16,6 +16,8 @@ const _getEmployeePositionsFromClsHook = ({ key }) => {
 };
 
 const getEmployeeFromCache = async ({ shopId, employeeId }) => {
+  // eslint-disable-next-line no-param-reassign
+  employeeId = _.toString(employeeId);
   if (!employeeId) {
     return;
   }
@@ -116,6 +118,8 @@ const getEmployeeWithPermissionByUserId = async ({ userId, shopId }) => {
 };
 
 const getEmployeePositionFromCache = async ({ shopId, employeePositionId }) => {
+  // eslint-disable-next-line no-param-reassign
+  employeePositionId = _.toString(employeePositionId);
   if (!employeePositionId) {
     return;
   }

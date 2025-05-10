@@ -79,6 +79,31 @@ interface RemoveDiscountFromOrderSessionRequest {
   discountId: string;
 }
 
+interface GetUnconfirmedOrderRequest {
+  shopId: string;
+}
+
+interface UpdateUnconfirmedOrderRequest {
+  shopId: string;
+  orderId: string;
+  updateDishOrders: {
+    dishOrderId: string;
+    quantity: number;
+    note: string;
+  }[];
+}
+
+interface CancelUnconfirmedOrderRequest {
+  shopId: string;
+  orderId: string;
+}
+
+interface ApproveUnconfirmedOrderRequest {
+  shopId: string;
+  orderId: string;
+  orderSessionId?: string;
+}
+
 export {
   GetTablesForOrderRequest,
   GetActiveOrderSessionRequest,
@@ -92,4 +117,8 @@ export {
   DiscountDishOrderRequest,
   DiscountOrderSessionRequest,
   RemoveDiscountFromOrderSessionRequest,
+  GetUnconfirmedOrderRequest,
+  UpdateUnconfirmedOrderRequest,
+  CancelUnconfirmedOrderRequest,
+  ApproveUnconfirmedOrderRequest,
 };

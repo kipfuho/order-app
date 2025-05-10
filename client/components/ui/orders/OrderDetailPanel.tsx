@@ -27,6 +27,7 @@ import { AppBar } from "../../AppBar";
 import CreateOrder from "../CreateOrderView";
 import _ from "lodash";
 import { RootState } from "../../../stores/store";
+import { FlatList } from "react-native";
 
 export default function ActiveOrderSessionPage({
   activeOrderSession,
@@ -267,25 +268,31 @@ export default function ActiveOrderSessionPage({
               </TouchableRipple>
             </View>
 
-            {activeOrderSession.orders.map((order, idx) => (
-              <Surface
-                mode="flat"
-                key={order.id}
-                style={{ marginTop: 10, gap: 10 }}
-              >
-                <Text style={{ alignSelf: "flex-end" }}>
-                  {t("times")}: {idx + 1}
-                </Text>
-                {order.dishOrders.map((dishOrder) => (
-                  <DishOrderCard
-                    key={dishOrder.id}
-                    order={order}
-                    dishOrder={dishOrder}
-                    onQuantityClick={onDishQuantityClick}
+            <FlatList
+              data={activeOrderSession.orders || []}
+              keyExtractor={(item) => item.id}
+              style={{ gap: 12 }}
+              renderItem={({ item: order, index }) => (
+                <Surface mode="flat" style={{ marginTop: 10, gap: 10 }}>
+                  <Text style={{ alignSelf: "flex-end" }}>
+                    {t("times")}: {index + 1}
+                  </Text>
+                  <FlatList
+                    data={order.dishOrders || []}
+                    keyExtractor={(item) => item.id}
+                    style={{ gap: 12 }}
+                    nestedScrollEnabled
+                    renderItem={({ item }) => (
+                      <DishOrderCard
+                        order={order}
+                        dishOrder={item}
+                        onQuantityClick={onDishQuantityClick}
+                      />
+                    )}
                   />
-                ))}
-              </Surface>
-            ))}
+                </Surface>
+              )}
+            />
           </Surface>
         </ScrollView>
       </Surface>

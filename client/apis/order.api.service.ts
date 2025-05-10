@@ -2,12 +2,15 @@ import {
   OrderSession,
   OrderSessionHistory,
   TableForOrder,
+  UnconfirmedOrder,
 } from "../stores/state.interface";
 import { apiRequest } from "./api.service";
 import { getAccessTokenLazily } from "./auth.api.service";
 import {
+  ApproveUnconfirmedOrderRequest,
   CancelOrderSessionPaidStatusRequest,
   CancelOrderSessionRequest,
+  CancelUnconfirmedOrderRequest,
   ChangeDishQuantityRequest,
   CreateOrderRequest,
   DiscountDishOrderRequest,
@@ -16,8 +19,10 @@ import {
   GetOrderSessionDetailRequest,
   GetOrderSessionHistoryRequest,
   GetTablesForOrderRequest,
+  GetUnconfirmedOrderRequest,
   PayOrderSessionRequest,
   RemoveDiscountFromOrderSessionRequest,
+  UpdateUnconfirmedOrderRequest,
 } from "./order.api.interface";
 
 /**
@@ -302,6 +307,88 @@ const removeDiscountFromOrderSessionRequest = async ({
   });
 };
 
+/**
+ * get unconfirmed order
+ * @param param0
+ */
+const getUnconfirmedOrderRequest = async ({
+  shopId,
+}: GetUnconfirmedOrderRequest) => {
+  const accessToken = await getAccessTokenLazily();
+
+  const result: { unconfirmedOrders: UnconfirmedOrder[] } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/orders/unconfirmed-order`,
+    token: accessToken,
+  });
+
+  return result.unconfirmedOrders;
+};
+
+/**
+ * approve unconfirmed order
+ * @param param0
+ */
+const approveUnconfirmedOrderRequest = async ({
+  shopId,
+  orderId,
+  orderSessionId,
+}: ApproveUnconfirmedOrderRequest) => {
+  const accessToken = await getAccessTokenLazily();
+
+  await apiRequest({
+    method: "POST",
+    endpoint: `/v1/shops/${shopId}/orders/unconfirmed-order`,
+    token: accessToken,
+    data: {
+      orderId,
+      orderSessionId,
+    },
+  });
+};
+
+/**
+ * update unconfirmed order
+ * @param param0
+ */
+const updateUnconfirmedOrderRequest = async ({
+  shopId,
+  orderId,
+  updateDishOrders,
+}: UpdateUnconfirmedOrderRequest) => {
+  const accessToken = await getAccessTokenLazily();
+
+  await apiRequest({
+    method: "PATCH",
+    endpoint: `/v1/shops/${shopId}/orders/unconfirmed-order`,
+    token: accessToken,
+    data: {
+      orderId,
+      updateDishOrders,
+    },
+  });
+};
+
+/**
+ * cancel unconfirmed order
+ * @param param0
+ */
+const cancelUnconfirmedOrderRequest = async ({
+  shopId,
+  orderId,
+}: CancelUnconfirmedOrderRequest) => {
+  const accessToken = await getAccessTokenLazily();
+
+  await apiRequest({
+    method: "DELETE",
+    endpoint: `/v1/shops/${shopId}/orders/unconfirmed-order`,
+    token: accessToken,
+    data: {
+      orderId,
+    },
+  });
+};
+
 const getVnPayUrl = async ({
   shopId,
   orderSessionId,
@@ -337,5 +424,9 @@ export {
   discountDishOrderRequest,
   discountOrderSessionRequest,
   removeDiscountFromOrderSessionRequest,
+  getUnconfirmedOrderRequest,
+  approveUnconfirmedOrderRequest,
+  updateUnconfirmedOrderRequest,
+  cancelUnconfirmedOrderRequest,
   getVnPayUrl,
 };

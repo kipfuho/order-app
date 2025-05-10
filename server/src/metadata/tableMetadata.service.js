@@ -16,6 +16,8 @@ const _getTablePositionsFromClsHook = ({ key }) => {
 };
 
 const getTableFromCache = async ({ shopId, tableId }) => {
+  // eslint-disable-next-line no-param-reassign
+  tableId = _.toString(tableId);
   if (!tableId) {
     return;
   }
@@ -69,6 +71,8 @@ const getTablesFromCache = async ({ shopId }) => {
 };
 
 const getTablePositionFromCache = async ({ shopId, tablePositionId }) => {
+  // eslint-disable-next-line no-param-reassign
+  tablePositionId = _.toString(tablePositionId);
   if (!tablePositionId) {
     return;
   }

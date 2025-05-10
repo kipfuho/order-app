@@ -42,6 +42,9 @@ const orderSchema = new mongoose.Schema(
     approvedBy: { type: mongoose.Types.ObjectId, ref: 'User' },
     cancelledBy: { type: mongoose.Types.ObjectId, ref: 'User' },
     status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
+    numberOfCustomer: {
+      type: Number,
+    },
   },
   {
     timestamps: true,

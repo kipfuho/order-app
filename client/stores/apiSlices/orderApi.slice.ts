@@ -1,8 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { API_BASE_URL } from "../../apis/api.service";
 import {
+  approveUnconfirmedOrderRequest,
   cancelOrderSessionPaidStatusRequest,
   cancelOrderSessionRequest,
+  cancelUnconfirmedOrderRequest,
   changeDishQuantityRequest,
   createOrderRequest,
   discountDishOrderRequest,
@@ -11,18 +13,23 @@ import {
   getOrderSessionDetailRequest,
   getOrderSessionHistoryRequest,
   getTablesForOrderRequest,
+  getUnconfirmedOrderRequest,
   payOrderSessionRequest,
   removeDiscountFromOrderSessionRequest,
+  updateUnconfirmedOrderRequest,
 } from "../../apis/order.api.service";
 import {
   OrderSession,
   OrderSessionHistory,
   TableForOrder,
+  UnconfirmedOrder,
 } from "../state.interface";
 import { RootState } from "../store";
 import {
+  ApproveUnconfirmedOrderRequest,
   CancelOrderSessionPaidStatusRequest,
   CancelOrderSessionRequest,
+  CancelUnconfirmedOrderRequest,
   ChangeDishQuantityRequest,
   CreateOrderRequest,
   DiscountDishOrderRequest,
@@ -30,15 +37,23 @@ import {
   GetActiveOrderSessionRequest,
   GetOrderSessionDetailRequest,
   GetOrderSessionHistoryRequest,
+  GetUnconfirmedOrderRequest,
   PayOrderSessionRequest,
   RemoveDiscountFromOrderSessionRequest,
+  UpdateUnconfirmedOrderRequest,
 } from "../../apis/order.api.interface";
-import { resetCurrentOrder, resetCurrentTable } from "../shop.slice";
+import { resetCurrentOrder } from "../shop.slice";
+import _ from "lodash";
 
 export const orderApiSlice = createApi({
   reducerPath: "orderApi",
   baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
-  tagTypes: ["TablesForOrder", "OrderSessions", "ActiveOrderSessions"],
+  tagTypes: [
+    "TablesForOrder",
+    "OrderSessions",
+    "ActiveOrderSessions",
+    "UnconfirmedOrders",
+  ],
   // keepUnusedDataFor: 600,
   endpoints: (builder) => ({
     getTablesForOrder: builder.query<TableForOrder[], string>({
@@ -333,6 +348,171 @@ export const orderApiSlice = createApi({
         "TablesForOrder",
       ], // Enables cache invalidation
     }),
+
+    // unconfirmed orders
+    getUnconfirmedOrder: builder.query<
+      UnconfirmedOrder[],
+      GetUnconfirmedOrderRequest
+    >({
+      queryFn: async ({ shopId }) => {
+        try {
+          const unconfirmedOrders = await getUnconfirmedOrderRequest({
+            shopId,
+          });
+
+          return { data: unconfirmedOrders };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      providesTags: ["UnconfirmedOrders"], // Enables cache invalidation
+    }),
+
+    approveUnconfirmedOrder: builder.mutation<
+      boolean,
+      ApproveUnconfirmedOrderRequest
+    >({
+      queryFn: async ({ shopId, orderSessionId, orderId }) => {
+        try {
+          await approveUnconfirmedOrderRequest({
+            shopId,
+            orderSessionId,
+            orderId,
+          });
+
+          return { data: true };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      invalidatesTags: (result, error, args) =>
+        error
+          ? [
+              { type: "OrderSessions", id: args.orderSessionId },
+              "UnconfirmedOrders",
+            ]
+          : [{ type: "OrderSessions", id: args.orderSessionId }], // Enables cache invalidation
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          orderApiSlice.util.updateQueryData(
+            "getUnconfirmedOrder",
+            { shopId: args.shopId },
+            (draft) => {
+              const index = draft.findIndex((uo) => uo.id === args.orderId);
+              if (index !== -1) draft.splice(index, 1);
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
+    }),
+
+    updateUnconfirmedOrder: builder.mutation<
+      boolean,
+      UpdateUnconfirmedOrderRequest
+    >({
+      queryFn: async ({ shopId, orderId, updateDishOrders }) => {
+        try {
+          await updateUnconfirmedOrderRequest({
+            shopId,
+            orderId,
+            updateDishOrders,
+          });
+
+          return { data: true };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      invalidatesTags: (result, error, args) =>
+        error ? ["UnconfirmedOrders"] : [], // Enables cache invalidation
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          orderApiSlice.util.updateQueryData(
+            "getUnconfirmedOrder",
+            { shopId: args.shopId },
+            (draft) => {
+              const index = draft.findIndex((uo) => uo.id === args.orderId);
+              if (index !== -1) {
+                const dishOrders = draft[index].dishOrders;
+                const dishOrderById = _.keyBy(dishOrders, "id");
+                _.forEach(args.updateDishOrders, (i) => {
+                  if (dishOrderById[i.dishOrderId]) {
+                    dishOrderById[i.dishOrderId] = {
+                      ...dishOrderById[i.dishOrderId],
+                      quantity: i.quantity,
+                      note: i.note,
+                    };
+                  }
+                });
+                draft[index] = {
+                  ...draft[index],
+                  dishOrders: _.filter(
+                    Object.values(dishOrderById),
+                    (d) => d.quantity > 0
+                  ),
+                };
+              }
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
+    }),
+
+    cancelUnconfirmedOrder: builder.mutation<
+      boolean,
+      CancelUnconfirmedOrderRequest
+    >({
+      queryFn: async ({ shopId, orderId }) => {
+        try {
+          await cancelUnconfirmedOrderRequest({
+            shopId,
+            orderId,
+          });
+
+          return { data: true };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      invalidatesTags: (result, error, args) =>
+        error ? ["UnconfirmedOrders"] : [], // Enables cache invalidation
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          orderApiSlice.util.updateQueryData(
+            "getUnconfirmedOrder",
+            { shopId: args.shopId },
+            (draft) => {
+              const index = draft.findIndex((uo) => uo.id === args.orderId);
+              if (index !== -1) draft.splice(index, 1);
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
+    }),
   }),
 });
 
@@ -349,4 +529,8 @@ export const {
   useDiscountDishOrderMutation,
   useDiscountOrderSessionMutation,
   useRemoveDiscountFromOrderSessionMutation,
+  useGetUnconfirmedOrderQuery,
+  useApproveUnconfirmedOrderMutation,
+  useUpdateUnconfirmedOrderMutation,
+  useCancelUnconfirmedOrderMutation,
 } = orderApiSlice;

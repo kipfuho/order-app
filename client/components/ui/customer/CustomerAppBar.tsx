@@ -152,19 +152,21 @@ export function CustomerAppBar({
               gap: 8,
             }}
           >
-            <Icon source="cart-outline" size={28} />
-            {totalCartQuantity > 0 && (
-              <Badge
-                style={{
-                  position: "absolute",
-                  top: 3,
-                  right: 3,
-                  fontSize: 10,
-                }}
-              >
-                {totalCartQuantity}
-              </Badge>
-            )}
+            <View>
+              <Icon source="cart-outline" size={28} />
+              {totalCartQuantity > 0 && (
+                <Badge
+                  style={{
+                    position: "absolute",
+                    top: -7,
+                    right: -7,
+                    fontSize: 10,
+                  }}
+                >
+                  {totalCartQuantity}
+                </Badge>
+              )}
+            </View>
             <Text variant="titleMedium">Cart</Text>
           </View>
         </TouchableRipple>

@@ -112,6 +112,7 @@ interface Customer {
   email?: string;
   tokens?: Tokens;
   anonymous?: boolean;
+  address?: string;
 }
 
 interface Cart {
@@ -207,6 +208,17 @@ interface Order {
   returnedDishOrders: DishOrder[];
   createdAt: string;
   updatedAt: string;
+  customerId: string;
+  totalQuantity: number;
+  totalBeforeTaxAmount: number;
+  totalAfterTaxAmount: number;
+  approvedBy: string;
+  cancelledBy: string;
+}
+
+interface UnconfirmedOrder extends Order {
+  customer: Customer;
+  numberOfCustomer: number;
 }
 
 interface DishOrder {
@@ -224,6 +236,7 @@ interface DishOrder {
   taxAmount: number;
   status: string;
   returnedAt?: string;
+  note?: string;
 }
 
 export {
@@ -245,6 +258,7 @@ export {
   PaymentDetail,
   DishOrder,
   Order,
+  UnconfirmedOrder,
   OrderSession,
   OrderSessionDiscount,
   OrderSessionDiscountProduct,

@@ -6,6 +6,7 @@ const {
   convertOrderSessionForResponse,
   convertOrderSessionHistoryForResponse,
 } = require('../converters/orderSession.converter');
+const { convertOrderForResponse } = require('../converters/order.converter');
 const { convertCartForResponse } = require('../converters/cart.converter');
 
 const createOrder = catchAsync(async (req, res) => {
@@ -150,7 +151,7 @@ const getUnconfirmedOrder = catchAsync(async (req, res) => {
   const unconfirmedOrders = await orderManagementService.getOrderNeedApproval({
     shopId,
   });
-  res.status(httpStatus.OK).send({ message: 'OK', unconfirmedOrders });
+  res.status(httpStatus.OK).send({ message: 'OK', unconfirmedOrders: _.map(unconfirmedOrders, convertOrderForResponse) });
 });
 
 const updateUnconfirmedOrder = catchAsync(async (req, res) => {

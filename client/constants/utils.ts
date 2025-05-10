@@ -14,7 +14,8 @@ const getCountryCurrency = () => {
 };
 
 const convertPaymentAmount = (paymentAmount: number = 0) => {
-  return `${paymentAmount.toLocaleString()} ${getCountryCurrency()}`;
+  const amount = paymentAmount ?? 0;
+  return `${amount.toLocaleString()} ${getCountryCurrency()}`;
 };
 
 const mergeCartItems = (currentCartItem: Record<string, CartItem>) => {

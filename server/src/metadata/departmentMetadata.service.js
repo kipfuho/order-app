@@ -11,6 +11,8 @@ const _getDepartmentsFromClsHook = ({ key }) => {
 };
 
 const getDepartmentFromCache = async ({ shopId, departmentId }) => {
+  // eslint-disable-next-line no-param-reassign
+  departmentId = _.toString(departmentId);
   if (!departmentId) {
     return;
   }

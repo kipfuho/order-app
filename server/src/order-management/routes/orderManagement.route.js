@@ -74,13 +74,9 @@ router.post(
 router
   .route('/unconfirmed-order')
   .get(auth(PermissionType.SHOP_APP, PermissionType.VIEW_ORDER), orderManagementController.getUnconfirmedOrder)
-  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_ORDER), orderManagementController.updateUnconfirmedOrder)
+  .post(auth(PermissionType.SHOP_APP, PermissionType.APPROVE_ORDER), orderManagementController.approveUnconfirmedOrder)
+  .patch(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_ORDER), orderManagementController.updateUnconfirmedOrder)
   .delete(auth(PermissionType.SHOP_APP, PermissionType.CANCEL_ORDER), orderManagementController.cancelUnconfirmedOrder);
-router.post(
-  '/approve-unconfirmed-order',
-  auth(PermissionType.SHOP_APP, PermissionType.APPROVE_ORDER),
-  orderManagementController.approveUnconfirmedOrder
-);
 
 // customer app
 router.post('/get-cart', auth(), orderManagementController.getCart);

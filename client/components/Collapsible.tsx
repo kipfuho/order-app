@@ -48,11 +48,6 @@ export function Collapsible({
     transform: [{ rotate: `${interpolate(isOpen.value, [0, 1], [0, 90])}deg` }],
   }));
 
-  const onLayout = (event: LayoutChangeEvent) => {
-    console.log(event);
-    contentHeight.value = event.nativeEvent.layout.height;
-  };
-
   return (
     <Surface style={styles.container}>
       {/* Static title row */}
@@ -74,7 +69,9 @@ export function Collapsible({
       <Animated.View style={animatedContainerStyle}>
         <View
           ref={contentRef}
-          style={styles.content}
+          style={{
+            paddingTop: 10,
+          }}
           onLayout={measureContentHeight}
         >
           {children}
@@ -100,9 +97,6 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: "600",
     fontSize: 16,
-  },
-  content: {
-    paddingTop: 10,
   },
   hidden: {
     position: "absolute",

@@ -18,6 +18,8 @@ const _getDishCategoriesFromClsHook = ({ key }) => {
 };
 
 const getDishFromCache = async ({ shopId, dishId }) => {
+  // eslint-disable-next-line no-param-reassign
+  dishId = _.toString(dishId);
   if (!dishId) {
     return;
   }
@@ -77,6 +79,8 @@ const getDishesFromCache = async ({ shopId }) => {
 };
 
 const getDishCategoryFromCache = async ({ shopId, dishCategoryId }) => {
+  // eslint-disable-next-line no-param-reassign
+  dishCategoryId = _.toString(dishCategoryId);
   if (!dishCategoryId) {
     return;
   }

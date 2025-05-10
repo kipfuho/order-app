@@ -10,6 +10,7 @@ import {
 } from "react-native-paper";
 import _ from "lodash";
 import {
+  FlatList,
   ScrollView,
   TouchableOpacity,
   useWindowDimensions,
@@ -112,12 +113,12 @@ export default function OrderSessionDetailPage({
         mode="flat"
         style={{
           flex: 1,
-          padding: 16,
+          padding: 8,
           borderRadius: 10,
         }}
       >
-        <ScrollView style={{ maxHeight: height }}>
-          <Surface mode="flat" style={{ flex: 1, boxShadow: "none" }}>
+        <ScrollView style={{ maxHeight: height, padding: 8 }}>
+          <Surface mode="flat" style={{ flex: 1 }}>
             <View
               style={{
                 flexDirection: "row",
@@ -138,27 +139,29 @@ export default function OrderSessionDetailPage({
               </Text>
             </View>
 
-            {dishOrders.map((dish, index) => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  marginVertical: 4,
-                }}
-              >
-                <Text style={{ flex: 1, marginRight: 8 }}>
-                  <Text style={{ fontSize: 16 }}>{dish.quantity}</Text>
-                  <Text style={{ marginLeft: 4, fontSize: 16 }}>x</Text>
-                  <Text style={{ marginLeft: 8, fontSize: 16 }}>
-                    {dish.name}
+            <FlatList
+              data={dishOrders}
+              renderItem={({ item }) => (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginVertical: 4,
+                  }}
+                >
+                  <Text style={{ flex: 1, marginRight: 8 }}>
+                    <Text style={{ fontSize: 16 }}>{item.quantity}</Text>
+                    <Text style={{ marginLeft: 4, fontSize: 16 }}>x</Text>
+                    <Text style={{ marginLeft: 8, fontSize: 16 }}>
+                      {item.name}
+                    </Text>
                   </Text>
-                </Text>
-                <Text style={{ fontSize: 16 }}>
-                  {convertPaymentAmount(dish.price)}
-                </Text>
-              </View>
-            ))}
+                  <Text style={{ fontSize: 16 }}>
+                    {convertPaymentAmount(item.price)}
+                  </Text>
+                </View>
+              )}
+            />
 
             <Divider style={{ marginVertical: 10 }} />
 
@@ -222,24 +225,26 @@ export default function OrderSessionDetailPage({
               </Text>
             </View>
 
-            {orderSessionDetail.taxDetails.map((taxDetail, index) => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  marginTop: 6,
-                  marginLeft: 16,
-                }}
-              >
-                <Text style={{ fontSize: 16 }}>{`${t("tax")}(${
-                  taxDetail.taxRate
-                }%)`}</Text>
-                <Text style={{ fontSize: 16 }}>
-                  {convertPaymentAmount(taxDetail.taxAmount)}
-                </Text>
-              </View>
-            ))}
+            <FlatList
+              data={orderSessionDetail.taxDetails || []}
+              renderItem={({ item }) => (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginTop: 6,
+                    marginLeft: 16,
+                  }}
+                >
+                  <Text style={{ fontSize: 16 }}>{`${t("tax")}(${
+                    item.taxRate
+                  }%)`}</Text>
+                  <Text style={{ fontSize: 16 }}>
+                    {convertPaymentAmount(item.taxAmount)}
+                  </Text>
+                </View>
+              )}
+            />
 
             <View
               style={{

@@ -11,6 +11,8 @@ const _getUnitFromClsHook = ({ key }) => {
 };
 
 const getUnitFromCache = async ({ shopId, unitId }) => {
+  // eslint-disable-next-line no-param-reassign
+  unitId = _.toString(unitId);
   const key = getUnitKey({ shopId });
   const clsHookUnits = _getUnitFromClsHook({ key });
   if (!_.isEmpty(clsHookUnits)) {
