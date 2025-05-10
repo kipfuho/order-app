@@ -126,7 +126,7 @@ export default function UpdateTablePage() {
   return (
     <>
       <AppBar
-        title="Update Table"
+        title={t("update_table")}
         goBack={() => goToTableList({ router, shopId: shop.id })}
       />
       <Surface style={{ flex: 1 }}>

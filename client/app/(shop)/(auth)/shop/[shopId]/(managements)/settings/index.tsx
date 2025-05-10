@@ -7,6 +7,7 @@ import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { styles } from "../../../../../../_layout";
 import { goBackShopHome } from "../../../../../../../apis/navigate.service";
+import { useTranslation } from "react-i18next";
 
 interface Item {
   key: string;
@@ -31,18 +32,19 @@ const getButtonSize = (width: number) => {
 };
 
 export default function SettingManagementPage() {
+  const router = useRouter();
+  const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+  const buttonSize = getButtonSize(width);
+
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
   ) as Shop;
-  const router = useRouter();
-
-  const { width } = useWindowDimensions();
-  const buttonSize = getButtonSize(width);
 
   return (
     <>
       <AppBar
-        title="Settings"
+        title={t("settings")}
         goBack={() => goBackShopHome({ router, shopId: shop.id })}
       />
       <Surface style={styles.baseContainer}>

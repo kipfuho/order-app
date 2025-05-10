@@ -15,6 +15,7 @@ import { resetCurrentTable } from "../../../../../../../../../../../stores/shop.
 import ActiveOrderSessionPage from "../../../../../../../../../../../components/ui/orders/OrderDetailPanel";
 import OrderSessionDetailPage from "../../../../../../../../../../../components/ui/orders/PaymentDetailPanel";
 import PaymentMethodPage from "../../../../../../../../../../../components/ui/orders/PaymentPanel";
+import { t } from "i18next";
 
 function Main({
   currentOrderSession,
@@ -54,13 +55,13 @@ function Main({
           gap: 12,
         }}
       >
-        <Collapsible title="Order detail">
+        <Collapsible title={t("order_detail")}>
           <ActiveOrderSessionPage activeOrderSession={currentOrderSession} />
         </Collapsible>
-        <Collapsible title="Payment detail">
+        <Collapsible title={t("payment_detail")}>
           <OrderSessionDetailPage orderSessionDetail={orderSessionDetail} />
         </Collapsible>
-        <Collapsible title="Payment">
+        <Collapsible title={t("payment")}>
           <PaymentMethodPage />
         </Collapsible>
       </Surface>

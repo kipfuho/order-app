@@ -87,14 +87,13 @@ export default function OrderTableCurrentOrderSessionsPage() {
             flex: 1,
           }}
         >
-          <AppBar
-            title={t("create_order")}
+          <CreateOrder
+            setCreateOrderVisible={setCreateOrderVisible}
             goBack={() => {
               setCreateOrderVisible(false);
               dispatch(resetCurrentOrder());
             }}
           />
-          <CreateOrder setCreateOrderVisible={setCreateOrderVisible} />
         </Modal>
         <Toast />
       </Portal>

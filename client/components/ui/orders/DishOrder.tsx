@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { Fragment, memo, useMemo } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Card, Text, useTheme, Icon, Surface } from "react-native-paper";
 import { DishOrder, Order } from "../../../stores/state.interface";
@@ -25,7 +25,7 @@ const steps: Step[] = [
   { icon: "noodles", label: DishOrderStatus.served },
 ];
 
-const DishOrderStepper = React.memo(
+const DishOrderStepper = memo(
   ({ status }: { status: DishOrderStatus | string }) => {
     const theme = useTheme();
 
@@ -36,7 +36,7 @@ const DishOrderStepper = React.memo(
     return (
       <View style={styles.stepper}>
         {steps.map((step, index) => (
-          <React.Fragment key={step.label}>
+          <Fragment key={step.label}>
             <Icon
               source={index <= currentStep ? "check-circle" : step.icon}
               size={24}
@@ -53,7 +53,7 @@ const DishOrderStepper = React.memo(
                 ]}
               />
             )}
-          </React.Fragment>
+          </Fragment>
         ))}
       </View>
     );

@@ -1,20 +1,6 @@
-import {
-  Appbar,
-  Button,
-  Modal,
-  Portal,
-  Searchbar,
-  Surface,
-  Text,
-} from "react-native-paper";
+import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
 import { styles } from "../../_layout";
-import {
-  Keyboard,
-  Pressable,
-  ScrollView,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Keyboard, ScrollView, useWindowDimensions, View } from "react-native";
 import {
   useGetDishesQuery,
   useGetDishTypesQuery,
@@ -34,6 +20,7 @@ import {
   useGetRecommendationDishesQuery,
 } from "../../../stores/apiSlices/cartApi.slice";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { AppBarSearchBox } from "../../../components/AppBarSearchBox";
 
 const getButtonSize = (width: number) => {
   return width / 2 - 30;
@@ -113,42 +100,12 @@ export default function CustomerHomePage() {
           <GestureDetector gesture={gesture}>
             <View style={{ flex: 1 }}>
               <CustomerAppBar goBack={() => setMenuVisible(false)}>
-                <Appbar.Action
-                  icon="magnify"
-                  onPress={() => setSearchVisible((a) => !a)}
+                <AppBarSearchBox
+                  searchValue={searchValue}
+                  searchVisible={searchVisible}
+                  setSearchValue={setSearchValue}
+                  setSearchVisible={setSearchVisible}
                 />
-                {searchVisible && (
-                  <Pressable
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      padding: 8,
-                      zIndex: 10,
-                    }}
-                    onPress={() => {
-                      setSearchVisible(true);
-                    }}
-                  >
-                    <Searchbar
-                      placeholder={t("search_dish")}
-                      value={searchValue}
-                      onChangeText={setSearchValue}
-                      autoFocus
-                      inputStyle={{
-                        padding: 0,
-                        minHeight: "auto",
-                      }}
-                      style={{
-                        padding: 0,
-                        height: 46,
-                        alignContent: "center",
-                      }}
-                    />
-                  </Pressable>
-                )}
               </CustomerAppBar>
               <CustomerOrderMenu
                 dishes={

@@ -7,10 +7,12 @@ import { setLocale, toggleDarkMode } from "../stores/appSetting.slice";
 export function AppBar({
   title,
   goBack,
+  actions,
   children,
 }: {
   title: string;
   goBack?: () => void;
+  actions?: ReactNode;
   children?: ReactNode;
 }) {
   const dispatch = useDispatch();
@@ -31,6 +33,7 @@ export function AppBar({
     <Appbar.Header style={{ height: 60, paddingHorizontal: 8 }}>
       {goBack && <Appbar.BackAction onPress={goBack} size={20} />}
       <Appbar.Content title={title} titleStyle={{ fontSize: 16 }} />
+      {actions}
       <Menu
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}

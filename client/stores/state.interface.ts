@@ -87,6 +87,7 @@ interface Unit {
 interface Dish {
   id: string;
   name: string;
+  code: string;
   shop: string;
   category: DishCategory;
   unit: Unit;

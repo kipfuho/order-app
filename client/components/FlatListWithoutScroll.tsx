@@ -13,6 +13,7 @@ import {
   ItemTypeFlatList,
   ItemTypeFlatListProperties,
   ItemTypeMap,
+  UNIVERSAL_WIDTH_PIVOT,
 } from "./FlatListWithScroll";
 
 function GroupList({
@@ -27,7 +28,7 @@ function GroupList({
   const theme = useTheme();
   const { width } = useWindowDimensions();
 
-  if (width < 600) {
+  if (width < UNIVERSAL_WIDTH_PIVOT) {
     return (
       <Surface
         mode="flat"
@@ -223,7 +224,10 @@ export default function FlatListWithoutScroll({
   return (
     <Surface
       mode="flat"
-      style={{ flex: 1, flexDirection: width >= 600 ? "row" : "column" }}
+      style={{
+        flex: 1,
+        flexDirection: width >= UNIVERSAL_WIDTH_PIVOT ? "row" : "column",
+      }}
     >
       <GroupList
         groups={groups}

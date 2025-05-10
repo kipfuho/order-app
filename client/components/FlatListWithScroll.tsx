@@ -12,6 +12,8 @@ import { ScrollView } from "react-native";
 import { Dish } from "../stores/state.interface";
 import { DishCardForOrder } from "./ui/menus/DishCardForOrder";
 
+export const UNIVERSAL_WIDTH_PIVOT = 600;
+
 export enum ItemTypeFlatList {
   DISH_CARD = "dishCard",
   DISH_CARD_ORDER = "dishCardOrder",
@@ -72,7 +74,7 @@ function GroupList({
   const theme = useTheme();
   const { width } = useWindowDimensions();
 
-  if (width < 600) {
+  if (width < UNIVERSAL_WIDTH_PIVOT) {
     return (
       <Surface
         mode="flat"
@@ -291,7 +293,10 @@ export default function FlatListWithScroll({
   return (
     <Surface
       mode="flat"
-      style={{ flex: 1, flexDirection: width >= 600 ? "row" : "column" }}
+      style={{
+        flex: 1,
+        flexDirection: width >= UNIVERSAL_WIDTH_PIVOT ? "row" : "column",
+      }}
     >
       <GroupList groups={groups} scrollToGroup={scrollToCategory} />
       <FlatList

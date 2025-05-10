@@ -202,11 +202,10 @@ export default function ActiveOrderSessionPage({
             flex: 1,
           }}
         >
-          <AppBar
-            title={t("create_order")}
+          <CreateOrder
+            setCreateOrderVisible={setCreateOrderVisible}
             goBack={() => setCreateOrderVisible(false)}
           />
-          <CreateOrder setCreateOrderVisible={setCreateOrderVisible} />
         </Modal>
         <Toast />
       </Portal>

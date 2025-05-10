@@ -1,11 +1,11 @@
-import React, { useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import { Dish, Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { Text, Surface, Menu, Portal, Dialog } from "react-native-paper";
-import { GestureResponderEvent, useWindowDimensions } from "react-native";
+import { GestureResponderEvent, Keyboard } from "react-native";
 import Toast from "react-native-toast-message";
 import {
   useDeleteDishMutation,
@@ -17,34 +17,39 @@ import {
   goBackShopHome,
   goToDishUpdatePage,
 } from "../../../../../../../apis/navigate.service";
-import _ from "lodash";
+import _, { debounce } from "lodash";
 import { useTranslation } from "react-i18next";
 import { ConfirmCancelDialog } from "../../../../../../../components/ui/CancelDialog";
 import FlatListWithScroll, {
   ItemTypeFlatList,
 } from "../../../../../../../components/FlatListWithScroll";
+import { AppBarSearchBox } from "../../../../../../../components/AppBarSearchBox";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 export default function DishesManagementPage() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { width } = useWindowDimensions();
 
   const shop = useSelector(
     (state: RootState) => state.shop.currentShop
   ) as Shop;
-  const { data: dishes, isLoading: dishLoading } = useGetDishesQuery({
+  const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery({
     shopId: shop.id,
   });
   const { data: dishCategories = [], isLoading: categoryLoading } =
     useGetDishCategoriesQuery({ shopId: shop.id });
   const [deleteDish, { isLoading: deleteDishLoading }] =
     useDeleteDishMutation();
-  const dishesGroupByCategoryId = _.groupBy(dishes, "category.id");
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [selectedDish, setSelectedDish] = useState<Dish>();
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [filteredDishGroupById, setFilteredDishGroupById] = useState<
+    Record<string, Dish[]>
+  >({});
 
   const openMenu = (dish: Dish, event: GestureResponderEvent) => {
     setSelectedDish(dish);
@@ -81,6 +86,39 @@ export default function DishesManagementPage() {
     }
   };
 
+  const gesture = Gesture.Race(
+    Gesture.Tap().onStart(() => {
+      setSearchVisible(false);
+      Keyboard.dismiss();
+    }),
+    Gesture.Pan().onStart(() => {
+      setSearchVisible(false);
+      Keyboard.dismiss();
+    })
+  );
+
+  const debouncedSearchDishes = useCallback(
+    debounce((_searchValue: string) => {
+      const matchedDishes = _.filter(
+        dishes,
+        (dish) =>
+          _.includes(dish.name, _searchValue) ||
+          _.includes(dish.code, _searchValue)
+      );
+
+      setFilteredDishGroupById(_.groupBy(matchedDishes, "category.id"));
+    }, 200),
+    [dishes]
+  );
+
+  useEffect(() => {
+    debouncedSearchDishes(searchValue);
+
+    return () => {
+      debouncedSearchDishes.cancel();
+    };
+  }, [searchValue, debouncedSearchDishes]);
+
   if (dishLoading || categoryLoading) {
     return <LoaderBasic />;
   }
@@ -88,8 +126,16 @@ export default function DishesManagementPage() {
   return (
     <>
       <AppBar
-        title="Dishes"
+        title={t("dishes")}
         goBack={() => goBackShopHome({ router, shopId: shop.id })}
+        actions={
+          <AppBarSearchBox
+            searchValue={searchValue}
+            searchVisible={searchVisible}
+            setSearchValue={setSearchValue}
+            setSearchVisible={setSearchVisible}
+          />
+        }
       />
 
       {/* Delete Confirmation Dialog */}
@@ -116,28 +162,33 @@ export default function DishesManagementPage() {
           onDismiss={() => setMenuVisible(false)}
           anchor={{ x: menuPosition.x, y: menuPosition.y }}
         >
-          <Menu.Item onPress={goEditDish} title="Edit" leadingIcon="pencil" />
+          <Menu.Item
+            onPress={goEditDish}
+            title={t("edit")}
+            leadingIcon="pencil"
+          />
           <Menu.Item
             onPress={() => {
               setDialogVisible(true);
               setMenuVisible(false);
             }}
-            title="Delete"
+            title={t("delete")}
             leadingIcon="delete"
           />
         </Menu>
         <Toast />
       </Portal>
 
-      <Surface style={{ flex: 1 }}>
-        <FlatListWithScroll
-          groups={dishCategories}
-          itemByGroup={dishesGroupByCategoryId}
-          openMenu={openMenu}
-          width={width}
-          itemType={ItemTypeFlatList.DISH_CARD}
-        />
-      </Surface>
+      <GestureDetector gesture={gesture}>
+        <Surface style={{ flex: 1 }}>
+          <FlatListWithScroll
+            groups={dishCategories}
+            itemByGroup={filteredDishGroupById}
+            openMenu={openMenu}
+            itemType={ItemTypeFlatList.DISH_CARD}
+          />
+        </Surface>
+      </GestureDetector>
     </>
   );
 }

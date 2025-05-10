@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
@@ -62,7 +62,7 @@ export default function CreateEmployeePage() {
     );
   };
 
-  const debouncedCheckEmail = React.useRef(
+  const debouncedCheckEmail = useRef(
     _.debounce(async (emailToCheck: string) => {
       if (!emailToCheck.trim()) return;
 

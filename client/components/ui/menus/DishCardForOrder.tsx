@@ -10,8 +10,8 @@ import {
   TextInput,
   Tooltip,
 } from "react-native-paper";
-import { Pressable, useWindowDimensions, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import { Pressable, View } from "react-native";
+import { memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../stores/store";
 import { updateCurrentOrder } from "../../../stores/shop.slice";
@@ -22,7 +22,7 @@ import { Image } from "expo-image";
 import { BLURHASH } from "../../../constants/common";
 import { useTranslation } from "react-i18next";
 
-const QuantityControl = React.memo(
+const QuantityControl = memo(
   ({
     dish,
     currentOrder,
@@ -148,7 +148,7 @@ const QuantityControl = React.memo(
   }
 );
 
-export const DishCardForOrder = React.memo(
+export const DishCardForOrder = memo(
   ({ dish, containerWidth = 0 }: { dish: Dish; containerWidth?: number }) => {
     const dispatch = useDispatch();
 
