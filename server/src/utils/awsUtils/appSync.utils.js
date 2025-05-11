@@ -26,6 +26,7 @@ const EventActionType = {
   CREATE: 'CREATE',
   UPDATE: 'UPDATE',
   DELETE: 'DELETE',
+  CANCEL: 'CANCEL',
 };
 
 const notifyOrderSessionPaymentForCustomer = async ({ orderSession }) => {
@@ -286,7 +287,25 @@ const notifyUpdateDepartment = async ({ action, department, userId }) => {
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateOrderSession = async ({ orderSession, userId }) => {
+const _notifyUpdateOrderSessionForCustomer = async ({ orderSession, action }) => {
+  const { customerInfo } = orderSession;
+  if (!customerInfo || !customerInfo.customerId) {
+    return;
+  }
+
+  const channel = getCustomerChannel(getStringId({ object: orderSession, key: 'shop' }));
+  const event = {
+    type: AppSyncEvent.ORDER_SESSION_UPDATE,
+    data: {
+      action, // 'CANCEL'
+      orderSessionId: orderSession.id,
+      tableId: getStringId({ object: orderSession.tables, key: '0' }),
+    },
+  };
+  return publishSingleAppSyncEvent({ channel, event });
+};
+
+const notifyUpdateOrderSession = async ({ orderSession, userId, action }) => {
   if (_.isEmpty(orderSession)) {
     return;
   }
@@ -295,12 +314,14 @@ const notifyUpdateOrderSession = async ({ orderSession, userId }) => {
   const event = {
     type: AppSyncEvent.ORDER_SESSION_UPDATE,
     data: {
+      action, // 'CANCEL'
       orderSessionId: orderSession.id,
       tableId: getStringId({ object: orderSession.tables, key: '0' }),
       userId,
     },
   };
-  return publishSingleAppSyncEvent({ channel, event });
+  await publishSingleAppSyncEvent({ channel, event });
+  await _notifyUpdateOrderSessionForCustomer({ orderSession, action });
 };
 
 module.exports = {

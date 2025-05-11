@@ -72,8 +72,9 @@ const cancelOrderSession = catchAsync(async (req, res) => {
 
 const cancelOrderSessionPaidStatus = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
+  const user = _.get(req, 'user');
   const { orderSessionId } = req.body;
-  await orderManagementService.cancelPaidStatus({ shopId, orderSessionId });
+  await orderManagementService.cancelPaidStatus({ shopId, orderSessionId, user });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 

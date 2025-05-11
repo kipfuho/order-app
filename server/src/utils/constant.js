@@ -36,6 +36,7 @@ const Status = {
   activated: 'activated',
   deactivated: 'deactivated',
 };
+
 const DishOrderStatus = {
   confirmed: 'confirmed',
   cooked: 'cooked',
@@ -84,6 +85,8 @@ const PermissionType = {
   CREATE_MENU: 'shop_create_menu',
   UPDATE_MENU: 'shop_update_menu',
   VIEW_REPORT: 'shop_view_report',
+  VIEW_KITCHEN: 'shop_view_kitchen',
+  UPDATE_KITCHEN: 'shop_view_kitchen',
 };
 
 const TableDepartmentPermissions = [
@@ -113,6 +116,13 @@ const DishTypes = {
   DRINK: 'DRINK',
 };
 
+const KitchenAction = {
+  UPDATE_COOKED: 'update_served',
+  UPDATE_SERVED: 'update_cooked',
+  UNDO_COOKED: 'undo_cooked',
+  UNDO_SERVED: 'undo_served',
+};
+
 module.exports = {
   SESSION_NAME_SPACE,
   MAX_FILE_SIZE,
@@ -131,4 +141,5 @@ module.exports = {
   CashierDepartmentPermissions,
   DishTypes,
   DishOrderStatus,
+  KitchenAction,
 };

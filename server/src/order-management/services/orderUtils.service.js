@@ -588,6 +588,46 @@ const getCart = async ({ shopId, customerId }) => {
   return cart;
 };
 
+const _updateOrderSessionStatusForOrders = async ({ shopId, orderIds = [], status }) => {
+  const bulkOps = [];
+  orderIds.forEach((orderId) => {
+    bulkOps.push({
+      updateOne: {
+        filter: { shop: shopId, _id: orderId },
+        update: {
+          $set: {
+            orderSessionStatus: status,
+          },
+        },
+        upsert: true,
+      },
+    });
+  });
+
+  await Order.bulkWrite(bulkOps);
+};
+
+const updateAfterPayOrderSession = async ({ orderSession }) => {
+  if (!orderSession) return;
+  const shopId = getStringId({ object: orderSession, key: 'shop' });
+  const orderIds = _.map(orderSession.orders, 'id');
+  return _updateOrderSessionStatusForOrders({ shopId, status: orderSession.status, orderIds });
+};
+
+const updateAfterCancelOrderSession = async ({ orderSession }) => {
+  if (!orderSession) return;
+  const shopId = getStringId({ object: orderSession, key: 'shop' });
+  const orderIds = _.map(orderSession.orders, 'id');
+  return _updateOrderSessionStatusForOrders({ shopId, status: orderSession.status, orderIds });
+};
+
+const updateAfterCancelPaidStatusOrderSession = async ({ orderSession }) => {
+  if (!orderSession) return;
+  const shopId = getStringId({ object: orderSession, key: 'shop' });
+  const orderIds = _.map(orderSession.orders, 'id');
+  return _updateOrderSessionStatusForOrders({ shopId, status: orderSession.status, orderIds });
+};
+
 module.exports = {
   createNewOrder,
   getOrCreateOrderSession,
@@ -598,4 +638,7 @@ module.exports = {
   getCart,
   getActiveOrderSessionStatus,
   getOrderSessionJsonWithLimit,
+  updateAfterPayOrderSession,
+  updateAfterCancelOrderSession,
+  updateAfterCancelPaidStatusOrderSession,
 };

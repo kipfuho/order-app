@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const { toJSON } = require('../../utils/plugins');
-const { Status, DishOrderStatus } = require('../../utils/constant');
+const { Status, DishOrderStatus, OrderSessionStatus } = require('../../utils/constant');
+
+const OrderSessionStatusEnum = Object.values(OrderSessionStatus);
 
 const dishOrderSchema = new mongoose.Schema({
   dish: { type: mongoose.Types.ObjectId, ref: 'Dish' },
@@ -42,6 +44,7 @@ const orderSchema = new mongoose.Schema(
     approvedBy: { type: mongoose.Types.ObjectId, ref: 'User' },
     cancelledBy: { type: mongoose.Types.ObjectId, ref: 'User' },
     status: { type: String, enum: [Status.enabled, Status.disabled], default: Status.enabled },
+    orderSessionStatus: { type: String, enum: OrderSessionStatusEnum, default: OrderSessionStatus.unpaid },
     numberOfCustomer: {
       type: Number,
     },

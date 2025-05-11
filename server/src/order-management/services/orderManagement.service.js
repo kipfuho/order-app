@@ -13,8 +13,14 @@ const {
 } = require('../../utils/common');
 const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
-const { notifyOrderSessionPayment } = require('../../utils/awsUtils/appSync.utils');
+const {
+  notifyOrderSessionPayment,
+  notifyUpdateOrderSession,
+  EventActionType,
+} = require('../../utils/awsUtils/appSync.utils');
 const { getCustomerFromCache } = require('../../metadata/customerMetadata.service');
+const { registerJob } = require('../../jobs/jobUtils');
+const { JobTypes } = require('../../jobs/constant');
 
 const _validateBeforeCreateOrder = (orderSession) => {
   throwBadRequest(orderSession.status === OrderSessionStatus.paid, getMessageByLocale({ key: 'orderSession.alreadyPaid' }));
@@ -184,6 +190,10 @@ const payOrderSession = async ({ shopId, requestBody, userId }) => {
   });
 
   notifyOrderSessionPayment({ orderSession: updatedOrderSession, userId });
+  registerJob({
+    type: JobTypes.PAY_ORDER,
+    data: updatedOrderSession,
+  });
 
   return updatedOrderSession;
 };
@@ -201,11 +211,17 @@ const cancelOrder = async ({ shopId, user, requestBody }) => {
       },
     },
   });
+
+  notifyUpdateOrderSession({ orderSession: updatedOrderSession, userId: user.id, action: EventActionType.CANCEL });
+  registerJob({
+    type: JobTypes.CANCEL_ORDER,
+    data: updatedOrderSession,
+  });
   return updatedOrderSession;
 };
 
-const cancelPaidStatus = async ({ orderSessionId, shopId }) => {
-  const orderSessionJson = await orderUtilService.updateOrderSession({
+const cancelPaidStatus = async ({ orderSessionId, shopId, user }) => {
+  const updatedOrderSession = await orderUtilService.updateOrderSession({
     orderSessionId,
     shopId,
     updateBody: {
@@ -217,7 +233,13 @@ const cancelPaidStatus = async ({ orderSessionId, shopId }) => {
       },
     },
   });
-  return orderSessionJson;
+
+  notifyUpdateOrderSession({ orderSession: updatedOrderSession, userId: user.id, action: EventActionType.CANCEL });
+  registerJob({
+    type: JobTypes.CANCEL_ORDER_PAID_STATUS,
+    data: updatedOrderSession,
+  });
+  return updatedOrderSession;
 };
 
 const getOrderHistory = async ({ shopId, from, to }) => {

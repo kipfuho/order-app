@@ -55,7 +55,8 @@ const getSimilarDishesTFIDF = ({ dishId, allDishes }) => {
   return _(similarities)
     .sort((a, b) => b.similarity - a.similarity)
     .slice(1, 4)
-    .map((entry) => entry.dish);
+    .map((entry) => entry.dish)
+    .value();
 };
 
 const getCustomerPreferences = ({ orderSessions, customerId }) => {
@@ -70,7 +71,8 @@ const getCustomerPreferences = ({ orderSessions, customerId }) => {
             (preferredDishes[getStringId({ object: dishOrder, key: 'dish' })] || 0) + dishOrder.quantity;
         });
       });
-    });
+    })
+    .value();
 
   return preferredDishes;
 };
@@ -93,7 +95,8 @@ const getCustomerOrderPatterns = ({ orderSessions, customerId }) => {
             (orderPatterns[orderDay][getStringId({ object: dishOrder, key: 'dish' })] || 0) + dishOrder.quantity;
         });
       });
-    });
+    })
+    .value();
 
   return orderPatterns;
 };
