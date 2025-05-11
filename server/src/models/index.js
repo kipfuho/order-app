@@ -14,3 +14,5 @@ module.exports.OrderSession = require('../order-management/models/orderSession.m
 module.exports.OrderSessionReport = require('../order-management/models/orderSessionReport.model').OrderSessionReport;
 module.exports.Cart = require('../order-management/models/cart.model');
 module.exports.Unit = require('../dish-management/models/unit.model');
+module.exports.Kitchen = require('../kitchen-management/models/kitchen.model');
+module.exports.KitchenLog = require('../kitchen-management/models/kitchenLog.model');

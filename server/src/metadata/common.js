@@ -10,7 +10,8 @@ const getDepartmentKey = ({ shopId }) => `department_${shopId}`;
 const getMenuKey = ({ shopId }) => `menu_${shopId}`;
 const getUnitKey = ({ shopId }) => `unit_${shopId}`;
 const getUserKey = ({ userId }) => `user_${userId}`;
-const getCustomerKey = ({ customerId }) => `user_${customerId}`;
+const getCustomerKey = ({ customerId }) => `customer_${customerId}`;
+const getKitchenKey = ({ shopId }) => `kitchen_${shopId}`;
 
 const deleteShopCache = async ({ shopId }) => {
   if (redisClient.isRedisConnected()) {
@@ -78,6 +79,12 @@ const deleteCustomerCache = async ({ customerId }) => {
   }
 };
 
+const deleteKitchenCache = async ({ shopId }) => {
+  if (redisClient.isRedisConnected()) {
+    redisClient.deleteKey(getKitchenKey({ shopId }));
+  }
+};
+
 module.exports = {
   getShopKey,
   getDepartmentKey,
@@ -90,6 +97,7 @@ module.exports = {
   getUnitKey,
   getUserKey,
   getCustomerKey,
+  getKitchenKey,
   deleteShopCache,
   deleteDepartmentCache,
   deleteEmployeeCache,
@@ -101,4 +109,5 @@ module.exports = {
   deleteUnitCache,
   deleteUserCache,
   deleteCustomerCache,
+  deleteKitchenCache,
 };
