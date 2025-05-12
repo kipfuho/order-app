@@ -1,13 +1,9 @@
-const _ = require('lodash');
 const ipnService = require('./webhooks.service');
 const catchAsync = require('../utils/catchAsync');
 const config = require('../config/config');
 
 const vnpayReturn = catchAsync(async (req, res) => {
-  const orderSessionId = req.query.vnp_TxnRef;
-
-  const vnpayPaymentAmount = _.get(req, 'query.vnp_Amount', 0);
-  const verified = await ipnService.verifyVnpayReturn({ orderSessionId, vnpayPaymentAmount });
+  const verified = await ipnService.verifyVnpayReturn(req.query);
 
   if (verified) {
     res.redirect(`${config.baseUrl}/payment/success`);
