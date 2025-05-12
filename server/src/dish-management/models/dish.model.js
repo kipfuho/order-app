@@ -29,7 +29,7 @@ const dishSchema = new mongoose.Schema(
     taxRate: { type: Number },
     status: { type: String, enum: [Status.activated, Status.deactivated, Status.disabled], default: Status.activated },
     imageUrls: [String],
-    isNew: { type: Boolean, default: true },
+    isNewlyCreated: { type: Boolean, default: true },
     isBestSeller: { type: Boolean },
     stockQuantity: { type: Number },
     hideForCustomers: { type: Boolean },

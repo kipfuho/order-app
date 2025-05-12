@@ -68,7 +68,7 @@
     "joi": "^17.3.0",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
-    "mime": "^4.0.6",
+    "mime": "^2.6.0",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.47",
     "mongoose": "^8.12.1",
