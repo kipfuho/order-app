@@ -47,6 +47,12 @@ const customerSchema = new mongoose.Schema(
     anonymous: {
       type: Boolean,
     },
+    totalOrderTimes: {
+      type: Number,
+    },
+    totalOrderValue: {
+      type: Number,
+    },
   },
   {
     timestamps: true,

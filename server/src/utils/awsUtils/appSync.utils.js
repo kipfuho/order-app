@@ -19,6 +19,7 @@ const AppSyncEvent = {
   DEPARTMENT_CHANGED: 'DISH_CATEGORY_CHANGED',
   PAYMENT_COMPLETE: 'PAYMENT_COMPLETE',
   ORDER_SESSION_UPDATE: 'ORDER_SESSION_UPDATE',
+  NEW_ORDER: 'NEW_ORDER',
 };
 
 // general action action for events
@@ -324,6 +325,25 @@ const notifyUpdateOrderSession = async ({ orderSession, userId, action }) => {
   await _notifyUpdateOrderSessionForCustomer({ orderSession, action });
 };
 
+const notifyNewOrder = async ({ order, userId, action }) => {
+  if (_.isEmpty(order)) {
+    return;
+  }
+
+  const channel = getShopChannel(getStringId({ object: order, key: 'shop' }));
+  const event = {
+    type: AppSyncEvent.NEW_ORDER,
+    data: {
+      action, // 'CREATE'
+      orderId: order.id,
+      tableId: getStringId({ object: order.tables, key: '0' }),
+      userId,
+    },
+  };
+
+  await publishSingleAppSyncEvent({ channel, event });
+};
+
 module.exports = {
   AppSyncEvent,
   EventActionType,
@@ -338,4 +358,5 @@ module.exports = {
   notifyUpdateEmployeePosition,
   notifyUpdateDepartment,
   notifyUpdateOrderSession,
+  notifyNewOrder,
 };

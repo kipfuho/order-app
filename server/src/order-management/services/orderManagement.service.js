@@ -26,11 +26,11 @@ const _validateBeforeCreateOrder = (orderSession) => {
   throwBadRequest(orderSession.status === OrderSessionStatus.paid, getMessageByLocale({ key: 'orderSession.alreadyPaid' }));
 };
 
-const createOrder = async ({ shopId, requestBody }) => {
+const createOrder = async ({ shopId, userId, requestBody }) => {
   const { tableId, orderSessionId, dishOrders } = requestBody;
   const orderSession = await orderUtilService.getOrCreateOrderSession({ orderSessionId, tableId, shopId });
   _validateBeforeCreateOrder(orderSession);
-  const newOrder = await orderUtilService.createNewOrder({ tableId, shopId, orderSession, dishOrders });
+  const newOrder = await orderUtilService.createNewOrder({ tableId, shopId, userId, orderSession, dishOrders });
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSession.id);
   orderSessionJson.orders = _.filter(orderSessionJson.orders, (order) => order.id === newOrder.id);
   return orderSessionJson;

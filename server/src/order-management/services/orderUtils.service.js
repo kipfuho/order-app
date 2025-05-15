@@ -12,6 +12,7 @@ const { getTableFromCache, getTablesFromCache } = require('../../metadata/tableM
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
 const { getStringId, getRoundTaxAmount, getRoundDishPrice } = require('../../utils/common');
 const { getCustomerFromCache } = require('../../metadata/customerMetadata.service');
+const { notifyNewOrder, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 
 // Merge các dish order có trùng tên và giá
 const _mergeDishOrders = (dishOrders) => {
@@ -270,7 +271,7 @@ const _setMetatadaForDishOrder = ({ dishOrder, dishById, unitById, orderSessionT
   };
 };
 
-const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, orderNo, customerId }) => {
+const createNewOrder = async ({ tableId, shopId, userId, orderSession, dishOrders, orderNo, customerId }) => {
   const shop = await getShopFromCache({ shopId });
   const dishes = await getDishesFromCache({ shopId });
   const units = await getUnitsFromCache({ shopId });
@@ -301,6 +302,8 @@ const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, order
         },
       }
     );
+
+    notifyNewOrder({ order, userId, action: EventActionType.CREATE });
   }
 
   return order.toJSON();

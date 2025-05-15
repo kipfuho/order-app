@@ -13,6 +13,8 @@ const unitRoute = require('../../dish-management/routes/unit.route');
 const orderRoute = require('../../order-management/routes/orderManagement.route');
 const paymentRoute = require('../../payment-management/routes/payment.route');
 const suggestionRoute = require('../../suggestion-system/routes/suggestion.route');
+const kitchenRoute = require('../../kitchen-management/routes/kitchen.route');
+const kdsRoute = require('../../kitchen-management/routes/kds.route');
 const auth = require('../../middlewares/auth');
 const { MAX_FILE_SIZE, PermissionType } = require('../../utils/constant');
 const ApiError = require('../../utils/ApiError');
@@ -64,6 +66,14 @@ const defaultRoutes = [
   {
     path: 'suggestion',
     route: suggestionRoute,
+  },
+  {
+    path: 'kitchen',
+    route: kitchenRoute,
+  },
+  {
+    path: 'kds',
+    route: kdsRoute,
   },
 ];
 

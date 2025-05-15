@@ -11,8 +11,9 @@ const { convertCartForResponse } = require('../converters/cart.converter');
 
 const createOrder = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
+  const userId = _.get(req, 'user.id');
   const requestBody = req.body;
-  const orderSessionJson = await orderManagementService.createOrder({ shopId, requestBody });
+  const orderSessionJson = await orderManagementService.createOrder({ shopId, userId, requestBody });
   const orderSessionResponse = convertOrderSessionForResponse(orderSessionJson);
   res.status(httpStatus.OK).send({ message: 'OK', orderSession: orderSessionResponse });
 });

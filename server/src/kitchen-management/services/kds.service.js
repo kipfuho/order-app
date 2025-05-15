@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const { Order, KitchenLog } = require('../../models');
+const { Order, KitchenLog, OrderSession } = require('../../models');
 const { createSearchByDateOptionWithShopTimezone } = require('../../utils/common');
 const { OrderSessionStatus, Status, DishOrderStatus, KitchenAction } = require('../../utils/constant');
 const { getMessageByLocale } = require('../../locale');
@@ -11,18 +11,47 @@ const _getDishOrdersByStatus = async ({ shopId, status }) => {
   const orders = await Order.find(
     {
       shop: shopId,
+      orderSessionId: { $ne: null },
       orderSessionStatus: OrderSessionStatus.unpaid,
       status: Status.enabled,
       ...timeOptions,
     },
     {
       dishOrders: 1,
+      orderSessionId: 1,
+      createdAt: 1,
     }
   );
 
+  const orderSessionIds = _(orders).map('orderSessionId').uniq().value();
+  const orderSessions = await OrderSession.find(
+    { _id: { $in: orderSessionIds } },
+    {
+      orderSessionNo: 1,
+      tableNames: 1,
+    }
+  );
+  const orderSessionById = _.keyBy(orderSessions, 'id');
+
   const orderJsons = _.map(orders, (order) => order.toJSON());
   const dishOrders = _(orderJsons)
-    .flatMap((order) => order.dishOrders)
+    .flatMap((order) => {
+      order.dishOrders.forEach((dishOrder) => {
+        const orderSession = orderSessionById[order.orderSessionId];
+        if (!orderSession) {
+          return;
+        }
+
+        Object.assign(dishOrder, {
+          orderId: order.id,
+          orderSessionId: order.orderSessionId,
+          orderSessionNo: orderSession.orderSessionNo,
+          tableName: orderSession.tableNames.join(', '),
+          createdAt: order.createdAt,
+        });
+      });
+      return order.dishOrders;
+    })
     .filter((dishOrder) => dishOrder.status === status)
     .value();
   return dishOrders;
