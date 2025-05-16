@@ -293,7 +293,7 @@ const FlatListWithScroll = ({
   openMenu: (item: any, event: GestureResponderEvent) => void;
   additionalDatas?: any;
   itemType: ItemTypeFlatList;
-  shouldShowGroup: boolean;
+  shouldShowGroup?: boolean;
 }) => {
   const { width } = useWindowDimensions();
   const [itemContainerWidth, setItemContainerWidth] = useState<number>(1);

@@ -52,23 +52,21 @@ export const TableForApproveCard = memo(
               flex: 1,
               justifyContent: "center",
               alignItems: "center",
-              flexWrap: "wrap",
-              overflow: "scroll",
             }}
           >
             {unconfirmedOrderCount > 0 && (
-              <Surface mode="flat">
-                <Text
-                  style={{
-                    fontSize: 32,
-                    color: theme.colors.error,
-                    fontWeight: "bold",
-                  }}
-                  numberOfLines={1}
-                >
-                  {unconfirmedOrderCount}
-                </Text>
-              </Surface>
+              <Text
+                style={{
+                  fontSize: 32,
+                  color: theme.colors.error,
+                  fontWeight: "bold",
+                  width: 120,
+                  textAlign: "center",
+                }}
+                numberOfLines={3}
+              >
+                {unconfirmedOrderCount}
+              </Text>
             )}
           </Surface>
         </Card>

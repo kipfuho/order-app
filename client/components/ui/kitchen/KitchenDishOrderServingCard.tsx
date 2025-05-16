@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { View, Text } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { Badge, Surface, useTheme } from "react-native-paper";
 import { KitchenDishOrder } from "../../../stores/state.interface";
 import { getStatusColor } from "../../../constants/utils";
@@ -56,11 +56,16 @@ const KitchenDishOrderServingCard: React.FC<KitchenDishOrderProps> = memo(
             </Badge>
           </View>
 
-          <View style={{ flex: 1, overflow: "scroll" }}>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+          >
             <Text style={{ fontSize: 18, color: theme.colors.onBackground }}>
               {dishOrder.name}
             </Text>
-          </View>
+          </ScrollView>
         </View>
 
         <View

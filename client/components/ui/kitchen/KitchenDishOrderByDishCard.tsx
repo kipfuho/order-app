@@ -7,6 +7,7 @@ import { CustomMD3Theme } from "../../../constants/theme";
 import _ from "lodash";
 import { useUpdateUncookedDishOrdersRequestMutation } from "../../../stores/apiSlices/kitchenApi.slice";
 import KitchenDishOrderGroup from "./KitchenDishOrderGroupModal";
+import { ScrollView } from "react-native";
 
 interface KitchenDishOrderProps {
   dishOrders: KitchenDishOrder[];
@@ -131,13 +132,18 @@ const KitchenDishOrderByDishCard: React.FC<KitchenDishOrderProps> = memo(
                 </Badge>
               </View>
 
-              <View style={{ flex: 1, overflow: "scroll" }}>
+              <ScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={{ flexGrow: 1 }}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+              >
                 <Text
                   style={{ fontSize: 18, color: theme.colors.onBackground }}
                 >
                   {dishOrders[0].name}
                 </Text>
-              </View>
+              </ScrollView>
             </View>
 
             <TimeDifferentAndDishQuantity

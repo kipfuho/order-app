@@ -99,11 +99,12 @@ export default function DishesManagementPage() {
 
   const debouncedSearchDishes = useCallback(
     debounce((_searchValue: string) => {
+      const searchValueLowerCase = _searchValue.toLowerCase();
       const matchedDishes = _.filter(
         dishes,
         (dish) =>
-          _.includes(dish.name, _searchValue) ||
-          _.includes(dish.code, _searchValue)
+          _.includes((dish.name || "").toLowerCase(), searchValueLowerCase) ||
+          _.includes((dish.code || "").toLowerCase(), searchValueLowerCase)
       );
 
       setFilteredDishGroupById(_.groupBy(matchedDishes, "category.id"));

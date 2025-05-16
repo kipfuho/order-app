@@ -101,16 +101,18 @@ export default function CreateOrder({
 
   const debouncedSearchDishes = useCallback(
     debounce((_selectedDishType: string, _searchValue: string) => {
+      const searchValueLowerCase = _searchValue.toLowerCase();
       const filteredDishes = _.filter(dishes, (d) => {
         if (_selectedDishType !== "ALL") {
           return (
             d.type === _selectedDishType &&
-            (_.includes(d.name, _searchValue) ||
-              _.includes(d.code, _searchValue))
+            (_.includes((d.name || "").toLowerCase(), searchValueLowerCase) ||
+              _.includes((d.code || "").toLowerCase(), searchValueLowerCase))
           );
         }
         return (
-          _.includes(d.name, _searchValue) || _.includes(d.code, _searchValue)
+          _.includes((d.name || "").toLowerCase(), searchValueLowerCase) ||
+          _.includes((d.code || "").toLowerCase(), searchValueLowerCase)
         );
       });
 

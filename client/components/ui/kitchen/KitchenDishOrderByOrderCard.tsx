@@ -1,5 +1,5 @@
 import React, { memo, useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import {
   ActivityIndicator,
   Badge,
@@ -166,21 +166,29 @@ const KitchenDishOrderByOrderCard: React.FC<KitchenDishOrderProps> = memo(
             <View
               style={{
                 flex: 1,
-                justifyContent: "center",
               }}
             >
               {updateUncookedDishOrderLoading ? (
                 <ActivityIndicator />
               ) : (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    color: theme.colors.onBackground,
-                    overflow: "scroll",
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false}
+                  style={{ flex: 1 }}
+                  contentContainerStyle={{
+                    flexGrow: 1,
+                    justifyContent: "center",
                   }}
                 >
-                  {dishOrder.name}
-                </Text>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      color: theme.colors.onBackground,
+                    }}
+                  >
+                    {dishOrder.name}
+                  </Text>
+                </ScrollView>
               )}
             </View>
           </View>
