@@ -280,7 +280,11 @@ const createNewOrder = async ({ tableId, shopId, userId, orderSession, dishOrder
   const orderSessionTaxRate = _.get(orderSession, 'taxRate') || _.get(shop, 'taxRate', 0);
   const orderDishOrders = _.map(
     _.filter(dishOrders, (dishOrder) => dishOrder.quantity > 0),
-    (dishOrder) => _setMetatadaForDishOrder({ dishById, dishOrder, unitById, orderSessionTaxRate })
+    (dishOrder, index) => {
+      const _dishOrder = _setMetatadaForDishOrder({ dishById, dishOrder, unitById, orderSessionTaxRate });
+      _dishOrder.dishOrderNo = index + 1;
+      return _dishOrder;
+    }
   );
   const order = await Order.create({
     table: tableId,

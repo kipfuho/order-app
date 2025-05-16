@@ -5,6 +5,7 @@ const { Status, DishOrderStatus, OrderSessionStatus } = require('../../utils/con
 const OrderSessionStatusEnum = Object.values(OrderSessionStatus);
 
 const dishOrderSchema = new mongoose.Schema({
+  dishOrderNo: { type: Number },
   dish: { type: mongoose.Types.ObjectId, ref: 'Dish' },
   name: { type: String },
   unit: { type: String },

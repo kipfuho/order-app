@@ -7,14 +7,15 @@ const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
 
 const _getDishOrdersByStatus = async ({ shopId, status }) => {
-  const timeOptions = createSearchByDateOptionWithShopTimezone({ filterKey: 'createdAt' });
+  // currently disable filter time filter to dev
+  // const timeOptions = createSearchByDateOptionWithShopTimezone({ filterKey: 'createdAt' });
   const orders = await Order.find(
     {
       shop: shopId,
       orderSessionId: { $ne: null },
       orderSessionStatus: OrderSessionStatus.unpaid,
       status: Status.enabled,
-      ...timeOptions,
+      // ...timeOptions,
     },
     {
       dishOrders: 1,
@@ -74,7 +75,7 @@ const _updateDishOrdersByStatus = async ({ shopId, updateRequests, userId, befor
 
       const dishOrderSet = new Set(_.map(updateGroup, 'dishOrderId'));
       order.dishOrders.map((dishOrder) => {
-        if (dishOrderSet[dishOrder.id] && dishOrder.status === beforeStatus) {
+        if (dishOrderSet.has(dishOrder.id) && dishOrder.status === beforeStatus) {
           // eslint-disable-next-line no-param-reassign
           dishOrder.status = afterStatus;
           logs.push({
