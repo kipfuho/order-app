@@ -22,6 +22,7 @@ import {
   UpdateDishRequest,
 } from "../../apis/dish.api.interface";
 import { API_BASE_URL } from "../../apis/api.service";
+import { updateDishFilterOptions } from "../shop.slice";
 
 export const dishApiSlice = createApi({
   reducerPath: "dishApi",
@@ -144,12 +145,16 @@ export const dishApiSlice = createApi({
       Dish[],
       { shopId: string; isCustomerApp?: boolean }
     >({
-      queryFn: async ({ shopId, isCustomerApp = false }) => {
+      queryFn: async ({ shopId, isCustomerApp = false }, api) => {
         try {
           const dishes = await getDishesRequest({
             shopId,
             isCustomerApp,
           });
+
+          if (!isCustomerApp) {
+            api.dispatch(updateDishFilterOptions({ dishes }));
+          }
 
           return { data: dishes };
         } catch (error) {

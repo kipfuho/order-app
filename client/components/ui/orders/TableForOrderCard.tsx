@@ -2,29 +2,22 @@ import _ from "lodash";
 import { TableForOrder } from "../../../stores/state.interface";
 import { Card, Icon, Surface, Text, useTheme } from "react-native-paper";
 import { TouchableOpacity, View } from "react-native";
-import { convertPaymentAmount } from "../../../constants/utils";
+import {
+  convertPaymentAmount,
+  getMinuteForDisplay,
+  getStatusColor,
+} from "../../../constants/utils";
 import { memo } from "react";
-
-const getTimeColorByCode = (code: number | undefined) => {
-  if (code === 1) return "green";
-  if (code === 2) return "yellow";
-  return "red";
-};
-
-const getTimeColorByTimeDifferent = (minutesSinceOrderCreated: number) => {
-  if (minutesSinceOrderCreated <= 5) return "green";
-  if (minutesSinceOrderCreated <= 15) return "yellow";
-  return "red";
-};
+import { CustomMD3Theme } from "../../../constants/theme";
 
 export const TableForOrderCurrentInfo = memo(
   ({ table }: { table: TableForOrder }) => {
-    const theme = useTheme();
+    const theme = useTheme<CustomMD3Theme>();
 
     if (table.numberOfOrderSession) {
       const now = Date.now();
-      const minutesSinceOrderCreated = Math.floor(
-        (now - (table.orderCreatedAtEpoch ?? now)) / (1000 * 60)
+      const minutesSinceOrderCreated = getMinuteForDisplay(
+        now - (table.orderCreatedAtEpoch ?? now)
       );
 
       return (
@@ -36,7 +29,6 @@ export const TableForOrderCurrentInfo = memo(
             borderRadius: 5,
             borderTopLeftRadius: 0,
             borderTopRightRadius: 0,
-            backgroundColor: theme.colors.secondaryContainer,
             boxShadow: "none",
           }}
         >
@@ -49,7 +41,7 @@ export const TableForOrderCurrentInfo = memo(
             <Text
               style={{
                 fontSize: 16,
-                color: getTimeColorByTimeDifferent(minutesSinceOrderCreated),
+                color: getStatusColor(theme, minutesSinceOrderCreated).view,
                 marginLeft: 8,
                 fontWeight: "bold",
               }}
@@ -118,14 +110,14 @@ export const TableForOrderCard = memo(
           <Surface
             mode="flat"
             style={{
-              backgroundColor: theme.colors.tertiaryContainer,
+              backgroundColor: theme.colors.errorContainer,
               borderRadius: 5,
               borderBottomLeftRadius: 0,
               borderBottomRightRadius: 0,
             }}
           >
             <Text
-              style={{ padding: 8, color: theme.colors.onTertiaryContainer }}
+              style={{ padding: 8, color: theme.colors.onErrorContainer }}
               numberOfLines={1}
             >
               {table.name}

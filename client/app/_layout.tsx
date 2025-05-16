@@ -4,7 +4,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
-import { PaperProvider, MD3DarkTheme, MD3LightTheme } from "react-native-paper";
+import { PaperProvider } from "react-native-paper";
 import store, { persistor, RootState } from "../stores/store";
 import { StyleSheet } from "react-native";
 import { Amplify } from "aws-amplify";
@@ -12,6 +12,7 @@ import { AmplifyConfig } from "../amplify_outputs";
 import Toast from "react-native-toast-message";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import i18n from "../locales/i18n";
+import { darkTheme, lightTheme } from "../constants/theme";
 
 Amplify.configure(AmplifyConfig);
 
@@ -20,7 +21,7 @@ SplashScreen.preventAutoHideAsync();
 
 function ThemeLayout() {
   const { darkMode, locale } = useSelector((state: RootState) => state.setting);
-  const theme = darkMode ? MD3DarkTheme : MD3LightTheme;
+  const theme = darkMode ? darkTheme : lightTheme;
   const { i18n } = useTranslation();
 
   useEffect(() => {

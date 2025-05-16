@@ -143,7 +143,7 @@ export const DishCardForCustomer = ({
   const theme = useTheme();
   const cardWidth = Math.min(200, containerWidth * 0.48);
 
-  if (!dish) {
+  if (!dish || cardWidth < 1) {
     return;
   }
 

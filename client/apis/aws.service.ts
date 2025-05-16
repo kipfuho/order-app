@@ -7,6 +7,7 @@ import { dishApiSlice } from "../stores/apiSlices/dishApi.slice";
 import { staffApiSlice } from "../stores/apiSlices/staffApi.slice";
 import { orderApiSlice } from "../stores/apiSlices/orderApi.slice";
 import Toast from "react-native-toast-message";
+import { kitchenApiSlice } from "../stores/apiSlices/kitchenApi.slice";
 
 const namespace = "default";
 const useappsync = true;
@@ -34,6 +35,7 @@ export const EventType = {
   DEPARTMENT_CHANGED: "DISH_CATEGORY_CHANGED",
   PAYMENT_COMPLETE: "PAYMENT_COMPLETE",
   ORDER_SESSION_UPDATE: "ORDER_SESSION_UPDATE",
+  NEW_ORDER: "NEW_ORDER",
 };
 
 /**
@@ -71,6 +73,13 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
                 { type: "ActiveOrderSessions", id: tableId },
                 "TablesForOrder",
               ])
+            );
+            return;
+          }
+
+          if (type === EventType.NEW_ORDER) {
+            store.dispatch(
+              kitchenApiSlice.util.invalidateTags(["UncookedDishOrders"])
             );
             return;
           }

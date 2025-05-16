@@ -7,11 +7,21 @@ import {
 } from "react-native";
 import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
 import { DishCard } from "./ui/menus/DishCard";
-import { Fragment, useRef, useState } from "react";
+import {
+  createElement,
+  Fragment,
+  memo,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 import { ScrollView } from "react-native";
-import { CartItem, Dish } from "../stores/state.interface";
+import { CartItem, Dish, KitchenDishOrder } from "../stores/state.interface";
 import { DishCardForOrder } from "./ui/menus/DishCardForOrder";
 import { DishCardForCustomer } from "./ui/menus/DishCardForCustomer";
+import KitchenDishOrderByOrderCard from "./ui/kitchen/KitchenDishOrderByOrderCard";
+import KitchenDishOrderByDishCard from "./ui/kitchen/KitchenDishOrderByDishCard";
+import KitchenDishOrderServingCard from "./ui/kitchen/KitchenDishOrderServingCard";
 
 export const UNIVERSAL_WIDTH_PIVOT = 600;
 
@@ -19,6 +29,9 @@ export enum ItemTypeFlatList {
   DISH_CARD = "dishCard",
   DISH_CARD_ORDER = "dishCardOrder",
   DISH_CARD_CUSTOMER = "dishCardCustomer",
+  KITCHEN_DISHORDER_BYORDER = "kitchenDishOrderByOrder",
+  KITCHEN_DISHORDER_BYDISH = "kitchenDishOrderByDish",
+  KITCHEN_DISHORDER_SERVING = "kitchenDishOrderServing",
 }
 
 export const ItemTypeFlatListProperties = {
@@ -37,57 +50,124 @@ export const ItemTypeFlatListProperties = {
     HEADER_HEIGHT: 24,
     ROW_HEIGHT: 294,
   },
+  [ItemTypeFlatList.KITCHEN_DISHORDER_BYORDER]: {
+    MAX_WIDTH: 200,
+    HEADER_HEIGHT: 24,
+    ROW_HEIGHT: 200,
+  },
+  [ItemTypeFlatList.KITCHEN_DISHORDER_BYDISH]: {
+    MAX_WIDTH: 200,
+    HEADER_HEIGHT: 24,
+    ROW_HEIGHT: 200,
+  },
+  [ItemTypeFlatList.KITCHEN_DISHORDER_SERVING]: {
+    MAX_WIDTH: 200,
+    HEADER_HEIGHT: 24,
+    ROW_HEIGHT: 200,
+  },
 };
 
 export const ItemTypeMap = {
   [ItemTypeFlatList.DISH_CARD]: ({
-    dish,
+    key,
+    item,
     openMenu,
     containerWidth,
   }: {
-    dish: Dish;
+    key: string;
+    item: Dish;
     openMenu?: (dish: Dish, event: any) => void;
     containerWidth?: number;
   }) => {
     if (!openMenu) return;
 
-    return (
-      <DishCard
-        dish={dish}
-        openMenu={openMenu}
-        containerWidth={containerWidth}
-      />
-    );
+    return createElement(DishCard, {
+      key,
+      dish: item,
+      openMenu,
+      containerWidth,
+    });
   },
 
   [ItemTypeFlatList.DISH_CARD_ORDER]: ({
-    dish,
+    key,
+    item,
     containerWidth,
   }: {
-    dish: Dish;
+    key: string;
+    item: Dish;
     containerWidth?: number;
   }) => {
-    return <DishCardForOrder dish={dish} containerWidth={containerWidth} />;
+    return createElement(DishCardForOrder, { key, dish: item, containerWidth });
   },
 
   [ItemTypeFlatList.DISH_CARD_CUSTOMER]: ({
-    dish,
+    key,
+    item,
     containerWidth,
     additionalDatas,
   }: {
-    dish: Dish;
+    key: string;
+    item: Dish;
     containerWidth?: number;
     additionalDatas: {
       cartItemsGroupByDish: Record<string, CartItem[]>;
     };
   }) => {
-    return (
-      <DishCardForCustomer
-        dish={dish}
-        containerWidth={containerWidth}
-        cartItems={additionalDatas.cartItemsGroupByDish[dish.id]}
-      />
-    );
+    return createElement(DishCardForCustomer, {
+      key,
+      dish: item,
+      containerWidth,
+      cartItems: additionalDatas.cartItemsGroupByDish[item.id],
+    });
+  },
+
+  [ItemTypeFlatList.KITCHEN_DISHORDER_BYORDER]: ({
+    key,
+    item,
+    containerWidth,
+  }: {
+    key: string;
+    item: KitchenDishOrder;
+    containerWidth?: number;
+  }) => {
+    return createElement(KitchenDishOrderByOrderCard, {
+      key,
+      dishOrder: item,
+      containerWidth,
+    });
+  },
+
+  [ItemTypeFlatList.KITCHEN_DISHORDER_BYDISH]: ({
+    key,
+    item,
+    containerWidth,
+  }: {
+    key: string;
+    item: KitchenDishOrder[];
+    containerWidth?: number;
+  }) => {
+    return createElement(KitchenDishOrderByDishCard, {
+      key,
+      dishOrders: item,
+      containerWidth,
+    });
+  },
+
+  [ItemTypeFlatList.KITCHEN_DISHORDER_SERVING]: ({
+    key,
+    item,
+    containerWidth,
+  }: {
+    key: string;
+    item: KitchenDishOrder;
+    containerWidth?: number;
+  }) => {
+    return createElement(KitchenDishOrderServingCard, {
+      key,
+      dishOrder: item,
+      containerWidth,
+    });
   },
 };
 
@@ -192,26 +272,29 @@ function GroupList({
   );
 }
 
-interface Item {
+export interface FlatListItem {
   id: string;
   type: string;
   group: any;
+  startIdx?: number;
   items?: any[];
 }
 
-export default function FlatListWithScroll({
+const FlatListWithScroll = ({
   groups,
   itemByGroup,
   openMenu,
   itemType,
   additionalDatas,
+  shouldShowGroup = true,
 }: {
   groups: any[];
   itemByGroup: Record<string, any[]>;
   openMenu: (item: any, event: GestureResponderEvent) => void;
   additionalDatas?: any;
   itemType: ItemTypeFlatList;
-}) {
+  shouldShowGroup: boolean;
+}) => {
   const { width } = useWindowDimensions();
   const [itemContainerWidth, setItemContainerWidth] = useState<number>(1);
   const numColumns =
@@ -227,12 +310,13 @@ export default function FlatListWithScroll({
   const flatListData = groups.flatMap((g) => {
     const items = itemByGroup[g.id] || [];
 
-    const itemRows: Item[] = [];
+    const itemRows: FlatListItem[] = [];
     for (let i = 0; i < items.length; i += numColumns) {
       itemRows.push({
         type: "row",
         id: `row-${g.id}-${i}`,
         items: items.slice(i, i + numColumns),
+        startIdx: i,
         group: g,
       });
     }
@@ -242,50 +326,52 @@ export default function FlatListWithScroll({
 
   // For scrollToCategory
   const indexMap: Record<string, number> = {};
-  flatListData.forEach((item: Item, index) => {
+  flatListData.forEach((item: FlatListItem, index) => {
     if (item.type === "header") {
       indexMap[item.group!.id] = index;
     }
   });
 
-  const renderItem = ({ item }: { item: Item }) => {
-    if (item.type === "header") {
-      return (
-        <Text style={flatListStyles.categoryTitle}>{item.group.name}</Text>
-      );
-    }
+  const renderItem = useCallback(
+    ({ item }: { item: FlatListItem }) => {
+      if (item.type === "header") {
+        return (
+          <Text style={flatListStyles.categoryTitle}>{item.group.name}</Text>
+        );
+      }
 
-    if (item.type === "row") {
-      return (
-        <View
-          style={{
-            flexDirection: "row",
-            flexWrap: "nowrap",
-            marginBottom: 8,
-            gap: 12,
-          }}
-        >
-          {(item.items || []).map((item: any, idx: number) => (
-            <Fragment key={idx}>
-              {ItemTypeMap[itemType]({
-                dish: item,
+      if (item.type === "row") {
+        return (
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "nowrap",
+              marginBottom: 8,
+              gap: 12,
+            }}
+          >
+            {(item.items || []).map((_item: any, idx: number) => {
+              return ItemTypeMap[itemType]({
+                key: _item.id || idx,
+                item: _item,
                 openMenu,
                 containerWidth: itemContainerWidth,
                 additionalDatas,
-              })}
-            </Fragment>
-          ))}
-          {Array(Math.max(0, numColumns - (item.items || []).length))
-            .fill(null)
-            .map((_, idx) => (
-              <View key={`empty-${idx}`} style={{ flex: 1 }} />
-            ))}
-        </View>
-      );
-    }
+              });
+            })}
+            {Array(Math.max(0, numColumns - (item.items || []).length))
+              .fill(null)
+              .map((_, idx) => (
+                <View key={`empty-${idx}`} style={{ flex: 1 }} />
+              ))}
+          </View>
+        );
+      }
 
-    return null;
-  };
+      return null;
+    },
+    [itemType, itemContainerWidth, openMenu, additionalDatas, numColumns]
+  );
 
   const scrollToCategory = (categoryId: string) => {
     const index = indexMap[categoryId];
@@ -295,7 +381,7 @@ export default function FlatListWithScroll({
   };
 
   const getItemLayout = (
-    _: ArrayLike<Item> | null | undefined,
+    _: ArrayLike<FlatListItem> | null | undefined,
     index: number
   ) => {
     // Alternate between headers and rows
@@ -328,7 +414,9 @@ export default function FlatListWithScroll({
         flexDirection: width >= UNIVERSAL_WIDTH_PIVOT ? "row" : "column",
       }}
     >
-      <GroupList groups={groups} scrollToGroup={scrollToCategory} />
+      {shouldShowGroup && (
+        <GroupList groups={groups} scrollToGroup={scrollToCategory} />
+      )}
       <FlatList
         ref={flatListRef}
         data={flatListData}
@@ -351,7 +439,7 @@ export default function FlatListWithScroll({
       />
     </Surface>
   );
-}
+};
 
 export const flatListStyles = StyleSheet.create({
   sidebar: {
@@ -364,3 +452,5 @@ export const flatListStyles = StyleSheet.create({
     fontSize: 20,
   },
 });
+
+export default memo(FlatListWithScroll);

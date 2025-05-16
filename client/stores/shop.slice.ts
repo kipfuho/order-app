@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Dish, DishOrder, OrderSession, Shop, Table } from "./state.interface";
 import { PURGE } from "redux-persist";
+import _ from "lodash";
 
 type CustomerInfo = {
   numberOfCustomer: number;
@@ -15,6 +16,12 @@ interface ShopState {
   currentCustomerInfo: CustomerInfo;
   currentTable: Table | null;
   currentOrderSession: OrderSession | null;
+  dishFilterOptions: {
+    dishGroupByCategoryId: Record<string, Dish[]>;
+    searchDishType: string;
+    searchValue: string;
+  };
+  kitchenDishOrder: Record<string, { confirmed: boolean }>;
 }
 
 // Initial state
@@ -29,6 +36,12 @@ const initialState: ShopState = {
   },
   currentTable: null,
   currentOrderSession: null,
+  dishFilterOptions: {
+    dishGroupByCategoryId: {},
+    searchDishType: "ALL",
+    searchValue: "",
+  },
+  kitchenDishOrder: {},
 };
 
 // Create Slice
@@ -105,6 +118,55 @@ export const shopSlice = createSlice({
 
       state.currentOrderSession = action.payload;
     },
+
+    updateDishFilterOptions: (
+      state,
+      action: PayloadAction<{
+        dishes?: Dish[];
+        searchValue?: string;
+        searchDishType?: string;
+      }>
+    ) => {
+      if (!action.payload) return;
+
+      if (action.payload.dishes) {
+        state.dishFilterOptions.dishGroupByCategoryId = _.groupBy(
+          action.payload.dishes,
+          "category.id"
+        );
+      }
+
+      if (action.payload.searchDishType) {
+        state.dishFilterOptions.searchDishType = action.payload.searchDishType;
+      }
+
+      if (action.payload.searchValue) {
+        state.dishFilterOptions.searchValue = action.payload.searchValue;
+      }
+    },
+
+    updateKitchenDishOrder: (
+      state,
+      action: PayloadAction<{ dishOrderId: string; confirmed: boolean }>
+    ) => {
+      if (!action.payload) return;
+
+      const dishOrderId = action.payload.dishOrderId;
+      state.kitchenDishOrder[dishOrderId] = {
+        ...state.kitchenDishOrder[dishOrderId],
+        confirmed: action.payload.confirmed,
+      };
+    },
+
+    deleteKitchenDishOrder: (
+      state,
+      action: PayloadAction<{ dishOrderId: string }>
+    ) => {
+      if (!action.payload) return;
+
+      const dishOrderId = action.payload.dishOrderId;
+      delete state.kitchenDishOrder[dishOrderId];
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(PURGE, () => {
@@ -123,6 +185,9 @@ export const {
   updateCurrentCustomerInfo,
   updateCurrentTable,
   updateCurrentOrderSession,
+  updateDishFilterOptions,
+  updateKitchenDishOrder,
+  deleteKitchenDishOrder,
 } = shopSlice.actions;
 
 export default shopSlice.reducer;

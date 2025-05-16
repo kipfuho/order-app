@@ -237,6 +237,38 @@ interface DishOrder {
   status: string;
   returnedAt?: string;
   note?: string;
+  dishOrderNo: number;
+}
+
+interface KitchenDishOrder {
+  id: string;
+  dish: string; // dishId
+  name: string;
+  unit: string;
+  quantity: string;
+  status: string;
+  orderId: string;
+  orderSessionId: string;
+  orderSessionNo: number;
+  tableName: string;
+  createdAt: string;
+  dishOrderNo: number;
+}
+
+interface Kitchen {
+  id: string;
+  name: string;
+  dishCategories: string[];
+  tables: string[];
+}
+
+interface KitchenLog {
+  id: string;
+  orderId: string;
+  dishOrderId: string;
+  dishName: string;
+  dishQuantity: string;
+  action: string;
 }
 
 export {
@@ -263,4 +295,7 @@ export {
   OrderSessionDiscount,
   OrderSessionDiscountProduct,
   OrderSessionHistory,
+  KitchenDishOrder,
+  Kitchen,
+  KitchenLog,
 };

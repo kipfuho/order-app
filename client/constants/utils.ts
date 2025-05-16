@@ -2,6 +2,7 @@ import _ from "lodash";
 import { CartItem, DishOrder } from "../stores/state.interface";
 import store from "../stores/store";
 import { Countries, CurrencyText } from "./common";
+import { CustomMD3Theme } from "./theme";
 
 const getCountryCurrency = () => {
   try {
@@ -37,4 +38,37 @@ const mergeCartItems = (currentCartItem: Record<string, CartItem>) => {
   return _.filter(Object.values(cardItemByKey), (item) => item.quantity > 0);
 };
 
-export { getCountryCurrency, convertPaymentAmount, mergeCartItems };
+const getMinuteForDisplay = (ms?: number) => {
+  return Math.floor((ms || 0) / 60000);
+};
+
+// universal status color
+// 1-10: green
+// 10-20: yellow
+// 20+: red
+const getStatusColor = (theme: CustomMD3Theme, minutes: number) => {
+  if (minutes <= 10) {
+    return {
+      view: theme.colors.greenContainer,
+      onView: theme.colors.onGreenContainer,
+    };
+  }
+  if (minutes <= 20) {
+    return {
+      view: theme.colors.yellowContainer,
+      onView: theme.colors.onYellowContainer,
+    };
+  }
+  return {
+    view: theme.colors.error,
+    onView: theme.colors.onError,
+  };
+};
+
+export {
+  getCountryCurrency,
+  convertPaymentAmount,
+  mergeCartItems,
+  getMinuteForDisplay,
+  getStatusColor,
+};

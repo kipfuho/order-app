@@ -13,7 +13,7 @@ export const AppBarSearchBox = memo(
     searchVisible: boolean;
     setSearchVisible: Dispatch<SetStateAction<boolean>>;
     searchValue: string;
-    setSearchValue: Dispatch<SetStateAction<string>>;
+    setSearchValue: (value: string) => void;
   }) => {
     const { t } = useTranslation();
 

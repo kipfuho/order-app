@@ -161,6 +161,10 @@ export const DishCardForOrder = memo(
       dispatch(updateCurrentOrder({ dish }));
     };
 
+    if (cardWidth < 1) {
+      return;
+    }
+
     return (
       <Card
         mode="contained"

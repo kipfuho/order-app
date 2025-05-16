@@ -1,14 +1,22 @@
 import {
   FlatList,
   GestureResponderEvent,
-  StyleSheet,
   useWindowDimensions,
   View,
 } from "react-native";
 import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
-import { Dispatch, Fragment, SetStateAction, useRef, useState } from "react";
+import {
+  Dispatch,
+  Fragment,
+  memo,
+  SetStateAction,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 import { ScrollView } from "react-native";
 import {
+  FlatListItem,
   flatListStyles,
   ItemTypeFlatList,
   ItemTypeFlatListProperties,
@@ -131,26 +139,21 @@ function GroupList({
   );
 }
 
-interface Item {
-  id: string;
-  type: string;
-  group: any;
-  items?: any[];
-}
-
-export default function FlatListWithoutScroll({
+const FlatListWithoutScroll = ({
   groups,
   itemByGroup,
   openMenu,
   itemType,
   additionalDatas,
+  shouldShowGroup = true,
 }: {
   groups: any[];
   itemByGroup: Record<string, any[]>;
   itemType: ItemTypeFlatList;
   additionalDatas?: any;
   openMenu?: (item: any, event: GestureResponderEvent) => void;
-}) {
+  shouldShowGroup?: boolean;
+}) => {
   const flatListRef = useRef<FlatList<any>>(null);
   const { width } = useWindowDimensions();
 
@@ -172,12 +175,13 @@ export default function FlatListWithoutScroll({
 
     const items = itemByGroup[g.id] || [];
 
-    const itemRows: Item[] = [];
+    const itemRows: FlatListItem[] = [];
     for (let i = 0; i < items.length; i += numColumns) {
       itemRows.push({
         type: "row",
         id: `row-${g.id}-${i}`,
         items: items.slice(i, i + numColumns),
+        startIdx: i,
         group: g,
       });
     }
@@ -185,44 +189,46 @@ export default function FlatListWithoutScroll({
     return [{ type: "header", id: `header-${g.id}`, group: g }, ...itemRows];
   });
 
-  const renderItem = ({ item }: { item: Item }) => {
-    if (item.type === "header") {
-      return (
-        <Text style={flatListStyles.categoryTitle}>{item.group.name}</Text>
-      );
-    }
+  const renderItem = useCallback(
+    ({ item }: { item: FlatListItem }) => {
+      if (item.type === "header") {
+        return (
+          <Text style={flatListStyles.categoryTitle}>{item.group.name}</Text>
+        );
+      }
 
-    if (item.type === "row") {
-      return (
-        <View
-          style={{
-            flexDirection: "row",
-            flexWrap: "nowrap",
-            marginBottom: 8,
-            gap: 12,
-          }}
-        >
-          {(item.items || []).map((item: any, idx: number) => (
-            <Fragment key={idx}>
-              {ItemTypeMap[itemType]({
-                dish: item,
+      if (item.type === "row") {
+        return (
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "nowrap",
+              marginBottom: 8,
+              gap: 12,
+            }}
+          >
+            {(item.items || []).map((_item: any, idx: number) => {
+              return ItemTypeMap[itemType]({
+                key: _item.id || idx,
+                item: _item,
                 openMenu,
                 containerWidth: itemContainerWidth,
                 additionalDatas,
-              })}
-            </Fragment>
-          ))}
-          {Array(Math.max(0, numColumns - (item.items || []).length))
-            .fill(null)
-            .map((_, idx) => (
-              <View key={`empty-${idx}`} style={{ flex: 1 }} />
-            ))}
-        </View>
-      );
-    }
+              });
+            })}
+            {Array(Math.max(0, numColumns - (item.items || []).length))
+              .fill(null)
+              .map((_, idx) => (
+                <View key={`empty-${idx}`} style={{ flex: 1 }} />
+              ))}
+          </View>
+        );
+      }
 
-    return null;
-  };
+      return null;
+    },
+    [itemType, itemContainerWidth, openMenu, additionalDatas, numColumns]
+  );
 
   return (
     <Surface
@@ -232,14 +238,16 @@ export default function FlatListWithoutScroll({
         flexDirection: width >= UNIVERSAL_WIDTH_PIVOT ? "row" : "column",
       }}
     >
-      <GroupList
-        groups={groups}
-        selectedGroup={selectedGroup}
-        setSelectedGroup={(id) => {
-          setSelectGroup(id);
-          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-        }}
-      />
+      {shouldShowGroup && (
+        <GroupList
+          groups={groups}
+          selectedGroup={selectedGroup}
+          setSelectedGroup={(id) => {
+            setSelectGroup(id);
+            flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          }}
+        />
+      )}
       <FlatList
         ref={flatListRef}
         data={flatListData}
@@ -253,4 +261,6 @@ export default function FlatListWithoutScroll({
       />
     </Surface>
   );
-}
+};
+
+export default memo(FlatListWithoutScroll);

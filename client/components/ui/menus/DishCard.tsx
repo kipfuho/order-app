@@ -20,7 +20,7 @@ export const DishCard = memo(
     containerWidth?: number;
   }) => {
     const { t } = useTranslation();
-    const [cardWidth, setCardWidth] = useState(300);
+    const cardWidth = Math.min(300, containerWidth * 0.48);
     const [onSale, setOnSale] = useState(dish.status === DishStatus.activated);
 
     const [updateDish, { isLoading: updateDishLoading }] =
@@ -46,9 +46,9 @@ export const DishCard = memo(
       []
     );
 
-    useEffect(() => {
-      setCardWidth(Math.min(300, containerWidth * 0.48));
-    }, [containerWidth]);
+    if (cardWidth < 1) {
+      return;
+    }
 
     return (
       <Card style={{ width: cardWidth }}>
