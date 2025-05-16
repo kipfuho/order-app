@@ -34,34 +34,35 @@ export enum ItemTypeFlatList {
   KITCHEN_DISHORDER_SERVING = "kitchenDishOrderServing",
 }
 
+// GAP = 12
 export const ItemTypeFlatListProperties = {
   [ItemTypeFlatList.DISH_CARD]: {
-    MAX_WIDTH: 300,
+    MAX_WIDTH: 300 + 12,
     HEADER_HEIGHT: 24,
     ROW_HEIGHT: 288,
   },
   [ItemTypeFlatList.DISH_CARD_ORDER]: {
-    MAX_WIDTH: 200,
+    MAX_WIDTH: 200 + 12,
     HEADER_HEIGHT: 24,
     ROW_HEIGHT: 250,
   },
   [ItemTypeFlatList.DISH_CARD_CUSTOMER]: {
-    MAX_WIDTH: 200,
+    MAX_WIDTH: 200 + 12,
     HEADER_HEIGHT: 24,
     ROW_HEIGHT: 294,
   },
   [ItemTypeFlatList.KITCHEN_DISHORDER_BYORDER]: {
-    MAX_WIDTH: 200,
+    MAX_WIDTH: 200 + 12,
     HEADER_HEIGHT: 24,
     ROW_HEIGHT: 200,
   },
   [ItemTypeFlatList.KITCHEN_DISHORDER_BYDISH]: {
-    MAX_WIDTH: 200,
+    MAX_WIDTH: 200 + 12,
     HEADER_HEIGHT: 24,
     ROW_HEIGHT: 200,
   },
   [ItemTypeFlatList.KITCHEN_DISHORDER_SERVING]: {
-    MAX_WIDTH: 200,
+    MAX_WIDTH: 200 + 12,
     HEADER_HEIGHT: 24,
     ROW_HEIGHT: 200,
   },
@@ -299,7 +300,7 @@ const FlatListWithScroll = ({
   const [itemContainerWidth, setItemContainerWidth] = useState<number>(1);
   const numColumns =
     Math.floor(
-      itemContainerWidth /
+      (itemContainerWidth + 12) /
         Math.min(
           ItemTypeFlatListProperties[itemType].MAX_WIDTH,
           itemContainerWidth * 0.48

@@ -55,8 +55,8 @@ function GroupList({
         >
           <View
             style={{
-              flexDirection: "row", // layout items in a row
-              gap: 8, // spacing between items (RN 0.71+ supports `gap`)
+              flexDirection: "row",
+              gap: 8,
               paddingVertical: 8,
             }}
           >
@@ -161,7 +161,7 @@ const FlatListWithoutScroll = ({
   const [itemContainerWidth, setItemContainerWidth] = useState<number>(1);
   const numColumns =
     Math.floor(
-      itemContainerWidth /
+      (itemContainerWidth + 12) /
         Math.min(
           ItemTypeFlatListProperties[itemType].MAX_WIDTH,
           itemContainerWidth * 0.48

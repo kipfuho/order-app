@@ -87,6 +87,7 @@ const KitchenDishOrderByDishCard: React.FC<KitchenDishOrderProps> = memo(
               borderRadius: 4,
               alignSelf: "center",
               width: "60%",
+              height: "80%",
               boxShadow: "none",
             }}
           >
