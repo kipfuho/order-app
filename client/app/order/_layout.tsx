@@ -8,6 +8,8 @@ export default function CustomerAppLayout() {
   const { customerSession } = useSession();
 
   useEffect(() => {
+    if (Platform.OS !== "web") return;
+
     const handleKeyDown = async (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === "Delete") {
         console.log("Wiping persisted store...");
