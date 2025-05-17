@@ -22,7 +22,7 @@ import {
   UpdateDishRequest,
 } from "../../apis/dish.api.interface";
 import { API_BASE_URL } from "../../apis/api.service";
-import { updateDishFilterOptions } from "../shop.slice";
+import { updateDishesByCategory } from "../shop.slice";
 
 export const dishApiSlice = createApi({
   reducerPath: "dishApi",
@@ -153,7 +153,7 @@ export const dishApiSlice = createApi({
           });
 
           if (!isCustomerApp) {
-            api.dispatch(updateDishFilterOptions({ dishes }));
+            api.dispatch(updateDishesByCategory({ dishes }));
           }
 
           return { data: dishes };

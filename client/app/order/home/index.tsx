@@ -7,7 +7,7 @@ import {
 } from "../../../stores/apiSlices/dishApi.slice";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../stores/store";
-import { Dish, Shop } from "../../../stores/state.interface";
+import { Dish, Shop, Table } from "../../../stores/state.interface";
 import { LoaderBasic } from "../../../components/ui/Loader";
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
@@ -26,9 +26,20 @@ const getButtonSize = (width: number) => {
   return width / 2 - 30;
 };
 
-const getDishGroupByDishType = (dishes: Dish[], dishTypes: string[]) => {
-  const dishGroupByDishType = _.groupBy(dishes, "type");
-  dishGroupByDishType["all"] = dishes;
+const getDishGroupByDishType = (
+  dishes: Dish[],
+  dishTypes: string[],
+  table: Table
+) => {
+  const dishesGroupByCategoryId = _.groupBy(dishes, "category.id");
+  const tableDishes = _.flatMap(
+    table.position.dishCategories,
+    (dishCategoryId) => {
+      return dishesGroupByCategoryId[dishCategoryId] || [];
+    }
+  );
+  const dishGroupByDishType = _.groupBy(tableDishes, "type");
+  dishGroupByDishType["all"] = tableDishes;
   const availableDishTypes = _.filter(
     _.concat(["all"], dishTypes) as string[],
     (type) => !_.isEmpty(dishGroupByDishType[type])
@@ -41,8 +52,9 @@ export default function CustomerHomePage() {
   const { width } = useWindowDimensions();
   const buttonSize = getButtonSize(width);
 
-  const { shop } = useSelector((state: RootState) => state.customer) as {
+  const { shop, table } = useSelector((state: RootState) => state.customer) as {
     shop: Shop;
+    table: Table;
   };
 
   const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery({
@@ -60,7 +72,8 @@ export default function CustomerHomePage() {
 
   const { availableDishTypes, dishGroupByDishType } = getDishGroupByDishType(
     dishes,
-    dishTypes
+    dishTypes,
+    table
   );
 
   const [selectedDishType, setSelectedDishType] = useState("all");

@@ -20,7 +20,7 @@ import {
 } from "../../stores/apiSlices/dishApi.slice";
 import { useSelector } from "react-redux";
 import { RootState } from "../../stores/store";
-import { Dish, Shop } from "../../stores/state.interface";
+import { Dish, DishCategory, Shop } from "../../stores/state.interface";
 import { LoaderBasic } from "./Loader";
 import { Keyboard, ScrollView } from "react-native";
 import _, { debounce } from "lodash";
@@ -53,6 +53,7 @@ export default function CreateOrder({
     currentOrder,
     currentTable,
     currentOrderSession,
+    dishesByCategory,
   } = useSelector((state: RootState) => state.shop);
   const shop = currentShop as Shop;
 
@@ -69,6 +70,9 @@ export default function CreateOrder({
   const [selectedDishType, setDishType] = useState<string>("ALL");
   const [searchValue, setSearchValue] = useState("");
   const [searchVisible, setSearchVisible] = useState(false);
+  const [applicableCategories, setApplicableCategories] = useState<
+    DishCategory[]
+  >([]);
   const [filteredDishesByCategory, setFilteredDishesByCategory] = useState<
     Record<string, Dish[]>
   >({});
@@ -101,8 +105,14 @@ export default function CreateOrder({
 
   const debouncedSearchDishes = useCallback(
     debounce((_selectedDishType: string, _searchValue: string) => {
+      const tableDishes = _.flatMap(
+        currentTable?.position.dishCategories,
+        (dishCategoryId) => {
+          return dishesByCategory[dishCategoryId] || [];
+        }
+      );
       const searchValueLowerCase = _searchValue.toLowerCase();
-      const filteredDishes = _.filter(dishes, (d) => {
+      const filteredDishes = _.filter(tableDishes, (d) => {
         if (_selectedDishType !== "ALL") {
           return (
             d.type === _selectedDishType &&
@@ -117,8 +127,13 @@ export default function CreateOrder({
       });
 
       setFilteredDishesByCategory(_.groupBy(filteredDishes, "category.id"));
+      setApplicableCategories(
+        dishCategories.filter((dc) =>
+          currentTable?.position.dishCategories.includes(dc.id)
+        )
+      );
     }, 200),
-    [dishes]
+    [dishes, dishCategories, currentTable, dishesByCategory]
   );
 
   useEffect(() => {
@@ -202,7 +217,7 @@ export default function CreateOrder({
           </Surface>
 
           <FlatListWithoutScroll
-            groups={dishCategories}
+            groups={applicableCategories}
             itemByGroup={filteredDishesByCategory}
             itemType={ItemTypeFlatList.DISH_CARD_ORDER}
           />

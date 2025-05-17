@@ -16,11 +16,7 @@ interface ShopState {
   currentCustomerInfo: CustomerInfo;
   currentTable: Table | null;
   currentOrderSession: OrderSession | null;
-  dishFilterOptions: {
-    dishGroupByCategoryId: Record<string, Dish[]>;
-    searchDishType: string;
-    searchValue: string;
-  };
+  dishesByCategory: Record<string, Dish[]>;
   kitchenDishOrder: Record<string, { confirmed: boolean }>;
 }
 
@@ -36,11 +32,7 @@ const initialState: ShopState = {
   },
   currentTable: null,
   currentOrderSession: null,
-  dishFilterOptions: {
-    dishGroupByCategoryId: {},
-    searchDishType: "ALL",
-    searchValue: "",
-  },
+  dishesByCategory: {},
   kitchenDishOrder: {},
 };
 
@@ -119,30 +111,13 @@ export const shopSlice = createSlice({
       state.currentOrderSession = action.payload;
     },
 
-    updateDishFilterOptions: (
+    updateDishesByCategory: (
       state,
-      action: PayloadAction<{
-        dishes?: Dish[];
-        searchValue?: string;
-        searchDishType?: string;
-      }>
+      action: PayloadAction<{ dishes: Dish[] }>
     ) => {
       if (!action.payload) return;
 
-      if (action.payload.dishes) {
-        state.dishFilterOptions.dishGroupByCategoryId = _.groupBy(
-          action.payload.dishes,
-          "category.id"
-        );
-      }
-
-      if (action.payload.searchDishType) {
-        state.dishFilterOptions.searchDishType = action.payload.searchDishType;
-      }
-
-      if (action.payload.searchValue) {
-        state.dishFilterOptions.searchValue = action.payload.searchValue;
-      }
+      state.dishesByCategory = _.groupBy(action.payload.dishes, "category.id");
     },
 
     updateKitchenDishOrder: (
@@ -185,7 +160,7 @@ export const {
   updateCurrentCustomerInfo,
   updateCurrentTable,
   updateCurrentOrderSession,
-  updateDishFilterOptions,
+  updateDishesByCategory,
   updateKitchenDishOrder,
   deleteKitchenDishOrder,
 } = shopSlice.actions;
