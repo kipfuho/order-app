@@ -3,6 +3,7 @@ import { persistor } from "../../stores/store";
 import { useEffect } from "react";
 import { useSession } from "../../hooks/useSession";
 import { loginForAnonymousCustomerRequest } from "../../apis/auth.api.service";
+import { Platform } from "react-native";
 
 export default function CustomerAppLayout() {
   const { customerSession } = useSession();
