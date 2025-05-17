@@ -87,7 +87,8 @@ export default function CreateTablePositionPage() {
           visible={dialogVisible}
           setVisible={setDialogVisible}
           dishCategories={dishCategories}
-          setDishCategories={setSelectedCategories}
+          selectedDishCategories={selectedCategories}
+          setSelectedDishCategories={setSelectedCategories}
         />
       </Portal>
 
@@ -127,7 +128,7 @@ export default function CreateTablePositionPage() {
                 ? `${selectedCategories.length} ${t("selected")}`
                 : t("select")}
             </Button>
-            <ScrollView style={{ marginTop: 10 }}>
+            <View style={{ marginTop: 10 }}>
               {selectedCategories.map((categoryId) => {
                 const category = _.find(
                   dishCategories,
@@ -139,7 +140,7 @@ export default function CreateTablePositionPage() {
                   </Text>
                 ) : null;
               })}
-            </ScrollView>
+            </View>
           </ScrollView>
         </Surface>
 

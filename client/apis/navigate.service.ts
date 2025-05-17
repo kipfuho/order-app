@@ -383,6 +383,47 @@ const goToUpdateDepartment = ({
   });
 };
 
+const goToKitchenList = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.push({
+    pathname: "/shop/[shopId]/settings/kitchens",
+    params: { shopId },
+  });
+};
+
+const goToCreateKitchen = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) => {
+  router.push({
+    pathname: "/shop/[shopId]/settings/kitchens/create-kitchen",
+    params: { shopId },
+  });
+};
+
+const goToUpdateKitchen = ({
+  router,
+  shopId,
+  kitchenId,
+}: {
+  router: Router;
+  shopId: string;
+  kitchenId: string;
+}) => {
+  router.push({
+    pathname: "/shop/[shopId]/settings/kitchens/update-kitchen/[kitchenId]",
+    params: { shopId, kitchenId },
+  });
+};
+
 export {
   goBackShopList,
   goBackShopHome,
@@ -411,4 +452,7 @@ export {
   goToUpdateEmployee,
   goToUpdateEmployeePosition,
   goToUpdateDepartment,
+  goToKitchenList,
+  goToCreateKitchen,
+  goToUpdateKitchen,
 };

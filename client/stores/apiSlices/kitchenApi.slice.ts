@@ -108,13 +108,9 @@ export const kitchenApiSlice = createApi({
             (draft) => {
               const index = draft.findIndex((k) => k.id === args.kitchenId);
               if (index !== -1) {
-                const dishCategories = args.dishCategories.map((dc) => dc.id);
-                const tables = args.tables.map((t) => t.id);
                 draft[index] = {
                   ...draft[index],
-                  name: args.name,
-                  dishCategories,
-                  tables,
+                  ...args,
                 };
               }
             }

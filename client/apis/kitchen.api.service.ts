@@ -34,8 +34,8 @@ const createKitchenRequest = async ({
     token: accessToken,
     data: {
       name,
-      dishCategories: dishCategories.map((dc) => dc.id),
-      tables: tables.map((t) => t.id),
+      dishCategories,
+      tables: tables,
     },
   });
 
@@ -78,8 +78,8 @@ const updateKitchenRequest = async ({
     token: accessToken,
     data: {
       name,
-      dishCategories: dishCategories.map((dc) => dc.id),
-      tables: tables.map((t) => t.id),
+      dishCategories: dishCategories,
+      tables: tables,
     },
   });
 

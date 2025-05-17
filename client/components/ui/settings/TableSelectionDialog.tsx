@@ -1,38 +1,37 @@
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { Button, Checkbox, Dialog } from "react-native-paper";
-import { DishCategory } from "../../../stores/state.interface";
+import { Table } from "../../../stores/state.interface";
 import { useEffect, useState } from "react";
 
-const DishCategorySelectionDialog = ({
+const TableSelectionDialog = ({
   visible,
   setVisible,
-  dishCategories,
-  selectedDishCategories,
-  setSelectedDishCategories,
+  tables,
+  selectedTables,
+  setSelectedTables,
 }: {
   visible: boolean;
   setVisible: (_value: boolean) => void;
-  dishCategories: DishCategory[];
-  selectedDishCategories: string[];
-  setSelectedDishCategories: (_value: string[]) => void;
+  tables: Table[];
+  selectedTables: string[];
+  setSelectedTables: (_value: string[]) => void;
 }) => {
   const { t } = useTranslation();
-  const [currentSelectedDishCategories, setCurrentSelectedDishCategories] =
-    useState<Set<string>>(new Set());
+  const [currentSelectedTables, setCurrentSelectedTables] = useState<
+    Set<string>
+  >(new Set());
 
   const handleUnselectAllPress = () => {
-    setCurrentSelectedDishCategories(new Set());
+    setCurrentSelectedTables(new Set());
   };
 
   const handleSelectAllPress = () => {
-    setCurrentSelectedDishCategories(
-      new Set(dishCategories.map((dc) => dc.id))
-    );
+    setCurrentSelectedTables(new Set(tables.map((item) => item.id)));
   };
 
   const toggleCategorySelection = (categoryId: string) => {
-    setCurrentSelectedDishCategories((prev) => {
+    setCurrentSelectedTables((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(categoryId)) {
         newSet.delete(categoryId);
@@ -45,13 +44,13 @@ const DishCategorySelectionDialog = ({
   };
 
   const handleConfirmPress = () => {
-    setSelectedDishCategories(currentSelectedDishCategories.values().toArray());
+    setSelectedTables(currentSelectedTables.values().toArray());
     setVisible(false);
   };
 
   useEffect(() => {
-    setCurrentSelectedDishCategories(new Set(selectedDishCategories));
-  }, [selectedDishCategories]);
+    setCurrentSelectedTables(new Set(selectedTables));
+  }, [selectedTables]);
 
   return (
     <Dialog
@@ -62,16 +61,14 @@ const DishCategorySelectionDialog = ({
       <Dialog.Title>{t("dish_category")}</Dialog.Title>
       <Dialog.ScrollArea>
         <ScrollView>
-          {dishCategories.map((category) => (
+          {tables.map((item) => (
             <Checkbox.Item
-              key={category.id}
-              label={category.name}
+              key={item.id}
+              label={item.name}
               status={
-                currentSelectedDishCategories.has(category.id)
-                  ? "checked"
-                  : "unchecked"
+                currentSelectedTables.has(item.id) ? "checked" : "unchecked"
               }
-              onPress={() => toggleCategorySelection(category.id)}
+              onPress={() => toggleCategorySelection(item.id)}
             />
           ))}
         </ScrollView>
@@ -91,4 +88,4 @@ const DishCategorySelectionDialog = ({
   );
 };
 
-export default DishCategorySelectionDialog;
+export default TableSelectionDialog;

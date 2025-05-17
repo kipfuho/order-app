@@ -1,10 +1,8 @@
-import { DishCategory, Table } from "../stores/state.interface";
-
 interface CreateKitchenRequest {
   shopId: string;
   name: string;
-  dishCategories: DishCategory[];
-  tables: Table[];
+  dishCategories: string[];
+  tables: string[];
 }
 
 interface GetKitchenRequest {
@@ -20,8 +18,8 @@ interface UpdateKitchenRequest {
   shopId: string;
   kitchenId: string;
   name: string;
-  dishCategories: DishCategory[];
-  tables: Table[];
+  dishCategories: string[];
+  tables: string[];
 }
 
 interface DeleteKitchenRequest {

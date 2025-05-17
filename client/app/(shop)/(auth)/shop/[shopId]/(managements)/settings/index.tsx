@@ -12,17 +12,23 @@ import { useTranslation } from "react-i18next";
 interface Item {
   key: string;
   title: string;
-  route: "tables";
+  route: "tables" | "kitchens";
   icon: string;
 }
 
 const BUTTONS: Item[] = [
-  { key: "table1", title: "Tables", route: "tables", icon: "table-furniture" },
-  { key: "table2", title: "Tables", route: "tables", icon: "table-furniture" },
-  { key: "table3", title: "Tables", route: "tables", icon: "table-furniture" },
-  { key: "table4", title: "Tables", route: "tables", icon: "table-furniture" },
-  { key: "table5", title: "Tables", route: "tables", icon: "table-furniture" },
-  { key: "table6", title: "Tables", route: "tables", icon: "table-furniture" },
+  {
+    key: "table",
+    title: "table_management",
+    route: "tables",
+    icon: "table-furniture",
+  },
+  {
+    key: "kitchen",
+    title: "kitchen_management",
+    route: "kitchens",
+    icon: "silverware-fork-knife",
+  },
 ];
 
 const getButtonSize = (width: number) => {

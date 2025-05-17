@@ -44,9 +44,9 @@ export default function UpdateTablePage() {
   } = useGetTablesQuery(shop.id);
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
     useGetTablePositionsQuery(shop.id);
-  const table = _.find(tables, (t) => t.id === tableId);
   const [updateTable, { isLoading: updateTableLoading }] =
     useUpdateTableMutation();
+  const table = _.find(tables, (t) => t.id === tableId);
 
   const [name, setName] = useState("");
   const [tablePosition, setTablePosition] = useState<TablePosition>();
@@ -54,15 +54,6 @@ export default function UpdateTablePage() {
     useState(false);
   const [needApprovalWhenCustomerOrder, setNeedApprovalWhenCustomerOrder] =
     useState(false);
-
-  useEffect(() => {
-    if (!table) return;
-
-    setName(table.name);
-    setTablePosition(table.position);
-    setAllowMultipleOrderSession(table.allowMultipleOrderSession);
-    setNeedApprovalWhenCustomerOrder(table.needApprovalWhenCustomerOrder);
-  }, [tableId, tableFetching]);
 
   const handleUpdateTable = async () => {
     if (!table) {
@@ -104,6 +95,15 @@ export default function UpdateTablePage() {
       });
     }
   };
+
+  useEffect(() => {
+    if (!table) return;
+
+    setName(table.name);
+    setTablePosition(table.position);
+    setAllowMultipleOrderSession(table.allowMultipleOrderSession);
+    setNeedApprovalWhenCustomerOrder(table.needApprovalWhenCustomerOrder);
+  }, [tableId, tableFetching]);
 
   if (tableLoading || tablePositionLoading) {
     return <LoaderBasic />;

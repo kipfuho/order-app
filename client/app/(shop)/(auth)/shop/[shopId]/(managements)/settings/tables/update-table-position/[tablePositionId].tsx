@@ -130,57 +130,55 @@ export default function UpdateTablePositionPage() {
           visible={dialogVisible}
           setVisible={setDialogVisible}
           dishCategories={dishCategories}
-          setDishCategories={setSelectedCategories}
+          selectedDishCategories={selectedCategories}
+          setSelectedDishCategories={setSelectedCategories}
         />
       </Portal>
 
       <Surface style={{ flex: 1 }}>
         <Surface style={{ flex: 1, padding: 16, boxShadow: "none" }}>
-          <TextInput
-            label={t("table_position_name")}
-            mode="outlined"
-            value={name}
-            onChangeText={setName}
-            style={{ marginBottom: 20 }}
-          />
-          <TextInput
-            label={t("table_position_code")}
-            mode="outlined"
-            value={code}
-            onChangeText={setCode}
-            style={{ marginBottom: 20 }}
-          />
+          <ScrollView>
+            <TextInput
+              label={t("table_position_name")}
+              mode="outlined"
+              value={name}
+              onChangeText={setName}
+              style={{ marginBottom: 20 }}
+            />
+            <TextInput
+              label={t("table_position_code")}
+              mode="outlined"
+              value={code}
+              onChangeText={setCode}
+              style={{ marginBottom: 20 }}
+            />
 
-          {/* Table Position Selection Label */}
-          <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
-            {t("dish_category")}
-          </Text>
-
-          {/* Open Dialog Button */}
-          <Button mode="outlined" onPress={() => setDialogVisible(true)}>
-            {selectedCategories.length > 0
-              ? `${selectedCategories.length} ${t("selected")}`
-              : t("select")}
-          </Button>
-
-          {/* Selected Categories List */}
-          <ScrollView style={{ marginTop: 10, flex: 1 }}>
-            {selectedCategories
-              .values()
-              .toArray()
-              .map((categoryId) => {
-                const category = _.find(
-                  dishCategories,
-                  (cat) => cat.id === categoryId
-                );
-                if (category) {
-                  return (
-                    <Text key={categoryId} style={{ marginVertical: 2 }}>
-                      ✅ {category.name}
-                    </Text>
+            <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
+              {t("dish_category")}
+            </Text>
+            <Button mode="outlined" onPress={() => setDialogVisible(true)}>
+              {selectedCategories.length > 0
+                ? `${selectedCategories.length} ${t("selected")}`
+                : t("select")}
+            </Button>
+            <View style={{ marginTop: 10 }}>
+              {selectedCategories
+                .values()
+                .toArray()
+                .map((categoryId) => {
+                  const category = _.find(
+                    dishCategories,
+                    (cat) => cat.id === categoryId
                   );
-                }
-              })}
+                  if (category) {
+                    return (
+                      <Text key={categoryId} style={{ marginVertical: 2 }}>
+                        ✅ {category.name}
+                      </Text>
+                    );
+                  }
+                })}
+            </View>
           </ScrollView>
         </Surface>
 
