@@ -5,8 +5,6 @@ import Toast from "react-native-toast-message";
 import {
   ActivityIndicator,
   Button,
-  Checkbox,
-  Dialog,
   Portal,
   Surface,
   Text,
@@ -25,6 +23,7 @@ import { useGetDishCategoriesQuery } from "../../../../../../../../../stores/api
 import { LoaderBasic } from "../../../../../../../../../components/ui/Loader";
 import { goToTablePositionList } from "../../../../../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
+import DishCategorySelectionDialog from "../../../../../../../../../components/ui/settings/DishCategorySelectionDialog";
 
 export default function UpdateTablePositionPage() {
   const { tablePositionId } = useLocalSearchParams();
@@ -50,9 +49,7 @@ export default function UpdateTablePositionPage() {
 
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
-    new Set()
-  );
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [dialogVisible, setDialogVisible] = useState(false);
 
   const handleCreateShop = async () => {
@@ -60,7 +57,7 @@ export default function UpdateTablePositionPage() {
       return;
     }
 
-    if (!name.trim() || selectedCategories.size === 0) {
+    if (!name.trim() || selectedCategories.length === 0) {
       Toast.show({
         type: "error",
         text1: t("update_failed"),
@@ -100,25 +97,8 @@ export default function UpdateTablePositionPage() {
 
     setName(tablePosition.name);
     setCode(tablePosition.code || "");
-    setSelectedCategories(new Set(tablePosition.dishCategories));
+    setSelectedCategories(tablePosition.dishCategories);
   }, [tablePositionId, tablePositionFetching]);
-
-  const toggleCategorySelection = (categoryId: string) => {
-    setSelectedCategories((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(categoryId)) {
-        newSet.delete(categoryId);
-      } else {
-        newSet.add(categoryId);
-      }
-
-      return newSet;
-    });
-  };
-
-  const handleSelectAllPress = () => {
-    setSelectedCategories(new Set(dishCategories.map((dc) => dc.id)));
-  };
 
   if (tablePositionLoading || dishCategoryLoading) {
     return <LoaderBasic />;
@@ -146,37 +126,12 @@ export default function UpdateTablePositionPage() {
 
       {/* Dialog for selecting multiple categories */}
       <Portal>
-        <Dialog
+        <DishCategorySelectionDialog
           visible={dialogVisible}
-          style={{ maxHeight: "80%" }}
-          onDismiss={() => setDialogVisible(false)}
-        >
-          <Dialog.Title>{t("dish_category")}</Dialog.Title>
-          <Dialog.ScrollArea>
-            <ScrollView>
-              {dishCategories.map((category) => (
-                <Checkbox.Item
-                  key={category.id}
-                  label={category.name}
-                  status={
-                    selectedCategories.has(category.id)
-                      ? "checked"
-                      : "unchecked"
-                  }
-                  onPress={() => toggleCategorySelection(category.id)}
-                />
-              ))}
-            </ScrollView>
-          </Dialog.ScrollArea>
-          <Dialog.Actions>
-            <Button mode="contained-tonal" onPress={handleSelectAllPress}>
-              {t("select_all")}
-            </Button>
-            <Button mode="contained" onPress={() => setDialogVisible(false)}>
-              {t("confirm")}
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
+          setVisible={setDialogVisible}
+          dishCategories={dishCategories}
+          setDishCategories={setSelectedCategories}
+        />
       </Portal>
 
       <Surface style={{ flex: 1 }}>
@@ -203,8 +158,8 @@ export default function UpdateTablePositionPage() {
 
           {/* Open Dialog Button */}
           <Button mode="outlined" onPress={() => setDialogVisible(true)}>
-            {selectedCategories.size > 0
-              ? `${selectedCategories.size} ${t("selected")}`
+            {selectedCategories.length > 0
+              ? `${selectedCategories.length} ${t("selected")}`
               : t("select")}
           </Button>
 

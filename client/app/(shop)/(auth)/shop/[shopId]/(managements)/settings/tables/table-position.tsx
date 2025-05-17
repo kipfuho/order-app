@@ -74,7 +74,7 @@ export default function TablePositionsManagementPage() {
           onPress={() => goToCreateTablePosition({ router, shopId: shop.id })}
           style={{ marginTop: 20 }}
         >
-          {t("table_position")}
+          {t("create_table_position")}
         </Button>
       </Surface>
     </>

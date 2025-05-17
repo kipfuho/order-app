@@ -6,8 +6,6 @@ import { RootState } from "../../../../../../../../stores/store";
 import {
   ActivityIndicator,
   Button,
-  Dialog,
-  Checkbox,
   Portal,
   Text,
   TextInput,
@@ -22,6 +20,7 @@ import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
 import _ from "lodash";
 import { useCreateTablePositionMutation } from "../../../../../../../../stores/apiSlices/tableApi.slice";
 import { useTranslation } from "react-i18next";
+import DishCategorySelectionDialog from "../../../../../../../../components/ui/settings/DishCategorySelectionDialog";
 
 export default function CreateTablePositionPage() {
   const router = useRouter();
@@ -37,13 +36,11 @@ export default function CreateTablePositionPage() {
 
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
-    new Set()
-  );
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [dialogVisible, setDialogVisible] = useState(false);
 
   const handleCreateTablePosition = async () => {
-    if (!name.trim() || selectedCategories.size === 0) {
+    if (!name.trim() || selectedCategories.length === 0) {
       Toast.show({
         type: "error",
         text1: t("create_failed"),
@@ -73,24 +70,6 @@ export default function CreateTablePositionPage() {
       console.error(err);
     }
   };
-
-  const toggleCategorySelection = (categoryId: string) => {
-    setSelectedCategories((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(categoryId)) {
-        newSet.delete(categoryId);
-      } else {
-        newSet.add(categoryId);
-      }
-
-      return newSet;
-    });
-  };
-
-  const handleSelectAllPress = () => {
-    setSelectedCategories(new Set(dishCategories.map((dc) => dc.id)));
-  };
-
   if (dishCategoryLoading) {
     return <LoaderBasic />;
   }
@@ -104,37 +83,12 @@ export default function CreateTablePositionPage() {
 
       {/* Dialog for selecting multiple categories */}
       <Portal>
-        <Dialog
+        <DishCategorySelectionDialog
           visible={dialogVisible}
-          style={{ maxHeight: "80%" }}
-          onDismiss={() => setDialogVisible(false)}
-        >
-          <Dialog.Title>{t("dish_category")}</Dialog.Title>
-          <Dialog.ScrollArea>
-            <ScrollView>
-              {dishCategories.map((category) => (
-                <Checkbox.Item
-                  key={category.id}
-                  label={category.name}
-                  status={
-                    selectedCategories.has(category.id)
-                      ? "checked"
-                      : "unchecked"
-                  }
-                  onPress={() => toggleCategorySelection(category.id)}
-                />
-              ))}
-            </ScrollView>
-          </Dialog.ScrollArea>
-          <Dialog.Actions>
-            <Button mode="contained-tonal" onPress={handleSelectAllPress}>
-              {t("select_all")}
-            </Button>
-            <Button mode="contained" onPress={() => setDialogVisible(false)}>
-              {t("confirm")}
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
+          setVisible={setDialogVisible}
+          dishCategories={dishCategories}
+          setDishCategories={setSelectedCategories}
+        />
       </Portal>
 
       <Surface
@@ -169,25 +123,22 @@ export default function CreateTablePositionPage() {
               {t("dish_category")}
             </Text>
             <Button mode="outlined" onPress={() => setDialogVisible(true)}>
-              {selectedCategories.size > 0
-                ? `${selectedCategories.size} ${t("selected")}`
+              {selectedCategories.length > 0
+                ? `${selectedCategories.length} ${t("selected")}`
                 : t("select")}
             </Button>
             <ScrollView style={{ marginTop: 10 }}>
-              {selectedCategories
-                .values()
-                .toArray()
-                .map((categoryId) => {
-                  const category = _.find(
-                    dishCategories,
-                    (cat) => cat.id === categoryId
-                  );
-                  return category ? (
-                    <Text key={categoryId} style={{ marginVertical: 2 }}>
-                      ✅ {category.name}
-                    </Text>
-                  ) : null;
-                })}
+              {selectedCategories.map((categoryId) => {
+                const category = _.find(
+                  dishCategories,
+                  (cat) => cat.id === categoryId
+                );
+                return category ? (
+                  <Text key={categoryId} style={{ marginVertical: 2 }}>
+                    ✅ {category.name}
+                  </Text>
+                ) : null;
+              })}
             </ScrollView>
           </ScrollView>
         </Surface>
