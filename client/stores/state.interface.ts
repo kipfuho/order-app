@@ -55,6 +55,7 @@ interface TableForOrder extends Omit<Table, "position"> {
 interface TablePosition {
   id: string;
   name: string;
+  code?: string;
   shop: string;
   dishCategories: string[];
 }

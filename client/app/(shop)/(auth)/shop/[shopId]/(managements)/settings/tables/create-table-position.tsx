@@ -36,11 +36,14 @@ export default function CreateTablePositionPage() {
     useCreateTablePositionMutation();
 
   const [name, setName] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [code, setCode] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
+    new Set()
+  );
   const [dialogVisible, setDialogVisible] = useState(false);
 
   const handleCreateTablePosition = async () => {
-    if (!name.trim() || selectedCategories.length === 0) {
+    if (!name.trim() || selectedCategories.size === 0) {
       Toast.show({
         type: "error",
         text1: t("create_failed"),
@@ -56,7 +59,8 @@ export default function CreateTablePositionPage() {
       await createTablePosition({
         shopId: shop.id,
         name,
-        categories: selectedCategories,
+        code,
+        categories: selectedCategories.values().toArray(),
       }).unwrap();
 
       goToTablePositionList({ router, shopId: shop.id });
@@ -71,11 +75,20 @@ export default function CreateTablePositionPage() {
   };
 
   const toggleCategorySelection = (categoryId: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
-    );
+    setSelectedCategories((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryId)) {
+        newSet.delete(categoryId);
+      } else {
+        newSet.add(categoryId);
+      }
+
+      return newSet;
+    });
+  };
+
+  const handleSelectAllPress = () => {
+    setSelectedCategories(new Set(dishCategories.map((dc) => dc.id)));
   };
 
   if (dishCategoryLoading) {
@@ -93,6 +106,7 @@ export default function CreateTablePositionPage() {
       <Portal>
         <Dialog
           visible={dialogVisible}
+          style={{ maxHeight: "80%" }}
           onDismiss={() => setDialogVisible(false)}
         >
           <Dialog.Title>{t("dish_category")}</Dialog.Title>
@@ -103,7 +117,7 @@ export default function CreateTablePositionPage() {
                   key={category.id}
                   label={category.name}
                   status={
-                    selectedCategories.includes(category.id)
+                    selectedCategories.has(category.id)
                       ? "checked"
                       : "unchecked"
                   }
@@ -113,7 +127,10 @@ export default function CreateTablePositionPage() {
             </ScrollView>
           </Dialog.ScrollArea>
           <Dialog.Actions>
-            <Button onPress={() => setDialogVisible(false)}>
+            <Button mode="contained-tonal" onPress={handleSelectAllPress}>
+              {t("select_all")}
+            </Button>
+            <Button mode="contained" onPress={() => setDialogVisible(false)}>
               {t("confirm")}
             </Button>
           </Dialog.Actions>
@@ -133,7 +150,6 @@ export default function CreateTablePositionPage() {
           }}
         >
           <ScrollView>
-            {/* Table Name Input */}
             <TextInput
               label={t("table_position_name")}
               mode="outlined"
@@ -141,33 +157,38 @@ export default function CreateTablePositionPage() {
               onChangeText={setName}
               style={{ marginBottom: 20 }}
             />
+            <TextInput
+              label={t("table_position_code")}
+              mode="outlined"
+              value={code}
+              onChangeText={setCode}
+              style={{ marginBottom: 20 }}
+            />
 
-            {/* Table Position Selection Label */}
             <Text variant="bodyLarge" style={{ marginBottom: 5 }}>
               {t("dish_category")}
             </Text>
-
-            {/* Open Dialog Button */}
             <Button mode="outlined" onPress={() => setDialogVisible(true)}>
-              {selectedCategories.length > 0
-                ? `${selectedCategories.length} ${t("selected")}`
+              {selectedCategories.size > 0
+                ? `${selectedCategories.size} ${t("selected")}`
                 : t("select")}
             </Button>
-
-            {/* Selected Categories List */}
-            <Surface style={{ marginTop: 10, boxShadow: "none" }}>
-              {selectedCategories.map((categoryId) => {
-                const category = _.find(
-                  dishCategories,
-                  (cat) => cat.id === categoryId
-                );
-                return category ? (
-                  <Text key={categoryId} style={{ marginVertical: 2 }}>
-                    ✅ {category.name}
-                  </Text>
-                ) : null;
-              })}
-            </Surface>
+            <ScrollView style={{ marginTop: 10 }}>
+              {selectedCategories
+                .values()
+                .toArray()
+                .map((categoryId) => {
+                  const category = _.find(
+                    dishCategories,
+                    (cat) => cat.id === categoryId
+                  );
+                  return category ? (
+                    <Text key={categoryId} style={{ marginVertical: 2 }}>
+                      ✅ {category.name}
+                    </Text>
+                  ) : null;
+                })}
+            </ScrollView>
           </ScrollView>
         </Surface>
 

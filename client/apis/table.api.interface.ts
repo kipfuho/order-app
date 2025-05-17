@@ -7,6 +7,7 @@ interface GetTablePositionsRequest {
 interface CreateTablePositionRequest {
   shopId: string;
   name: string;
+  code?: string;
   categories: string[];
 }
 
@@ -14,6 +15,7 @@ interface UpdateTablePositionRequest {
   tablePositionId: string;
   shopId: string;
   name: string;
+  code?: string;
   categories: string[];
 }
 

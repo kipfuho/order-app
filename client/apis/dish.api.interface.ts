@@ -12,6 +12,7 @@ interface RemoveImageRequest {
 interface CreateDishCategoryRequest {
   shopId: string;
   name: string;
+  code?: string;
   rtk?: boolean;
 }
 
@@ -24,6 +25,7 @@ interface UpdateDishCategoryRequest {
   dishCategoryId: string;
   shopId: string;
   name: string;
+  code?: string;
   rtk?: boolean;
 }
 
