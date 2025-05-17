@@ -298,17 +298,14 @@ const FlatListWithScroll = ({
 }) => {
   const { width } = useWindowDimensions();
   const [itemContainerWidth, setItemContainerWidth] = useState<number>(1);
-  const numColumns =
-    Math.floor(
-      (itemContainerWidth + 12) /
-        Math.min(
-          ItemTypeFlatListProperties[itemType].MAX_WIDTH,
-          itemContainerWidth * 0.48
-        )
-    ) || 0;
+  const [numColumns, setNumColumns] = useState<number>(0);
 
   const flatListRef = useRef<FlatList<any>>(null);
   const flatListData = groups.flatMap((g) => {
+    if (numColumns <= 0) {
+      return [];
+    }
+
     const items = itemByGroup[g.id] || [];
 
     const itemRows: FlatListItem[] = [];
@@ -434,7 +431,17 @@ const FlatListWithScroll = ({
         }}
         onLayout={(event) => {
           const { width } = event.nativeEvent.layout;
-          setItemContainerWidth(width - 20);
+          const containerUsablewidth = width - 20; // padding
+          setItemContainerWidth(containerUsablewidth);
+          setNumColumns(
+            Math.floor(
+              (containerUsablewidth + 12) /
+                Math.min(
+                  ItemTypeFlatListProperties[itemType].MAX_WIDTH,
+                  containerUsablewidth * 0.48 + 12
+                )
+            )
+          );
         }}
         contentContainerStyle={{ padding: 10 }}
       />

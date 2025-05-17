@@ -159,17 +159,10 @@ const FlatListWithoutScroll = ({
 
   const [selectedGroup, setSelectGroup] = useState("");
   const [itemContainerWidth, setItemContainerWidth] = useState<number>(1);
-  const numColumns =
-    Math.floor(
-      (itemContainerWidth + 12) /
-        Math.min(
-          ItemTypeFlatListProperties[itemType].MAX_WIDTH,
-          itemContainerWidth * 0.48
-        )
-    ) || 0;
+  const [numColumns, setNumColumns] = useState<number>(0);
 
   const flatListData = groups.flatMap((g) => {
-    if (selectedGroup && g.id !== selectedGroup) {
+    if (numColumns <= 0 || (selectedGroup && g.id !== selectedGroup)) {
       return [];
     }
 
@@ -255,7 +248,17 @@ const FlatListWithoutScroll = ({
         keyExtractor={(item) => item.id}
         onLayout={(event) => {
           const { width } = event.nativeEvent.layout;
-          setItemContainerWidth(width - 20);
+          const containerUsablewidth = width - 20; // padding
+          setItemContainerWidth(containerUsablewidth);
+          setNumColumns(
+            Math.floor(
+              (containerUsablewidth + 12) /
+                Math.min(
+                  ItemTypeFlatListProperties[itemType].MAX_WIDTH,
+                  containerUsablewidth * 0.48 + 12
+                )
+            )
+          );
         }}
         contentContainerStyle={{ padding: 10 }}
       />
