@@ -24,18 +24,20 @@ const getKitchenFromCache = async ({ shopId, kitchenId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const kitchens = await redisClient.getJson(key);
-    if (!_.isEmpty(kitchens)) {
-      setSession({ key, value: kitchens });
-      return _.find(kitchens, (kitchen) => kitchen.id === kitchenId);
+    const kitchensCache = await redisClient.getJson(key);
+    if (!_.isEmpty(kitchensCache)) {
+      setSession({ key, value: kitchensCache });
+      return _.find(kitchensCache, (kitchen) => kitchen.id === kitchenId);
     }
   }
 
-  const kitchen = await Kitchen.findOne({ _id: kitchenId, shop: shopId });
-  if (!kitchen) {
-    return null;
-  }
-  return kitchen.toJSON();
+  const kitchen = await Kitchen.findUnique({
+    where: {
+      id: kitchenId,
+      shopId,
+    },
+  });
+  return kitchen;
 };
 
 const getKitchensFromCache = async ({ shopId }) => {
@@ -46,23 +48,31 @@ const getKitchensFromCache = async ({ shopId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const kitchens = await redisClient.getJson(key);
-    if (!_.isEmpty(kitchens)) {
-      setSession({ key, value: kitchens });
-      return kitchens;
+    const kitchensCache = await redisClient.getJson(key);
+    if (!_.isEmpty(kitchensCache)) {
+      setSession({ key, value: kitchensCache });
+      return kitchensCache;
     }
 
-    const kitchenModels = await Kitchen.find({ shop: shopId, status: constant.Status.enabled });
-    const kitchenJsons = _.map(kitchenModels, (kitchen) => kitchen.toJSON());
-    redisClient.putJson({ key, jsonVal: kitchenJsons });
-    setSession({ key, value: kitchenJsons });
-    return kitchenJsons;
+    const kitchens = await Kitchen.findMany({
+      where: {
+        shopId,
+        status: constant.Status.enabled,
+      },
+    });
+    redisClient.putJson({ key, jsonVal: kitchens });
+    setSession({ key, value: kitchens });
+    return kitchens;
   }
 
-  const kitchens = await Kitchen.find({ shop: shopId, status: constant.Status.enabled });
-  const kitchenJsons = _.map(kitchens, (kitchen) => kitchen.toJSON());
-  setSession({ key, value: kitchenJsons });
-  return kitchenJsons;
+  const kitchens = await Kitchen.findMany({
+    where: {
+      shopId,
+      status: constant.Status.enabled,
+    },
+  });
+  setSession({ key, value: kitchens });
+  return kitchens;
 };
 
 module.exports = {

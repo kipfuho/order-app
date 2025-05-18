@@ -15,7 +15,7 @@ const {
   EventActionType,
   notifyUpdateEmployeePosition,
 } = require('../../utils/awsUtils/appSync.utils');
-const { PermissionType } = require('../../utils/constant');
+const { PermissionType, Status } = require('../../utils/constant');
 const { throwBadRequest } = require('../../utils/errorHandling');
 
 const getEmployee = async ({ shopId, employeeId }) => {
@@ -48,52 +48,68 @@ const createEmployee = async ({ shopId, createBody, userId }) => {
   throwBadRequest(user.role === roles.admin, getMessageByLocale({ key: 'email.invalid' }));
 
   const employee = await Employee.create({
-    name,
-    permissions,
-    position: positionId,
-    department: departmentId,
-    shop: shopId,
-    user: user._id,
+    data: {
+      name,
+      permissions,
+      positionId,
+      departmentId,
+      shopId,
+      userId: user.id,
+    },
+    include: {
+      user: true,
+      position: true,
+      department: true,
+    },
   });
 
-  await employee.populate('user').populate('position').populate('department');
-  const employeeJson = employee.toJSON();
   notifyUpdateEmployee({
-    employee: employeeJson,
+    employee,
     action: EventActionType.CREATE,
     userId,
   });
-  return employeeJson;
+  return employee;
 };
 
 const updateEmployee = async ({ shopId, employeeId, updateBody, userId }) => {
   // xem operator có đủ quyền để thêm cho nhân viên không
   validatePermissionsUpdate(updateBody);
-  const employee = await Employee.findOneAndUpdate({ _id: employeeId, shop: shopId }, { $set: updateBody }, { new: true });
+  const employee = await Employee.update({
+    data: updateBody,
+    where: {
+      id: employeeId,
+      shopId,
+    },
+    include: {
+      user: true,
+      position: true,
+      department: true,
+    },
+  });
   throwBadRequest(!employee, getMessageByLocale({ key: 'employee.notFound' }));
 
-  await employee.populate('user').populate('position').populate('department');
-  const employeeJson = employee.toJSON();
   notifyUpdateEmployee({
-    employee: employeeJson,
+    employee,
     action: EventActionType.UPDATE,
     userId,
   });
-  return employeeJson;
+  return employee;
 };
 
 const deleteEmployee = async ({ shopId, employeeId, userId }) => {
-  const employee = await Employee.findOneAndDelete({ _id: employeeId, shop: shopId });
+  const employee = await Employee.update({
+    data: { status: Status.disabled },
+    where: { id: employeeId, shopId },
+    include: { user: true, position: true, department: true },
+  });
   throwBadRequest(!employee, getMessageByLocale({ key: 'employee.notFound' }));
 
-  await employee.populate('user').populate('position').populate('department');
-  const employeeJson = employee.toJSON();
   notifyUpdateEmployee({
-    employee: employeeJson,
+    employee,
     action: EventActionType.DELETE,
     userId,
   });
-  return employeeJson;
+  return employee;
 };
 
 const getEmployeePosition = async ({ shopId, employeePositionId }) => {
@@ -108,44 +124,48 @@ const getEmployeePositions = async ({ shopId }) => {
 };
 
 const createEmployeePosition = async ({ shopId, createBody, userId }) => {
-  const employeePosition = await EmployeePosition.create({ ...createBody, shop: shopId });
+  const employeePosition = await EmployeePosition.create({
+    data: {
+      ...createBody,
+      shopId,
+    },
+  });
 
-  const employeePositionJson = employeePosition.toJSON();
   notifyUpdateEmployeePosition({
-    employeePosition: employeePositionJson,
+    employeePosition,
     action: EventActionType.CREATE,
     userId,
   });
-  return employeePositionJson;
+  return employeePosition;
 };
 
 const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody, userId }) => {
-  const employeePosition = await EmployeePosition.findOneAndUpdate(
-    { _id: employeePositionId, shop: shopId },
-    { $set: updateBody },
-    { new: true }
-  );
+  const employeePosition = await EmployeePosition.update({ data: updateBody, where: { id: employeePositionId, shopId } });
   throwBadRequest(!employeePosition, getMessageByLocale({ key: 'employeePosition.notFound' }));
 
-  const employeePositionJson = employeePosition.toJSON();
   notifyUpdateEmployeePosition({
-    employeePosition: employeePositionJson,
+    employeePosition,
     action: EventActionType.UPDATE,
     userId,
   });
-  return employeePositionJson;
+  return employeePosition;
 };
 
 const deleteEmployeePosition = async ({ shopId, employeePositionId, userId }) => {
-  const employeePosition = await EmployeePosition.findOneAndDelete({ _id: employeePositionId, shop: shopId });
+  const employeePosition = await EmployeePosition.update({
+    data: { status: Status.disabled },
+    where: {
+      id: employeePositionId,
+      shopId,
+    },
+  });
 
-  const employeePositionJson = employeePosition.toJSON();
   notifyUpdateEmployeePosition({
-    employeePosition: employeePositionJson,
+    employeePosition,
     action: EventActionType.DELETE,
     userId,
   });
-  return employeePositionJson;
+  return employeePosition;
 };
 
 const getAllPermissionTypes = async () => {

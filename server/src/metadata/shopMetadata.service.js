@@ -18,26 +18,31 @@ const getShopFromCache = async ({ shopId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const shop = await redisClient.getJson(key);
-    if (!_.isEmpty(shop)) {
-      setSession({ key, value: shop });
-      return shop;
+    const shopCache = await redisClient.getJson(key);
+    if (!_.isEmpty(shopCache)) {
+      setSession({ key, value: shopCache });
+      return shopCache;
     }
 
-    const shopModel = await Shop.findOne({ _id: shopId, status: constant.Status.enabled });
-    const shopJson = shopModel.toJSON();
-    redisClient.putJson({ key, jsonVal: shopJson });
-    setSession({ key, value: shopJson });
-    return shopJson;
+    const shop = await Shop.findUnique({
+      where: {
+        id: shopId,
+        status: constant.Status.enabled,
+      },
+    });
+    redisClient.putJson({ key, jsonVal: shop });
+    setSession({ key, value: shop });
+    return shop;
   }
 
-  const shop = await Shop.findOne({ _id: shopId, status: constant.Status.enabled });
-  if (!shop) {
-    return null;
-  }
-  const shopJson = shop.toJSON();
-  setSession({ key, value: shopJson });
-  return shopJson;
+  const shop = await Shop.findUnique({
+    where: {
+      id: shopId,
+      status: constant.Status.enabled,
+    },
+  });
+  setSession({ key, value: shop });
+  return shop;
 };
 
 module.exports = {

@@ -132,12 +132,12 @@ const createSearchByDateOptionWithShopTimezone = ({ from, to, filterKey = 'creat
   if (from) {
     // start of day
     const fromDate = moment(from).tz(timezone).startOf('day').toDate();
-    options[filterKey] = { ...options[filterKey], $gte: fromDate };
+    options[filterKey] = { ...options[filterKey], gte: fromDate };
   }
   if (to) {
     // end of day
     const toDate = moment(to).tz(timezone).endOf('day').toDate();
-    options[filterKey] = { ...options[filterKey], $lte: toDate };
+    options[filterKey] = { ...options[filterKey], lte: toDate };
   }
 
   return options;

@@ -20,19 +20,21 @@ const getUnitFromCache = async ({ shopId, unitId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const units = await redisClient.getJson(key);
-    if (!_.isEmpty(units)) {
-      setSession({ key, value: units });
-      return _.find(units, (unit) => unit.id === unitId);
+    const unitsCache = await redisClient.getJson(key);
+    if (!_.isEmpty(unitsCache)) {
+      setSession({ key, value: unitsCache });
+      return _.find(unitsCache, (unit) => unit.id === unitId);
     }
   }
 
-  const unit = await Unit.findOne({ _id: unitId, shop: shopId, status: { $ne: constant.Status.disabled } });
-  if (!unit) {
-    return null;
-  }
-  const unitJson = unit.toJSON();
-  return unitJson;
+  const unit = await Unit.findUnique({
+    where: {
+      id: unitId,
+      shopId,
+      status: { not: constant.Status.disabled },
+    },
+  });
+  return unit;
 };
 
 const getUnitsFromCache = async ({ shopId }) => {
@@ -43,23 +45,31 @@ const getUnitsFromCache = async ({ shopId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const units = await redisClient.getJson(key);
-    if (!_.isEmpty(units)) {
-      setSession({ key, value: units });
-      return units;
+    const unitsCache = await redisClient.getJson(key);
+    if (!_.isEmpty(unitsCache)) {
+      setSession({ key, value: unitsCache });
+      return unitsCache;
     }
 
-    const unitModels = await Unit.find({ shop: shopId, status: { $ne: constant.Status.disabled } });
-    const unitJsons = _.map(unitModels, (unit) => unit.toJSON());
-    redisClient.putJson({ key, jsonVal: unitJsons });
-    setSession({ key, value: unitJsons });
-    return unitJsons;
+    const units = await Unit.findMany({
+      where: {
+        shopId,
+        status: { not: constant.Status.disabled },
+      },
+    });
+    redisClient.putJson({ key, jsonVal: units });
+    setSession({ key, value: units });
+    return units;
   }
 
-  const units = await Unit.find({ shop: shopId, status: { $ne: constant.Status.disabled } });
-  const unitJsons = _.map(units, (unit) => unit.toJSON());
-  setSession({ key, value: unitJsons });
-  return unitJsons;
+  const units = await Unit.findMany({
+    where: {
+      shopId,
+      status: { not: constant.Status.disabled },
+    },
+  });
+  setSession({ key, value: units });
+  return units;
 };
 
 module.exports = {

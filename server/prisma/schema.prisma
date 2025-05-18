@@ -19,7 +19,7 @@ model User {
   status          Status       @default(enabled)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
-  id              String       @id @default(uuid())
+  id              String       @id @default(cuid())
   employee        Employee[]
   kitchenLog      KitchenLog[]
   approveOrder    Order[]      @relation("ApprovedOrders")
@@ -28,8 +28,18 @@ model User {
   token           Token[]
 }
 
+model S3Log {
+  id        String   @id @default(cuid())
+  key       String
+  inUse     Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
 model Customer {
-  id              String   @id @default(uuid())
+  id              String   @id @default(cuid())
   name            String?
   phone           String?
   email           String?
@@ -40,12 +50,14 @@ model Customer {
   totalOrderValue Float?   @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  status          Status   @default(enabled)
+  Cart            Cart[]
   Order           Order[]
   tokens          Token[]
 }
 
 model Token {
-  id          String    @id @default(uuid())
+  id          String    @id @default(cuid())
   token       String    @unique
   type        TokenType
   expires     DateTime
@@ -57,24 +69,58 @@ model Token {
   updatedAt   DateTime  @updatedAt
   customer    Customer? @relation(fields: [customerId], references: [id])
   user        User?     @relation(fields: [userId], references: [id])
+
+  @@index([token])
 }
 
 model Kitchen {
-  id             String          @id @default(uuid())
+  id             String          @id @default(cuid())
   shopId         String
   name           String
   status         Switchabletatus @default(activated)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   shop           Shop            @relation(fields: [shopId], references: [id])
-  tables         Table[]
   dishCategories DishCategory[]  @relation("DishCategoryToKitchen")
+  tables         Table[]         @relation("KitchenToTable")
 
   @@index([shopId])
 }
 
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  dishId    String
+  quantity  Int
+  price     Float
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  dish      Dish     @relation(fields: [dishId], references: [id])
+}
+
+model Cart {
+  id          String     @id @default(cuid())
+  shopId      String
+  customerId  String
+  totalAmount Float?
+  status      Status     @default(enabled)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  dishId      String?
+  customer    Customer   @relation(fields: [customerId], references: [id])
+  Dish        Dish?      @relation(fields: [dishId], references: [id])
+  shop        Shop       @relation(fields: [shopId], references: [id])
+  cartItems   CartItem[]
+
+  @@unique([customerId, shopId], name: "customer_shop_unique")
+  @@index([shopId])
+  @@index([customerId])
+}
+
 model KitchenLog {
-  id           String            @id @default(uuid())
+  id           String            @id @default(cuid())
   shopId       String
   userId       String
   orderId      String
@@ -91,64 +137,74 @@ model KitchenLog {
 }
 
 model DishOrder {
-  id                           String          @id @default(uuid())
-  dishOrderNo                  Int?
+  id                           String          @id @default(cuid())
+  dishOrderNo                  Int
   dishId                       String
   name                         String
   unit                         String
   price                        Float
   isTaxIncludedPrice           Boolean
-  taxIncludedPrice             Float?
+  taxIncludedPrice             Float
   quantity                     Int
-  beforeTaxTotalPrice          Float
-  afterTaxTotalPrice           Float
-  taxRate                      Float
-  taxAmount                    Float
-  beforeTaxTotalDiscountAmount Float
-  afterTaxTotalDiscountAmount  Float
-  taxTotalDiscountAmount       Float
-  paymentAmount                Float
+  beforeTaxTotalPrice          Float?
+  afterTaxTotalPrice           Float?
+  taxRate                      Float?
+  taxAmount                    Float?
+  beforeTaxTotalDiscountAmount Float?
+  afterTaxTotalDiscountAmount  Float?
+  taxTotalDiscountAmount       Float?
+  paymentAmount                Float?
   status                       DishOrderStatus @default(confirmed)
-  returnedAt                   DateTime?
   note                         String?
-  orderId                      String?
-  returnedOrderId              String?
-  order                        Order?          @relation("OrderDishOrders", fields: [orderId], references: [id])
-  returnedOrder                Order?          @relation("OrderReturnedDishOrders", fields: [returnedOrderId], references: [id])
+  orderId                      String
+  order                        Order           @relation(fields: [orderId], references: [id])
+}
+
+model ReturnedDishOrder {
+  id          String          @id @default(cuid())
+  dishOrderNo Int
+  dishId      String
+  name        String
+  quantity    Int
+  status      DishOrderStatus @default(confirmed)
+  returnedAt  DateTime        @default(now())
+  note        String?
+  orderId     String
+  order       Order           @relation(fields: [orderId], references: [id])
 }
 
 model Order {
-  id                   String             @id @default(uuid())
+  id                   String              @id @default(cuid())
   shopId               String
   tableId              String
-  orderSessionId       String
+  orderSessionId       String?
   orderNo              Int
   customerId           String?
-  totalQuantity        Int
-  totalBeforeTaxAmount Float
-  totalAfterTaxAmount  Float
+  totalQuantity        Int?
+  totalBeforeTaxAmount Float?
+  totalAfterTaxAmount  Float?
   approvedById         String?
   cancelledById        String?
-  status               Status             @default(enabled)
-  orderSessionStatus   OrderSessionStatus @default(unpaid)
+  status               Status              @default(enabled)
+  orderSessionStatus   OrderSessionStatus? @default(unpaid)
   numberOfCustomer     Int?
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-  dishOrders           DishOrder[]        @relation("OrderDishOrders")
-  returnedDishOrders   DishOrder[]        @relation("OrderReturnedDishOrders")
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  dishOrders           DishOrder[]
   KitchenLog           KitchenLog[]
-  approvedBy           User?              @relation("ApprovedOrders", fields: [approvedById], references: [id])
-  cancelledBy          User?              @relation("CancelledOrders", fields: [cancelledById], references: [id])
-  customer             Customer?          @relation(fields: [customerId], references: [id])
-  orderSession         OrderSession       @relation(fields: [orderSessionId], references: [id])
-  shop                 Shop               @relation(fields: [shopId], references: [id])
-  table                Table              @relation(fields: [tableId], references: [id])
+  approvedBy           User?               @relation("ApprovedOrders", fields: [approvedById], references: [id])
+  cancelledBy          User?               @relation("CancelledOrders", fields: [cancelledById], references: [id])
+  customer             Customer?           @relation(fields: [customerId], references: [id])
+  orderSession         OrderSession?       @relation(fields: [orderSessionId], references: [id])
+  shop                 Shop                @relation(fields: [shopId], references: [id])
+  table                Table               @relation(fields: [tableId], references: [id])
+  returnedDishOrders   ReturnedDishOrder[]
 
   @@index([shopId])
 }
 
 model DiscountProduct {
-  id                     String            @id @default(uuid())
+  id                     String            @id @default(cuid())
   dishOrderId            String
   dishId                 String
   dishName               String
@@ -165,7 +221,7 @@ model DiscountProduct {
 }
 
 model Discount {
-  id                           String            @id @default(uuid())
+  id                           String            @id @default(cuid())
   name                         String
   discountType                 DiscountType
   discountValue                Float
@@ -194,21 +250,24 @@ model PaymentDetail {
   paymentAmount  Float
   orderSessionId String
   orderSession   OrderSession      @relation(fields: [orderSessionId], references: [id])
+
+  @@index([orderSessionId])
+  @@index([paymentMethod])
 }
 
 model OrderSession {
-  id                           String             @id @default(uuid())
+  id                           String             @id @default(cuid())
   shopId                       String
   tableIds                     String[]
   tableNames                   String[]
   orderSessionNo               Int
-  taxRate                      Float
-  totalTaxAmount               Float
+  taxRate                      Float?
+  totalTaxAmount               Float?
   endedAt                      DateTime?
   auditedAt                    DateTime?
   status                       OrderSessionStatus @default(unpaid)
-  pretaxPaymentAmount          Float
-  paymentAmount                Float
+  pretaxPaymentAmount          Float?
+  paymentAmount                Float?
   paidByEmployeeId             String?
   paidByEmployeeName           String?
   cancelledByEmployeeId        String?
@@ -219,8 +278,8 @@ model OrderSession {
   customerPhone                String?
   customerAddress              String?
   numberOfCustomer             Int?
-  totalDiscountAmountBeforeTax Float
-  totalDiscountAmountAfterTax  Float
+  totalDiscountAmountBeforeTax Float?
+  totalDiscountAmountAfterTax  Float?
   createdAt                    DateTime           @default(now())
   updatedAt                    DateTime           @updatedAt
   discounts                    Discount[]
@@ -251,7 +310,8 @@ model Shop {
   reportTime            Int                  @default(0)
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
-  id                    String               @id @default(uuid())
+  id                    String               @id @default(cuid())
+  cart                  Cart[]
   dish                  Dish[]
   dishCategory          DishCategory[]
   employees             Employee[]
@@ -272,7 +332,7 @@ model Image {
   url    String
   shopId String?
   dishId String?
-  id     String  @id @default(uuid())
+  id     String  @id @default(cuid())
   dish   Dish?   @relation(fields: [dishId], references: [id])
   shop   Shop?   @relation(fields: [shopId], references: [id])
 }
@@ -284,7 +344,7 @@ model DishCategory {
   status        Status          @default(enabled)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  id            String          @id @default(uuid())
+  id            String          @id @default(cuid())
   dish          Dish[]
   shop          Shop?           @relation(fields: [shopId], references: [id])
   kitchen       Kitchen[]       @relation("DishCategoryToKitchen")
@@ -315,7 +375,9 @@ model Dish {
   soldCount              Float?
   createdAt              DateTime        @default(now())
   updatedAt              DateTime        @updatedAt
-  id                     String          @id @default(uuid())
+  id                     String          @id @default(cuid())
+  cart                   Cart[]
+  CartItem               CartItem[]
   category               DishCategory?   @relation(fields: [categoryId], references: [id])
   shop                   Shop?           @relation(fields: [shopId], references: [id])
   unit                   Unit?           @relation(fields: [unitId], references: [id])
@@ -332,7 +394,7 @@ model Unit {
   status      Switchabletatus @default(activated)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
-  id          String          @id @default(uuid())
+  id          String          @id @default(cuid())
   dish        Dish[]
   shop        Shop            @relation(fields: [shopId], references: [id])
 
@@ -347,10 +409,10 @@ model TablePosition {
   status          Status         @default(enabled)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
-  id              String         @id @default(uuid())
+  id              String         @id @default(cuid())
+  tables          Table[]
   shop            Shop           @relation(fields: [shopId], references: [id])
   dishCategories  DishCategory[] @relation("DishCategoryToTablePosition")
-  tables          Table[]        @relation("TableToTablePosition")
 
   @@index([shopId])
 }
@@ -359,17 +421,16 @@ model Table {
   shopId                        String
   name                          String?
   positionId                    String?
-  status                        Status          @default(enabled)
+  status                        Status         @default(enabled)
   allowMultipleOrderSession     Boolean?
   needApprovalWhenCustomerOrder Boolean?
-  createdAt                     DateTime        @default(now())
-  updatedAt                     DateTime        @updatedAt
-  id                            String          @id @default(uuid())
-  kitchenId                     String?
+  createdAt                     DateTime       @default(now())
+  updatedAt                     DateTime       @updatedAt
+  id                            String         @id @default(cuid())
   Order                         Order[]
-  Kitchen                       Kitchen?        @relation(fields: [kitchenId], references: [id])
-  shop                          Shop            @relation(fields: [shopId], references: [id])
-  position                      TablePosition[] @relation("TableToTablePosition")
+  position                      TablePosition? @relation(fields: [positionId], references: [id])
+  shop                          Shop           @relation(fields: [shopId], references: [id])
+  Kitchen                       Kitchen[]      @relation("KitchenToTable")
 
   @@index([shopId])
 }
@@ -381,7 +442,7 @@ model EmployeeDepartment {
   status      Status     @default(enabled)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  id          String     @id @default(uuid())
+  id          String     @id @default(cuid())
   employees   Employee[]
   shop        Shop       @relation(fields: [shopId], references: [id])
 
@@ -394,7 +455,7 @@ model EmployeePosition {
   status    Status     @default(enabled)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  id        String     @id @default(uuid())
+  id        String     @id @default(cuid())
   employees Employee[]
   shop      Shop       @relation(fields: [shopId], references: [id])
 
@@ -411,19 +472,21 @@ model Employee {
   permissions  String[]
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
-  id           String              @id @default(uuid())
+  id           String              @id @default(cuid())
   department   EmployeeDepartment? @relation(fields: [departmentId], references: [id])
   position     EmployeePosition?   @relation(fields: [positionId], references: [id])
   shop         Shop                @relation(fields: [shopId], references: [id])
   user         User                @relation(fields: [userId], references: [id])
 
   @@index([shopId])
+  @@index([userId])
 }
 
 enum TokenType {
-  REFRESH
-  RESET_PASSWORD
-  VERIFY_EMAIL
+  access
+  refresh
+  reset_password
+  verify_email
 }
 
 enum KitchenActionEnum {

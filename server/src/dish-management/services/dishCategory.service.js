@@ -4,6 +4,7 @@ const { DishCategory } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { notifyUpdateDishCategory, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
+const { Status } = require('../../utils/constant');
 
 const getDishCategory = async ({ shopId, dishCategoryId }) => {
   const dishCategory = await getDishCategoryFromCache({ shopId, dishCategoryId });
@@ -23,14 +24,18 @@ const createDishCategory = async ({ shopId, createBody, userId }) => {
     _.find(dishCategories, (dishCategory) => dishCategory.name === createBody.name),
     getMessageByLocale({ key: 'dishCategory.alreadyExist' })
   );
-  const dishCategory = await DishCategory.create({ ...createBody, shop: shopId });
-  const dishCategoryJson = dishCategory.toJSON();
+  const dishCategory = await DishCategory.create({
+    data: {
+      ...createBody,
+      shopId,
+    },
+  });
   notifyUpdateDishCategory({
     action: EventActionType.CREATE,
-    dishCategory: dishCategoryJson,
+    dishCategory,
     userId,
   });
-  return dishCategoryJson;
+  return dishCategory;
 };
 
 const updateDishCategory = async ({ shopId, dishCategoryId, updateBody, userId }) => {
@@ -39,40 +44,36 @@ const updateDishCategory = async ({ shopId, dishCategoryId, updateBody, userId }
     _.find(dishCategories, (dishCategory) => dishCategory.name === updateBody.name && dishCategory.id !== dishCategoryId),
     getMessageByLocale({ key: 'dishCategory.alreadyExist' })
   );
-  const dishCategory = await DishCategory.findOneAndUpdate(
-    { _id: dishCategoryId, shop: shopId },
-    { $set: updateBody },
-    { new: true }
-  );
+  const dishCategory = await DishCategory.update({ data: updateBody, where: { id: dishCategoryId, shopId } });
   throwBadRequest(!dishCategory, getMessageByLocale({ key: 'dishCategory.notFound' }));
 
-  const dishCategoryJson = dishCategory.toJSON();
   notifyUpdateDishCategory({
-    action: EventActionType.CREATE,
-    dishCategory: dishCategoryJson,
+    action: EventActionType.UPDATE,
+    dishCategory,
     userId,
   });
-  return dishCategoryJson;
+  return dishCategory;
 };
 
 const deleteDishCategory = async ({ shopId, dishCategoryId, userId }) => {
-  const dishCategory = await DishCategory.findOneAndDelete({ _id: dishCategoryId, shop: shopId });
+  const dishCategory = await DishCategory.update({
+    data: { status: Status.disabled },
+    where: { id: dishCategoryId, shopId },
+  });
   throwBadRequest(!dishCategory, getMessageByLocale({ key: 'dishCategory.notFound' }));
 
-  const dishCategoryJson = dishCategory.toJSON();
   notifyUpdateDishCategory({
-    action: EventActionType.CREATE,
-    dishCategory: dishCategoryJson,
+    action: EventActionType.DELETE,
+    dishCategory,
     userId,
   });
-  return dishCategoryJson;
+  return dishCategory;
 };
 
 const importDishCategories = async ({ dishCategories, shopId }) => {
   const currentDishCategories = await getDishCategoriesFromCache({ shopId });
   const dishCategoryByName = _.keyBy(currentDishCategories, 'name');
 
-  const bulkOps = [];
   const errorDishCategories = [];
   _.forEach(dishCategories, (dishCategory) => {
     const { code, name } = dishCategory;
@@ -88,16 +89,13 @@ const importDishCategories = async ({ dishCategories, shopId }) => {
     }
 
     const updateBody = _.cloneDeep(dishCategory);
-    bulkOps.push({
-      updateOne: {
-        filter: { shop: shopId, code },
-        update: { $set: updateBody },
-        upsert: true,
-      },
+    return DishCategory.upsert({
+      where: { shopId, code },
+      create: { ...updateBody, shopId },
+      update: updateBody,
     });
   });
 
-  await DishCategory.bulkWrite(bulkOps);
   return errorDishCategories;
 };
 

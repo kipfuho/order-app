@@ -32,20 +32,26 @@ const getDishFromCache = async ({ shopId, dishId }) => {
 
   if (redisClient.isRedisConnected()) {
     const menuVal = await redisClient.getJson(key);
-    const dishes = _.get(menuVal, 'dishes');
-    if (!_.isEmpty(dishes)) {
+    const dishesCache = _.get(menuVal, 'dishes');
+    if (!_.isEmpty(dishesCache)) {
       setSession({ key, value: menuVal });
-      return _.find(dishes, (dish) => dish.id === dishId);
+      return _.find(dishesCache, (dish) => dish.id === dishId);
     }
   }
 
-  const dish = await Dish.findOne({ _id: dishId, shop: shopId, status: { $ne: constant.Status.disabled } }).populate(
-    'category'
-  );
-  if (!dish) {
-    return null;
-  }
-  return dish.toJSON();
+  const dish = await Dish.findUnique({
+    where: {
+      id: dishId,
+      shopId,
+      status: {
+        not: constant.Status.disabled,
+      },
+    },
+    include: {
+      category: true,
+    },
+  });
+  return dish;
 };
 
 const getDishesFromCache = async ({ shopId }) => {
@@ -57,25 +63,36 @@ const getDishesFromCache = async ({ shopId }) => {
 
   if (redisClient.isRedisConnected()) {
     const menuVal = await redisClient.getJson(key);
-    const dishes = _.get(menuVal, 'dishes');
-    if (!_.isEmpty(dishes)) {
+    const dishesCache = _.get(menuVal, 'dishes');
+    if (!_.isEmpty(dishesCache)) {
       setSession({ key, value: menuVal });
-      return dishes;
+      return dishesCache;
     }
 
-    const dishModels = await Dish.find({ shop: shopId, status: { $ne: constant.Status.disabled } }).populate('category');
-    const disheJsons = _.map(dishModels, (dish) => dish.toJSON());
-    const newMenuVal = { ...menuVal, dishes: disheJsons };
+    const dishes = await Dish.findMany({
+      where: { shopId, status: { not: constant.Status.disabled } },
+      include: {
+        category: true,
+      },
+    });
+    const newMenuVal = { ...menuVal, dishes };
     redisClient.putJson({ key, jsonVal: newMenuVal });
     setSession({ key, value: newMenuVal });
-    return disheJsons;
+    return dishes;
   }
 
   const currentClsHookedValue = getSession({ key });
-  const dishes = await Dish.find({ shop: shopId, status: { $ne: constant.Status.disabled } }).populate('category');
-  const disheJsons = _.map(dishes, (dish) => dish.toJSON());
-  setSession({ key, value: { ...currentClsHookedValue, dishes: disheJsons } });
-  return disheJsons;
+  const dishes = await Dish.findMany({
+    where: {
+      shopId,
+      status: { not: constant.Status.disabled },
+    },
+    include: {
+      category: true,
+    },
+  });
+  setSession({ key, value: { ...currentClsHookedValue, dishes } });
+  return dishes;
 };
 
 const getDishCategoryFromCache = async ({ shopId, dishCategoryId }) => {
@@ -93,18 +110,21 @@ const getDishCategoryFromCache = async ({ shopId, dishCategoryId }) => {
 
   if (redisClient.isRedisConnected()) {
     const menuVal = await redisClient.getJson(key);
-    const categories = _.get(menuVal, 'categories');
-    if (!_.isEmpty(categories)) {
+    const categoriesCache = _.get(menuVal, 'categories');
+    if (!_.isEmpty(categoriesCache)) {
       setSession({ key, value: menuVal });
-      return _.find(categories, (dishCategory) => dishCategory.id === dishCategoryId);
+      return _.find(categoriesCache, (dishCategory) => dishCategory.id === dishCategoryId);
     }
   }
 
-  const dishCategory = await DishCategory.findOne({ _id: dishCategoryId, shop: shopId, status: constant.Status.enabled });
-  if (!dishCategory) {
-    return null;
-  }
-  return dishCategory.toJSON();
+  const dishCategory = await DishCategory.findUnique({
+    where: {
+      id: dishCategoryId,
+      shopId,
+      status: constant.Status.enabled,
+    },
+  });
+  return dishCategory;
 };
 
 const getDishCategoriesFromCache = async ({ shopId }) => {
@@ -116,25 +136,33 @@ const getDishCategoriesFromCache = async ({ shopId }) => {
 
   if (redisClient.isRedisConnected()) {
     const menuVal = await redisClient.getJson(key);
-    const categories = _.get(menuVal, 'categories');
-    if (!_.isEmpty(categories)) {
+    const categoriesCache = _.get(menuVal, 'categories');
+    if (!_.isEmpty(categoriesCache)) {
       setSession({ key, value: menuVal });
-      return categories;
+      return categoriesCache;
     }
 
-    const dishCategoryModels = await DishCategory.find({ shop: shopId, status: constant.Status.enabled });
-    const dishCategoryJsons = _.map(dishCategoryModels, (dishCategory) => dishCategory.toJSON());
-    const newMenuVal = { ...menuVal, categories: dishCategoryJsons };
+    const dishCategories = await DishCategory.findMany({
+      where: {
+        shopId,
+        status: constant.Status.enabled,
+      },
+    });
+    const newMenuVal = { ...menuVal, categories: dishCategories };
     redisClient.putJson({ key, jsonVal: newMenuVal });
     setSession({ key, value: newMenuVal });
-    return dishCategoryJsons;
+    return dishCategories;
   }
 
   const currentClsHookedValue = getSession({ key });
-  const dishCategories = await DishCategory.find({ shop: shopId, status: constant.Status.enabled });
-  const dishCategoryJsons = _.map(dishCategories, (dish) => dish.toJSON());
-  setSession({ key, value: { ...currentClsHookedValue, categories: dishCategoryJsons } });
-  return dishCategoryJsons;
+  const dishCategories = await DishCategory.findMany({
+    where: {
+      shopId,
+      status: constant.Status.enabled,
+    },
+  });
+  setSession({ key, value: { ...currentClsHookedValue, categories: dishCategories } });
+  return dishCategories;
 };
 
 module.exports = {

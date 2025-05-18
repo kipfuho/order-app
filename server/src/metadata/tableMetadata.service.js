@@ -29,18 +29,23 @@ const getTableFromCache = async ({ shopId, tableId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const tables = await redisClient.getJson(key);
-    if (!_.isEmpty(tables)) {
-      setSession({ key, value: tables });
-      return _.find(tables, (table) => table.id === tableId);
+    const tablesCache = await redisClient.getJson(key);
+    if (!_.isEmpty(tablesCache)) {
+      setSession({ key, value: tablesCache });
+      return _.find(tablesCache, (table) => table.id === tableId);
     }
   }
 
-  const table = await Table.findOne({ _id: tableId, shop: shopId }).populate('position');
-  if (!table) {
-    return null;
-  }
-  return table.toJSON();
+  const table = await Table.findUnique({
+    where: {
+      id: tableId,
+      shopId,
+    },
+    include: {
+      position: true,
+    },
+  });
+  return table;
 };
 
 const getTablesFromCache = async ({ shopId }) => {
@@ -51,23 +56,37 @@ const getTablesFromCache = async ({ shopId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const tables = await redisClient.getJson(key);
-    if (!_.isEmpty(tables)) {
-      setSession({ key, value: tables });
-      return tables;
+    const tablesCache = await redisClient.getJson(key);
+    if (!_.isEmpty(tablesCache)) {
+      setSession({ key, value: tablesCache });
+      return tablesCache;
     }
 
-    const tableModels = await Table.find({ shop: shopId, status: constant.Status.enabled }).populate('position');
-    const tableJsons = _.map(tableModels, (table) => table.toJSON());
-    redisClient.putJson({ key, jsonVal: tableJsons });
-    setSession({ key, value: tableJsons });
-    return tableJsons;
+    const tables = await Table.findMany({
+      where: {
+        shopId,
+        status: constant.Status.enabled,
+      },
+      include: {
+        position: true,
+      },
+    });
+    redisClient.putJson({ key, jsonVal: tables });
+    setSession({ key, value: tables });
+    return tables;
   }
 
-  const tables = await Table.find({ shop: shopId, status: constant.Status.enabled }).populate('position');
-  const tableJsons = _.map(tables, (table) => table.toJSON());
-  setSession({ key, value: tableJsons });
-  return tableJsons;
+  const tables = await Table.findMany({
+    where: {
+      shopId,
+      status: constant.Status.enabled,
+    },
+    include: {
+      position: true,
+    },
+  });
+  setSession({ key, value: tables });
+  return tables;
 };
 
 const getTablePositionFromCache = async ({ shopId, tablePositionId }) => {
@@ -84,18 +103,20 @@ const getTablePositionFromCache = async ({ shopId, tablePositionId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const tablePositions = await redisClient.getJson(key);
-    if (!_.isEmpty(tablePositions)) {
-      setSession({ key, value: tablePositions });
-      return _.find(tablePositions, (tablePosition) => tablePosition.id === tablePositionId);
+    const tablePositionsCache = await redisClient.getJson(key);
+    if (!_.isEmpty(tablePositionsCache)) {
+      setSession({ key, value: tablePositionsCache });
+      return _.find(tablePositionsCache, (tablePosition) => tablePosition.id === tablePositionId);
     }
   }
 
-  const tablePosition = await TablePosition.findOne({ _id: tablePositionId, shop: shopId });
-  if (!tablePosition) {
-    return null;
-  }
-  return tablePosition.toJSON();
+  const tablePosition = await TablePosition.findUnique({
+    where: {
+      id: tablePositionId,
+      shopId,
+    },
+  });
+  return tablePosition;
 };
 
 const getTablePositionsFromCache = async ({ shopId }) => {
@@ -106,23 +127,31 @@ const getTablePositionsFromCache = async ({ shopId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const tablePositions = await redisClient.getJson(key);
-    if (!_.isEmpty(tablePositions)) {
-      setSession({ key, value: tablePositions });
-      return tablePositions;
+    const tablePositionsCache = await redisClient.getJson(key);
+    if (!_.isEmpty(tablePositionsCache)) {
+      setSession({ key, value: tablePositionsCache });
+      return tablePositionsCache;
     }
 
-    const tablePositionModels = await TablePosition.find({ shop: shopId, status: constant.Status.enabled });
-    const tablePositionJsons = _.map(tablePositionModels, (tablePosition) => tablePosition.toJSON());
-    redisClient.putJson({ key, jsonVal: tablePositionJsons });
-    setSession({ key, value: tablePositionJsons });
-    return tablePositionJsons;
+    const tablePositions = await TablePosition.findMany({
+      where: {
+        shopId,
+        status: constant.Status.enabled,
+      },
+    });
+    redisClient.putJson({ key, jsonVal: tablePositions });
+    setSession({ key, value: tablePositions });
+    return tablePositions;
   }
 
-  const tablePositions = await TablePosition.find({ shop: shopId, status: constant.Status.enabled });
-  const tablePositionJsons = _.map(tablePositions, (tablePosition) => tablePosition.toJSON());
-  setSession({ key, value: tablePositionJsons });
-  return tablePositionJsons;
+  const tablePositions = await TablePosition.findMany({
+    where: {
+      shopId,
+      status: constant.Status.enabled,
+    },
+  });
+  setSession({ key, value: tablePositions });
+  return tablePositions;
 };
 
 module.exports = {

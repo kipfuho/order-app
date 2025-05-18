@@ -10,7 +10,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { getTableFromCache, getTablesFromCache } = require('../../metadata/tableMetadata.service');
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
-const { getStringId, getRoundTaxAmount, getRoundDishPrice } = require('../../utils/common');
+const { getStringId, getRoundTaxAmount, getRoundDishPrice, getStartTimeOfToday } = require('../../utils/common');
 const { getCustomerFromCache } = require('../../metadata/customerMetadata.service');
 const { notifyNewOrder, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 
@@ -71,12 +71,59 @@ const getNextAvailableOrderNo = async ({ shopId, keyBase, lastOrderNo }) => {
   return currentOrderNo + 1;
 };
 
+const getLastActiveOrderSessionBeforeCreatedAt = async (shopId, createdAt) => {
+  return OrderSession.findFirst({
+    where: {
+      shopId,
+      createdAt: {
+        lt: createdAt,
+      },
+      NOT: {
+        orderSessionNo: null,
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+};
+
+const getLastActiveOrderSessionSortByOrderSessionNo = async (shopId) => {
+  const shop = await getShopFromCache({ shopId });
+
+  const startOfDay = getStartTimeOfToday({
+    timezone: shop.timezone || 'Asia/Ho_Chi_Minh',
+    reportTime: shop.reportTime || 0,
+  });
+
+  const orderSession = await OrderSession.findFirst({
+    where: {
+      shopId,
+      createdAt: {
+        gte: startOfDay,
+      },
+      NOT: {
+        orderSessionNo: null,
+      },
+    },
+    select: {
+      createdAt: true,
+      orderSessionNo: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return orderSession;
+};
+
 const getOrderSessionNoForNewOrderSession = async (shopId, createdAt) => {
   let lastActiveOrderSession;
   if (createdAt) {
-    lastActiveOrderSession = await OrderSession.getLastActiveOrderSessionBeforeCreatedAt(shopId, createdAt);
+    lastActiveOrderSession = await getLastActiveOrderSessionBeforeCreatedAt(shopId, createdAt);
   } else {
-    lastActiveOrderSession = await OrderSession.getLastActiveOrderSessionSortByOrderSessionNo(shopId);
+    lastActiveOrderSession = await getLastActiveOrderSessionSortByOrderSessionNo(shopId);
   }
   // not existed last active order session in this shop => default = 1
   if (_.isEmpty(lastActiveOrderSession)) {
@@ -112,14 +159,16 @@ const getActiveOrderSessionStatus = () => {
 
 const getActiveOrderSessionByTable = async ({ tableId, shopId, customerId }) => {
   const filter = {
-    shop: shopId,
-    tables: tableId,
-    status: { $in: getActiveOrderSessionStatus() },
+    where: {
+      shopId,
+      tableIds: { has: tableId },
+      status: { in: getActiveOrderSessionStatus() },
+    },
   };
   if (customerId) {
-    filter['customerInfo.customerId'] = customerId;
+    filter.where.customerId = customerId;
   }
-  const orderSession = await OrderSession.findOne(filter);
+  const orderSession = await OrderSession.findFirst(filter);
 
   return orderSession;
 };
@@ -153,7 +202,9 @@ const getOrCreateOrderSession = async ({
   throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
 
   if (orderSessionId) {
-    const orderSession = await OrderSession.findById(orderSessionId);
+    const orderSession = await OrderSession.findUnique({
+      where: { id: orderSessionId },
+    });
     if (orderSession) {
       return orderSession;
     }
@@ -163,7 +214,7 @@ const getOrCreateOrderSession = async ({
     const orderSession = await getActiveOrderSessionByTable({ tableId, shopId });
     if (orderSession) {
       throwBadRequest(
-        _.get(orderSession, 'customerInfo.customerId') !== customerId,
+        _.get(orderSession, 'customerId') !== customerId,
         getMessageByLocale({ key: 'table.alreadyHasCustomer' })
       );
       return orderSession;
@@ -181,15 +232,17 @@ const getOrCreateOrderSession = async ({
   const orderSessionNo = await getOrderSessionNoForNewOrderSession(shopId);
   const customerInfo = await _getCustomerInfoForCreatingOrderSession({ customerId, numberOfCustomer });
   const orderSession = await OrderSession.create({
-    tables: [tableId],
-    tableNames: [table.name],
-    shop: shopId,
-    orderSessionNo,
-    taxRate: _.get(shop, 'taxRate', 0),
-    customerInfo,
+    data: {
+      tableIds: [tableId],
+      tableNames: [table.name],
+      shop: shopId,
+      orderSessionNo,
+      taxRate: _.get(shop, 'taxRate', 0),
+      ...customerInfo,
+    },
   });
 
-  return orderSession.toJSON();
+  return orderSession;
 };
 
 const _getPaymentDetailForDishOrder = ({ price, taxRate, isTaxIncludedPrice, quantity, calculateTaxDirectly = false }) => {
@@ -287,53 +340,69 @@ const createNewOrder = async ({ tableId, shopId, userId, orderSession, dishOrder
     }
   );
   const order = await Order.create({
-    table: tableId,
-    shop: shopId,
-    orderSessionId: _.get(orderSession, 'id'),
-    orderNo,
-    dishOrders: orderDishOrders,
-    customerId,
-    totalQuantity: _.sumBy(orderDishOrders, 'quantity'),
-    totalBeforeTaxAmount: _.sumBy(orderDishOrders, 'beforeTaxTotalPrice'),
-    totalAfterTaxAmount: _.sumBy(orderDishOrders, 'afterTaxTotalPrice'),
+    data: {
+      tableId,
+      shopId,
+      orderSessionId: _.get(orderSession, 'id'),
+      orderNo,
+      dishOrders: orderDishOrders,
+      customerId,
+      totalQuantity: _.sumBy(orderDishOrders, 'quantity'),
+      totalBeforeTaxAmount: _.sumBy(orderDishOrders, 'beforeTaxTotalPrice'),
+      totalAfterTaxAmount: _.sumBy(orderDishOrders, 'afterTaxTotalPrice'),
+    },
   });
   if (orderSession) {
-    await OrderSession.updateOne(
-      { _id: orderSession.id },
-      {
-        $push: {
-          orders: order._id,
-        },
-      }
-    );
-
     notifyNewOrder({ order, userId, action: EventActionType.CREATE });
   }
 
-  return order.toJSON();
+  return order;
 };
 
 /**
  * Get order session json with populated datas
  */
 const _getOrderSessionJson = async ({ orderSessionId, shopId }) => {
-  const orderSession = await OrderSession.findById(orderSessionId);
+  const orderSession = await OrderSession.findUnique({
+    where: {
+      id: orderSessionId,
+    },
+    include: {
+      discounts: {
+        include: {
+          discountProducts: true,
+        },
+      },
+      paymentDetails: true,
+      taxDetails: true,
+    },
+  });
   throwBadRequest(!orderSession, 'orderSession.notFound');
-  throwBadRequest(shopId && orderSession.shop.toString() !== shopId, 'orderSession.notFound');
-  const orderSessionJson = orderSession.toJSON();
-  const orders = await Order.find({ orderSessionId });
+  throwBadRequest(shopId && orderSession.shopId !== shopId, 'orderSession.notFound');
+  const orders = await Order.findMany({
+    where: {
+      shopId,
+      orderSessionId,
+    },
+    include: {
+      dishOrders: true,
+      returnedDishOrders: true,
+    },
+  });
+
+  const orderSessionJson = _.cloneDeep(orderSession);
 
   // eslint-disable-next-line no-param-reassign
-  shopId = orderSession.shop;
+  shopId = orderSession.shopId;
   const shop = await getShopFromCache({ shopId });
   const tables = await getTablesFromCache({ shopId });
   const tableById = _.keyBy(tables, 'id');
   const dishes = await getDishesFromCache({ shopId });
   const dishById = _.keyBy(dishes, 'id');
 
-  const orderJsons = _.map(orders, (order) => {
-    const orderJson = order.toJSON();
-    _.map(orderJson.dishOrders, (dishOrder) => {
+  const orderJsons = orders.map((order) => {
+    const orderJson = _.cloneDeep(order);
+    orderJson.dishOrders.forEach((dishOrder) => {
       if (dishOrder.dish) {
         // eslint-disable-next-line no-param-reassign
         dishOrder.dish = dishById[dishOrder.dish];
@@ -343,7 +412,7 @@ const _getOrderSessionJson = async ({ orderSessionId, shopId }) => {
   });
   orderSessionJson.shop = shop;
   orderSessionJson.orders = orderJsons;
-  orderSessionJson.tables = _.map(orderSessionJson.tables, (tableId) => tableById[tableId]);
+  orderSessionJson.tables = _.map(orderSessionJson.tableIds, (tableId) => tableById[tableId]);
   return {
     orderSession,
     orderSessionJson,
@@ -351,10 +420,31 @@ const _getOrderSessionJson = async ({ orderSessionId, shopId }) => {
 };
 
 const getOrderSessionJsonWithLimit = async ({ shopId, limit }) => {
-  const orderSessionDocuments = await OrderSession.find({ shop: shopId }).sort({ _id: -1 }).limit(limit);
+  const orderSessions = await OrderSession.findMany({
+    where: {
+      shopId,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: limit,
+    include: {
+      discounts: true,
+      paymentDetails: true,
+      taxDetails: true,
+    },
+  });
 
-  const orderSessionIds = _.map(orderSessionDocuments, 'id');
-  const orders = await Order.find({ orderSessionId: { $in: orderSessionIds } });
+  const orderSessionIds = _.map(orderSessions, 'id');
+  const orders = await Order.findMany({
+    where: {
+      orderSessionId: { in: orderSessionIds },
+    },
+    include: {
+      dishOrders: true,
+      returnedDishOrders: true,
+    },
+  });
 
   const orderMapByOrderSessionId = _.groupBy(orders, 'orderSessionId');
 
@@ -364,11 +454,11 @@ const getOrderSessionJsonWithLimit = async ({ shopId, limit }) => {
   const dishes = await getDishesFromCache({ shopId });
   const dishById = _.keyBy(dishes, 'id');
 
-  const orderSessionJsons = _.map(orderSessionDocuments, (orderSessionDocument) => {
-    const orderSessionJson = orderSessionDocument.toJSON();
+  const orderSessionJsons = _.map(orderSessions, (orderSession) => {
+    const orderSessionJson = _.cloneDeep(orderSession);
     const orderJsons = _.map(orderMapByOrderSessionId[orderSessionJson.id], (order) => {
-      const orderJson = order.toJSON();
-      _.map(orderJson.dishOrders, (dishOrder) => {
+      const orderJson = _.cloneDeep(order);
+      orderJson.dishOrders.forEach((dishOrder) => {
         if (dishOrder.dish) {
           // eslint-disable-next-line no-param-reassign
           dishOrder.dish = dishById[dishOrder.dish];
@@ -378,7 +468,7 @@ const getOrderSessionJsonWithLimit = async ({ shopId, limit }) => {
     });
     orderSessionJson.shop = shop;
     orderSessionJson.orders = orderJsons;
-    orderSessionJson.tables = _.map(orderSessionJson.tables, (tableId) => tableById[tableId]);
+    orderSessionJson.tables = _.map(orderSessionJson.tableIds, (tableId) => tableById[tableId]);
     return orderSessionJson;
   });
 
@@ -542,24 +632,31 @@ const getOrderSessionById = async (orderSessionId, shopId) => {
     (orderSession.paymentAmount !== orderSessionJson.paymentAmount ||
       orderSession.totalDiscountAmountAfterTax !== orderSessionJson.totalDiscountAmountAfterTax)
   ) {
-    await OrderSession.updateOne(
-      { _id: orderSessionId },
-      {
-        $set: {
-          pretaxPaymentAmount: orderSessionJson.pretaxPaymentAmount,
-          paymentAmount: orderSessionJson.paymentAmount,
-          taxDetails: orderSessionJson.taxDetails,
-          totalDiscountAmountBeforeTax,
-          totalDiscountAmountAfterTax,
+    await OrderSession.update({
+      data: {
+        pretaxPaymentAmount: orderSessionJson.pretaxPaymentAmount,
+        paymentAmount: orderSessionJson.paymentAmount,
+        taxDetails: {
+          deleteMany: {},
+          createMany: orderSessionJson.taxDetails,
         },
-      }
-    );
+        totalDiscountAmountBeforeTax,
+        totalDiscountAmountAfterTax,
+      },
+      where: { id: orderSessionId },
+    });
   }
   return orderSessionJson;
 };
 
 const updateOrderSession = async ({ orderSessionId, shopId, updateBody }) => {
-  await OrderSession.updateOne({ _id: orderSessionId, shop: shopId }, updateBody);
+  await OrderSession.update({
+    data: updateBody,
+    where: {
+      id: orderSessionId,
+      shopId,
+    },
+  });
 
   return getOrderSessionById(orderSessionId);
 };
@@ -587,31 +684,38 @@ const mergeCartItems = (cartItems) => {
 };
 
 const getCart = async ({ shopId, customerId }) => {
-  const cart = await Cart.findOneAndUpdate(
-    { customer: customerId, shop: shopId },
-    { $setOnInsert: { customer: customerId, shop: shopId, cartItems: [] } },
-    { upsert: true, new: true }
-  );
+  const cart = await Cart.upsert({
+    where: {
+      customer_shop_unique: {
+        customerId,
+        shopId,
+      },
+    },
+    create: {
+      customerId,
+      shopId,
+    },
+    update: {},
+    include: {
+      cartItems: true,
+    },
+  });
+
   return cart;
 };
 
 const _updateOrderSessionStatusForOrders = async ({ shopId, orderIds = [], status }) => {
-  const bulkOps = [];
-  orderIds.forEach((orderId) => {
-    bulkOps.push({
-      updateOne: {
-        filter: { shop: shopId, _id: orderId },
-        update: {
-          $set: {
-            orderSessionStatus: status,
-          },
+  await Promise.all(
+    orderIds.map((orderId) => {
+      return Order.update({
+        data: { orderSessionStatus: status },
+        where: {
+          shopId,
+          id: orderId,
         },
-        upsert: true,
-      },
-    });
-  });
-
-  await Order.bulkWrite(bulkOps);
+      });
+    })
+  );
 };
 
 const updateAfterPayOrderSession = async ({ orderSession }) => {

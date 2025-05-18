@@ -12,7 +12,7 @@ const {
   getDishCategoryFromCache,
   getDishCategoriesFromCache,
 } = require('../../metadata/dishMetadata.service');
-const { DishTypes } = require('../../utils/constant');
+const { DishTypes, Status } = require('../../utils/constant');
 const { refineFileNameForUploading } = require('../../utils/common');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
@@ -34,10 +34,9 @@ const getDishes = async ({ shopId }) => {
 
 const createDish = async ({ shopId, createBody, userId }) => {
   // eslint-disable-next-line no-param-reassign
-  createBody.shop = shopId;
-  const dish = await Dish.create(createBody);
-  const dishJson = dish.toJSON();
-  dishJson.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.category });
+  createBody.shopId = shopId;
+  const dish = await Dish.create({ data: createBody });
+  dish.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.categoryId });
 
   // job to update s3 logs -> inUse = true
   registerJob({
@@ -48,19 +47,18 @@ const createDish = async ({ shopId, createBody, userId }) => {
   });
   notifyUpdateDish({
     action: EventActionType.CREATE,
-    dish: dishJson,
+    dish,
     userId,
   });
-  return dishJson;
+  return dish;
 };
 
 const updateDish = async ({ shopId, dishId, updateBody, userId }) => {
   // eslint-disable-next-line no-param-reassign
-  updateBody.shop = shopId;
-  const dish = await Dish.findOneAndUpdate({ _id: dishId, shop: shopId }, { $set: updateBody }, { new: true });
+  updateBody.shopId = shopId;
+  const dish = await Dish.update({ data: updateBody, where: { id: dishId, shopId } });
   throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
-  const dishJson = dish.toJSON();
-  dishJson.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.category });
+  dish.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.categoryId });
 
   // job to update s3 logs -> inUse = true
   registerJob({
@@ -71,17 +69,22 @@ const updateDish = async ({ shopId, dishId, updateBody, userId }) => {
   });
   notifyUpdateDish({
     action: EventActionType.UPDATE,
-    dish: dishJson,
+    dish,
     userId,
   });
-  return dishJson;
+  return dish;
 };
 
 const deleteDish = async ({ shopId, dishId, userId }) => {
-  const dish = await Dish.findOneAndDelete({ _id: dishId, shop: shopId });
+  const dish = await Dish.update({
+    data: { status: Status.disabled },
+    where: {
+      id: dishId,
+      shopId,
+    },
+  });
   throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
 
-  const dishJson = dish.toJSON();
   // job to update s3 logs -> inUse = true
   registerJob({
     type: JobTypes.DISABLE_S3_OBJECT_USAGE,
@@ -91,10 +94,10 @@ const deleteDish = async ({ shopId, dishId, userId }) => {
   });
   notifyUpdateDish({
     action: EventActionType.DELETE,
-    dish: dishJson,
+    dish,
     userId,
   });
-  return dishJson;
+  return dish;
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -153,7 +156,6 @@ const importDishes = async ({ dishes, shopId }) => {
   const unitByName = _.keyBy(units, 'name');
   const unitById = _.keyBy(units, 'id');
 
-  const bulkOps = [];
   const errorDishes = [];
   const newImageUrls = [];
 
@@ -182,7 +184,7 @@ const importDishes = async ({ dishes, shopId }) => {
       }
 
       const updateBody = _.cloneDeep(dish);
-      updateBody.shop = shopId;
+      updateBody.shopId = shopId;
       updateBody.unit = unit.id;
       updateBody.category = dishCategory.id;
       updateBody.imageUrls = imageUrls;
@@ -199,17 +201,14 @@ const importDishes = async ({ dishes, shopId }) => {
       delete updateBody.dishCategoryName;
       delete updateBody.unitId;
       delete updateBody.unitName;
-      bulkOps.push({
-        updateOne: {
-          filter: { shop: shopId, code: dish.code },
-          update: { $set: updateBody },
-          upsert: true,
-        },
+      return Dish.upsert({
+        where: { shopId, code: dish.code },
+        create: { ...updateBody, shopId },
+        update: updateBody,
       });
     })
   );
 
-  await Dish.bulkWrite(bulkOps);
   registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
     data: {

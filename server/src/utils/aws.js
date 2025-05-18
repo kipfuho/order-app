@@ -7,7 +7,7 @@ const config = require('../config/config');
 const { ALLOWED_IMAGE_MIME_TYPES, MAX_FILE_SIZE } = require('./constant');
 const { throwBadRequest } = require('./errorHandling');
 const { getMessageByLocale } = require('../locale');
-const S3Log = require('../models/s3.model');
+const { S3Log } = require('../models');
 
 const { region, accessKeyId, secretAccessKey, s3BucketName } = config.aws;
 const s3BaseUrl = `https://${s3BucketName}.s3.${region}.amazonaws.com`;
@@ -58,7 +58,11 @@ const uploadFileBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType }) =>
     // Uploading files to the bucket
     await s3.putObject(params);
     // create log for object
-    await S3Log.create({ key: targetFilePath });
+    await S3Log.create({
+      data: {
+        key: targetFilePath,
+      },
+    });
 
     const resultUrl = `${s3BaseUrl}/${targetFilePath}`;
     logger.debug(`upload file to ${resultUrl}`);
@@ -77,7 +81,11 @@ const deleteObjectFromS3 = async (key) => {
     };
 
     await s3.deleteObject(params);
-    await S3Log.deleteOne({ key });
+    await S3Log.delete({
+      where: {
+        key,
+      },
+    });
 
     logger.debug(`Deleted file: ${key}`);
     return true;

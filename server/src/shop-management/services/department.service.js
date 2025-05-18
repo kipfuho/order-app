@@ -2,6 +2,7 @@ const { getMessageByLocale } = require('../../locale');
 const { getDepartmentFromCache, getDepartmentsFromCache } = require('../../metadata/departmentMetadata.service');
 const { Department } = require('../../models');
 const { notifyUpdateDepartment, EventActionType } = require('../../utils/awsUtils/appSync.utils');
+const { Status } = require('../../utils/constant');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { validatePermissionsUpdate } = require('./employee.service');
 
@@ -18,45 +19,44 @@ const getDepartments = async ({ shopId }) => {
 
 const createDepartment = async ({ shopId, createBody, userId }) => {
   validatePermissionsUpdate(createBody);
-  const department = await Department.create({ ...createBody, shop: shopId });
+  const department = await Department.create({ ...createBody, shopId });
 
-  const departmentJson = department.toJSON();
   notifyUpdateDepartment({
-    department: departmentJson,
+    department,
     action: EventActionType.CREATE,
     userId,
   });
-  return departmentJson;
+  return department;
 };
 
 const updateDepartment = async ({ shopId, departmentId, updateBody, userId }) => {
   validatePermissionsUpdate(updateBody);
-  const department = await Department.findOneAndUpdate(
-    { _id: departmentId, shop: shopId },
-    { $set: updateBody },
-    { new: true }
-  );
+  const department = await Department.update({ data: updateBody, where: { id: departmentId, shopId } });
   throwBadRequest(!department, getMessageByLocale({ key: 'department.notFound' }));
 
-  const departmentJson = department.toJSON();
   notifyUpdateDepartment({
-    department: departmentJson,
+    department,
     action: EventActionType.UPDATE,
     userId,
   });
-  return departmentJson;
+  return department;
 };
 
 const deleteDepartment = async ({ shopId, departmentId, userId }) => {
-  const department = await Department.findOneAndDelete({ _id: departmentId, shop: shopId });
+  const department = await Department.update({
+    data: { status: Status.disabled },
+    where: {
+      id: departmentId,
+      shopId,
+    },
+  });
 
-  const departmentJson = department.toJSON();
   notifyUpdateDepartment({
-    department: departmentJson,
+    department,
     action: EventActionType.DELETE,
     userId,
   });
-  return departmentJson;
+  return department;
 };
 
 module.exports = {

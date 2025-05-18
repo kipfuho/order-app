@@ -9,7 +9,7 @@ const { TablePosition, Table } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { notifyUpdateTable, EventActionType, notifyUpdateTablePosition } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
-const { getStringId } = require('../../utils/common');
+const { Status } = require('../../utils/constant');
 
 const getTable = async ({ shopId, tableId }) => {
   const table = await getTableFromCache({
@@ -35,18 +35,23 @@ const createTable = async ({ shopId, createBody, userId }) => {
   throwBadRequest(
     _.find(
       tables,
-      (table) =>
-        _.toLower(table.name) === _.toLower(createBody.name) &&
-        getStringId({ object: table, key: 'position' }) === createBody.position
+      (table) => _.toLower(table.name) === _.toLower(createBody.name) && table.positionId === createBody.position
     ),
     getMessageByLocale({ key: 'table.alreadyExist' })
   );
 
-  const table = await Table.create({ ...createBody, shop: shopId });
-  await table.populate('position');
-  const tableJson = table.toJSON();
-  notifyUpdateTable({ table: tableJson, action: EventActionType.CREATE, userId });
-  return tableJson;
+  const table = await Table.create({
+    data: {
+      ...createBody,
+      shopId,
+    },
+    include: {
+      position: true,
+    },
+  });
+
+  notifyUpdateTable({ table, action: EventActionType.CREATE, userId });
+  return table;
 };
 
 const updateTable = async ({ shopId, tableId, updateBody, userId }) => {
@@ -58,33 +63,40 @@ const updateTable = async ({ shopId, tableId, updateBody, userId }) => {
       tables,
       (table) =>
         _.toLower(table.name) === _.toLower(updateBody.name) &&
-        getStringId({ object: table, key: 'position' }) === updateBody.position &&
+        table.positionId === updateBody.position &&
         table.id !== tableId
     ),
     getMessageByLocale({ key: 'table.alreadyExist' })
   );
 
-  const table = await Table.findOneAndUpdate({ _id: tableId, shop: shopId }, { $set: { ...updateBody } }, { new: true });
+  const table = await Table.update({
+    data: updateBody,
+    where: {
+      id: tableId,
+      shopId,
+    },
+    include: { position: true },
+  });
   throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
 
-  await table.populate('position');
-  const tableJson = table.toJSON();
-  notifyUpdateTable({ table: tableJson, action: EventActionType.UPDATE, userId });
-  return tableJson;
+  notifyUpdateTable({ table, action: EventActionType.UPDATE, userId });
+  return table;
 };
 
 const deleteTable = async ({ shopId, tableId, userId }) => {
-  const table = await Table.findOneAndDelete({ _id: tableId, shop: shopId });
+  const table = await Table.update({
+    data: { status: Status.disabled },
+    where: { id: tableId, shopId },
+    include: { position: true },
+  });
   throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
 
-  await table.populate('position');
-  const tableJson = table.toJSON();
   notifyUpdateTable({
-    table: tableJson,
+    table,
     action: EventActionType.DELETE,
     userId,
   });
-  return tableJson;
+  return table;
 };
 
 const getTablePosition = async ({ shopId, tablePositionId }) => {
@@ -106,13 +118,14 @@ const createTablePosition = async ({ shopId, createBody, userId }) => {
     getMessageByLocale({ key: 'tablePosition.alreadyExist' })
   );
   const tablePosition = await TablePosition.create({
-    ...createBody,
-    shop: shopId,
+    data: {
+      ...createBody,
+      shopId,
+    },
   });
 
-  const tablePositionJson = tablePosition.toJSON();
-  notifyUpdateTablePosition({ tablePosition: tablePositionJson, action: EventActionType.CREATE, userId });
-  return tablePositionJson;
+  notifyUpdateTablePosition({ tablePosition, action: EventActionType.CREATE, userId });
+  return tablePosition;
 };
 
 const updateTablePosition = async ({ shopId, tablePositionId, updateBody, userId }) => {
@@ -124,29 +137,31 @@ const updateTablePosition = async ({ shopId, tablePositionId, updateBody, userId
     ),
     getMessageByLocale({ key: 'tablePosition.alreadyExist' })
   );
-  const tablePosition = await TablePosition.findOneAndUpdate(
-    { _id: tablePositionId, shop: shopId },
-    { $set: { ...updateBody } },
-    { new: true }
-  );
+  const tablePosition = await TablePosition.update({
+    data: updateBody,
+    where: {
+      id: tablePositionId,
+      shopId,
+    },
+  });
   throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));
 
-  const tablePositionJson = tablePosition.toJSON();
-  notifyUpdateTablePosition({ tablePosition: tablePositionJson, action: EventActionType.UPDATE, userId });
-  return tablePositionJson;
+  notifyUpdateTablePosition({ tablePosition, action: EventActionType.UPDATE, userId });
+  return tablePosition;
 };
 
 const deleteTablePosition = async ({ shopId, tablePositionId, userId }) => {
-  const tablePosition = await TablePosition.findOneAndDelete({ _id: tablePositionId, shop: shopId });
+  const tablePosition = await TablePosition.update({
+    data: { status: Status.disabled },
+    where: { id: tablePositionId, shopId },
+  });
   throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));
 
-  const tablePositionJson = tablePosition.toJSON();
   notifyUpdateTablePosition({
-    tablePosition: tablePositionJson,
-    action: EventActionType.UPDATE,
+    tablePosition,
     userId,
   });
-  return tablePositionJson;
+  return tablePosition;
 };
 
 module.exports = {

@@ -12,23 +12,22 @@ const _getCustomerFromClsHook = ({ key }) => {
 
 const getCustomerFromDatabase = async ({ customerId, phone }) => {
   if (customerId) {
-    const customer = await Customer.findOne({ _id: customerId, status: { $ne: constant.Status.disabled } });
-    if (!customer) {
-      return null;
-    }
-    const customerJson = customer.toJSON();
-    return customerJson;
+    const customer = await Customer.findUnique({
+      where: {
+        id: customerId,
+        status: constant.Status.enabled,
+      },
+    });
+    return customer;
   }
 
-  const customer = await Customer.findOne({
-    phone,
-    status: { $ne: constant.Status.disabled },
+  const customer = await Customer.findUnique({
+    where: {
+      phone,
+      status: constant.Status.enabled,
+    },
   });
-  if (!customer) {
-    return null;
-  }
-  const customerJson = customer.toJSON();
-  return customerJson;
+  return customer;
 };
 
 const getCustomerFromCache = async ({ customerId }) => {
@@ -39,15 +38,15 @@ const getCustomerFromCache = async ({ customerId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const customer = await redisClient.getJson(key);
-    if (!_.isEmpty(customer)) {
-      setSession({ key, value: customer });
-      return customer;
+    const customerCache = await redisClient.getJson(key);
+    if (!_.isEmpty(customerCache)) {
+      setSession({ key, value: customerCache });
+      return customerCache;
     }
   }
 
-  const customerJson = await getCustomerFromDatabase({ customerId });
-  return customerJson;
+  const customer = await getCustomerFromDatabase({ customerId });
+  return customer;
 };
 
 module.exports = {
