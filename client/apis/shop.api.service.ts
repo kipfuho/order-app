@@ -98,13 +98,14 @@ const queryShopsRequest = async ({
     queryParams.append("userId", user.id);
   }
 
-  const result: { results: Shop[] } = await apiRequest({
+  const result: any = await apiRequest({
     method: "GET",
     endpoint: `/v1/shops?${queryParams.toString()}`,
     token: accessToken,
   });
 
-  return result.results;
+  const shops: Shop[] = result.results || result;
+  return shops;
 };
 
 const updateShopRequest = async ({

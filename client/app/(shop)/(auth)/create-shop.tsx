@@ -49,7 +49,13 @@ export default function CreateShopPage() {
       Toast.show({
         type: "error",
         text1: t("create_failed"),
-        text2: `${t("required")} ${_.join([t("shop_name"), t("email")], ",")}`,
+        text2: `${t("required")} ${_.join(
+          _.compact([
+            !name.trim() && t("shop_name"),
+            !email.trim() && t("email"),
+          ]),
+          ","
+        )}`,
       });
       return;
     }
