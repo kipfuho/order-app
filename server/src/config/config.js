@@ -10,6 +10,8 @@ const envVarsSchema = Joi.object()
     PORT: Joi.number().default(3000),
     BASE_URL: Joi.string().required().description('Server base url'),
     MONGODB_URL: Joi.string().required().description('Mongo DB url'),
+    DATABASE_URL: Joi.string().required().description('PostgreSql DB url'),
+    DATABASE_DIRECT_URL: Joi.string().required().description('PostgreSql DB url'),
     REDIS_HOST: Joi.string().required().description('Redis host'),
     REDIS_PORT: Joi.string().required().description('Redis port'),
     JOB_KEY: Joi.string().required().description('Job key'),
@@ -55,6 +57,10 @@ module.exports = {
     options: {
       maxPoolSize: 100,
     },
+  },
+  postgresql: {
+    url: envVars.DATABASE_URL,
+    directUrl: envVars.DATABASE_DIRECT_URL,
   },
   redisHost: envVars.REDIS_HOST,
   redisPort: envVars.REDIS_PORT,
