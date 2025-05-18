@@ -90,7 +90,12 @@ const importDishCategories = async ({ dishCategories, shopId }) => {
 
     const updateBody = _.cloneDeep(dishCategory);
     return DishCategory.upsert({
-      where: { shopId, code },
+      where: {
+        dishcategory_code_unique: {
+          shopId,
+          code,
+        },
+      },
       create: { ...updateBody, shopId },
       update: updateBody,
     });

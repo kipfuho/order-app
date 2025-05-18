@@ -202,7 +202,12 @@ const importDishes = async ({ dishes, shopId }) => {
       delete updateBody.unitId;
       delete updateBody.unitName;
       return Dish.upsert({
-        where: { shopId, code: dish.code },
+        where: {
+          dish_code_unique: {
+            shopId,
+            code,
+          },
+        },
         create: { ...updateBody, shopId },
         update: updateBody,
       });

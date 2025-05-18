@@ -427,7 +427,7 @@ const getOrderSessionJsonWithLimit = async ({ shopId, limit }) => {
     orderBy: {
       createdAt: 'desc',
     },
-    take: limit,
+    take: 1 * limit,
     include: {
       discounts: true,
       paymentDetails: true,

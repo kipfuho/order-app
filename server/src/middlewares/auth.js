@@ -57,7 +57,7 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
       return;
     }
 
-    if (shop.owner.toString() !== user.id) {
+    if (shop.ownerId !== user.id) {
       const { employee, permissions } = await getEmployeeWithPermissionByUserId({ userId: user.id, shopId });
       if (!employee) {
         return reject(new ApiError(httpStatus.NOT_FOUND, getMessageByLocale({ key: 'employee.notFound' })));

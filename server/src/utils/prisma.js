@@ -62,14 +62,26 @@ const prisma = new PrismaClient({
       async createDefaultUnits(shopId) {
         const shopCountry = getShopCountry() || Countries.VietNam;
         const units = DefaultUnitList[shopCountry];
-        await Promise.all(
-          units.map((unit) => {
-            return prisma.unit.upsert({
-              data: { name: unit.unitName, code: unit.unitCode },
-              where: { shopId, code: unit.unitCode },
-              create: { name: unit.unitName, code: unit.unitCode, shopId },
-            });
-          })
+        return prisma.$transaction(
+          units.map((unit) =>
+            prisma.unit.upsert({
+              where: {
+                unit_code_unique: {
+                  shopId,
+                  code: unit.unitCode,
+                },
+              },
+              update: {
+                name: unit.unitName,
+                code: unit.unitCode,
+              },
+              create: {
+                shopId,
+                name: unit.unitName,
+                code: unit.unitCode,
+              },
+            })
+          )
         );
       },
     },

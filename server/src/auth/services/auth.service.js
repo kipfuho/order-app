@@ -7,12 +7,13 @@ const { getCustomerFromCache, getCustomerFromDatabase } = require('../../metadat
 const { getMessageByLocale } = require('../../locale');
 const { throwUnauthorized, throwBadRequest } = require('../../utils/errorHandling');
 const { Token } = require('../../models');
+const logger = require('../../config/logger');
 
 const _getUserFromRefreshToken = async (tokenDoc) => {
   if (!tokenDoc.isCustomer) {
-    return getUserFromCache({ userId: tokenDoc.user });
+    return getUserFromCache({ userId: tokenDoc.userId });
   }
-  return getCustomerFromCache({ userId: tokenDoc.user });
+  return getCustomerFromCache({ customerId: tokenDoc.customerId });
 };
 
 /**
@@ -92,6 +93,7 @@ const refreshAuth = async (refreshToken) => {
     });
     return tokenService.generateAuthTokens(user, refreshTokenDoc.isCustomer);
   } catch (error) {
+    logger.error(error);
     throwUnauthorized(true, getMessageByLocale({ key: 'auth.required' }));
   }
 };

@@ -64,9 +64,9 @@ const saveToken = async (token, userId, expires, type, isCustomer = false, black
 
 const _checkTokenBelongToUser = ({ token, jwtPayload }) => {
   if (jwtPayload.isCustomer) {
-    return jwtPayload.userId === token.customerId;
+    return jwtPayload.sub === token.customerId;
   }
-  return jwtPayload.userId === token.userId;
+  return jwtPayload.sub === token.userId;
 };
 
 /**
