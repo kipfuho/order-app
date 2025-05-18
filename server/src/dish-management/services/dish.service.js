@@ -20,6 +20,7 @@ const { notifyUpdateDish, EventActionType } = require('../../utils/awsUtils/appS
 const { getMessageByLocale } = require('../../locale');
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
 const logger = require('../../config/logger');
+const prisma = require('../../utils/prisma');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -149,6 +150,8 @@ const downloadAndUploadDishImages = async ({ shopId, imageUrls = [] }) => {
 };
 
 const importDishes = async ({ dishes, shopId }) => {
+  const shopDishes = await getDishesFromCache({ shopId });
+  const shopDishByCode = _.keyBy(shopDishes, 'code');
   const dishCategories = await getDishCategoriesFromCache({ shopId });
   const dishCategoryByName = _.keyBy(dishCategories, 'name');
   const dishCategoryById = _.keyBy(dishCategories, 'id');
@@ -158,60 +161,72 @@ const importDishes = async ({ dishes, shopId }) => {
 
   const errorDishes = [];
   const newImageUrls = [];
+  const createdDishes = [];
+  const updatedDishes = [];
+  dishes.map(async (dish) => {
+    const { code, dishCategoryId, dishCategoryName, unitId, unitName, images } = dish;
 
-  await Promise.allSettled(
-    dishes.map(async (dish) => {
-      const { code, dishCategoryId, dishCategoryName, unitId, unitName, images } = dish;
+    // eslint-disable-next-line no-await-in-loop
+    const imageUrls = await downloadAndUploadDishImages({ imageUrls: images, shopId });
 
-      // eslint-disable-next-line no-await-in-loop
-      const imageUrls = await downloadAndUploadDishImages({ imageUrls: images, shopId });
+    if (!code) {
+      errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingCode' }) });
+      return;
+    }
 
-      if (!code) {
-        errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingCode' }) });
-        return;
-      }
+    const dishCategory = dishCategoryById[dishCategoryId] || dishCategoryByName[dishCategoryName];
+    const unit = unitById[unitId] || unitByName[unitName];
 
-      const dishCategory = dishCategoryById[dishCategoryId] || dishCategoryByName[dishCategoryName];
-      const unit = unitById[unitId] || unitByName[unitName];
+    if (!dishCategory) {
+      errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingDishCategory' }) });
+      return;
+    }
+    if (!unit) {
+      errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingUnit' }) });
+      return;
+    }
 
-      if (!dishCategory) {
-        errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingDishCategory' }) });
-        return;
-      }
-      if (!unit) {
-        errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingUnit' }) });
-        return;
-      }
+    const updateBody = _.cloneDeep(dish);
+    updateBody.shopId = shopId;
+    updateBody.unit = unit.id;
+    updateBody.category = dishCategory.id;
+    updateBody.imageUrls = imageUrls;
+    if (imageUrls) {
+      newImageUrls.push(...imageUrls);
+      registerJob({
+        type: JobTypes.DISABLE_S3_OBJECT_USAGE,
+        data: {
+          keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
+        },
+      });
+    }
+    delete updateBody.dishCategoryId;
+    delete updateBody.dishCategoryName;
+    delete updateBody.unitId;
+    delete updateBody.unitName;
 
-      const updateBody = _.cloneDeep(dish);
-      updateBody.shopId = shopId;
-      updateBody.unit = unit.id;
-      updateBody.category = dishCategory.id;
-      updateBody.imageUrls = imageUrls;
-      if (imageUrls) {
-        newImageUrls.push(...imageUrls);
-        registerJob({
-          type: JobTypes.DISABLE_S3_OBJECT_USAGE,
-          data: {
-            keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
-          },
-        });
-      }
-      delete updateBody.dishCategoryId;
-      delete updateBody.dishCategoryName;
-      delete updateBody.unitId;
-      delete updateBody.unitName;
-      return Dish.upsert({
+    if (shopDishByCode[code]) {
+      updatedDishes.push(updateBody);
+    } else {
+      createdDishes.push(updateBody);
+    }
+  });
+
+  await Dish.createMany({ data: { ...createdDishes, shopId } });
+  await prisma.$transaction(
+    updatedDishes.map((dish) =>
+      Dish.update({
+        data: {
+          ...dish,
+        },
         where: {
           dish_code_unique: {
             shopId,
-            code,
+            code: dish.code,
           },
         },
-        create: { ...updateBody, shopId },
-        update: updateBody,
-      });
-    })
+      })
+    )
   );
 
   registerJob({

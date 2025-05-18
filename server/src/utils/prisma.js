@@ -6,6 +6,7 @@ const config = require('../config/config');
 const { DefaultUnitList, Countries } = require('./constant');
 const { getShopCountry } = require('../middlewares/clsHooked');
 
+/** @type {import('@prisma/client').PrismaClient} */
 const prisma = new PrismaClient({
   datasourceUrl: config.postgresql.url,
 }).$extends({
@@ -62,27 +63,9 @@ const prisma = new PrismaClient({
       async createDefaultUnits(shopId) {
         const shopCountry = getShopCountry() || Countries.VietNam;
         const units = DefaultUnitList[shopCountry];
-        return prisma.$transaction(
-          units.map((unit) =>
-            prisma.unit.upsert({
-              where: {
-                unit_code_unique: {
-                  shopId,
-                  code: unit.unitCode,
-                },
-              },
-              update: {
-                name: unit.unitName,
-                code: unit.unitCode,
-              },
-              create: {
-                shopId,
-                name: unit.unitName,
-                code: unit.unitCode,
-              },
-            })
-          )
-        );
+        return prisma.unit.createMany({
+          data: units.map((unit) => ({ code: unit.unitCode, name: unit.unitName, shopId })),
+        });
       },
     },
     s3Log: {

@@ -5,6 +5,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { notifyUpdateDishCategory, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
 const { Status } = require('../../utils/constant');
+const prisma = require('../../utils/prisma');
 
 const getDishCategory = async ({ shopId, dishCategoryId }) => {
   const dishCategory = await getDishCategoryFromCache({ shopId, dishCategoryId });
@@ -72,11 +73,16 @@ const deleteDishCategory = async ({ shopId, dishCategoryId, userId }) => {
 
 const importDishCategories = async ({ dishCategories, shopId }) => {
   const currentDishCategories = await getDishCategoriesFromCache({ shopId });
+  const dishCategoryByCode = _.keyBy(currentDishCategories, 'code');
   const dishCategoryByName = _.keyBy(currentDishCategories, 'name');
 
   const errorDishCategories = [];
+  const createdDishCategories = [];
+  const updatedDishCategories = [];
   _.forEach(dishCategories, (dishCategory) => {
     const { code, name } = dishCategory;
+    // eslint-disable-next-line no-param-reassign
+    dishCategory.shopId = shopId;
 
     if (!code) {
       errorDishCategories.push({ dishCategory, message: getMessageByLocale({ key: 'import.missingCode' }) });
@@ -88,18 +94,29 @@ const importDishCategories = async ({ dishCategories, shopId }) => {
       return;
     }
 
-    const updateBody = _.cloneDeep(dishCategory);
-    return DishCategory.upsert({
-      where: {
-        dishcategory_code_unique: {
-          shopId,
-          code,
-        },
-      },
-      create: { ...updateBody, shopId },
-      update: updateBody,
-    });
+    if (dishCategoryByCode[code]) {
+      updatedDishCategories.push(dishCategory);
+    } else {
+      createdDishCategories.push(dishCategory);
+    }
   });
+
+  await DishCategory.createMany({ data: createdDishCategories });
+  await prisma.$transaction(
+    updatedDishCategories.map((dc) =>
+      DishCategory.update({
+        data: {
+          ...dc,
+        },
+        where: {
+          dishcategory_code_unique: {
+            shopId,
+            code: dc.code,
+          },
+        },
+      })
+    )
+  );
 
   return errorDishCategories;
 };
