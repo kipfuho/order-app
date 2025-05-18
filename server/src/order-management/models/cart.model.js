@@ -6,7 +6,7 @@ const cartItemSchema = new mongoose.Schema(
   {
     dishId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Shop',
+      ref: 'Dish',
     },
     quantity: { type: Number },
     price: { type: Number },
