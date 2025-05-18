@@ -40,7 +40,7 @@ const changeDishQuantity = async ({ shopId, requestBody }) => {
   const { orderId, dishOrderId, newQuantity } = requestBody;
   throwBadRequest(typeof newQuantity !== 'number' || newQuantity < 0, getMessageByLocale({ key: 'dish.invalidQuantity' }));
 
-  const order = await Order.findUnique({
+  const order = await Order.findFirst({
     where: {
       shopId,
       id: orderId,
@@ -625,7 +625,7 @@ const getOrderNeedApproval = async ({ shopId }) => {
 
 // cập nhật đơn hàng chưa xác nhận
 const updateUnconfirmedOrder = async ({ shopId, orderId, updateDishOrders }) => {
-  const order = await Order.findUnique({
+  const order = await Order.findFirst({
     where: {
       id: orderId,
       shopId,
@@ -668,7 +668,7 @@ const cancelUnconfirmedOrder = async ({ userId, shopId, orderId }) => {
 };
 
 const approveUnconfirmedOrder = async ({ userId, shopId, orderId, orderSessionId }) => {
-  const order = await Order.findUnique({
+  const order = await Order.findFirst({
     where: {
       id: orderId,
       shopId,

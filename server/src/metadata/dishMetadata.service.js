@@ -39,7 +39,7 @@ const getDishFromCache = async ({ shopId, dishId }) => {
     }
   }
 
-  const dish = await Dish.findUnique({
+  const dish = await Dish.findFirst({
     where: {
       id: dishId,
       shopId,
@@ -117,7 +117,7 @@ const getDishCategoryFromCache = async ({ shopId, dishCategoryId }) => {
     }
   }
 
-  const dishCategory = await DishCategory.findUnique({
+  const dishCategory = await DishCategory.findFirst({
     where: {
       id: dishCategoryId,
       shopId,

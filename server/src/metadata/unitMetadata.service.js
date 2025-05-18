@@ -27,7 +27,7 @@ const getUnitFromCache = async ({ shopId, unitId }) => {
     }
   }
 
-  const unit = await Unit.findUnique({
+  const unit = await Unit.findFirst({
     where: {
       id: unitId,
       shopId,

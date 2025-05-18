@@ -31,7 +31,7 @@ const getDepartmentFromCache = async ({ shopId, departmentId }) => {
     }
   }
 
-  const department = await Department.findUnique({
+  const department = await Department.findFirst({
     where: {
       id: departmentId,
       shopId,

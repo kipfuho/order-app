@@ -36,7 +36,7 @@ const getEmployeeFromCache = async ({ shopId, employeeId }) => {
     }
   }
 
-  const employee = await Employee.findUnique({
+  const employee = await Employee.findFirst({
     where: {
       id: employeeId,
       shopId,
@@ -117,7 +117,7 @@ const getEmployeeWithPermissionByUserId = async ({ userId, shopId }) => {
     }
   }
 
-  const employee = await Employee.findUnique({
+  const employee = await Employee.findFirst({
     where: {
       user: userId,
       shopId,
@@ -161,7 +161,7 @@ const getEmployeePositionFromCache = async ({ shopId, employeePositionId }) => {
     }
   }
 
-  const employeePosition = await EmployeePosition.findUnique({ where: { id: employeePositionId, shopId } });
+  const employeePosition = await EmployeePosition.findFirst({ where: { id: employeePositionId, shopId } });
   return employeePosition;
 };
 

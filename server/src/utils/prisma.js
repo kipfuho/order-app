@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const { deleteShopCache } = require('../metadata/common');
 const config = require('../config/config');
@@ -7,9 +8,7 @@ const { getShopCountry } = require('../middlewares/clsHooked');
 
 const prisma = new PrismaClient({
   datasourceUrl: config.postgresql.url,
-});
-
-prisma.$extends({
+}).$extends({
   query: {
     shop: {
       async update({ args, query }) {
@@ -29,6 +28,20 @@ prisma.$extends({
         const result = await query(args);
         await deleteShopCache({ shopId });
         return result;
+      },
+    },
+    user: {
+      async create({ args, query }) {
+        // eslint-disable-next-line no-param-reassign
+        args.data.password = await bcrypt.hash(args.data.password, 8);
+        return query(args);
+      },
+      async update({ args, query }) {
+        if (args.data.password) {
+          // eslint-disable-next-line no-param-reassign
+          args.data.password = await bcrypt.hash(args.data.password, 8);
+        }
+        return query(args);
       },
     },
     // todo: add later

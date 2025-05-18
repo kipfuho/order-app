@@ -31,7 +31,7 @@ const getKitchenFromCache = async ({ shopId, kitchenId }) => {
     }
   }
 
-  const kitchen = await Kitchen.findUnique({
+  const kitchen = await Kitchen.findFirst({
     where: {
       id: kitchenId,
       shopId,

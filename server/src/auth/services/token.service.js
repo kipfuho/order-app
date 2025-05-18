@@ -77,7 +77,7 @@ const _checkTokenBelongToUser = ({ token, jwtPayload }) => {
  */
 const verifyToken = async (token, type) => {
   const payload = jwt.verify(token, config.jwt.secret);
-  const tokenDoc = await Token.findUnique({
+  const tokenDoc = await Token.findFirst({
     where: {
       token,
       type,

@@ -36,7 +36,7 @@ const getTableFromCache = async ({ shopId, tableId }) => {
     }
   }
 
-  const table = await Table.findUnique({
+  const table = await Table.findFirst({
     where: {
       id: tableId,
       shopId,
@@ -110,7 +110,7 @@ const getTablePositionFromCache = async ({ shopId, tablePositionId }) => {
     }
   }
 
-  const tablePosition = await TablePosition.findUnique({
+  const tablePosition = await TablePosition.findFirst({
     where: {
       id: tablePositionId,
       shopId,

@@ -12,7 +12,7 @@ const _getUserFromClsHook = ({ key }) => {
 
 const getUserModelFromDatabase = async ({ userId, email, phone }) => {
   if (userId) {
-    const user = await User.findUnique({
+    const user = await User.findFirst({
       where: {
         id: userId,
         status: constant.Status.enabled,
@@ -22,7 +22,7 @@ const getUserModelFromDatabase = async ({ userId, email, phone }) => {
   }
   if (!email && !phone) return null;
 
-  const user = await User.findUnique({
+  const user = await User.findFirst({
     where: {
       OR: _.compact([email ? { email } : null, phone ? { phone } : null]),
       status: constant.Status.enabled,

@@ -12,7 +12,7 @@ const _getCustomerFromClsHook = ({ key }) => {
 
 const getCustomerFromDatabase = async ({ customerId, phone }) => {
   if (customerId) {
-    const customer = await Customer.findUnique({
+    const customer = await Customer.findFirst({
       where: {
         id: customerId,
         status: constant.Status.enabled,
@@ -21,7 +21,7 @@ const getCustomerFromDatabase = async ({ customerId, phone }) => {
     return customer;
   }
 
-  const customer = await Customer.findUnique({
+  const customer = await Customer.findFirst({
     where: {
       phone,
       status: constant.Status.enabled,

@@ -24,7 +24,7 @@ const getShopFromCache = async ({ shopId }) => {
       return shopCache;
     }
 
-    const shop = await Shop.findUnique({
+    const shop = await Shop.findFirst({
       where: {
         id: shopId,
         status: constant.Status.enabled,
@@ -35,7 +35,7 @@ const getShopFromCache = async ({ shopId }) => {
     return shop;
   }
 
-  const shop = await Shop.findUnique({
+  const shop = await Shop.findFirst({
     where: {
       id: shopId,
       status: constant.Status.enabled,

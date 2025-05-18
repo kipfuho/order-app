@@ -45,7 +45,9 @@ const createUser = async (userBody) => {
   if (await User.isEmailTaken(userBody.email)) {
     throwBadRequest(true, getMessageByLocale({ key: 'email.alreadyTaken' }));
   }
-  return User.create(userBody);
+  return User.create({
+    data: userBody,
+  });
 };
 
 /**
