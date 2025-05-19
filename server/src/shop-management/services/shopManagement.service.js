@@ -109,22 +109,27 @@ const createShop = async ({ createBody, userId }) => {
         name: getMessageByLocale({ key: 'shop.owner' }),
       },
     });
-
-    // job to update s3 logs -> inUse = true
-    registerJob({
-      type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
-      data: {
-        keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
-      },
-    });
-    notifyUpdateShop({ shop, action: EventActionType.CREATE, userId });
-    return shop;
   } catch (err) {
+    await Employee.deleteMany({ where: { shopId, userId } });
     await Department.deleteMany({ where: { shopId } });
     await Unit.deleteMany({ where: { shopId } });
-    await Employee.deleteMany({ where: { shopId, userId } });
+    await Shop.delete({
+      where: {
+        id: shopId,
+      },
+    });
     throw err;
   }
+
+  // job to update s3 logs -> inUse = true
+  registerJob({
+    type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
+    data: {
+      keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
+    },
+  });
+  notifyUpdateShop({ shop, action: EventActionType.CREATE, userId });
+  return shop;
 };
 
 const updateShop = async ({ shopId, updateBody, userId }) => {
