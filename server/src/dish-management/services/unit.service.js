@@ -16,9 +16,12 @@ const getUnits = async ({ shopId }) => {
 };
 
 const createUnit = async ({ shopId, createBody }) => {
-  // eslint-disable-next-line no-param-reassign
-  createBody.shopId = shopId;
-  const unit = await Unit.create({ data: createBody });
+  const unit = await Unit.create({
+    data: {
+      ...createBody,
+      shopId,
+    },
+  });
   return unit;
 };
 
@@ -29,9 +32,13 @@ const createDefaultUnits = async ({ shopId }) => {
 };
 
 const updateUnit = async ({ shopId, unitId, updateBody }) => {
-  // eslint-disable-next-line no-param-reassign
-  updateBody.shopId = shopId;
-  const unit = await Unit.update({ data: updateBody, where: { id: unitId, shopId } });
+  const unit = await Unit.update({
+    data: {
+      ...updateBody,
+      shopId,
+    },
+    where: { id: unitId, shopId },
+  });
   throwBadRequest(!unit, getMessageByLocale({ key: 'unit.notFound' }));
   return unit;
 };

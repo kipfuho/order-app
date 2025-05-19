@@ -3,6 +3,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { notifyUpdateKitchen, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
 const { getKitchenFromCache, getKitchensFromCache } = require('../../metadata/kitchenMetadata.service');
+const { Status } = require('../../utils/constant');
 
 const getKitchen = async ({ shopId, kitchenId }) => {
   const kitchen = await getKitchenFromCache({ shopId, kitchenId });
@@ -16,45 +17,57 @@ const getKitchens = async ({ shopId }) => {
 };
 
 const createKitchen = async ({ shopId, createBody, userId }) => {
-  // eslint-disable-next-line no-param-reassign
-  createBody.shop = shopId;
-  const kitchen = await Kitchen.create(createBody);
-  const kitchenJson = kitchen.toJSON();
+  const kitchen = await Kitchen.create({
+    data: {
+      ...createBody,
+      shopId,
+    },
+  });
 
   notifyUpdateKitchen({
     action: EventActionType.CREATE,
-    kitchen: kitchenJson,
+    kitchen,
     userId,
   });
-  return kitchenJson;
+  return kitchen;
 };
 
 const updateKitchen = async ({ shopId, kitchenId, updateBody, userId }) => {
-  // eslint-disable-next-line no-param-reassign
-  updateBody.shop = shopId;
-  const kitchen = await Kitchen.findOneAndUpdate({ _id: kitchenId, shop: shopId }, { $set: updateBody }, { new: true });
+  const kitchen = await Kitchen.update({
+    where: {
+      id: kitchenId,
+      shopId,
+    },
+    data: { ...updateBody, shopId },
+  });
   throwBadRequest(!kitchen, getMessageByLocale({ key: 'kitchen.notFound' }));
-  const kitchenJson = kitchen.toJSON();
 
   notifyUpdateKitchen({
     action: EventActionType.UPDATE,
-    kitchen: kitchenJson,
+    kitchen,
     userId,
   });
-  return kitchenJson;
+  return kitchen;
 };
 
 const deleteKitchen = async ({ shopId, kitchenId, userId }) => {
-  const kitchen = await Kitchen.findOneAndDelete({ _id: kitchenId, shop: shopId });
+  const kitchen = await Kitchen.update({
+    data: {
+      status: Status.disabled,
+    },
+    where: {
+      id: kitchenId,
+      shopId,
+    },
+  });
   throwBadRequest(!kitchen, getMessageByLocale({ key: 'kitchen.notFound' }));
 
-  const kitchenJson = kitchen.toJSON();
   notifyUpdateKitchen({
     action: EventActionType.DELETE,
-    kitchen: kitchenJson,
+    kitchen,
     userId,
   });
-  return kitchenJson;
+  return kitchen;
 };
 
 module.exports = {

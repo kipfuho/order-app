@@ -146,6 +146,7 @@ model KitchenLog {
   @@index([userId])
   @@index([orderId])
   @@index([dishOrderId])
+  @@index([dishOrderId, action, createdAt])
 }
 
 model DishOrder {
@@ -221,10 +222,8 @@ model Order {
   table                Table               @relation(fields: [tableId], references: [id])
   returnedDishOrders   ReturnedDishOrder[]
 
-  @@index([shopId])
-  @@index([tableId])
-  @@index([orderSessionId])
-  @@index([customerId])
+  @@index([shopId, customerId])
+  @@index([orderSessionId, shopId, orderSessionStatus, status, createdAt])
 }
 
 model DiscountProduct {
@@ -317,7 +316,7 @@ model OrderSession {
   paymentDetails               PaymentDetail[]
   taxDetails                   TaxDetail[]
 
-  @@index([shopId])
+  @@index([shopId, createdAt, status, tableIds])
 }
 
 model Shop {

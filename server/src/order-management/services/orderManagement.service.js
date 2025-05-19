@@ -42,8 +42,8 @@ const changeDishQuantity = async ({ shopId, requestBody }) => {
 
   const order = await Order.findFirst({
     where: {
-      shopId,
       id: orderId,
+      shopId,
     },
     include: {
       dishOrders: true,

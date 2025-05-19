@@ -34,9 +34,12 @@ const getDishes = async ({ shopId }) => {
 };
 
 const createDish = async ({ shopId, createBody, userId }) => {
-  // eslint-disable-next-line no-param-reassign
-  createBody.shopId = shopId;
-  const dish = await Dish.create({ data: createBody });
+  const dish = await Dish.create({
+    data: {
+      ...createBody,
+      shopId,
+    },
+  });
   dish.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.categoryId });
 
   // job to update s3 logs -> inUse = true
@@ -55,9 +58,13 @@ const createDish = async ({ shopId, createBody, userId }) => {
 };
 
 const updateDish = async ({ shopId, dishId, updateBody, userId }) => {
-  // eslint-disable-next-line no-param-reassign
-  updateBody.shopId = shopId;
-  const dish = await Dish.update({ data: updateBody, where: { id: dishId, shopId } });
+  const dish = await Dish.update({
+    data: {
+      ...updateBody,
+      shopId,
+    },
+    where: { id: dishId, shopId },
+  });
   throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
   dish.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.categoryId });
 

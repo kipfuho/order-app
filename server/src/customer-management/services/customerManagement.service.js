@@ -42,7 +42,9 @@ const validateCustomer = (customerBody) => {
 
 const createCustomer = async (createBody) => {
   validateCustomer(createBody);
-  const customer = await Customer.create(createBody);
+  const customer = await Customer.create({
+    data: createBody,
+  });
   return customer;
 };
 
@@ -60,21 +62,21 @@ const updateCustomer = async (customerId, updateBody) => {
 
 const registerCustomer = async ({ phone, password, name, id }) => {
   if (id) {
-    const customer = await Customer.findByIdAndUpdate(
-      { _id: id, anonymous: true },
-      {
-        $set: { name, phone, password },
-        $unset: {
-          anonymous: 1,
-        },
+    const customer = await Customer.update({
+      data: {
+        name,
+        phone,
+        password,
+        anonymous: false,
       },
-      {
-        new: true,
-      }
-    );
+      where: {
+        id,
+        anonymous: true,
+      },
+    });
 
     throwBadRequest(!customer, getMessageByLocale({ key: 'customer.notFound' }));
-    return customer.toJSON();
+    return customer;
   }
 
   const customer = await createCustomer({ name, phone, password });

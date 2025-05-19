@@ -1,41 +1,46 @@
 const _ = require('lodash');
-const { Order, KitchenLog, OrderSession } = require('../../models');
+const { Order, KitchenLog, OrderSession, DishOrder } = require('../../models');
 const { createSearchByDateOptionWithShopTimezone } = require('../../utils/common');
 const { OrderSessionStatus, Status, DishOrderStatus, KitchenAction } = require('../../utils/constant');
 const { getMessageByLocale } = require('../../locale');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
+const prisma = require('../../utils/prisma');
 
 const _getDishOrdersByStatus = async ({ shopId, status }) => {
   // currently disable filter time filter to dev
   // const timeOptions = createSearchByDateOptionWithShopTimezone({ filterKey: 'createdAt' });
-  const orders = await Order.find(
-    {
-      shop: shopId,
-      orderSessionId: { $ne: null },
+  const orders = await Order.findMany({
+    where: {
+      orderSessionId: { not: null },
+      shopId,
       orderSessionStatus: OrderSessionStatus.unpaid,
       status: Status.enabled,
       // ...timeOptions,
     },
-    {
+    include: {
       dishOrders: 1,
-      orderSessionId: 1,
-      createdAt: 1,
-    }
-  );
+    },
+    select: {
+      orderSessionId: true,
+      createdAt: true,
+      dishOrders: true,
+    },
+  });
 
   const orderSessionIds = _(orders).map('orderSessionId').uniq().value();
-  const orderSessions = await OrderSession.find(
-    { _id: { $in: orderSessionIds } },
-    {
-      orderSessionNo: 1,
-      tableNames: 1,
-    }
-  );
+  const orderSessions = await OrderSession.findMany({
+    where: {
+      id: { in: orderSessionIds },
+    },
+    select: {
+      orderSessionNo: true,
+      tableNames: true,
+    },
+  });
   const orderSessionById = _.keyBy(orderSessions, 'id');
 
-  const orderJsons = _.map(orders, (order) => order.toJSON());
-  const dishOrders = _(orderJsons)
+  const dishOrders = _(orders)
     .flatMap((order) => {
       order.dishOrders.forEach((dishOrder) => {
         const orderSession = orderSessionById[order.orderSessionId];
@@ -63,8 +68,14 @@ const _updateDishOrdersByStatus = async ({ shopId, updateRequests, userId, befor
   const logs = [];
   const updateRequestGroupByOrderId = _.groupBy(updateRequests, 'orderId');
   const orderIds = Object.keys(updateRequestGroupByOrderId);
-  const orders = await Order.find({ shop: shopId, _id: { $in: orderIds } });
+  const orders = await Order.findMany({
+    where: {
+      id: { in: orderIds },
+      shopId,
+    },
+  });
   const orderById = _.keyBy(orders, (order) => order.id);
+  const updatedDishOrders = [];
   _.forEach(updateRequestGroupByOrderId, async (updateGroup, orderId) => {
     try {
       const order = orderById[orderId];
@@ -79,7 +90,7 @@ const _updateDishOrdersByStatus = async ({ shopId, updateRequests, userId, befor
           // eslint-disable-next-line no-param-reassign
           dishOrder.status = afterStatus;
           logs.push({
-            shop: shopId,
+            shopId,
             userId,
             orderId,
             dishOrderId: dishOrder.id,
@@ -87,6 +98,7 @@ const _updateDishOrdersByStatus = async ({ shopId, updateRequests, userId, befor
             dishName: dishOrder.name,
             dishQuantity: dishOrder.quantity,
           });
+          updatedDishOrders.push(dishOrder);
         }
         return dishOrder;
       });
@@ -95,7 +107,18 @@ const _updateDishOrdersByStatus = async ({ shopId, updateRequests, userId, befor
     }
   });
 
-  await Order.bulkSave(orders);
+  await prisma.$transaction(
+    updatedDishOrders.map((dishOrder) =>
+      DishOrder.update({
+        data: {
+          status: dishOrder.status,
+        },
+        where: {
+          id: dishOrder.id,
+        },
+      })
+    )
+  );
   registerJob({
     type: JobTypes.LOG_KITCHEN,
     data: logs,
@@ -162,10 +185,12 @@ const undoServedDishOrders = async ({ shopId, requestBody, userId }) => {
 
 const _getKitchenHistoriesByAction = async ({ shopId, from, to, actions }) => {
   const timeOptions = createSearchByDateOptionWithShopTimezone({ from, to, filterKey: 'createdAt' });
-  const histories = await KitchenLog.find({
-    shop: shopId,
-    action: { $in: actions },
-    ...timeOptions,
+  const histories = await KitchenLog.findMany({
+    where: {
+      shopId,
+      action: { in: actions },
+      ...timeOptions,
+    },
   });
   return histories;
 };

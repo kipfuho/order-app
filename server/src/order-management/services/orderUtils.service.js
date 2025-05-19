@@ -381,8 +381,8 @@ const _getOrderSessionJson = async ({ orderSessionId, shopId }) => {
   throwBadRequest(shopId && orderSession.shopId !== shopId, 'orderSession.notFound');
   const orders = await Order.findMany({
     where: {
-      shopId,
       orderSessionId,
+      shopId,
     },
     include: {
       dishOrders: true,
@@ -710,8 +710,8 @@ const _updateOrderSessionStatusForOrders = async ({ shopId, orderIds = [], statu
       return Order.update({
         data: { orderSessionStatus: status },
         where: {
-          shopId,
           id: orderId,
+          shopId,
         },
       });
     })
