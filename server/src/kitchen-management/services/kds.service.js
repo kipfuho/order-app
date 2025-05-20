@@ -18,9 +18,6 @@ const _getDishOrdersByStatus = async ({ shopId, status }) => {
       status: Status.enabled,
       // ...timeOptions,
     },
-    include: {
-      dishOrders: 1,
-    },
     select: {
       orderSessionId: true,
       createdAt: true,
