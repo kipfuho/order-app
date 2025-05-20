@@ -54,9 +54,10 @@ model Customer {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   status          Status   @default(enabled)
-  Cart            Cart[]
-  Order           Order[]
+  cart            Cart[]
+  order           Order[]
   tokens          Token[]
+  shop            Shop[]   @relation("CustomerToShop")
 }
 
 model Token {
@@ -172,7 +173,7 @@ model DishOrder {
   orderId                      String
   dish                         Dish?           @relation(fields: [dishId], references: [id])
   order                        Order           @relation(fields: [orderId], references: [id])
-  KitchenLog                   KitchenLog[]
+  kitchenLog                   KitchenLog[]
 
   @@index([orderId])
   @@index([dishId])
@@ -346,14 +347,15 @@ model Shop {
   employees             Employee[]
   employeeDepartments   EmployeeDepartment[]
   employeePositions     EmployeePosition[]
-  Kitchen               Kitchen[]
-  KitchenLog            KitchenLog[]
-  Order                 Order[]
-  OrderSession          OrderSession[]
+  kitchen               Kitchen[]
+  kitchenLog            KitchenLog[]
+  order                 Order[]
+  orderSession          OrderSession[]
   owner                 User                 @relation(fields: [ownerId], references: [id])
   table                 Table[]
   tablePosition         TablePosition[]
   unit                  Unit[]
+  customer              Customer[]           @relation("CustomerToShop")
 
   @@index([ownerId])
 }
@@ -399,12 +401,12 @@ model Dish {
   id                     String              @id @default(uuid())
   imageUrls              String[]
   type                   DishType
-  CartItem               CartItem[]
+  cartItem               CartItem[]
   category               DishCategory        @relation(fields: [categoryId], references: [id])
   shop                   Shop                @relation(fields: [shopId], references: [id])
   unit                   Unit                @relation(fields: [unitId], references: [id])
-  DishOrder              DishOrder[]
-  ReturnedDishOrder      ReturnedDishOrder[]
+  dishOrder              DishOrder[]
+  returnedDishOrder      ReturnedDishOrder[]
 
   @@unique([shopId, code], name: "dish_code_unique")
   @@index([shopId])
@@ -452,10 +454,10 @@ model Table {
   createdAt                     DateTime      @default(now())
   updatedAt                     DateTime      @updatedAt
   id                            String        @id @default(uuid())
-  Order                         Order[]
+  order                         Order[]
   position                      TablePosition @relation(fields: [positionId], references: [id])
   shop                          Shop          @relation(fields: [shopId], references: [id])
-  Kitchen                       Kitchen[]     @relation("KitchenToTable")
+  kitchen                       Kitchen[]     @relation("KitchenToTable")
 
   @@index([shopId])
 }

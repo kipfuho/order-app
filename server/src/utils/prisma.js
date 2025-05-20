@@ -696,11 +696,11 @@ const prisma = new PrismaClient({
     },
     s3Log: {
       async updateInUseKeys({ keys }) {
-        return Promise.all(keys.map((key) => prisma.s3Log.update({ where: { key }, data: { inUse: true } })));
+        return prisma.s3Log.updateMany({ where: { key: { in: keys } }, data: { inUse: true } });
       },
 
       async disableInUseKeys({ keys }) {
-        return Promise.all(keys.map((key) => prisma.s3Log.update({ where: { key }, data: { inUse: false } })));
+        return prisma.s3Log.updateMany({ where: { key: { in: keys } }, data: { inUse: false } });
       },
     },
   },

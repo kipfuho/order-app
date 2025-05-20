@@ -38,5 +38,6 @@
   "import.missingCode": "Code is required",
   "import.missingDishCategory": "Dish category is required",
   "import.missingUnit": "Unit is required",
-  "success": "Success"
+  "success": "Success",
+  "kitchen.notFound": "Kitchen not found"
 }

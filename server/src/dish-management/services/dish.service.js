@@ -170,71 +170,75 @@ const importDishes = async ({ dishes, shopId }) => {
   const newImageUrls = [];
   const createdDishes = [];
   const updatedDishes = [];
-  dishes.map(async (dish) => {
-    const { code, dishCategoryId, dishCategoryName, unitId, unitName, images } = dish;
+  await Promise.all(
+    dishes.map(async (dish) => {
+      const { code, dishCategoryId, dishCategoryName, unitId, unitName, images } = dish;
 
-    // eslint-disable-next-line no-await-in-loop
-    const imageUrls = await downloadAndUploadDishImages({ imageUrls: images, shopId });
+      // eslint-disable-next-line no-await-in-loop
+      const imageUrls = await downloadAndUploadDishImages({ imageUrls: images, shopId });
 
-    if (!code) {
-      errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingCode' }) });
-      return;
-    }
+      if (!code) {
+        errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingCode' }) });
+        return;
+      }
 
-    const dishCategory = dishCategoryById[dishCategoryId] || dishCategoryByName[dishCategoryName];
-    const unit = unitById[unitId] || unitByName[unitName];
+      const dishCategory = dishCategoryById[dishCategoryId] || dishCategoryByName[dishCategoryName];
+      const unit = unitById[unitId] || unitByName[unitName];
 
-    if (!dishCategory) {
-      errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingDishCategory' }) });
-      return;
-    }
-    if (!unit) {
-      errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingUnit' }) });
-      return;
-    }
+      if (!dishCategory) {
+        errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingDishCategory' }) });
+        return;
+      }
+      if (!unit) {
+        errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingUnit' }) });
+        return;
+      }
 
-    const updateBody = _.cloneDeep(dish);
-    updateBody.shopId = shopId;
-    updateBody.unit = unit.id;
-    updateBody.category = dishCategory.id;
-    updateBody.imageUrls = imageUrls;
-    if (imageUrls) {
-      newImageUrls.push(...imageUrls);
-      registerJob({
-        type: JobTypes.DISABLE_S3_OBJECT_USAGE,
-        data: {
-          keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
-        },
-      });
-    }
-    delete updateBody.dishCategoryId;
-    delete updateBody.dishCategoryName;
-    delete updateBody.unitId;
-    delete updateBody.unitName;
-
-    if (shopDishByCode[code]) {
-      updatedDishes.push(updateBody);
-    } else {
-      createdDishes.push(updateBody);
-    }
-  });
-
-  await Dish.createMany({ data: { ...createdDishes, shopId } });
-  await prisma.$transaction(
-    updatedDishes.map((dish) =>
-      Dish.update({
-        data: {
-          ...dish,
-        },
-        where: {
-          dish_code_unique: {
-            shopId,
-            code: dish.code,
+      const updateBody = _.cloneDeep(dish);
+      updateBody.shopId = shopId;
+      updateBody.unitId = unit.id;
+      updateBody.categoryId = dishCategory.id;
+      updateBody.imageUrls = imageUrls;
+      if (imageUrls) {
+        newImageUrls.push(...imageUrls);
+        registerJob({
+          type: JobTypes.DISABLE_S3_OBJECT_USAGE,
+          data: {
+            keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
           },
-        },
-      })
-    )
+        });
+      }
+      delete updateBody.dishCategoryId;
+      delete updateBody.dishCategoryName;
+      delete updateBody.unitName;
+      delete updateBody.images;
+
+      if (shopDishByCode[code]) {
+        updatedDishes.push(updateBody);
+      } else {
+        createdDishes.push(updateBody);
+      }
+    })
   );
+
+  await Dish.createMany({ data: createdDishes });
+  if (updatedDishes.length > 0) {
+    await prisma.$transaction(
+      updatedDishes.map((dish) =>
+        Dish.update({
+          data: {
+            ...dish,
+          },
+          where: {
+            dish_code_unique: {
+              shopId,
+              code: dish.code,
+            },
+          },
+        })
+      )
+    );
+  }
 
   registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
