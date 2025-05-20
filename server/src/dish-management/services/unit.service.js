@@ -2,6 +2,7 @@ const { Unit } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getUnitFromCache, getUnitsFromCache } = require('../../metadata/unitMetadata.service');
 const { getMessageByLocale } = require('../../locale');
+const { Status } = require('../../utils/constant');
 
 const getUnit = async ({ shopId, unitId }) => {
   const unit = await getUnitFromCache({ shopId, unitId });
@@ -15,9 +16,12 @@ const getUnits = async ({ shopId }) => {
 };
 
 const createUnit = async ({ shopId, createBody }) => {
-  // eslint-disable-next-line no-param-reassign
-  createBody.shop = shopId;
-  const unit = await Unit.create(createBody);
+  const unit = await Unit.create({
+    data: {
+      ...createBody,
+      shopId,
+    },
+  });
   return unit;
 };
 
@@ -28,15 +32,25 @@ const createDefaultUnits = async ({ shopId }) => {
 };
 
 const updateUnit = async ({ shopId, unitId, updateBody }) => {
-  // eslint-disable-next-line no-param-reassign
-  updateBody.shop = shopId;
-  const unit = await Unit.findByIdAndUpdate({ unitId, shop: shopId }, { $set: updateBody }, { new: true });
+  const unit = await Unit.update({
+    data: {
+      ...updateBody,
+      shopId,
+    },
+    where: { id: unitId, shopId },
+  });
   throwBadRequest(!unit, getMessageByLocale({ key: 'unit.notFound' }));
   return unit;
 };
 
 const deleteUnit = async ({ shopId, unitId }) => {
-  await Unit.deleteOne({ _id: unitId, shop: shopId });
+  await Unit.update({
+    data: { status: Status.disabled },
+    where: {
+      id: unitId,
+      shopId,
+    },
+  });
 };
 
 module.exports = {

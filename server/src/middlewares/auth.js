@@ -6,8 +6,9 @@ const { roleRights, ROLES, allRoleRights } = require('../config/roles');
 const { getShopFromCache } = require('../metadata/shopMetadata.service');
 const { getEmployeeWithPermissionByUserId } = require('../metadata/employeeMetadata.service');
 const { PermissionType } = require('../utils/constant');
-const { setEmployeePermissions } = require('./clsHooked');
+const { setEmployeePermissions, setShopToSession } = require('./clsHooked');
 const { getMessageByLocale } = require('../locale');
+const logger = require('../config/logger');
 
 const _verifyAdmin = (req, requiredRights) => {
   const { user } = req;
@@ -57,7 +58,7 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
       return;
     }
 
-    if (shop.owner.toString() !== user.id) {
+    if (shop.ownerId !== user.id) {
       const { employee, permissions } = await getEmployeeWithPermissionByUserId({ userId: user.id, shopId });
       if (!employee) {
         return reject(new ApiError(httpStatus.NOT_FOUND, getMessageByLocale({ key: 'employee.notFound' })));
@@ -78,11 +79,44 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
   }
 };
 
+const isFromInternal = (req) => {
+  try {
+    // check hostname
+    const { hostname } = req;
+    if (typeof hostname !== 'string') return false;
+    return hostname === 'localhost';
+  } catch (err) {
+    return false;
+  }
+};
+
+const _resolveFromInternalReq = async (req, resolve) => {
+  try {
+    const shopId = req.shopId || req.params.shopId;
+
+    const shop = await getShopFromCache({ shopId });
+    req.shop = shop;
+    setShopToSession(shop);
+  } catch (err) {
+    logger.error(`error from internal . ${err.stack}`);
+  } finally {
+    resolve();
+  }
+};
+
 const auth =
   (...requiredRights) =>
   async (req, res, next) => {
     return new Promise((resolve, reject) => {
-      passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, requiredRights))(req, res, next);
+      if (isFromInternal(req)) {
+        _resolveFromInternalReq(req, resolve);
+      } else {
+        passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, requiredRights))(
+          req,
+          res,
+          next
+        );
+      }
     })
       .then(() => next())
       .catch((err) => next(err));

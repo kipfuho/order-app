@@ -1,18 +1,19 @@
 const bcrypt = require('bcryptjs');
 const tokenService = require('./token.service');
 const userService = require('./user.service');
-const Token = require('../models/token.model');
 const { tokenTypes } = require('../../config/tokens');
 const { getUserFromDatabase, getUserFromCache, getUserModelFromDatabase } = require('../../metadata/userMetadata.service');
 const { getCustomerFromCache, getCustomerFromDatabase } = require('../../metadata/customerMetadata.service');
 const { getMessageByLocale } = require('../../locale');
 const { throwUnauthorized, throwBadRequest } = require('../../utils/errorHandling');
+const { Token } = require('../../models');
+const logger = require('../../config/logger');
 
 const _getUserFromRefreshToken = async (tokenDoc) => {
   if (!tokenDoc.isCustomer) {
-    return getUserFromCache({ userId: tokenDoc.user });
+    return getUserFromCache({ userId: tokenDoc.userId });
   }
-  return getCustomerFromCache({ userId: tokenDoc.user });
+  return getCustomerFromCache({ customerId: tokenDoc.customerId });
 };
 
 /**
@@ -39,7 +40,7 @@ const loginUserWithEmailAndPassword = async ({ email, password }) => {
   throwUnauthorized(!isPasswordMatch, getMessageByLocale({ key: 'auth.incorrectCredential' }));
 
   // delete all previous refresh tokens
-  await Token.deleteMany({ user: user.id, type: tokenTypes.REFRESH });
+  await Token.deleteMany({ where: { userId: user.id, type: tokenTypes.REFRESH } });
   return user;
 };
 
@@ -55,7 +56,7 @@ const loginCustomerWithPhoneAndPassword = async ({ phone, password }) => {
   throwUnauthorized(!isPasswordMatch, getMessageByLocale({ key: 'auth.incorrectCredential' }));
 
   // delete all previous refresh tokens
-  await Token.deleteMany({ user: customer.id, type: tokenTypes.REFRESH });
+  await Token.deleteMany({ where: { customerId: customer.id, type: tokenTypes.REFRESH } });
   return customer;
 };
 
@@ -65,12 +66,13 @@ const loginCustomerWithPhoneAndPassword = async ({ phone, password }) => {
  * @returns {Promise}
  */
 const logout = async (refreshToken) => {
-  const refreshTokenDoc = await Token.findOne({ token: refreshToken, type: tokenTypes.REFRESH, blacklisted: false });
-  if (!refreshTokenDoc) {
-    return;
-  }
-
-  await Token.deleteOne({ _id: refreshTokenDoc._id });
+  await Token.delete({
+    where: {
+      token: refreshToken,
+      type: tokenTypes.REFRESH,
+      blacklisted: false,
+    },
+  });
 };
 
 /**
@@ -84,9 +86,14 @@ const refreshAuth = async (refreshToken) => {
     const user = await _getUserFromRefreshToken(refreshTokenDoc);
     throwBadRequest(!user, getMessageByLocale({ key: 'user.notFound' }));
 
-    await Token.deleteOne({ _id: refreshTokenDoc._id });
+    await Token.delete({
+      where: {
+        id: refreshTokenDoc.id,
+      },
+    });
     return tokenService.generateAuthTokens(user, refreshTokenDoc.isCustomer);
   } catch (error) {
+    logger.error(error);
     throwUnauthorized(true, getMessageByLocale({ key: 'auth.required' }));
   }
 };
@@ -104,7 +111,12 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
     throwBadRequest(!user, getMessageByLocale({ key: 'user.notFound' }));
 
     await userService.updateUserById(user.id, { password: newPassword });
-    await Token.deleteMany({ user: user.id, type: tokenTypes.RESET_PASSWORD });
+    await Token.deleteMany({
+      where: {
+        user: user.id,
+        type: tokenTypes.RESET_PASSWORD,
+      },
+    });
   } catch (error) {
     throwUnauthorized(true, getMessageByLocale({ key: 'password.resetFailed' }));
   }
@@ -121,7 +133,12 @@ const verifyEmail = async (verifyEmailToken) => {
     const user = await _getUserFromRefreshToken(verifyEmailTokenDoc);
     throwBadRequest(!user, getMessageByLocale({ key: 'user.verifyFailed' }));
 
-    await Token.deleteMany({ user: user.id, type: tokenTypes.VERIFY_EMAIL });
+    await Token.deleteMany({
+      where: {
+        user: user.id,
+        type: tokenTypes.VERIFY_EMAIL,
+      },
+    });
     await userService.updateUserById(user.id, { isEmailVerified: true });
   } catch (error) {
     throwUnauthorized(true, getMessageByLocale({ key: 'email.verifyFailed' }));

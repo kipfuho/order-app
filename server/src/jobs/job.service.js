@@ -1,6 +1,5 @@
 const logger = require('../config/logger');
-const { KitchenLog } = require('../models');
-const S3Log = require('../models/s3.model');
+const { KitchenLog, S3Log } = require('../models');
 const {
   updateAfterPayOrderSession,
   updateAfterCancelOrderSession,
@@ -20,7 +19,7 @@ const processJob = async (jobPayload) => {
     return;
   }
   if (type === JobTypes.LOG_KITCHEN) {
-    await KitchenLog.insertMany(data);
+    await KitchenLog.createMany(data);
     return;
   }
 

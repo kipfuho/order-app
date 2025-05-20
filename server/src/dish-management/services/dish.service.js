@@ -12,7 +12,7 @@ const {
   getDishCategoryFromCache,
   getDishCategoriesFromCache,
 } = require('../../metadata/dishMetadata.service');
-const { DishTypes } = require('../../utils/constant');
+const { DishTypes, Status } = require('../../utils/constant');
 const { refineFileNameForUploading } = require('../../utils/common');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
@@ -20,6 +20,7 @@ const { notifyUpdateDish, EventActionType } = require('../../utils/awsUtils/appS
 const { getMessageByLocale } = require('../../locale');
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
 const logger = require('../../config/logger');
+const prisma = require('../../utils/prisma');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -33,11 +34,13 @@ const getDishes = async ({ shopId }) => {
 };
 
 const createDish = async ({ shopId, createBody, userId }) => {
-  // eslint-disable-next-line no-param-reassign
-  createBody.shop = shopId;
-  const dish = await Dish.create(createBody);
-  const dishJson = dish.toJSON();
-  dishJson.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.category });
+  const dish = await Dish.create({
+    data: {
+      ...createBody,
+      shopId,
+    },
+  });
+  dish.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.categoryId });
 
   // job to update s3 logs -> inUse = true
   registerJob({
@@ -48,19 +51,22 @@ const createDish = async ({ shopId, createBody, userId }) => {
   });
   notifyUpdateDish({
     action: EventActionType.CREATE,
-    dish: dishJson,
+    dish,
     userId,
   });
-  return dishJson;
+  return dish;
 };
 
 const updateDish = async ({ shopId, dishId, updateBody, userId }) => {
-  // eslint-disable-next-line no-param-reassign
-  updateBody.shop = shopId;
-  const dish = await Dish.findOneAndUpdate({ _id: dishId, shop: shopId }, { $set: updateBody }, { new: true });
+  const dish = await Dish.update({
+    data: {
+      ...updateBody,
+      shopId,
+    },
+    where: { id: dishId, shopId },
+  });
   throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
-  const dishJson = dish.toJSON();
-  dishJson.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.category });
+  dish.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.categoryId });
 
   // job to update s3 logs -> inUse = true
   registerJob({
@@ -71,17 +77,22 @@ const updateDish = async ({ shopId, dishId, updateBody, userId }) => {
   });
   notifyUpdateDish({
     action: EventActionType.UPDATE,
-    dish: dishJson,
+    dish,
     userId,
   });
-  return dishJson;
+  return dish;
 };
 
 const deleteDish = async ({ shopId, dishId, userId }) => {
-  const dish = await Dish.findOneAndDelete({ _id: dishId, shop: shopId });
+  const dish = await Dish.update({
+    data: { status: Status.disabled },
+    where: {
+      id: dishId,
+      shopId,
+    },
+  });
   throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
 
-  const dishJson = dish.toJSON();
   // job to update s3 logs -> inUse = true
   registerJob({
     type: JobTypes.DISABLE_S3_OBJECT_USAGE,
@@ -91,10 +102,10 @@ const deleteDish = async ({ shopId, dishId, userId }) => {
   });
   notifyUpdateDish({
     action: EventActionType.DELETE,
-    dish: dishJson,
+    dish,
     userId,
   });
-  return dishJson;
+  return dish;
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -146,6 +157,8 @@ const downloadAndUploadDishImages = async ({ shopId, imageUrls = [] }) => {
 };
 
 const importDishes = async ({ dishes, shopId }) => {
+  const shopDishes = await getDishesFromCache({ shopId });
+  const shopDishByCode = _.keyBy(shopDishes, 'code');
   const dishCategories = await getDishCategoriesFromCache({ shopId });
   const dishCategoryByName = _.keyBy(dishCategories, 'name');
   const dishCategoryById = _.keyBy(dishCategories, 'id');
@@ -153,11 +166,11 @@ const importDishes = async ({ dishes, shopId }) => {
   const unitByName = _.keyBy(units, 'name');
   const unitById = _.keyBy(units, 'id');
 
-  const bulkOps = [];
   const errorDishes = [];
   const newImageUrls = [];
-
-  await Promise.allSettled(
+  const createdDishes = [];
+  const updatedDishes = [];
+  await Promise.all(
     dishes.map(async (dish) => {
       const { code, dishCategoryId, dishCategoryName, unitId, unitName, images } = dish;
 
@@ -182,9 +195,9 @@ const importDishes = async ({ dishes, shopId }) => {
       }
 
       const updateBody = _.cloneDeep(dish);
-      updateBody.shop = shopId;
-      updateBody.unit = unit.id;
-      updateBody.category = dishCategory.id;
+      updateBody.shopId = shopId;
+      updateBody.unitId = unit.id;
+      updateBody.categoryId = dishCategory.id;
       updateBody.imageUrls = imageUrls;
       if (imageUrls) {
         newImageUrls.push(...imageUrls);
@@ -197,19 +210,36 @@ const importDishes = async ({ dishes, shopId }) => {
       }
       delete updateBody.dishCategoryId;
       delete updateBody.dishCategoryName;
-      delete updateBody.unitId;
       delete updateBody.unitName;
-      bulkOps.push({
-        updateOne: {
-          filter: { shop: shopId, code: dish.code },
-          update: { $set: updateBody },
-          upsert: true,
-        },
-      });
+      delete updateBody.images;
+
+      if (shopDishByCode[code]) {
+        updatedDishes.push(updateBody);
+      } else {
+        createdDishes.push(updateBody);
+      }
     })
   );
 
-  await Dish.bulkWrite(bulkOps);
+  await Dish.createMany({ data: createdDishes });
+  if (updatedDishes.length > 0) {
+    await prisma.$transaction(
+      updatedDishes.map((dish) =>
+        Dish.update({
+          data: {
+            ...dish,
+          },
+          where: {
+            dish_code_unique: {
+              shopId,
+              code: dish.code,
+            },
+          },
+        })
+      )
+    );
+  }
+
   registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
     data: {

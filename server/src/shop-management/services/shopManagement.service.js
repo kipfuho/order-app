@@ -18,8 +18,12 @@ const getShop = async (shopId) => {
 };
 
 const queryShop = async (query) => {
-  const filter = _.pick(query, ['name']);
-  filter.status = Status.enabled;
+  const filter = {
+    where: {
+      name: query.name,
+      status: Status.enabled,
+    },
+  };
   const { employeeUserId } = query;
 
   if (!employeeUserId)
@@ -31,53 +35,92 @@ const queryShop = async (query) => {
       result: [],
     };
 
-  const employees = await Employee.find({ user: employeeUserId, status: Status.enabled });
-  const employeeShopIds = _.map(employees, 'shop');
-  const selfOwnerShops = await Shop.find({ userId: employeeUserId }, { _id: 1 });
-  const selfOwnerShopIds = _.map(selfOwnerShops, (shop) => shop._id);
-  filter._id = { $in: _.concat(employeeShopIds, selfOwnerShopIds) };
+  const employees = await Employee.findMany({
+    where: {
+      userId: employeeUserId,
+      status: Status.enabled,
+    },
+  });
+  const employeeShopIds = _.map(employees, 'shopId');
+  const selfOwnerShops = await Shop.findMany({
+    where: {
+      ownerId: employeeUserId,
+    },
+  });
+  const selfOwnerShopIds = _.map(selfOwnerShops, 'id');
+  filter.where.id = { in: _.concat(employeeShopIds, selfOwnerShopIds) };
 
   const options = _.pick(query, ['sortBy', 'limit', 'page']);
-  const shops = await Shop.paginate(filter, options);
+  if (options.sortBy) {
+    filter.orderBy = {
+      [options.sortBy]: 'asc',
+    };
+  }
+  if (options.limit && options.page) {
+    filter.skip = Math.max(options.page - 1, 0) * options.limit;
+    filter.take = 1 * options.limit;
+  }
+  const shops = await Shop.findMany(filter);
   return shops;
 };
 
 const createShop = async ({ createBody, userId }) => {
   const shop = await Shop.create({
-    ...createBody,
-    owner: userId,
+    data: {
+      ...createBody,
+      ownerId: userId,
+    },
   });
 
-  const shopId = shop._id;
-  // create department
-  await Department.create({
-    shop: shopId,
-    name: getMessageByLocale({ key: 'department.table' }),
-    permissions: TableDepartmentPermissions,
-  });
-  await Department.create({
-    shop: shopId,
-    name: getMessageByLocale({ key: 'department.cashier' }),
-    permissions: CashierDepartmentPermissions,
-  });
-  const ownerDepartment = await Department.create({
-    shop: shopId,
-    name: getMessageByLocale({ key: 'department.owner' }),
-    permissions: Object.values(PermissionType),
-  });
+  const shopId = shop.id;
+  try {
+    // create department
+    await Department.create({
+      data: {
+        shopId,
+        name: getMessageByLocale({ key: 'department.table' }),
+        permissions: TableDepartmentPermissions,
+      },
+    });
+    await Department.create({
+      data: {
+        shopId,
+        name: getMessageByLocale({ key: 'department.cashier' }),
+        permissions: CashierDepartmentPermissions,
+      },
+    });
+    const ownerDepartment = await Department.create({
+      data: {
+        shopId,
+        name: getMessageByLocale({ key: 'department.owner' }),
+        permissions: Object.values(PermissionType),
+      },
+    });
 
-  // create units
-  await Unit.createDefaultUnits(shopId);
+    // create units
+    await Unit.createDefaultUnits(shopId);
 
-  // create owner
-  await Employee.create({
-    shop: shopId,
-    department: ownerDepartment._id,
-    user: userId,
-    name: getMessageByLocale({ key: 'shop.owner' }),
-  });
+    // create owner
+    await Employee.create({
+      data: {
+        shopId,
+        departmentId: ownerDepartment.id,
+        userId,
+        name: getMessageByLocale({ key: 'shop.owner' }),
+      },
+    });
+  } catch (err) {
+    await Employee.deleteMany({ where: { shopId, userId } });
+    await Department.deleteMany({ where: { shopId } });
+    await Unit.deleteMany({ where: { shopId } });
+    await Shop.delete({
+      where: {
+        id: shopId,
+      },
+    });
+    throw err;
+  }
 
-  const shopJson = shop.toJSON();
   // job to update s3 logs -> inUse = true
   registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
@@ -85,15 +128,14 @@ const createShop = async ({ createBody, userId }) => {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  notifyUpdateShop({ shop: shopJson, action: EventActionType.CREATE, userId });
-  return shopJson;
+  notifyUpdateShop({ shop, action: EventActionType.CREATE, userId });
+  return shop;
 };
 
 const updateShop = async ({ shopId, updateBody, userId }) => {
-  const shop = await Shop.findByIdAndUpdate(shopId, { $set: updateBody }, { new: true });
+  const shop = await Shop.update({ data: updateBody, where: { id: shopId } });
   throwBadRequest(!shop, getMessageByLocale({ key: 'shop.notFound' }));
 
-  const shopJson = shop.toJSON();
   // job to update s3 logs -> inUse = true
   registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
@@ -101,14 +143,13 @@ const updateShop = async ({ shopId, updateBody, userId }) => {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  notifyUpdateShop({ shop: shopJson, action: EventActionType.UPDATE, userId });
-  return shopJson;
+  notifyUpdateShop({ shop, action: EventActionType.UPDATE, userId });
+  return shop;
 };
 
 const deleteShop = async ({ shopId, userId }) => {
-  const shop = await Shop.findByIdAndDelete({ _id: shopId });
+  const shop = await Shop.update({ data: { status: Status.disabled }, where: { id: shopId } });
 
-  const shopJson = shop.toJSON();
   // job to update s3 logs -> inUse = true
   registerJob({
     type: JobTypes.DISABLE_S3_OBJECT_USAGE,
@@ -116,8 +157,8 @@ const deleteShop = async ({ shopId, userId }) => {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  notifyUpdateShop({ shop: shopJson, action: EventActionType.CREATE, userId });
-  return shopJson;
+  notifyUpdateShop({ shop, action: EventActionType.CREATE, userId });
+  return shop;
 };
 
 const uploadImage = async ({ image }) => {

@@ -29,23 +29,28 @@ const getEmployeeFromCache = async ({ shopId, employeeId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const employees = await redisClient.getJson(key);
-    if (!_.isEmpty(employees)) {
-      setSession({ key, value: employees });
-      return _.find(employees, (employee) => employee.id === employeeId);
+    const employeesCache = await redisClient.getJson(key);
+    if (!_.isEmpty(employeesCache)) {
+      setSession({ key, value: employeesCache });
+      return _.find(employeesCache, (employee) => employee.id === employeeId);
     }
   }
 
-  const employee = await Employee.findOne({ shop: shopId, _id: employeeId })
-    .populate('user')
-    .populate('position')
-    .populate('department');
-  if (!employee) {
-    return null;
+  const employee = await Employee.findFirst({
+    where: {
+      id: employeeId,
+      shopId,
+    },
+    include: {
+      user: true,
+      position: true,
+      department: true,
+    },
+  });
+  if (employee) {
+    employee.permissions = [...employee.permissions, ..._.get(employee, 'department.permissions')];
   }
-  const employeeJson = employee.toJSON();
-  employeeJson.permissions = [...employeeJson.permissions, ..._.get(employeeJson, 'department.permissions')];
-  return employeeJson;
+  return employee;
 };
 
 const getEmployeesFromCache = async ({ shopId }) => {
@@ -56,37 +61,49 @@ const getEmployeesFromCache = async ({ shopId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const employees = await redisClient.getJson(key);
-    if (!_.isEmpty(employees)) {
-      setSession({ key, value: employees });
-      return employees;
+    const employeesCache = await redisClient.getJson(key);
+    if (!_.isEmpty(employeesCache)) {
+      setSession({ key, value: employeesCache });
+      return employeesCache;
     }
 
-    const employeeModels = await Employee.find({ shop: shopId, status: constant.Status.enabled })
-      .populate('user')
-      .populate('position')
-      .populate('department');
-    const employeeJsons = _.map(employeeModels, (employee) => {
-      const employeeJson = employee.toJSON();
-      employeeJson.permissions = [...employeeJson.permissions, ..._.get(employeeJson, 'department.permissions')];
-      return employeeJson;
+    const employees = await Employee.findMany({
+      where: {
+        shopId,
+        status: constant.Status.enabled,
+      },
+      include: {
+        user: true,
+        position: true,
+        department: true,
+      },
     });
-    redisClient.putJson({ key, jsonVal: employeeJsons });
-    setSession({ key, value: employeeJsons });
-    return employeeJsons;
+    _.forEach(employees, (employee) => {
+      // eslint-disable-next-line no-param-reassign
+      employee.permissions = [...employee.permissions, ..._.get(employee, 'department.permissions')];
+    });
+    redisClient.putJson({ key, jsonVal: employees });
+    setSession({ key, value: employees });
+    return employees;
   }
 
-  const employees = await Employee.find({ shop: shopId, status: constant.Status.enabled })
-    .populate('user')
-    .populate('position')
-    .populate('department');
-  const employeeJsons = _.map(employees, (employee) => {
-    const employeeJson = employee.toJSON();
-    employeeJson.permissions = [...employeeJson.permissions, ..._.get(employeeJson, 'department.permissions')];
-    return employeeJson;
+  const employees = await Employee.findMany({
+    where: {
+      shopId,
+      status: constant.Status.enabled,
+    },
+    include: {
+      user: true,
+      position: true,
+      department: true,
+    },
   });
-  setSession({ key, value: employeeJsons });
-  return employeeJsons;
+  _.forEach(employees, (employee) => {
+    // eslint-disable-next-line no-param-reassign
+    employee.permissions = [...employee.permissions, ..._.get(employee, 'department.permissions')];
+  });
+  setSession({ key, value: employees });
+  return employees;
 };
 
 const getEmployeeWithPermissionByUserId = async ({ userId, shopId }) => {
@@ -100,21 +117,27 @@ const getEmployeeWithPermissionByUserId = async ({ userId, shopId }) => {
     }
   }
 
-  const employee = await Employee.findOne({ user: userId, shop: shopId })
-    .populate('user')
-    .populate('position')
-    .populate('department');
-  if (!employee) {
-    return null;
+  const employee = await Employee.findFirst({
+    where: {
+      user: userId,
+      shopId,
+    },
+    include: {
+      user: true,
+      position: true,
+      department: true,
+    },
+  });
+  if (employee) {
+    const permissions = (employee.permissions || []).concat(_.get(employee, 'departmentId.permissions') || []);
+    setEmployeePermissions(permissions);
+    if (redisClient.isRedisConnected()) {
+      await redisClient.putJson({ key, jsonVal: { employee, permissions } });
+    }
+    return { employee, permissions };
   }
-  const employeeJson = employee.toJSON();
-  const permissions = (employeeJson.permissions || []).concat(_.get(employeeJson, 'departmentId.permissions') || []);
-  setEmployeePermissions(permissions);
 
-  if (redisClient.isRedisConnected()) {
-    await redisClient.putJson({ key, jsonVal: { employee: employeeJson, permissions } });
-  }
-  return { employee, permissions };
+  return { employee, permissions: [] };
 };
 
 const getEmployeePositionFromCache = async ({ shopId, employeePositionId }) => {
@@ -131,18 +154,15 @@ const getEmployeePositionFromCache = async ({ shopId, employeePositionId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const employeePositions = await redisClient.getJson(key);
-    if (!_.isEmpty(employeePositions)) {
-      setSession({ key, value: employeePositions });
-      return _.find(employeePositions, (employeePosition) => employeePosition.id === employeePositionId);
+    const employeePositionsCache = await redisClient.getJson(key);
+    if (!_.isEmpty(employeePositionsCache)) {
+      setSession({ key, value: employeePositionsCache });
+      return _.find(employeePositionsCache, (employeePosition) => employeePosition.id === employeePositionId);
     }
   }
 
-  const employeePosition = await EmployeePosition.findById(employeePositionId);
-  if (!employeePosition) {
-    return null;
-  }
-  return employeePosition.toJSON();
+  const employeePosition = await EmployeePosition.findFirst({ where: { id: employeePositionId, shopId } });
+  return employeePosition;
 };
 
 const getEmployeePositionsFromCache = async ({ shopId }) => {
@@ -153,23 +173,31 @@ const getEmployeePositionsFromCache = async ({ shopId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const employeePositions = await redisClient.getJson(key);
-    if (!_.isEmpty(employeePositions)) {
-      setSession({ key, value: employeePositions });
-      return employeePositions;
+    const employeePositionsCache = await redisClient.getJson(key);
+    if (!_.isEmpty(employeePositionsCache)) {
+      setSession({ key, value: employeePositionsCache });
+      return employeePositionsCache;
     }
 
-    const employeePositionModels = await EmployeePosition.find({ shop: shopId, status: constant.Status.enabled });
-    const employeePositionJsons = _.map(employeePositionModels, (employeePosition) => employeePosition.toJSON());
-    redisClient.putJson({ key, jsonVal: employeePositionJsons });
-    setSession({ key, value: employeePositionJsons });
-    return employeePositionJsons;
+    const employeePositions = await EmployeePosition.findMany({
+      where: {
+        shopId,
+        status: constant.Status.enabled,
+      },
+    });
+    redisClient.putJson({ key, jsonVal: employeePositions });
+    setSession({ key, value: employeePositions });
+    return employeePositions;
   }
 
-  const employeePositions = await EmployeePosition.find({ shop: shopId, status: constant.Status.enabled });
-  const employeePositionJsons = _.map(employeePositions, (employeePosition) => employeePosition.toJSON());
-  setSession({ key, value: employeePositionJsons });
-  return employeePositionJsons;
+  const employeePositions = await EmployeePosition.findMany({
+    where: {
+      shopId,
+      status: constant.Status.enabled,
+    },
+  });
+  setSession({ key, value: employeePositions });
+  return employeePositions;
 };
 
 module.exports = {

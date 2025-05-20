@@ -27,10 +27,12 @@ export default function CreateDishCategoryPage() {
   const [createDishCategory, { isLoading: createDishCategoryLoading }] =
     useCreateDishCategoryMutation();
 
-  const [name, setName] = useState("category");
+  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
 
   const resetFields = () => {
     setName("");
+    setCode("");
   };
 
   const handleCreateDishCategory = async () => {
@@ -39,7 +41,10 @@ export default function CreateDishCategoryPage() {
         type: "error",
         text1: t("create_failed"),
         text2: `${t("required")} ${_.join(
-          _.compact([!name.trim() && t("dish_category_name")]),
+          _.compact([
+            !name.trim() && t("dish_category_name"),
+            !code.trim() && t("dish_category_code"),
+          ]),
           ","
         )}`,
       });
@@ -50,6 +55,7 @@ export default function CreateDishCategoryPage() {
       await createDishCategory({
         shopId: shop.id,
         name,
+        code,
       }).unwrap();
 
       // Navigate back to table position list
@@ -81,6 +87,13 @@ export default function CreateDishCategoryPage() {
               mode="outlined"
               value={name}
               onChangeText={setName}
+              style={{ marginBottom: 20 }}
+            />
+            <TextInput
+              label={t("dish_category_code")}
+              mode="outlined"
+              value={code}
+              onChangeText={setCode}
               style={{ marginBottom: 20 }}
             />
           </ScrollView>

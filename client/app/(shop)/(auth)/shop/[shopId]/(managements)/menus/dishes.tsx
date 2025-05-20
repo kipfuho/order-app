@@ -4,8 +4,15 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import { Dish, Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
-import { Text, Surface, Menu, Portal, Dialog } from "react-native-paper";
-import { GestureResponderEvent, Keyboard } from "react-native";
+import {
+  Text,
+  Surface,
+  Menu,
+  Portal,
+  Dialog,
+  Button,
+} from "react-native-paper";
+import { GestureResponderEvent, Keyboard, View } from "react-native";
 import Toast from "react-native-toast-message";
 import {
   useDeleteDishMutation,
@@ -15,6 +22,7 @@ import {
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import {
   goBackShopHome,
+  goToCreateDish,
   goToDishUpdatePage,
 } from "../../../../../../../apis/navigate.service";
 import _, { debounce } from "lodash";
@@ -188,6 +196,20 @@ export default function DishesManagementPage() {
             openMenu={openMenu}
             itemType={ItemTypeFlatList.DISH_CARD}
           />
+          <View style={{ padding: 16 }}>
+            <Button
+              mode="contained"
+              style={{
+                marginTop: 16,
+                width: 200,
+                alignSelf: "center",
+                margin: 0,
+              }}
+              onPress={() => goToCreateDish({ router, shopId: shop.id })}
+            >
+              {t("create_dish")}
+            </Button>
+          </View>
         </Surface>
       </GestureDetector>
     </>

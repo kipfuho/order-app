@@ -36,16 +36,37 @@ const generateToken = (userId, expires, type, isCustomer = false, secret = confi
  * @returns {Promise<Token>}
  */
 const saveToken = async (token, userId, expires, type, isCustomer = false, blacklisted = false) => {
+  if (isCustomer) {
+    const tokenDoc = await Token.create({
+      data: {
+        token,
+        customerId: userId,
+        expires: expires.toDate(),
+        type,
+        blacklisted,
+        isCustomer,
+      },
+    });
+    return tokenDoc;
+  }
   const tokenDoc = await Token.create({
-    token,
-    user: userId,
-    userModel: isCustomer ? 'Customer' : 'User',
-    expires: expires.toDate(),
-    type,
-    blacklisted,
-    isCustomer,
+    data: {
+      token,
+      userId,
+      expires: expires.toDate(),
+      type,
+      blacklisted,
+      isCustomer,
+    },
   });
   return tokenDoc;
+};
+
+const _checkTokenBelongToUser = ({ token, jwtPayload }) => {
+  if (jwtPayload.isCustomer) {
+    return jwtPayload.sub === token.customerId;
+  }
+  return jwtPayload.sub === token.userId;
 };
 
 /**
@@ -56,8 +77,19 @@ const saveToken = async (token, userId, expires, type, isCustomer = false, black
  */
 const verifyToken = async (token, type) => {
   const payload = jwt.verify(token, config.jwt.secret);
-  const tokenDoc = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
-  if (!tokenDoc) {
+  const tokenDoc = await Token.findFirst({
+    where: {
+      token,
+      type,
+    },
+  });
+  if (
+    !tokenDoc ||
+    !_checkTokenBelongToUser({
+      token: tokenDoc,
+      jwtPayload: payload,
+    })
+  ) {
     throw new Error('Token not found');
   }
   return tokenDoc;

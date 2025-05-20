@@ -38,5 +38,6 @@
   "import.missingCode": "Thiếu mã",
   "import.missingDishCategory": "Thiếu danh mục",
   "import.missingUnit": "Thiếu đơn vị",
-  "success": "Thành công"
+  "success": "Thành công",
+  "kitchen.notFound": "Không tìm thấy bếp"
 }

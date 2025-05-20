@@ -24,18 +24,20 @@ const getDepartmentFromCache = async ({ shopId, departmentId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const departments = await redisClient.getJson(key);
-    if (!_.isEmpty(departments)) {
-      setSession({ key, value: departments });
-      return _.find(departments, (department) => department.id === departmentId);
+    const departmentsCache = await redisClient.getJson(key);
+    if (!_.isEmpty(departmentsCache)) {
+      setSession({ key, value: departmentsCache });
+      return _.find(departmentsCache, (department) => department.id === departmentId);
     }
   }
 
-  const department = await Department.findOne({ _id: departmentId, shop: shopId });
-  if (!department) {
-    return null;
-  }
-  return department.toJSON();
+  const department = await Department.findFirst({
+    where: {
+      id: departmentId,
+      shopId,
+    },
+  });
+  return department;
 };
 
 const getDepartmentsFromCache = async ({ shopId }) => {
@@ -46,23 +48,26 @@ const getDepartmentsFromCache = async ({ shopId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const departments = await redisClient.getJson(key);
-    if (!_.isEmpty(departments)) {
-      setSession({ key, value: departments });
-      return departments;
+    const departmentsCache = await redisClient.getJson(key);
+    if (!_.isEmpty(departmentsCache)) {
+      setSession({ key, value: departmentsCache });
+      return departmentsCache;
     }
 
-    const departmentModels = await Department.find({ shop: shopId, status: constant.Status.enabled });
-    const departmentJsons = _.map(departmentModels, (department) => department.toJSON());
-    redisClient.putJson({ key, jsonVal: departmentJsons });
-    setSession({ key, value: departmentJsons });
-    return departmentJsons;
+    const departments = await Department.findMany({ where: { shopId, status: constant.Status.enabled } });
+    redisClient.putJson({ key, jsonVal: departments });
+    setSession({ key, value: departments });
+    return departments;
   }
 
-  const departments = await Department.find({ shop: shopId, status: constant.Status.enabled });
-  const departmentJsons = _.map(departments, (department) => department.toJSON());
-  setSession({ key, value: departmentJsons });
-  return departmentJsons;
+  const departments = await Department.findMany({
+    where: {
+      shopId,
+      status: constant.Status.enabled,
+    },
+  });
+  setSession({ key, value: departments });
+  return departments;
 };
 
 module.exports = {

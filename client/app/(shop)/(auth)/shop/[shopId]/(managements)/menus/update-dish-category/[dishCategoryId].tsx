@@ -20,7 +20,7 @@ import {
 } from "../../../../../../../../stores/apiSlices/dishApi.slice";
 import { goToDishCategoryList } from "../../../../../../../../apis/navigate.service";
 import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 export default function UpdateDishCategoryPage() {
@@ -41,6 +41,7 @@ export default function UpdateDishCategoryPage() {
     useUpdateDishCategoryMutation();
 
   const [name, setName] = useState("");
+  const [code, setCode] = useState("");
 
   // when select different category
   useEffect(() => {
@@ -59,7 +60,10 @@ export default function UpdateDishCategoryPage() {
         type: "error",
         text1: t("update_failed"),
         text2: `${t("required")} ${_.join(
-          _.compact([!name.trim() && t("dish_category_name")]),
+          _.compact([
+            !name.trim() && t("dish_category_name"),
+            !code.trim() && t("dish_category_code"),
+          ]),
           ","
         )}`,
       });
@@ -71,6 +75,7 @@ export default function UpdateDishCategoryPage() {
         dishCategoryId: dishCategory.id,
         shopId: shop.id,
         name,
+        code,
       }).unwrap();
 
       // Navigate back to table position list
@@ -109,12 +114,20 @@ export default function UpdateDishCategoryPage() {
       />
       <Surface style={{ flex: 1 }}>
         <Surface style={{ flex: 1, padding: 16, boxShadow: "none" }}>
-          <TextInput
-            mode="outlined"
-            label={t("dish_category_name")}
-            value={name}
-            onChangeText={setName}
-          />
+          <ScrollView>
+            <TextInput
+              mode="outlined"
+              label={t("dish_category_name")}
+              value={name}
+              onChangeText={setName}
+            />
+            <TextInput
+              mode="outlined"
+              label={t("dish_category_code")}
+              value={code}
+              onChangeText={setCode}
+            />
+          </ScrollView>
         </Surface>
 
         <View style={{ marginVertical: 20 }}>

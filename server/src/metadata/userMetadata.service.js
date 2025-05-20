@@ -12,26 +12,28 @@ const _getUserFromClsHook = ({ key }) => {
 
 const getUserModelFromDatabase = async ({ userId, email, phone }) => {
   if (userId) {
-    const user = await User.findOne({ _id: userId, status: { $ne: constant.Status.disabled } });
+    const user = await User.findFirst({
+      where: {
+        id: userId,
+        status: constant.Status.enabled,
+      },
+    });
     return user;
   }
-  const filter = {
-    $or: _.compact([email && { email }, phone && { phone }]),
-    status: { $ne: constant.Status.disabled },
-  };
-  if (_.isEmpty(filter.$or)) return null;
+  if (!email && !phone) return null;
 
-  const user = await User.findOne(filter);
+  const user = await User.findFirst({
+    where: {
+      OR: _.compact([email ? { email } : null, phone ? { phone } : null]),
+      status: constant.Status.enabled,
+    },
+  });
   return user;
 };
 
 const getUserFromDatabase = async ({ userId, email, phone }) => {
   const user = await getUserModelFromDatabase({ userId, email, phone });
-  if (!user) {
-    return null;
-  }
-  const userJson = user.toJSON();
-  return userJson;
+  return user;
 };
 
 const getUserFromCache = async ({ userId }) => {
@@ -42,15 +44,15 @@ const getUserFromCache = async ({ userId }) => {
   }
 
   if (redisClient.isRedisConnected()) {
-    const user = await redisClient.getJson(key);
-    if (!_.isEmpty(user)) {
-      setSession({ key, value: user });
-      return user;
+    const userCache = await redisClient.getJson(key);
+    if (!_.isEmpty(userCache)) {
+      setSession({ key, value: userCache });
+      return userCache;
     }
   }
 
-  const userJson = await getUserFromDatabase({ userId });
-  return userJson;
+  const user = await getUserFromDatabase({ userId });
+  return user;
 };
 
 module.exports = {
