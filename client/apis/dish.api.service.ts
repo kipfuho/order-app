@@ -51,11 +51,13 @@ const removeImageRequest = async ({ url }: RemoveImageRequest) => {
 const createDishCategoryRequest = async ({
   shopId,
   name,
+  code,
 }: CreateDishCategoryRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
-  } = { name };
+    code: string;
+  } = { name, code };
 
   const result: { dishCategory: DishCategory } = await apiRequest({
     method: "POST",
@@ -95,11 +97,13 @@ const updateDishCategoryRequest = async ({
   dishCategoryId,
   shopId,
   name,
+  code,
 }: UpdateDishCategoryRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
-  } = { name };
+    code: string;
+  } = { name, code };
 
   const result: { dishCategory: DishCategory } = await apiRequest({
     method: "PATCH",
@@ -135,6 +139,7 @@ const deleteDishCategoryRequest = async ({
 const createDishRequest = async ({
   shopId,
   name,
+  code,
   category,
   dishType,
   price,
@@ -146,6 +151,7 @@ const createDishRequest = async ({
   const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
+    code: string;
     category: string;
     type: string;
     price: number;
@@ -155,6 +161,7 @@ const createDishRequest = async ({
     imageUrls: string[];
   } = {
     name,
+    code,
     category: category.id,
     type: dishType,
     price,
@@ -202,6 +209,7 @@ const updateDishRequest = async ({
   shopId,
   dishId,
   name,
+  code,
   category,
   dishType,
   price,
@@ -214,6 +222,7 @@ const updateDishRequest = async ({
   const accessToken = await getAccessTokenLazily();
   const body: {
     name?: string;
+    code?: string;
     category?: string;
     type?: string;
     price?: number;
@@ -226,6 +235,9 @@ const updateDishRequest = async ({
 
   if (name) {
     body.name = name;
+  }
+  if (code) {
+    body.code = code;
   }
   if (category) {
     body.category = category.id;

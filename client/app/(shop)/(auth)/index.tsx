@@ -1,6 +1,13 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, ScrollView, TouchableOpacity } from "react-native";
-import { Button, List, Surface, Text, useTheme } from "react-native-paper";
+import {
+  Button,
+  List,
+  Searchbar,
+  Surface,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import { useRouter } from "expo-router";
 import { AppBar } from "../../../components/AppBar";
 import { useGetShopsQuery } from "../../../stores/apiSlices/shopApi.slice";
@@ -9,13 +16,33 @@ import { goBackShopHome } from "../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
 import { View } from "react-native";
+import _, { debounce } from "lodash";
+import { Shop } from "../../../stores/state.interface";
 
 export default function ShopsPage() {
   const router = useRouter();
-  const theme = useTheme(); // Get theme colors
   const { t } = useTranslation();
 
-  const { data: shops = [], isLoading, isError, error } = useGetShopsQuery({});
+  const { data: shops = [], isLoading, isFetching } = useGetShopsQuery({});
+
+  const [filteredShops, setFilteredShops] = useState<Shop[]>([]);
+  const [searchValue, setSearchValue] = useState("");
+
+  const handleSearch = useCallback(
+    debounce((_searchValue: string) => {
+      const searchValueLowerCase = _searchValue.toLowerCase();
+      const matchedShops = _.filter(shops, (shop) =>
+        _.includes((shop.name || "").toLowerCase(), searchValueLowerCase)
+      );
+
+      setFilteredShops(matchedShops);
+    }, 200),
+    [shops]
+  );
+
+  useEffect(() => {
+    handleSearch(searchValue);
+  }, [searchValue, isFetching]);
 
   if (isLoading) {
     return <LoaderBasic />;
@@ -31,11 +58,16 @@ export default function ShopsPage() {
           {t("create_shop")}
         </Button>
       </AppBar>
-      <Surface mode="flat" style={{ flex: 1 }}>
-        <ScrollView>
-          <View style={{ padding: 12, gap: 12 }}>
+      <Surface mode="flat" style={{ flex: 1, padding: 12, gap: 12 }}>
+        <Searchbar
+          value={searchValue}
+          placeholder={t("search")}
+          onChangeText={setSearchValue}
+        />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={{ gap: 12 }}>
             <FlatList
-              data={shops}
+              data={filteredShops}
               renderItem={({ item: shop }) => (
                 <TouchableOpacity
                   onPress={() => goBackShopHome({ router, shopId: shop.id })}
@@ -47,6 +79,7 @@ export default function ShopsPage() {
                       padding: 12,
                       margin: 4,
                       gap: 12,
+                      borderRadius: 12,
                     }}
                   >
                     <Image
@@ -60,19 +93,21 @@ export default function ShopsPage() {
                         borderRadius: 15,
                       }}
                     />
-                    <View style={{ flex: 1, justifyContent: "center" }}>
+                    <View style={{ flex: 1, justifyContent: "center", gap: 8 }}>
                       <Text
                         style={{
-                          fontSize: 18,
+                          fontSize: 24,
                           textTransform: "capitalize",
                         }}
+                        numberOfLines={2}
                       >
                         {shop.name}
                       </Text>
                       <Text
                         style={{
-                          fontSize: 14,
+                          fontSize: 16,
                         }}
+                        numberOfLines={2}
                       >
                         {shop.location}
                       </Text>

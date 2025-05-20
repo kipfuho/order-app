@@ -28,14 +28,7 @@ import { BLURHASH } from "../../../../../constants/common";
 
 interface Item {
   title: string;
-  route:
-    | "orders"
-    | "menus"
-    | "customers"
-    | "settings"
-    | "analytics"
-    | "staffs"
-    | "kitchen";
+  route: "orders" | "menus" | "settings" | "analytics" | "staffs" | "kitchen";
   icon?: string;
 }
 
@@ -54,11 +47,6 @@ const BUTTONS: Item[] = [
     title: "kitchen",
     route: "kitchen",
     icon: "silverware-fork-knife",
-  },
-  {
-    title: "customers",
-    route: "customers",
-    icon: "face-agent",
   },
   {
     title: "settings",
