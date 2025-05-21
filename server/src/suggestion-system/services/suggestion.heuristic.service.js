@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const { getDayOfWeek, getStringId } = require('../../utils/common');
+const { getDayOfWeek } = require('../../utils/common');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const { getOrderSessionJsonWithLimit } = require('../../order-management/services/orderUtils.service');
 
@@ -9,8 +9,7 @@ const getPopularDishes = (orderSessions) => {
   _.forEach(orderSessions, (session) => {
     _.forEach(session.orders, (order) => {
       _.forEach(order.dishOrders, (dishOrder) => {
-        dishCount[getStringId({ object: dishOrder, key: 'dish' })] =
-          (dishCount[getStringId({ object: dishOrder, key: 'dish' })] || 0) + dishOrder.quantity;
+        dishCount[dishOrder.dishId] = (dishCount[dishOrder.dishId] || 0) + dishOrder.quantity;
       });
     });
   });
@@ -67,8 +66,7 @@ const getCustomerPreferences = ({ orderSessions, customerId }) => {
     .forEach((session) => {
       _.forEach(session.orders, (order) => {
         _.forEach(order.dishOrders, (dishOrder) => {
-          preferredDishes[getStringId({ object: dishOrder, key: 'dish' })] =
-            (preferredDishes[getStringId({ object: dishOrder, key: 'dish' })] || 0) + dishOrder.quantity;
+          preferredDishes[dishOrder.dishId] = (preferredDishes[dishOrder.dishId] || 0) + dishOrder.quantity;
         });
       });
     })
@@ -91,8 +89,7 @@ const getCustomerOrderPatterns = ({ orderSessions, customerId }) => {
           if (!orderPatterns[orderDay]) {
             orderPatterns[orderDay] = {};
           }
-          orderPatterns[orderDay][getStringId({ object: dishOrder, key: 'dish' })] =
-            (orderPatterns[orderDay][getStringId({ object: dishOrder, key: 'dish' })] || 0) + dishOrder.quantity;
+          orderPatterns[orderDay][dishOrder.dishId] = (orderPatterns[orderDay][dishOrder.dishId] || 0) + dishOrder.quantity;
         });
       });
     })

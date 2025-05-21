@@ -10,7 +10,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { getTableFromCache, getTablesFromCache } = require('../../metadata/tableMetadata.service');
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
-const { getStringId, getRoundTaxAmount, getRoundDishPrice, getStartTimeOfToday } = require('../../utils/common');
+const { getRoundTaxAmount, getRoundDishPrice, getStartTimeOfToday } = require('../../utils/common');
 const { getCustomerFromCache } = require('../../metadata/customerMetadata.service');
 const { notifyNewOrder, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 
@@ -24,7 +24,7 @@ const _mergeDishOrders = (dishOrders) => {
   // eslint-disable-next-line no-restricted-syntax
   for (const dishOrder of dishOrders) {
     const item = dishOrder;
-    const dishId = getStringId({ object: dishOrder, key: 'dish' });
+    const { dishId } = dishOrder;
     let key = `${dishId}-${dishOrder.dishName}-${dishOrder.price}`;
     key = key.replace(/\./g, '');
     const existingItem = dishOrderMap[key];
@@ -720,21 +720,21 @@ const _updateOrderSessionStatusForOrders = async ({ shopId, orderIds = [], statu
 
 const updateAfterPayOrderSession = async ({ orderSession }) => {
   if (!orderSession) return;
-  const shopId = getStringId({ object: orderSession, key: 'shop' });
+  const { shopId } = orderSession;
   const orderIds = _.map(orderSession.orders, 'id');
   return _updateOrderSessionStatusForOrders({ shopId, status: orderSession.status, orderIds });
 };
 
 const updateAfterCancelOrderSession = async ({ orderSession }) => {
   if (!orderSession) return;
-  const shopId = getStringId({ object: orderSession, key: 'shop' });
+  const { shopId } = orderSession;
   const orderIds = _.map(orderSession.orders, 'id');
   return _updateOrderSessionStatusForOrders({ shopId, status: orderSession.status, orderIds });
 };
 
 const updateAfterCancelPaidStatusOrderSession = async ({ orderSession }) => {
   if (!orderSession) return;
-  const shopId = getStringId({ object: orderSession, key: 'shop' });
+  const { shopId } = orderSession;
   const orderIds = _.map(orderSession.orders, 'id');
   return _updateOrderSessionStatusForOrders({ shopId, status: orderSession.status, orderIds });
 };

@@ -61,19 +61,6 @@ const getRoundTaxAmount = (amount) => {
   return _getRoundPrice(amount, 'taxRoundingType');
 };
 
-/*
- * eg: get shopId tu orderSession. co the shopId la object do populate.
- * const shopId = getStringId({ object: orderSession, key: 'shopId' });
- */
-const getStringId = ({ object, key }) => {
-  const id = _.get(object, `${key}.id`);
-  if (id && typeof id === 'string') {
-    return id;
-  }
-  const value = _.get(object, `${key}._id`) || _.get(object, key);
-  return _.toString(value);
-};
-
 const refineFileNameForUploading = (fileName) => {
   const splits = (fileName || '').split('.');
   const ext = splits.pop();
@@ -174,7 +161,6 @@ module.exports = {
   getRoundDishPrice,
   getRoundDiscountAmount,
   getRoundTaxAmount,
-  getStringId,
   refineFileNameForUploading,
   formatOrderSessionNo,
   createSearchByDateOptionWithShopTimezone,
