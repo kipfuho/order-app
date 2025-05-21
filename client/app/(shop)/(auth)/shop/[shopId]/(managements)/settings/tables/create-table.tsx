@@ -41,6 +41,7 @@ export default function CreateTablePage() {
     useCreateTableMutation();
 
   const [name, setName] = useState("table");
+  const [code, setCode] = useState("table");
   const [tablePosition, setTablePosition] = useState(tablePositions[0]);
   const [allowMultipleOrderSession, setAllowMultipleOrderSession] =
     useState(false);
@@ -53,7 +54,11 @@ export default function CreateTablePage() {
         type: "error",
         text1: t("create_failed"),
         text2: `${t("required")} ${_.join(
-          [t("table_name"), t("table_position")],
+          _.compact([
+            !name.trim() && t("table_name"),
+            !code.trim() && t("table_code"),
+            !tablePosition && t("table_position"),
+          ]),
           ","
         )}`,
       });
@@ -64,6 +69,7 @@ export default function CreateTablePage() {
       await createTable({
         shopId: shop.id,
         name,
+        code,
         tablePosition,
         allowMultipleOrderSession,
         needApprovalWhenCustomerOrder,
@@ -108,6 +114,13 @@ export default function CreateTablePage() {
                 mode="outlined"
                 value={name}
                 onChangeText={setName}
+                style={{ marginBottom: 20 }}
+              />
+              <TextInput
+                label={t("table_code")}
+                mode="outlined"
+                value={code}
+                onChangeText={setCode}
                 style={{ marginBottom: 20 }}
               />
 

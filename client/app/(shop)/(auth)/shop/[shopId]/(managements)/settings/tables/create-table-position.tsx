@@ -40,12 +40,16 @@ export default function CreateTablePositionPage() {
   const [dialogVisible, setDialogVisible] = useState(false);
 
   const handleCreateTablePosition = async () => {
-    if (!name.trim() || selectedCategories.length === 0) {
+    if (!name.trim() || !code.trim() || selectedCategories.length === 0) {
       Toast.show({
         type: "error",
         text1: t("create_failed"),
         text2: `${t("required")} ${_.join(
-          [t("table_position_name"), t("dish_category")],
+          _.compact([
+            !name.trim() && t("table_position_name"),
+            !code.trim() && t("table_position_code"),
+            selectedCategories.length === 0 && t("dish_category"),
+          ]),
           ","
         )}`,
       });

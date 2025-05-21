@@ -97,7 +97,7 @@ export default function UpdateTablePositionPage() {
 
     setName(tablePosition.name);
     setCode(tablePosition.code || "");
-    setSelectedCategories(tablePosition.dishCategories);
+    setSelectedCategories(tablePosition.dishCategoryIds);
   }, [tablePositionId, tablePositionFetching]);
 
   if (tablePositionLoading || dishCategoryLoading) {

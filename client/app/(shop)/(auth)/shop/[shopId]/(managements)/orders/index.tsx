@@ -53,7 +53,7 @@ export default function OrderManagementOrderPage() {
     id: "ALL",
     name: t("all"),
     shop: "",
-    dishCategories: [],
+    dishCategoryIds: [],
   };
 
   const [filteredTables, setFilteredTables] = useState<

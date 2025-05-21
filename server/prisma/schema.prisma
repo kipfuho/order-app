@@ -432,11 +432,11 @@ model TablePosition {
   shopId          String
   name            String
   dishCategoryIds String[]
-  tableIds        String[]
   status          Status         @default(enabled)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   id              String         @id @default(uuid())
+  code            String
   tables          Table[]
   shop            Shop           @relation(fields: [shopId], references: [id])
   dishCategories  DishCategory[] @relation("DishCategoryToTablePosition")
@@ -454,6 +454,7 @@ model Table {
   createdAt                     DateTime      @default(now())
   updatedAt                     DateTime      @updatedAt
   id                            String        @id @default(uuid())
+  code                          String
   order                         Order[]
   position                      TablePosition @relation(fields: [positionId], references: [id])
   shop                          Shop          @relation(fields: [shopId], references: [id])

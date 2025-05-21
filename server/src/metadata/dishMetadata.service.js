@@ -49,6 +49,7 @@ const getDishFromCache = async ({ shopId, dishId }) => {
     },
     include: {
       category: true,
+      unit: true,
     },
   });
   return dish;
@@ -73,6 +74,7 @@ const getDishesFromCache = async ({ shopId }) => {
       where: { shopId, status: { not: constant.Status.disabled } },
       include: {
         category: true,
+        unit: true,
       },
     });
     const newMenuVal = { ...menuVal, dishes };
@@ -89,6 +91,7 @@ const getDishesFromCache = async ({ shopId }) => {
     },
     include: {
       category: true,
+      unit: true,
     },
   });
   setSession({ key, value: { ...currentClsHookedValue, dishes } });

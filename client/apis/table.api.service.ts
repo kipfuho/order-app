@@ -32,16 +32,18 @@ const getTablePositionsRequest = async ({
 const createTablePositionRequest = async ({
   shopId,
   name,
+  code,
   categories,
 }: CreateTablePositionRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
+    code: string;
     dishCategories?: string[];
-  } = { name };
+  } = { name, code };
 
   if (categories) {
-    body.dishCategories = _.map(categories, "id");
+    body.dishCategories = categories;
   }
 
   const result: { tablePosition: TablePosition } = await apiRequest({
@@ -58,14 +60,22 @@ const updateTablePositionRequest = async ({
   tablePositionId,
   shopId,
   name,
+  code,
   categories,
 }: UpdateTablePositionRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
-    name: string;
+    name?: string;
+    code?: string;
     dishCategories?: string[];
-  } = { name };
+  } = {};
 
+  if (name) {
+    body.name = name;
+  }
+  if (code) {
+    body.code = code;
+  }
   if (categories) {
     body.dishCategories = categories;
   }
@@ -135,6 +145,7 @@ const getTablesRequest = async ({ shopId }: GetTablesRequest) => {
 const createTableRequest = async ({
   shopId,
   name,
+  code,
   tablePosition,
   allowMultipleOrderSession = false,
   needApprovalWhenCustomerOrder = false,
@@ -142,11 +153,13 @@ const createTableRequest = async ({
   const accessToken = await getAccessTokenLazily();
   const body: {
     name: string;
+    code: string;
     position: string;
     allowMultipleOrderSession: boolean;
     needApprovalWhenCustomerOrder: boolean;
   } = {
     name,
+    code,
     position: tablePosition.id,
     allowMultipleOrderSession,
     needApprovalWhenCustomerOrder,
@@ -166,22 +179,34 @@ const updateTableRequest = async ({
   tableId,
   shopId,
   name,
+  code,
   tablePosition,
   allowMultipleOrderSession = false,
   needApprovalWhenCustomerOrder = false,
 }: UpdateTableRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
-    name: string;
-    position: string;
-    allowMultipleOrderSession: boolean;
-    needApprovalWhenCustomerOrder: boolean;
-  } = {
-    name,
-    position: tablePosition.id,
-    allowMultipleOrderSession,
-    needApprovalWhenCustomerOrder,
-  };
+    name?: string;
+    code?: string;
+    position?: string;
+    allowMultipleOrderSession?: boolean;
+    needApprovalWhenCustomerOrder?: boolean;
+  } = {};
+  if (name) {
+    body.name = name;
+  }
+  if (code) {
+    body.code = code;
+  }
+  if (tablePosition) {
+    body.position = tablePosition.id;
+  }
+  if (typeof allowMultipleOrderSession === "boolean") {
+    body.allowMultipleOrderSession = allowMultipleOrderSession;
+  }
+  if (typeof needApprovalWhenCustomerOrder === "boolean") {
+    body.needApprovalWhenCustomerOrder = needApprovalWhenCustomerOrder;
+  }
 
   const result: { table: Table } = await apiRequest({
     method: "PATCH",

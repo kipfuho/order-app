@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const { publishSingleAppSyncEvent } = require('../aws');
-const { getStringId, formatOrderSessionNo } = require('../common');
+const { formatOrderSessionNo } = require('../common');
 
 const namespace = 'default';
 
@@ -42,7 +42,7 @@ const notifyOrderSessionPaymentForCustomer = async ({ orderSession }) => {
     type: AppSyncEvent.PAYMENT_COMPLETE,
     data: {
       orderSessionId: orderSession.id,
-      tableId: getStringId({ object: orderSession.tables, key: '0' }),
+      tableId: _.get(orderSession, 'tableIds.0'),
       billNo: formatOrderSessionNo(orderSession),
     },
   };
@@ -54,12 +54,12 @@ const notifyOrderSessionPayment = async ({ orderSession, userId }) => {
     return;
   }
 
-  const channel = getShopChannel(getStringId({ object: orderSession, key: 'shop' }));
+  const channel = getShopChannel(orderSession.shopId);
   const event = {
     type: AppSyncEvent.PAYMENT_COMPLETE,
     data: {
       orderSessionId: orderSession.id,
-      tableId: getStringId({ object: orderSession.tables, key: '0' }),
+      tableId: _.get(orderSession, 'tableIds.0'),
       userId,
     },
   };
@@ -106,7 +106,7 @@ const _notifyUpdateTableForCustomer = async ({ action, table }) => {
     return;
   }
 
-  const channel = getCustomerChannel(getStringId({ object: table, key: 'shop' }));
+  const channel = getCustomerChannel(table.shopId);
   const event = {
     type: AppSyncEvent.TABLE_CHANGED,
     data: {
@@ -122,7 +122,7 @@ const notifyUpdateTable = async ({ action, table, userId }) => {
     return;
   }
 
-  const channel = getShopChannel(getStringId({ object: table, key: 'shop' }));
+  const channel = getShopChannel(table.shopId);
   const event = {
     type: AppSyncEvent.TABLE_CHANGED,
     data: {
@@ -140,7 +140,7 @@ const _notifyUpdateTablePositionForCustomer = async ({ action, tablePosition }) 
     return;
   }
 
-  const channel = getCustomerChannel(getStringId({ object: tablePosition, key: 'shop' }));
+  const channel = getCustomerChannel(tablePosition.shopId);
   const event = {
     type: AppSyncEvent.TABLE_POSITION_CHANGED,
     data: {
@@ -156,7 +156,7 @@ const notifyUpdateTablePosition = async ({ action, tablePosition, userId }) => {
     return;
   }
 
-  const channel = getShopChannel(getStringId({ object: tablePosition, key: 'shop' }));
+  const channel = getShopChannel(tablePosition.shopId);
   const event = {
     type: AppSyncEvent.TABLE_POSITION_CHANGED,
     data: {
@@ -174,7 +174,7 @@ const _notifyUpdateDishForCustomer = async ({ action, dish }) => {
     return;
   }
 
-  const channel = getCustomerChannel(getStringId({ object: dish, key: 'shop' }));
+  const channel = getCustomerChannel(dish.shopId);
   const event = {
     type: AppSyncEvent.DISH_CHANGED,
     data: {
@@ -190,7 +190,7 @@ const notifyUpdateDish = async ({ action, dish, userId }) => {
     return;
   }
 
-  const channel = getShopChannel(getStringId({ object: dish, key: 'shop' }));
+  const channel = getShopChannel(dish.shopId);
   const event = {
     type: AppSyncEvent.DISH_CHANGED,
     data: {
@@ -208,7 +208,7 @@ const _notifyUpdateDishCategoryForCustomer = async ({ action, dishCategory }) =>
     return;
   }
 
-  const channel = getCustomerChannel(getStringId({ object: dishCategory, key: 'shop' }));
+  const channel = getCustomerChannel(dishCategory.shopId);
   const event = {
     type: AppSyncEvent.DISH_CATEGORY_CHANGED,
     data: {
@@ -224,7 +224,7 @@ const notifyUpdateDishCategory = async ({ action, dishCategory, userId }) => {
     return;
   }
 
-  const channel = getShopChannel(getStringId({ object: dishCategory, key: 'shop' }));
+  const channel = getShopChannel(dishCategory.shopId);
   const event = {
     type: AppSyncEvent.DISH_CATEGORY_CHANGED,
     data: {
@@ -242,7 +242,7 @@ const notifyUpdateEmployee = async ({ action, employee, userId }) => {
     return;
   }
 
-  const channel = getShopChannel(getStringId({ object: employee, key: 'shop' }));
+  const channel = getShopChannel(employee.shopId);
   const event = {
     type: AppSyncEvent.EMPLOYEE_CHANGED,
     data: {
@@ -259,7 +259,7 @@ const notifyUpdateEmployeePosition = async ({ action, employeePosition, userId }
     return;
   }
 
-  const channel = getShopChannel(getStringId({ object: employeePosition, key: 'shop' }));
+  const channel = getShopChannel(employeePosition.shopId);
   const event = {
     type: AppSyncEvent.EMPLOYEE_POSITION_CHANGED,
     data: {
@@ -276,7 +276,7 @@ const notifyUpdateDepartment = async ({ action, department, userId }) => {
     return;
   }
 
-  const channel = getShopChannel(getStringId({ object: department, key: 'shop' }));
+  const channel = getShopChannel(department.shopId);
   const event = {
     type: AppSyncEvent.DEPARTMENT_CHANGED,
     data: {
@@ -294,13 +294,13 @@ const _notifyUpdateOrderSessionForCustomer = async ({ orderSession, action }) =>
     return;
   }
 
-  const channel = getCustomerChannel(getStringId({ object: orderSession, key: 'shop' }));
+  const channel = getCustomerChannel(orderSession.shopId);
   const event = {
     type: AppSyncEvent.ORDER_SESSION_UPDATE,
     data: {
       action, // 'CANCEL'
       orderSessionId: orderSession.id,
-      tableId: getStringId({ object: orderSession.tables, key: '0' }),
+      tableId: _.get(orderSession, 'tableIds.0'),
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
@@ -311,13 +311,13 @@ const notifyUpdateOrderSession = async ({ orderSession, userId, action }) => {
     return;
   }
 
-  const channel = getShopChannel(getStringId({ object: orderSession, key: 'shop' }));
+  const channel = getShopChannel(orderSession.shopId);
   const event = {
     type: AppSyncEvent.ORDER_SESSION_UPDATE,
     data: {
       action, // 'CANCEL'
       orderSessionId: orderSession.id,
-      tableId: getStringId({ object: orderSession.tables, key: '0' }),
+      tableId: _.get(orderSession, 'tableIds.0'),
       userId,
     },
   };
@@ -330,13 +330,13 @@ const notifyNewOrder = async ({ order, userId, action }) => {
     return;
   }
 
-  const channel = getShopChannel(getStringId({ object: order, key: 'shop' }));
+  const channel = getShopChannel(order.shopId);
   const event = {
     type: AppSyncEvent.NEW_ORDER,
     data: {
       action, // 'CREATE'
       orderId: order.id,
-      tableId: getStringId({ object: order.tables, key: '0' }),
+      tableId: order.tableId,
       userId,
     },
   };

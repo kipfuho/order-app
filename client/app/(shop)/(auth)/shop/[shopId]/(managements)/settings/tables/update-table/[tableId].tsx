@@ -49,6 +49,7 @@ export default function UpdateTablePage() {
   const table = _.find(tables, (t) => t.id === tableId);
 
   const [name, setName] = useState("");
+  const [code, setCode] = useState("");
   const [tablePosition, setTablePosition] = useState<TablePosition>();
   const [allowMultipleOrderSession, setAllowMultipleOrderSession] =
     useState(false);
@@ -100,6 +101,7 @@ export default function UpdateTablePage() {
     if (!table) return;
 
     setName(table.name);
+    setCode(table.code);
     setTablePosition(table.position);
     setAllowMultipleOrderSession(table.allowMultipleOrderSession);
     setNeedApprovalWhenCustomerOrder(table.needApprovalWhenCustomerOrder);
@@ -144,6 +146,13 @@ export default function UpdateTablePage() {
                 mode="outlined"
                 value={name}
                 onChangeText={setName}
+                style={{ marginBottom: 20 }}
+              />
+              <TextInput
+                label={t("table_code")}
+                mode="outlined"
+                value={code}
+                onChangeText={setCode}
                 style={{ marginBottom: 20 }}
               />
 

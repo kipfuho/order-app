@@ -40,6 +40,10 @@ const createTable = async ({ shopId, createBody, userId }) => {
     getMessageByLocale({ key: 'table.alreadyExist' })
   );
 
+  // eslint-disable-next-line no-param-reassign
+  createBody.positionId = createBody.position;
+  // eslint-disable-next-line no-param-reassign
+  delete createBody.position;
   const table = await Table.create({
     data: {
       ...createBody,
@@ -69,6 +73,12 @@ const updateTable = async ({ shopId, tableId, updateBody, userId }) => {
     getMessageByLocale({ key: 'table.alreadyExist' })
   );
 
+  if (updateBody.position) {
+    // eslint-disable-next-line no-param-reassign
+    updateBody.positionId = updateBody.position;
+    // eslint-disable-next-line no-param-reassign
+    delete updateBody.position;
+  }
   const table = await Table.update({
     data: updateBody,
     where: {
@@ -117,6 +127,11 @@ const createTablePosition = async ({ shopId, createBody, userId }) => {
     _.find(tablePostions, (tablePosition) => _.toLower(tablePosition.name) === _.toLower(createBody.name)),
     getMessageByLocale({ key: 'tablePosition.alreadyExist' })
   );
+  const dishCategoryIds = createBody.dishCategories;
+  // eslint-disable-next-line no-param-reassign
+  delete createBody.dishCategories;
+  // eslint-disable-next-line no-param-reassign
+  createBody.dishCategoryIds = dishCategoryIds;
   const tablePosition = await TablePosition.create({
     data: {
       ...createBody,
@@ -137,6 +152,13 @@ const updateTablePosition = async ({ shopId, tablePositionId, updateBody, userId
     ),
     getMessageByLocale({ key: 'tablePosition.alreadyExist' })
   );
+  if (updateBody.dishCategories) {
+    const dishCategoryIds = updateBody.dishCategories;
+    // eslint-disable-next-line no-param-reassign
+    delete updateBody.dishCategories;
+    // eslint-disable-next-line no-param-reassign
+    updateBody.dishCategoryIds = dishCategoryIds;
+  }
   const tablePosition = await TablePosition.update({
     data: updateBody,
     where: {

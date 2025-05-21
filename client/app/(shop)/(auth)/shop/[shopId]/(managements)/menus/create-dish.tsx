@@ -52,6 +52,7 @@ export default function CreateDishPage() {
     useCreateDishMutation();
 
   const [name, setName] = useState("");
+  const [code, setCode] = useState("");
   const [category, setCategory] = useState<DishCategory>();
   const [dishType, setDishType] = useState("");
   const [price, setPrice] = useState("");
@@ -67,6 +68,7 @@ export default function CreateDishPage() {
 
   const resetField = () => {
     setName("");
+    setCode("");
     setCategory(dishCategories[0]);
     setDishType(dishTypes[0]);
     setPrice("");
@@ -84,13 +86,21 @@ export default function CreateDishPage() {
   };
 
   const handleCreateDish = async () => {
-    if (!name.trim() || !category || !dishType || !unit || !price.trim()) {
+    if (
+      !name.trim() ||
+      !code.trim() ||
+      !category ||
+      !dishType ||
+      !unit ||
+      !price.trim()
+    ) {
       Toast.show({
         type: "error",
         text1: t("create_failed"),
         text2: `${t("required")} ${_.join(
           _.compact([
             !name.trim() && t("dish_name"),
+            !code.trim() && t("dish_code"),
             !category && t("dish_category"),
             !dishType && t("dish_type"),
             !unit && t("unit"),
@@ -113,6 +123,7 @@ export default function CreateDishPage() {
       await createDish({
         shopId: shop.id,
         name,
+        code,
         category,
         dishType,
         price: _.toNumber(price),
@@ -155,13 +166,20 @@ export default function CreateDishPage() {
                 onChangeText={setName}
                 style={{ marginBottom: 20 }}
               />
+              <TextInput
+                label={t("dish_code")}
+                mode="outlined"
+                value={code}
+                onChangeText={setCode}
+                style={{ marginBottom: 20 }}
+              />
 
               <DropdownMenu
                 item={dishType}
                 items={dishTypes}
                 label={t("dish_type")}
                 setItem={setDishType}
-                getItemValue={(item: string) => item}
+                getItemValue={(item: string) => t(item)}
               />
 
               <DropdownMenu

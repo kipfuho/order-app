@@ -54,7 +54,7 @@ export default function OrderManagementApprovePage() {
     id: "ALL",
     name: t("all"),
     shop: "",
-    dishCategories: [],
+    dishCategoryIds: [],
   };
 
   const [filteredTables, setFilteredTables] = useState<Record<string, Table[]>>(

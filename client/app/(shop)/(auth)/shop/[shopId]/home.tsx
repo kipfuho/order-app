@@ -194,7 +194,7 @@ export default function ShopPage() {
                   borderRadius: 10,
                 }}
               >
-                <View style={{ flex: 1, gap: 5 }}>
+                <View style={{ flex: 1, gap: 5, alignItems: "center" }}>
                   <Icon source={item.icon} size={50} />
                   <Text variant="bodyLarge">{t(item.title)}</Text>
                 </View>

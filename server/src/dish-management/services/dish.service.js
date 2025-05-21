@@ -6,12 +6,7 @@ const mime = require('mime');
 const aws = require('../../utils/aws');
 const { Dish } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
-const {
-  getDishFromCache,
-  getDishesFromCache,
-  getDishCategoryFromCache,
-  getDishCategoriesFromCache,
-} = require('../../metadata/dishMetadata.service');
+const { getDishFromCache, getDishesFromCache, getDishCategoriesFromCache } = require('../../metadata/dishMetadata.service');
 const { DishTypes, Status } = require('../../utils/constant');
 const { refineFileNameForUploading } = require('../../utils/common');
 const { registerJob } = require('../../jobs/jobUtils');
@@ -35,12 +30,29 @@ const getDishes = async ({ shopId }) => {
 
 const createDish = async ({ shopId, createBody, userId }) => {
   const dish = await Dish.create({
-    data: {
-      ...createBody,
+    data: _.pickBy({
+      name: createBody.name,
+      code: createBody.code,
+      price: createBody.price,
+      type: createBody.type,
+      categoryId: createBody.category,
+      unitId: createBody.unit,
       shopId,
+      imageUrls: createBody.imageUrls || [],
+      description: createBody.description,
+      hideForCustomers: createBody.hideForCustomers,
+      hideForEmployees: createBody.hideForEmployees,
+      taxRate: createBody.taxRate,
+      isBestSeller: createBody.isBestSeller,
+      isNewlyCreated: createBody.isNewlyCreated,
+      isTaxIncludedPrice: createBody.isTaxIncludedPrice,
+      outOfStockNotification: createBody.outOfStockNotification,
+    }),
+    include: {
+      category: true,
+      unit: true,
     },
   });
-  dish.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.categoryId });
 
   // job to update s3 logs -> inUse = true
   registerJob({
@@ -59,14 +71,31 @@ const createDish = async ({ shopId, createBody, userId }) => {
 
 const updateDish = async ({ shopId, dishId, updateBody, userId }) => {
   const dish = await Dish.update({
-    data: {
-      ...updateBody,
+    data: _.pickBy({
+      name: updateBody.name,
+      code: updateBody.code,
+      price: updateBody.price,
+      type: updateBody.type,
+      categoryId: updateBody.category,
+      unitId: updateBody.unit,
       shopId,
-    },
+      imageUrls: updateBody.imageUrls || [],
+      description: updateBody.description,
+      hideForCustomers: updateBody.hideForCustomers,
+      hideForEmployees: updateBody.hideForEmployees,
+      taxRate: updateBody.taxRate,
+      isBestSeller: updateBody.isBestSeller,
+      isNewlyCreated: updateBody.isNewlyCreated,
+      isTaxIncludedPrice: updateBody.isTaxIncludedPrice,
+      outOfStockNotification: updateBody.outOfStockNotification,
+    }),
     where: { id: dishId, shopId },
+    include: {
+      category: true,
+      unit: true,
+    },
   });
   throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
-  dish.category = await getDishCategoryFromCache({ shopId, dishCategoryId: dish.categoryId });
 
   // job to update s3 logs -> inUse = true
   registerJob({

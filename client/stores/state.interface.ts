@@ -36,6 +36,7 @@ interface Shop {
 interface Table {
   id: string;
   name: string;
+  code: string;
   position: TablePosition;
   allowMultipleOrderSession: boolean;
   needApprovalWhenCustomerOrder: boolean;
@@ -57,7 +58,7 @@ interface TablePosition {
   name: string;
   code?: string;
   shop: string;
-  dishCategories: string[];
+  dishCategoryIds: string[];
 }
 
 interface Employee {

@@ -7,16 +7,16 @@ interface GetTablePositionsRequest {
 interface CreateTablePositionRequest {
   shopId: string;
   name: string;
-  code?: string;
+  code: string;
   categories: string[];
 }
 
 interface UpdateTablePositionRequest {
   tablePositionId: string;
   shopId: string;
-  name: string;
+  name?: string;
   code?: string;
-  categories: string[];
+  categories?: string[];
 }
 
 interface DeleteTablePositionRequest {
@@ -31,6 +31,7 @@ interface GetTablesRequest {
 interface CreateTableRequest {
   shopId: string;
   name: string;
+  code: string;
   tablePosition: TablePosition;
   allowMultipleOrderSession?: boolean;
   needApprovalWhenCustomerOrder?: boolean;
@@ -39,8 +40,9 @@ interface CreateTableRequest {
 interface UpdateTableRequest {
   tableId: string;
   shopId: string;
-  name: string;
-  tablePosition: TablePosition;
+  name?: string;
+  code?: string;
+  tablePosition?: TablePosition;
   allowMultipleOrderSession?: boolean;
   needApprovalWhenCustomerOrder?: boolean;
 }
