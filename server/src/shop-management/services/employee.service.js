@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { createUser } = require('../../auth/services/user.service');
 const { roles } = require('../../config/roles');
 const { getMessageByLocale } = require('../../locale');
@@ -48,14 +49,14 @@ const createEmployee = async ({ shopId, createBody, userId }) => {
   throwBadRequest(user.role === roles.admin, getMessageByLocale({ key: 'email.invalid' }));
 
   const employee = await Employee.create({
-    data: {
+    data: _.pickBy({
       name,
       permissions,
       positionId,
       departmentId,
       shopId,
       userId: user.id,
-    },
+    }),
     include: {
       user: true,
       position: true,
@@ -75,7 +76,7 @@ const updateEmployee = async ({ shopId, employeeId, updateBody, userId }) => {
   // xem operator có đủ quyền để thêm cho nhân viên không
   validatePermissionsUpdate(updateBody);
   const employee = await Employee.update({
-    data: updateBody,
+    data: _.pickBy({ ...updateBody, shopId }),
     where: {
       id: employeeId,
       shopId,
@@ -125,10 +126,10 @@ const getEmployeePositions = async ({ shopId }) => {
 
 const createEmployeePosition = async ({ shopId, createBody, userId }) => {
   const employeePosition = await EmployeePosition.create({
-    data: {
+    data: _.pickBy({
       ...createBody,
       shopId,
-    },
+    }),
   });
 
   notifyUpdateEmployeePosition({
@@ -140,7 +141,10 @@ const createEmployeePosition = async ({ shopId, createBody, userId }) => {
 };
 
 const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody, userId }) => {
-  const employeePosition = await EmployeePosition.update({ data: updateBody, where: { id: employeePositionId, shopId } });
+  const employeePosition = await EmployeePosition.update({
+    data: _.pickBy({ ...updateBody, shopId }),
+    where: { id: employeePositionId, shopId },
+  });
   throwBadRequest(!employeePosition, getMessageByLocale({ key: 'employeePosition.notFound' }));
 
   notifyUpdateEmployeePosition({

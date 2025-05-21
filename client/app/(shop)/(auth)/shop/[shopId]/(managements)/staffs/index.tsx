@@ -68,6 +68,7 @@ export default function StaffEmployeePage() {
 
                   {(employeeByDepartment[department.id] || []).map((item) => (
                     <List.Item
+                      key={item.id}
                       title={item.name}
                       style={{
                         borderRadius: 8,

@@ -26,10 +26,11 @@ const createDishCategory = async ({ shopId, createBody, userId }) => {
     getMessageByLocale({ key: 'dishCategory.alreadyExist' })
   );
   const dishCategory = await DishCategory.create({
-    data: {
-      ...createBody,
+    data: _.pickBy({
+      name: createBody.name,
+      code: createBody.code,
       shopId,
-    },
+    }),
   });
   notifyUpdateDishCategory({
     action: EventActionType.CREATE,
@@ -45,7 +46,14 @@ const updateDishCategory = async ({ shopId, dishCategoryId, updateBody, userId }
     _.find(dishCategories, (dishCategory) => dishCategory.name === updateBody.name && dishCategory.id !== dishCategoryId),
     getMessageByLocale({ key: 'dishCategory.alreadyExist' })
   );
-  const dishCategory = await DishCategory.update({ data: updateBody, where: { id: dishCategoryId, shopId } });
+  const dishCategory = await DishCategory.update({
+    data: _.pickBy({
+      name: updateBody.name,
+      code: updateBody.code,
+      shopId,
+    }),
+    where: { id: dishCategoryId, shopId },
+  });
   throwBadRequest(!dishCategory, getMessageByLocale({ key: 'dishCategory.notFound' }));
 
   notifyUpdateDishCategory({

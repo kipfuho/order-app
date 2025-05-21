@@ -30,6 +30,7 @@ import { AppBar } from "../../../../../../../components/AppBar";
 import { DropdownMenu } from "../../../../../../../components/DropdownMenu";
 import { Collapsible } from "../../../../../../../components/Collapsible";
 import { checkUserByEmailRequest } from "../../../../../../../apis/auth.api.service";
+import PasswordInput from "../../../../../../../components/ui/PasswordInput";
 
 export default function CreateEmployeePage() {
   const router = useRouter();
@@ -197,12 +198,11 @@ export default function CreateEmployeePage() {
               }
             />
 
-            <TextInput
-              label={t("password")}
-              mode="outlined"
-              value={password}
-              onChangeText={setPassword}
+            <PasswordInput
+              text={password}
+              setText={setPassword}
               style={{ marginBottom: 20 }}
+              mode="outlined"
               disabled={emailExists}
             />
 

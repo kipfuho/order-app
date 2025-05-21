@@ -86,7 +86,7 @@ const PermissionType = {
   UPDATE_MENU: 'shop_update_menu',
   VIEW_REPORT: 'shop_view_report',
   VIEW_KITCHEN: 'shop_view_kitchen',
-  UPDATE_KITCHEN: 'shop_view_kitchen',
+  UPDATE_KITCHEN: 'shop_update_kitchen',
 };
 
 const TableDepartmentPermissions = [

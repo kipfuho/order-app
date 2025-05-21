@@ -48,6 +48,7 @@ export default function UpdateDishCategoryPage() {
     if (!dishCategory) return;
 
     setName(dishCategory.name);
+    setCode(dishCategory.code);
   }, [dishCategoryId, dishCategoryFetching]);
 
   const handleUpdateDishCategory = async () => {
@@ -120,12 +121,14 @@ export default function UpdateDishCategoryPage() {
               label={t("dish_category_name")}
               value={name}
               onChangeText={setName}
+              style={{ marginBottom: 20 }}
             />
             <TextInput
               mode="outlined"
               label={t("dish_category_code")}
               value={code}
               onChangeText={setCode}
+              style={{ marginBottom: 20 }}
             />
           </ScrollView>
         </Surface>
@@ -137,7 +140,7 @@ export default function UpdateDishCategoryPage() {
             <>
               <Button
                 mode="contained-tonal"
-                style={{ width: 200, alignSelf: "center" }}
+                style={{ minWidth: 200, alignSelf: "center" }}
                 onPress={handleUpdateDishCategory}
               >
                 {t("update_dish_category")}

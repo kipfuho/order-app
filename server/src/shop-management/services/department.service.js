@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { getMessageByLocale } = require('../../locale');
 const { getDepartmentFromCache, getDepartmentsFromCache } = require('../../metadata/departmentMetadata.service');
 const { Department } = require('../../models');
@@ -19,7 +20,12 @@ const getDepartments = async ({ shopId }) => {
 
 const createDepartment = async ({ shopId, createBody, userId }) => {
   validatePermissionsUpdate(createBody);
-  const department = await Department.create({ ...createBody, shopId });
+  const department = await Department.create({
+    data: _.pickBy({
+      ...createBody,
+      shopId,
+    }),
+  });
 
   notifyUpdateDepartment({
     department,
@@ -31,7 +37,13 @@ const createDepartment = async ({ shopId, createBody, userId }) => {
 
 const updateDepartment = async ({ shopId, departmentId, updateBody, userId }) => {
   validatePermissionsUpdate(updateBody);
-  const department = await Department.update({ data: updateBody, where: { id: departmentId, shopId } });
+  const department = await Department.update({
+    data: _.pickBy({
+      ...updateBody,
+      shopId,
+    }),
+    where: { id: departmentId, shopId },
+  });
   throwBadRequest(!department, getMessageByLocale({ key: 'department.notFound' }));
 
   notifyUpdateDepartment({

@@ -46,6 +46,7 @@ export default function StaffEmployeePositionPage() {
           <List.Section>
             {employeePositions.map((item) => (
               <List.Item
+                key={item.id}
                 title={item.name}
                 style={{
                   borderRadius: 8,

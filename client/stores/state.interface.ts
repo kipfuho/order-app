@@ -105,6 +105,7 @@ interface Dish {
 interface DishCategory {
   id: string;
   name: string;
+  code: string;
 }
 
 interface Customer {

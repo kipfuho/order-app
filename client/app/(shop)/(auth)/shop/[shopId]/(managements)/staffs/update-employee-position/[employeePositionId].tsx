@@ -141,7 +141,7 @@ export default function UpdateEmployeePositionPage() {
             <Button
               mode="contained-tonal"
               onPress={handleUpdateEmployeePosition}
-              style={{ width: 200, alignSelf: "center" }}
+              style={{ minWidth: 200, alignSelf: "center" }}
             >
               {t("update_employee_position")}
             </Button>

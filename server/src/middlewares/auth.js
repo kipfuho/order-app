@@ -9,6 +9,7 @@ const { PermissionType } = require('../utils/constant');
 const { setEmployeePermissions, setShopToSession } = require('./clsHooked');
 const { getMessageByLocale } = require('../locale');
 const logger = require('../config/logger');
+const config = require('../config/config');
 
 const _verifyAdmin = (req, requiredRights) => {
   const { user } = req;
@@ -81,6 +82,9 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
 
 const isFromInternal = (req) => {
   try {
+    const appId = _.get(req, 'headers.appid') || '';
+    if (appId !== config.appid.internal) return false;
+
     // check hostname
     const { hostname } = req;
     if (typeof hostname !== 'string') return false;
@@ -97,6 +101,8 @@ const _resolveFromInternalReq = async (req, resolve) => {
     const shop = await getShopFromCache({ shopId });
     req.shop = shop;
     setShopToSession(shop);
+    const permissions = Object.values(PermissionType);
+    setEmployeePermissions(permissions);
   } catch (err) {
     logger.error(`error from internal . ${err.stack}`);
   } finally {
