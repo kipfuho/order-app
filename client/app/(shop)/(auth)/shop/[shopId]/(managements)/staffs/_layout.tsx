@@ -1,7 +1,6 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { useTheme } from "react-native-paper";
+import { Icon, useTheme } from "react-native-paper";
 
 export default function StaffTabLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };
@@ -22,11 +21,11 @@ export default function StaffTabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="employees"
         options={{
           title: t("employee"),
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="list" color={color} />
+            <Icon size={28} source="face-agent" color={color} />
           ),
         }}
         initialParams={{ shopId }}
@@ -36,7 +35,7 @@ export default function StaffTabLayout() {
         options={{
           title: t("department"),
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="home" color={color} />
+            <Icon size={28} source="home" color={color} />
           ),
         }}
         initialParams={{ shopId }}
@@ -46,13 +45,14 @@ export default function StaffTabLayout() {
         options={{
           title: t("employee_position"),
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="history" color={color} />
+            <Icon size={28} source="history" color={color} />
           ),
         }}
         initialParams={{ shopId }}
       />
 
       {[
+        "index",
         "create-employee",
         "create-employee-position",
         "create-department",

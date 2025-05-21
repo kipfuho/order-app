@@ -11,6 +11,7 @@ import {
   createElement,
   Fragment,
   memo,
+  ReactNode,
   useCallback,
   useRef,
   useState,
@@ -288,6 +289,7 @@ const FlatListWithScroll = ({
   itemType,
   additionalDatas,
   shouldShowGroup = true,
+  children,
 }: {
   groups: any[];
   itemByGroup: Record<string, any[]>;
@@ -295,6 +297,7 @@ const FlatListWithScroll = ({
   additionalDatas?: any;
   itemType: ItemTypeFlatList;
   shouldShowGroup?: boolean;
+  children?: ReactNode;
 }) => {
   const { width } = useWindowDimensions();
   const [itemContainerWidth, setItemContainerWidth] = useState<number>(1);
@@ -444,6 +447,7 @@ const FlatListWithScroll = ({
           );
         }}
         contentContainerStyle={{ padding: 10 }}
+        ListFooterComponent={() => children}
       />
     </Surface>
   );

@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 interface Item {
   key: string;
   title: string;
-  route: "tables" | "kitchens";
+  route: "table-management" | "kitchen-management";
   icon: string;
 }
 
@@ -20,13 +20,13 @@ const BUTTONS: Item[] = [
   {
     key: "table",
     title: "table_management",
-    route: "tables",
+    route: "table-management",
     icon: "table-furniture",
   },
   {
     key: "kitchen",
     title: "kitchen_management",
-    route: "kitchens",
+    route: "kitchen-management",
     icon: "silverware-fork-knife",
   },
 ];
@@ -71,7 +71,7 @@ export default function SettingManagementPage() {
               >
                 <View style={{ flex: 1, gap: 5 }}>
                   <Icon source={item.icon} size={50} />
-                  <Text variant="bodyLarge">{item.title}</Text>
+                  <Text variant="bodyLarge">{t(item.title)}</Text>
                 </View>
               </Button>
             ))}

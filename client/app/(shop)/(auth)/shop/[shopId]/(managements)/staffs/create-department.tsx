@@ -7,7 +7,6 @@ import {
   Button,
   Checkbox,
   Surface,
-  Text,
   TextInput,
 } from "react-native-paper";
 import Toast from "react-native-toast-message";

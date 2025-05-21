@@ -1,7 +1,6 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { useTheme } from "react-native-paper";
+import { Icon, useTheme } from "react-native-paper";
 
 export default function TablesTabLayout() {
   const { shopId } = useLocalSearchParams();
@@ -23,11 +22,11 @@ export default function TablesTabLayout() {
     >
       {/* Tables List */}
       <Tabs.Screen
-        name="index"
+        name="tables"
         options={{
           title: t("table"),
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={24} name="list" color={color} />
+            <Icon size={24} source="list" color={color} />
           ),
         }}
         initialParams={{ shopId }}
@@ -35,11 +34,11 @@ export default function TablesTabLayout() {
 
       {/* Table Positions */}
       <Tabs.Screen
-        name="table-position"
+        name="table-positions"
         options={{
           title: t("table_position"),
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={24} name="home" color={color} />
+            <Icon size={24} source="home" color={color} />
           ),
         }}
         initialParams={{ shopId }}
@@ -47,6 +46,7 @@ export default function TablesTabLayout() {
 
       {/* Hidden Screens */}
       {[
+        "index",
         "create-table-position",
         "create-table",
         "update-table/[tableId]",

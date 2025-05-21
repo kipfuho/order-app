@@ -3,7 +3,7 @@ import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../../stores/store";
-import { Button, useTheme, List, Surface, Text } from "react-native-paper";
+import { List, Surface, Text, FAB } from "react-native-paper";
 import _ from "lodash";
 import { Shop } from "../../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../../components/AppBar";
@@ -47,7 +47,7 @@ export default function TablesManagementPage() {
       <Surface
         style={{
           flex: 1,
-          padding: 16,
+          paddingHorizontal: 16,
         }}
       >
         <ScrollView>
@@ -88,15 +88,19 @@ export default function TablesManagementPage() {
               );
             })}
           </List.Section>
+          <View style={{ height: 60 }} />
         </ScrollView>
 
-        <Button
-          mode="contained"
+        <FAB
+          icon="plus"
+          label={t("create_table")}
+          style={{
+            position: "absolute",
+            right: 16,
+            bottom: 16,
+          }}
           onPress={() => goToCreateTable({ router, shopId: shop.id })}
-          style={{ marginTop: 16 }}
-        >
-          {t("create_table")}
-        </Button>
+        />
       </Surface>
     </>
   );

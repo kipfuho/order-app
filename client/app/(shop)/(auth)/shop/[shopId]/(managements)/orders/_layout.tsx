@@ -1,6 +1,5 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs, useLocalSearchParams } from "expo-router";
-import { useTheme } from "react-native-paper";
+import { Icon, useTheme } from "react-native-paper";
 
 export default function TabLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };
@@ -24,7 +23,7 @@ export default function TabLayout() {
         options={{
           title: "Approve",
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="list" color={color} />
+            <Icon size={28} source="list" color={color} />
           ),
         }}
         initialParams={{ shopId }}
@@ -34,7 +33,7 @@ export default function TabLayout() {
         options={{
           title: "Order",
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="home" color={color} />
+            <Icon size={28} source="home" color={color} />
           ),
         }}
         initialParams={{ shopId }}
@@ -44,7 +43,7 @@ export default function TabLayout() {
         options={{
           title: "History",
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="history" color={color} />
+            <Icon size={28} source="history" color={color} />
           ),
         }}
         initialParams={{ shopId }}

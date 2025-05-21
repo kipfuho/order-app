@@ -11,6 +11,7 @@ import {
   Text,
   IconButton,
   useTheme,
+  FAB,
 } from "react-native-paper"; // Import IconButton for delete button
 import _ from "lodash";
 import { RootState } from "../../../../../../../stores/store";
@@ -32,6 +33,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { ConfirmCancelDialog } from "../../../../../../../components/ui/CancelDialog";
 import Toast from "react-native-toast-message";
+import { View } from "react-native";
 
 export default function CategoriesManagementPage() {
   const router = useRouter();
@@ -94,12 +96,13 @@ export default function CategoriesManagementPage() {
             </Text>
           </Dialog.Content>
         </ConfirmCancelDialog>
+        <Toast />
       </Portal>
       <AppBar
         title={t("dish_category")}
         goBack={() => goBackShopHome({ router, shopId: shop.id })}
       />
-      <Surface style={{ flex: 1, padding: 16 }}>
+      <Surface style={{ flex: 1, paddingHorizontal: 16 }}>
         <ScrollView>
           {/* List of Dish Categories */}
           <List.Section>
@@ -132,46 +135,20 @@ export default function CategoriesManagementPage() {
               />
             ))}
           </List.Section>
+          <View style={{ height: 60 }} />
         </ScrollView>
 
-        {/* Create Dish Category Button */}
-        <Button
-          mode="contained"
-          style={styles.createButton}
+        <FAB
+          icon="plus"
+          label={t("create_dish_category")}
+          style={{
+            position: "absolute",
+            right: 16,
+            bottom: 16,
+          }}
           onPress={() => goToCreateDishCategory({ router, shopId: shop.id })}
-        >
-          {t("create_dish_category")}
-        </Button>
+        />
       </Surface>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  content: {
-    flexDirection: "row",
-    flex: 1,
-  },
-  sidebar: {
-    width: 120,
-    paddingRight: 8,
-  },
-  categoryButton: {
-    padding: 0,
-    borderRadius: 0,
-    marginBottom: 1,
-  },
-  dishList: {
-    flex: 1,
-  },
-  categoryContainer: {
-    marginBottom: 24,
-  },
-  categoryTitle: {
-    marginBottom: 8,
-  },
-  createButton: {
-    marginTop: 16,
-    alignSelf: "center",
-  },
-});

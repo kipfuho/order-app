@@ -3,7 +3,7 @@ import { ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../../stores/store";
-import { Button, List, Surface, useTheme } from "react-native-paper";
+import { FAB, List, Surface } from "react-native-paper";
 import _ from "lodash";
 import { Shop } from "../../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../../components/AppBar";
@@ -15,10 +15,10 @@ import {
   goToUpdateTablePosition,
 } from "../../../../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
+import { View } from "react-native";
 
 export default function TablePositionsManagementPage() {
   const router = useRouter();
-  const theme = useTheme();
   const { t } = useTranslation();
 
   const shop = useSelector(
@@ -41,7 +41,7 @@ export default function TablePositionsManagementPage() {
       <Surface
         style={{
           flex: 1,
-          padding: 16,
+          paddingHorizontal: 16,
         }}
       >
         <ScrollView>
@@ -66,16 +66,19 @@ export default function TablePositionsManagementPage() {
               />
             ))}
           </List.Section>
+          <View style={{ height: 60 }} />
         </ScrollView>
 
-        {/* Create Table Position Button */}
-        <Button
-          mode="contained"
+        <FAB
+          icon="plus"
+          label={t("create_table_position")}
+          style={{
+            position: "absolute",
+            right: 16,
+            bottom: 16,
+          }}
           onPress={() => goToCreateTablePosition({ router, shopId: shop.id })}
-          style={{ marginTop: 20 }}
-        >
-          {t("create_table_position")}
-        </Button>
+        />
       </Surface>
     </>
   );

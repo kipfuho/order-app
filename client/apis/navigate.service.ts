@@ -85,7 +85,7 @@ const goToTableList = ({
   shopId: string;
 }) => {
   router.push({
-    pathname: "/shop/[shopId]/settings/tables",
+    pathname: "/shop/[shopId]/settings/table-management/tables",
     params: { shopId },
   });
 };
@@ -98,7 +98,7 @@ const goToTablePositionList = ({
   shopId: string;
 }) => {
   router.push({
-    pathname: "/shop/[shopId]/settings/tables/table-position",
+    pathname: "/shop/[shopId]/settings/table-management/table-positions",
     params: { shopId },
   });
 };
@@ -139,7 +139,7 @@ const goToCreateTablePosition = ({
   shopId: string;
 }) => {
   router.push({
-    pathname: "/shop/[shopId]/settings/tables/create-table-position",
+    pathname: "/shop/[shopId]/settings/table-management/create-table-position",
     params: { shopId },
   });
 };
@@ -155,7 +155,7 @@ const goToUpdateTablePosition = ({
 }) => {
   router.push({
     pathname:
-      "/shop/[shopId]/settings/tables/update-table-position/[tablePositionId]",
+      "/shop/[shopId]/settings/table-management/update-table-position/[tablePositionId]",
     params: { shopId, tablePositionId },
   });
 };
@@ -168,7 +168,7 @@ const goToCreateTable = ({
   shopId: string;
 }) => {
   router.push({
-    pathname: "/shop/[shopId]/settings/tables/create-table",
+    pathname: "/shop/[shopId]/settings/table-management/create-table",
     params: { shopId },
   });
 };
@@ -183,7 +183,7 @@ const goToUpdateTable = ({
   tableId: string;
 }) => {
   router.push({
-    pathname: "/shop/[shopId]/settings/tables/update-table/[tableId]",
+    pathname: "/shop/[shopId]/settings/table-management/update-table/[tableId]",
     params: { shopId, tableId },
   });
 };
@@ -391,7 +391,7 @@ const goToKitchenList = ({
   shopId: string;
 }) => {
   router.push({
-    pathname: "/shop/[shopId]/settings/kitchens",
+    pathname: "/shop/[shopId]/settings/kitchen-management",
     params: { shopId },
   });
 };
@@ -404,7 +404,7 @@ const goToCreateKitchen = ({
   shopId: string;
 }) => {
   router.push({
-    pathname: "/shop/[shopId]/settings/kitchens/create-kitchen",
+    pathname: "/shop/[shopId]/settings/kitchen-management/create-kitchen",
     params: { shopId },
   });
 };
@@ -419,7 +419,8 @@ const goToUpdateKitchen = ({
   kitchenId: string;
 }) => {
   router.push({
-    pathname: "/shop/[shopId]/settings/kitchens/update-kitchen/[kitchenId]",
+    pathname:
+      "/shop/[shopId]/settings/kitchen-management/update-kitchen/[kitchenId]",
     params: { shopId, kitchenId },
   });
 };

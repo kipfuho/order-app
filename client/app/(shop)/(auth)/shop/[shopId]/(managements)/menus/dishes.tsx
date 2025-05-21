@@ -11,6 +11,7 @@ import {
   Portal,
   Dialog,
   Button,
+  FAB,
 } from "react-native-paper";
 import { GestureResponderEvent, Keyboard, View } from "react-native";
 import Toast from "react-native-toast-message";
@@ -195,21 +196,19 @@ export default function DishesManagementPage() {
             itemByGroup={filteredDishGroupById}
             openMenu={openMenu}
             itemType={ItemTypeFlatList.DISH_CARD}
+          >
+            <View style={{ height: 60 }} />
+          </FlatListWithScroll>
+          <FAB
+            icon="plus"
+            label={t("create_dish")}
+            style={{
+              position: "absolute",
+              right: 16,
+              bottom: 16,
+            }}
+            onPress={() => goToCreateDish({ router, shopId: shop.id })}
           />
-          <View style={{ padding: 16 }}>
-            <Button
-              mode="contained"
-              style={{
-                marginTop: 16,
-                width: 200,
-                alignSelf: "center",
-                margin: 0,
-              }}
-              onPress={() => goToCreateDish({ router, shopId: shop.id })}
-            >
-              {t("create_dish")}
-            </Button>
-          </View>
         </Surface>
       </GestureDetector>
     </>
