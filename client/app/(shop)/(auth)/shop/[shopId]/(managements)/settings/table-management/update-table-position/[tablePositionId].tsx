@@ -136,7 +136,7 @@ export default function UpdateTablePositionPage() {
       </Portal>
 
       <Surface style={{ flex: 1 }}>
-        <Surface style={{ flex: 1, padding: 16, boxShadow: "none" }}>
+        <Surface mode="flat" style={{ flex: 1, padding: 16 }}>
           <ScrollView>
             <TextInput
               label={t("table_position_name")}

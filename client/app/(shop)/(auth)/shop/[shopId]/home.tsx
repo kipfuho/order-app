@@ -177,7 +177,7 @@ export default function ShopPage() {
             </Surface>
           </View>
 
-          <Surface style={styles.baseGrid}>
+          <Surface mode="flat" style={styles.baseGrid}>
             {BUTTONS.map((item) => (
               <Button
                 key={item.route}

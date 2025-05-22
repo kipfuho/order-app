@@ -1,33 +1,23 @@
-import { styles } from "../../../../../_layout";
-import { Surface } from "react-native-paper";
-import {
-  BarChart,
-  LineChart,
-  PieChart,
-  PopulationPyramid,
-  RadarChart,
-} from "react-native-gifted-charts";
+import { useTranslation } from "react-i18next";
+import { AppBar } from "../../../../../../components/AppBar";
+import { goBackShopHome } from "../../../../../../apis/navigate.service";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import ShopDashboard from "../../../../../../components/ShopDashboard";
 
-export default function AnalyticManagementPage() {
-  // ...
-  const data = [{ value: 50 }, { value: 80 }, { value: 90 }, { value: 70 }];
+const AnalyticManagement = () => {
+  const { shopId } = useLocalSearchParams() as { shopId: string };
+  const { t } = useTranslation();
+  const router = useRouter();
 
   return (
-    <Surface style={styles.baseContainer}>
-      <BarChart data={data} />
-      <LineChart data={data} />
-      <PieChart data={data} />
-      <PopulationPyramid
-        data={[
-          { left: 10, right: 12 },
-          { left: 9, right: 8 },
-        ]}
+    <>
+      <AppBar
+        title={t("analytics")}
+        goBack={() => goBackShopHome({ router, shopId })}
       />
-      <RadarChart data={[50, 80, 90, 70]} />
-      <BarChart />
-      <BarChart data={data} horizontal />
-      <LineChart data={data} areaChart />
-      <PieChart data={data} donut />
-    </Surface>
+      <ShopDashboard />
+    </>
   );
-}
+};
+
+export default AnalyticManagement;

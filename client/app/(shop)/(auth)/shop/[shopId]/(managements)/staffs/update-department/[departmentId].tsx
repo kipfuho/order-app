@@ -117,10 +117,10 @@ export default function UpdateDepartmentPage() {
         }}
       >
         <Surface
+          mode="flat"
           style={{
             flex: 1,
             padding: 16,
-            boxShadow: "none",
           }}
         >
           <ScrollView>

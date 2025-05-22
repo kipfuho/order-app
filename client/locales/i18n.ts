@@ -1,6 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import * as RNLocalize from "react-native-localize";
+import * as Localization from "expo-localization";
 
 import en from "./en.json";
 import vi from "./vi.json";
@@ -11,15 +11,10 @@ const resources = {
 };
 
 const fallbackLng = "en";
-const { languageTag } = RNLocalize.findBestLanguageTag(
-  Object.keys(resources)
-) || {
-  languageTag: fallbackLng,
-};
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: languageTag,
+  lng: Localization.getLocales()[0].languageTag,
   fallbackLng,
   compatibilityJSON: "v4",
   interpolation: {

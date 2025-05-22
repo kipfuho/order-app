@@ -80,7 +80,7 @@ export default function CreateDishCategoryPage() {
         }}
       />
       <Surface style={{ flex: 1 }}>
-        <Surface style={{ flex: 1, padding: 16, boxShadow: "none" }}>
+        <Surface mode="flat" style={{ flex: 1, padding: 16 }}>
           <ScrollView style={{ flex: 1 }}>
             <TextInput
               label={t("dish_category_name")}

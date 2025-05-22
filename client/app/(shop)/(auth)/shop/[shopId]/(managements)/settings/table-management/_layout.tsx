@@ -26,7 +26,7 @@ export default function TablesTabLayout() {
         options={{
           title: t("table"),
           tabBarIcon: ({ color }) => (
-            <Icon size={24} source="list" color={color} />
+            <Icon size={24} source="table-furniture" color={color} />
           ),
         }}
         initialParams={{ shopId }}

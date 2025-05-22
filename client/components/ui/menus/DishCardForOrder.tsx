@@ -148,62 +148,69 @@ const QuantityControl = memo(
   }
 );
 
-export const DishCardForOrder = memo(
-  ({ dish, containerWidth = 0 }: { dish: Dish; containerWidth?: number }) => {
-    const dispatch = useDispatch();
+const DishCardForOrder = ({
+  dish,
+  containerWidth = 0,
+}: {
+  dish: Dish;
+  containerWidth?: number;
+}) => {
+  const dispatch = useDispatch();
 
-    const cardWidth = Math.min(200, containerWidth * 0.48);
-    const currentOrder = useSelector(
-      (state: RootState) => state.shop.currentOrder[dish.id]
-    );
+  const cardWidth = Math.min(200, containerWidth * 0.48);
+  const currentOrder = useSelector(
+    (state: RootState) => state.shop.currentOrder[dish.id]
+  );
 
-    const increaseDishQuantity = () => {
-      dispatch(updateCurrentOrder({ dish }));
-    };
+  const increaseDishQuantity = () => {
+    dispatch(updateCurrentOrder({ dish }));
+  };
 
-    if (cardWidth < 1) {
-      return;
-    }
-
-    return (
-      <Card
-        mode="contained"
-        style={{ margin: 3, width: cardWidth }}
-        onPress={increaseDishQuantity}
-      >
-        <Surface
-          style={{
-            position: "absolute",
-            top: 5,
-            right: 5,
-            padding: 5,
-            borderRadius: 5,
-            zIndex: 5,
-          }}
-        >
-          <Text style={{ fontWeight: "bold", fontSize: 18 }}>
-            {convertPaymentAmount(dish.price)}
-          </Text>
-        </Surface>
-        <View>
-          <Image
-            source={dish.imageUrls[0] || require("@assets/images/savora.png")}
-            style={{ width: cardWidth, height: cardWidth }}
-            placeholder={{ blurhash: BLURHASH }}
-          />
-          {currentOrder && (
-            <QuantityControl dish={dish} currentOrder={currentOrder} />
-          )}
-        </View>
-        <Card.Title
-          title={
-            <Tooltip title={dish.name}>
-              <Text numberOfLines={2}>{dish.name}</Text>
-            </Tooltip>
-          }
-          titleNumberOfLines={5}
-        />
-      </Card>
-    );
+  if (cardWidth < 1) {
+    return;
   }
-);
+
+  return (
+    <Card
+      mode="contained"
+      style={{ margin: 3, width: cardWidth, height: 250 }}
+      onPress={increaseDishQuantity}
+    >
+      <Surface
+        style={{
+          position: "absolute",
+          top: 5,
+          right: 5,
+          padding: 5,
+          borderRadius: 5,
+          zIndex: 5,
+        }}
+      >
+        <Text style={{ fontWeight: "bold", fontSize: 18 }}>
+          {convertPaymentAmount(dish.price)}
+        </Text>
+      </Surface>
+      <View>
+        <Image
+          source={dish.imageUrls[0] || require("@assets/images/savora.png")}
+          style={{ width: cardWidth, height: cardWidth }}
+          placeholder={{ blurhash: BLURHASH }}
+        />
+        {currentOrder && (
+          <QuantityControl dish={dish} currentOrder={currentOrder} />
+        )}
+      </View>
+      <Card.Title
+        title={
+          <Tooltip title={dish.name}>
+            <Text numberOfLines={2}>{dish.name}</Text>
+          </Tooltip>
+        }
+        titleNumberOfLines={5}
+      />
+    </Card>
+  );
+};
+
+export default DishCardForOrder;
+export const MemoizedDishCardForOrder = memo(DishCardForOrder);

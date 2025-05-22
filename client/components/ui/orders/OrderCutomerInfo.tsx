@@ -13,7 +13,7 @@ export default function OrderCustomerInfo({
   const { t } = useTranslation();
 
   return (
-    <Surface style={{ gap: 8, boxShadow: "none" }}>
+    <Surface mode="flat" style={{ gap: 8 }}>
       <Text style={{ fontSize: 20, fontWeight: "bold" }}>
         {orderSession.customerInfo?.customerName ?? t("guest")}
       </Text>

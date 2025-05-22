@@ -19,7 +19,7 @@ export default function OrderHistoryCard({
   if (!orderHistory) return;
 
   return (
-    <Surface style={{ boxShadow: "none" }}>
+    <Surface mode="flat">
       <View
         style={{
           flexDirection: "row",

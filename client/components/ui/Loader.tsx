@@ -2,7 +2,7 @@ import { ActivityIndicator, Surface } from "react-native-paper";
 
 export function LoaderBasic() {
   return (
-    <Surface style={{ flex: 1, padding: 16 }}>
+    <Surface mode="flat" style={{ flex: 1, padding: 16 }}>
       <ActivityIndicator
         animating={true}
         size="large"
@@ -10,7 +10,6 @@ export function LoaderBasic() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          boxShadow: "none",
         }}
       />
     </Surface>

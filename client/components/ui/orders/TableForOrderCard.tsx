@@ -29,7 +29,6 @@ export const TableForOrderCurrentInfo = memo(
             borderRadius: 5,
             borderTopLeftRadius: 0,
             borderTopRightRadius: 0,
-            boxShadow: "none",
           }}
         >
           {/* Row: Customers and Order ID */}
@@ -74,7 +73,6 @@ export const TableForOrderCurrentInfo = memo(
           borderRadius: 5,
           borderTopLeftRadius: 0,
           borderTopRightRadius: 0,
-          boxShadow: "none",
         }}
       >
         <Icon source="plus-circle-outline" size={30} />

@@ -1,3 +1,4 @@
+import "react-native-get-random-values";
 import { useEffect } from "react";
 import { Provider as ReduxProvider, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
@@ -13,6 +14,7 @@ import Toast from "react-native-toast-message";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import i18n from "../locales/i18n";
 import { darkTheme, lightTheme } from "../constants/theme";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 Amplify.configure(AmplifyConfig);
 
@@ -43,13 +45,15 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <ReduxProvider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <I18nextProvider i18n={i18n}>
-          <ThemeLayout />
-        </I18nextProvider>
-      </PersistGate>
-    </ReduxProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ReduxProvider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <I18nextProvider i18n={i18n}>
+            <ThemeLayout />
+          </I18nextProvider>
+        </PersistGate>
+      </ReduxProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -71,7 +75,6 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   baseGrid: {
-    boxShadow: "none",
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",

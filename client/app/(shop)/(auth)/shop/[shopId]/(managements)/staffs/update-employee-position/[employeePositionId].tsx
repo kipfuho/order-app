@@ -115,10 +115,10 @@ export default function UpdateEmployeePositionPage() {
         }}
       >
         <Surface
+          mode="flat"
           style={{
             flex: 1,
             padding: 16,
-            boxShadow: "none",
           }}
         >
           <ScrollView>

@@ -93,7 +93,7 @@ export default function CreateShopPage() {
         goBack={() => goBackShopList({ router })}
       />
       <Surface style={{ flex: 1 }}>
-        <Surface style={[styles.baseContainer, { boxShadow: "none" }]}>
+        <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView>
             <UploadImages
               images={images}

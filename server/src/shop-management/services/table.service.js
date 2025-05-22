@@ -133,10 +133,10 @@ const createTablePosition = async ({ shopId, createBody, userId }) => {
   // eslint-disable-next-line no-param-reassign
   createBody.dishCategoryIds = dishCategoryIds;
   const tablePosition = await TablePosition.create({
-    data: {
+    data: _.pickBy({
       ...createBody,
       shopId,
-    },
+    }),
   });
 
   notifyUpdateTablePosition({ tablePosition, action: EventActionType.CREATE, userId });
@@ -160,7 +160,10 @@ const updateTablePosition = async ({ shopId, tablePositionId, updateBody, userId
     updateBody.dishCategoryIds = dishCategoryIds;
   }
   const tablePosition = await TablePosition.update({
-    data: updateBody,
+    data: _.pickBy({
+      ...updateBody,
+      shopId,
+    }),
     where: {
       id: tablePositionId,
       shopId,

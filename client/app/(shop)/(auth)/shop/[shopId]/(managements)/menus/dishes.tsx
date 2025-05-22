@@ -34,6 +34,12 @@ import FlatListWithScroll, {
 } from "../../../../../../../components/FlatListWithScroll";
 import { AppBarSearchBox } from "../../../../../../../components/AppBarSearchBox";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { runOnJS } from "react-native-reanimated";
+
+const createDismissGesture = (onDismissSearch: () => void) =>
+  Gesture.Tap().onStart(() => {
+    runOnJS(onDismissSearch)();
+  });
 
 export default function DishesManagementPage() {
   const router = useRouter();
@@ -60,11 +66,11 @@ export default function DishesManagementPage() {
     Record<string, Dish[]>
   >({});
 
-  const openMenu = (dish: Dish, event: GestureResponderEvent) => {
+  const openMenu = useCallback((dish: Dish, event: GestureResponderEvent) => {
     setSelectedDish(dish);
     setMenuPosition({ x: event.nativeEvent.pageX, y: event.nativeEvent.pageY });
     setMenuVisible(true);
-  };
+  }, []);
 
   const confirmDelete = async () => {
     try {
@@ -95,16 +101,12 @@ export default function DishesManagementPage() {
     }
   };
 
-  const gesture = Gesture.Race(
-    Gesture.Tap().onStart(() => {
-      setSearchVisible(false);
-      Keyboard.dismiss();
-    }),
-    Gesture.Pan().onStart(() => {
-      setSearchVisible(false);
-      Keyboard.dismiss();
-    })
-  );
+  const onDismissSearch = () => {
+    setSearchVisible(false);
+    Keyboard.dismiss();
+  };
+
+  const gesture = createDismissGesture(onDismissSearch);
 
   const debouncedSearchDishes = useCallback(
     debounce((_searchValue: string) => {

@@ -114,7 +114,7 @@ export default function UpdateDishCategoryPage() {
         goBack={() => goToDishCategoryList({ router, shopId: shop.id })}
       />
       <Surface style={{ flex: 1 }}>
-        <Surface style={{ flex: 1, padding: 16, boxShadow: "none" }}>
+        <Surface mode="flat" style={{ flex: 1, padding: 16 }}>
           <ScrollView>
             <TextInput
               mode="outlined"

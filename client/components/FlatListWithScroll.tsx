@@ -6,23 +6,23 @@ import {
   View,
 } from "react-native";
 import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
-import { DishCard } from "./ui/menus/DishCard";
 import {
   createElement,
-  Fragment,
   memo,
   ReactNode,
   useCallback,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { ScrollView } from "react-native";
 import { CartItem, Dish, KitchenDishOrder } from "../stores/state.interface";
-import { DishCardForOrder } from "./ui/menus/DishCardForOrder";
-import { DishCardForCustomer } from "./ui/menus/DishCardForCustomer";
 import KitchenDishOrderByOrderCard from "./ui/kitchen/KitchenDishOrderByOrderCard";
 import KitchenDishOrderByDishCard from "./ui/kitchen/KitchenDishOrderByDishCard";
 import KitchenDishOrderServingCard from "./ui/kitchen/KitchenDishOrderServingCard";
+import { MemoizedDishCard } from "./ui/menus/DishCard";
+import { MemoizedDishCardForOrder } from "./ui/menus/DishCardForOrder";
+import { MemoizedDishCardForCustomer } from "./ui/menus/DishCardForCustomer";
 
 export const UNIVERSAL_WIDTH_PIVOT = 600;
 
@@ -83,12 +83,14 @@ export const ItemTypeMap = {
   }) => {
     if (!openMenu) return;
 
-    return createElement(DishCard, {
-      key,
-      dish: item,
-      openMenu,
-      containerWidth,
-    });
+    return (
+      <MemoizedDishCard
+        key={key}
+        dish={item}
+        openMenu={openMenu}
+        containerWidth={containerWidth}
+      />
+    );
   },
 
   [ItemTypeFlatList.DISH_CARD_ORDER]: ({
@@ -100,7 +102,13 @@ export const ItemTypeMap = {
     item: Dish;
     containerWidth?: number;
   }) => {
-    return createElement(DishCardForOrder, { key, dish: item, containerWidth });
+    return (
+      <MemoizedDishCardForOrder
+        key={key}
+        dish={item}
+        containerWidth={containerWidth}
+      />
+    );
   },
 
   [ItemTypeFlatList.DISH_CARD_CUSTOMER]: ({
@@ -116,12 +124,14 @@ export const ItemTypeMap = {
       cartItemsGroupByDish: Record<string, CartItem[]>;
     };
   }) => {
-    return createElement(DishCardForCustomer, {
-      key,
-      dish: item,
-      containerWidth,
-      cartItems: additionalDatas.cartItemsGroupByDish[item.id],
-    });
+    return (
+      <MemoizedDishCardForCustomer
+        key={key}
+        dish={item}
+        containerWidth={containerWidth}
+        cartItems={additionalDatas.cartItemsGroupByDish[item.id]}
+      />
+    );
   },
 
   [ItemTypeFlatList.KITCHEN_DISHORDER_BYORDER]: ({
@@ -189,17 +199,10 @@ function GroupList({
         mode="flat"
         style={{
           backgroundColor: theme.colors.background,
+          paddingHorizontal: 8,
         }}
       >
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            flex: 1,
-            flexDirection: "column",
-            width: "25%",
-          }}
-        >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View
             style={{
               flexDirection: "row", // layout items in a row
@@ -304,34 +307,36 @@ const FlatListWithScroll = ({
   const [numColumns, setNumColumns] = useState<number>(0);
 
   const flatListRef = useRef<FlatList<any>>(null);
-  const flatListData = groups.flatMap((g) => {
-    if (numColumns <= 0) {
-      return [];
-    }
+  const flatListData = useMemo(() => {
+    if (numColumns <= 0) return [];
 
-    const items = itemByGroup[g.id] || [];
+    return groups.flatMap((g) => {
+      const items = itemByGroup[g.id] || [];
+      const itemRows = [];
 
-    const itemRows: FlatListItem[] = [];
-    for (let i = 0; i < items.length; i += numColumns) {
-      itemRows.push({
-        type: "row",
-        id: `row-${g.id}-${i}`,
-        items: items.slice(i, i + numColumns),
-        startIdx: i,
-        group: g,
-      });
-    }
+      for (let i = 0; i < items.length; i += numColumns) {
+        itemRows.push({
+          type: "row",
+          id: `row-${g.id}-${i}`,
+          items: items.slice(i, i + numColumns),
+          startIdx: i,
+          group: g,
+        });
+      }
 
-    return [{ type: "header", id: `header-${g.id}`, group: g }, ...itemRows];
-  });
+      return [{ type: "header", id: `header-${g.id}`, group: g }, ...itemRows];
+    });
+  }, [groups, itemByGroup, numColumns]);
 
-  // For scrollToCategory
-  const indexMap: Record<string, number> = {};
-  flatListData.forEach((item: FlatListItem, index) => {
-    if (item.type === "header") {
-      indexMap[item.group!.id] = index;
-    }
-  });
+  const indexMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    flatListData.forEach((item, index) => {
+      if (item.type === "header") {
+        map[item.group.id] = index;
+      }
+    });
+    return map;
+  }, [flatListData]);
 
   const renderItem = useCallback(
     ({ item }: { item: FlatListItem }) => {
@@ -465,4 +470,4 @@ export const flatListStyles = StyleSheet.create({
   },
 });
 
-export default memo(FlatListWithScroll);
+export default FlatListWithScroll;

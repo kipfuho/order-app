@@ -1,13 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { FlatList, ScrollView, TouchableOpacity } from "react-native";
-import {
-  Button,
-  List,
-  Searchbar,
-  Surface,
-  Text,
-  useTheme,
-} from "react-native-paper";
+import { FlatList, TouchableOpacity } from "react-native";
+import { Button, Searchbar, Surface, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { AppBar } from "../../../components/AppBar";
 import { useGetShopsQuery } from "../../../stores/apiSlices/shopApi.slice";
@@ -58,66 +51,65 @@ export default function ShopsPage() {
           {t("create_shop")}
         </Button>
       </AppBar>
-      <Surface mode="flat" style={{ flex: 1, padding: 12, gap: 12 }}>
-        <Searchbar
-          value={searchValue}
-          placeholder={t("search")}
-          onChangeText={setSearchValue}
-        />
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={{ gap: 12 }}>
-            <FlatList
-              data={filteredShops}
-              renderItem={({ item: shop }) => (
-                <TouchableOpacity
-                  onPress={() => goBackShopHome({ router, shopId: shop.id })}
-                  activeOpacity={1}
-                >
-                  <Surface
-                    style={{
-                      flexDirection: "row",
-                      padding: 12,
-                      margin: 4,
-                      gap: 12,
-                      borderRadius: 12,
-                    }}
-                  >
-                    <Image
-                      source={
-                        shop.imageUrls?.[0] ||
-                        require("@assets/images/savora.png")
-                      }
-                      style={{
-                        width: 100,
-                        height: 100,
-                        borderRadius: 15,
-                      }}
-                    />
-                    <View style={{ flex: 1, justifyContent: "center", gap: 8 }}>
-                      <Text
-                        style={{
-                          fontSize: 24,
-                          textTransform: "capitalize",
-                        }}
-                        numberOfLines={2}
-                      >
-                        {shop.name}
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: 16,
-                        }}
-                        numberOfLines={2}
-                      >
-                        {shop.location}
-                      </Text>
-                    </View>
-                  </Surface>
-                </TouchableOpacity>
-              )}
+      <Surface mode="flat" style={{ flex: 1 }}>
+        <FlatList
+          data={filteredShops}
+          keyExtractor={(item) => item.id.toString()}
+          ListHeaderComponent={
+            <Searchbar
+              value={searchValue}
+              placeholder={t("search")}
+              onChangeText={setSearchValue}
+              style={{ margin: 12 }}
             />
-          </View>
-        </ScrollView>
+          }
+          contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 12 }}
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          renderItem={({ item: shop }) => (
+            <TouchableOpacity
+              onPress={() => goBackShopHome({ router, shopId: shop.id })}
+              activeOpacity={1}
+            >
+              <Surface
+                style={{
+                  flexDirection: "row",
+                  padding: 12,
+                  borderRadius: 12,
+                }}
+              >
+                <Image
+                  source={
+                    shop.imageUrls?.[0] || require("@assets/images/savora.png")
+                  }
+                  style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: 15,
+                  }}
+                />
+                <View style={{ flex: 1, justifyContent: "center", gap: 8 }}>
+                  <Text
+                    style={{
+                      fontSize: 24,
+                      textTransform: "capitalize",
+                    }}
+                    numberOfLines={2}
+                  >
+                    {shop.name}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                    }}
+                    numberOfLines={2}
+                  >
+                    {shop.location}
+                  </Text>
+                </View>
+              </Surface>
+            </TouchableOpacity>
+          )}
+        />
       </Surface>
     </>
   );

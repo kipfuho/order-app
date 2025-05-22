@@ -151,7 +151,7 @@ export default function CreateDishPage() {
       <AppBar title={t("create_dish")} goBack={goBack} />
       <Surface style={{ flex: 1 }}>
         <ScrollView>
-          <Surface style={{ flex: 1, boxShadow: "none", gap: 16 }}>
+          <Surface mode="flat" style={{ flex: 1, gap: 16 }}>
             <UploadImages
               images={images}
               setImages={setImages}

@@ -23,7 +23,7 @@ export default function TabLayout() {
         options={{
           title: "Approve",
           tabBarIcon: ({ color }) => (
-            <Icon size={28} source="list" color={color} />
+            <Icon size={28} source="menu" color={color} />
           ),
         }}
         initialParams={{ shopId }}

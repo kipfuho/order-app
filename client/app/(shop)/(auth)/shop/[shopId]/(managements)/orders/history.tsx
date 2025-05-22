@@ -121,7 +121,7 @@ export default function OrderManagementHistoryPage() {
 
         <Surface style={{ flex: 1, padding: 16 }}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Surface style={{ gap: 16, boxShadow: "none" }}>
+            <Surface mode="flat" style={{ gap: 16 }}>
               {orderHistories?.map((orderHistory, index) => (
                 <View key={index}>
                   <OrderHistoryCard orderHistory={orderHistory} />

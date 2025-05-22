@@ -35,7 +35,7 @@ export const DropdownMenu = ({
           <Button
             mode="outlined"
             onPress={openMenu}
-            style={{ marginBottom: 20, borderRadius: 5 }}
+            style={{ marginBottom: 20, borderRadius: 5, minHeight: 30 }}
           >
             {getItemValue(item) || `${t("select")} ${label}`}
           </Button>

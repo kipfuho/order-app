@@ -21,10 +21,16 @@ import {
 } from "../../../stores/apiSlices/cartApi.slice";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { AppBarSearchBox } from "../../../components/AppBarSearchBox";
+import { runOnJS } from "react-native-reanimated";
 
 const getButtonSize = (width: number) => {
   return width / 2 - 30;
 };
+
+const createDismissGesture = (onDismissSearch: () => void) =>
+  Gesture.Tap().onStart(() => {
+    runOnJS(onDismissSearch)();
+  });
 
 const getDishGroupByDishType = (
   dishes: Dish[],
@@ -33,7 +39,7 @@ const getDishGroupByDishType = (
 ) => {
   const dishesGroupByCategoryId = _.groupBy(dishes, "category.id");
   const tableDishes = _.flatMap(
-    table.position.dishCategories,
+    table.position.dishCategoryIds,
     (dishCategoryId) => {
       return dishesGroupByCategoryId[dishCategoryId] || [];
     }
@@ -81,16 +87,12 @@ export default function CustomerHomePage() {
   const [searchValue, setSearchValue] = useState("");
   const [searchVisible, setSearchVisible] = useState(false);
 
-  const gesture = Gesture.Race(
-    Gesture.Tap().onStart(() => {
-      setSearchVisible(false);
-      Keyboard.dismiss();
-    }),
-    Gesture.Pan().onStart(() => {
-      setSearchVisible(false);
-      Keyboard.dismiss();
-    })
-  );
+  const onDismissSearch = () => {
+    setSearchVisible(false);
+    Keyboard.dismiss();
+  };
+
+  const gesture = createDismissGesture(onDismissSearch);
 
   useEffect(() => {
     console.log(recommendationDishes);
@@ -144,7 +146,7 @@ export default function CustomerHomePage() {
               "https://picsum.photos/700",
             ]}
           />
-          <Surface style={styles.baseGrid}>
+          <Surface mode="flat" style={styles.baseGrid}>
             {availableDishTypes.map((dishType) => (
               <Button
                 key={dishType}

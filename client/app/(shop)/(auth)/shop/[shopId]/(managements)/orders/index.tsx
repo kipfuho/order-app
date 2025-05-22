@@ -134,7 +134,7 @@ export default function OrderManagementOrderPage() {
       </Portal>
 
       <Surface style={{ flex: 1, padding: 16 }}>
-        <Surface style={{ height: 50, marginBottom: 10, boxShadow: "none" }}>
+        <Surface mode="flat" style={{ height: 50, marginBottom: 10 }}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -180,19 +180,19 @@ export default function OrderManagementOrderPage() {
         </Surface>
 
         {/* Tables list */}
-        <Surface style={{ flex: 1, boxShadow: "none" }}>
+        <Surface mode="flat" style={{ flex: 1 }}>
           <ScrollView>
             {_.map(filteredTables, (tables, positionId) => {
               return (
-                <Surface key={positionId} style={{ boxShadow: "none" }}>
+                <Surface mode="flat" key={positionId}>
                   <Text variant="titleLarge">
                     {tablePositionById[positionId]?.name}
                   </Text>
                   <Surface
+                    mode="flat"
                     style={{
                       flexDirection: "row",
                       flexWrap: "wrap",
-                      boxShadow: "none",
                     }}
                   >
                     {tables.map((table) => (

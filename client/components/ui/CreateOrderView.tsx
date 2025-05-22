@@ -33,6 +33,12 @@ import FlatListWithoutScroll from "../FlatListWithoutScroll";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { AppBar } from "../AppBar";
 import { AppBarSearchBox } from "../AppBarSearchBox";
+import { runOnJS } from "react-native-reanimated";
+
+const createDismissGesture = (onDismissSearch: () => void) =>
+  Gesture.Tap().onStart(() => {
+    runOnJS(onDismissSearch)();
+  });
 
 /**
  * wrapped in a modal
@@ -106,7 +112,7 @@ export default function CreateOrder({
   const debouncedSearchDishes = useCallback(
     debounce((_selectedDishType: string, _searchValue: string) => {
       const tableDishes = _.flatMap(
-        currentTable?.position.dishCategories,
+        currentTable?.position.dishCategoryIds,
         (dishCategoryId) => {
           return dishesByCategory[dishCategoryId] || [];
         }
@@ -129,7 +135,7 @@ export default function CreateOrder({
       setFilteredDishesByCategory(_.groupBy(filteredDishes, "category.id"));
       setApplicableCategories(
         dishCategories.filter((dc) =>
-          currentTable?.position.dishCategories.includes(dc.id)
+          currentTable?.position.dishCategoryIds.includes(dc.id)
         )
       );
     }, 200),
@@ -140,16 +146,12 @@ export default function CreateOrder({
     debouncedSearchDishes(selectedDishType, searchValue);
   }, [selectedDishType, dishLoading, searchValue, debouncedSearchDishes]);
 
-  const gesture = Gesture.Race(
-    Gesture.Tap().onStart(() => {
-      setSearchVisible(false);
-      Keyboard.dismiss();
-    }),
-    Gesture.Pan().onStart(() => {
-      setSearchVisible(false);
-      Keyboard.dismiss();
-    })
-  );
+  const onDismissSearch = () => {
+    setSearchVisible(false);
+    Keyboard.dismiss();
+  };
+
+  const gesture = createDismissGesture(onDismissSearch);
 
   if (dishLoading || dishCategoryLoading || dishTypeLoading) {
     return <LoaderBasic />;
@@ -223,12 +225,12 @@ export default function CreateOrder({
           />
 
           <Surface
+            mode="flat"
             style={{
               flexDirection: "row",
               justifyContent: "center",
               alignItems: "center",
               padding: 10,
-              boxShadow: "none",
             }}
           >
             <Icon source="cart-outline" size={40} />

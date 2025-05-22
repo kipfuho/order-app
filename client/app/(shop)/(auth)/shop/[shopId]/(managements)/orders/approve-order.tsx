@@ -6,18 +6,13 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../../../../../stores/store";
 import { Shop, Table } from "../../../../../../../stores/state.interface";
 import { useTranslation } from "react-i18next";
-import {
-  useApproveUnconfirmedOrderMutation,
-  useCancelUnconfirmedOrderMutation,
-  useGetUnconfirmedOrderQuery,
-  useUpdateUnconfirmedOrderMutation,
-} from "../../../../../../../stores/apiSlices/orderApi.slice";
+import { useGetUnconfirmedOrderQuery } from "../../../../../../../stores/apiSlices/orderApi.slice";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import {
   useGetTablePositionsQuery,
   useGetTablesQuery,
 } from "../../../../../../../stores/apiSlices/tableApi.slice";
-import { FlatList, ScrollView, View } from "react-native";
+import { FlatList, ScrollView } from "react-native";
 import { useEffect, useState } from "react";
 import _ from "lodash";
 import { TableForApproveCard } from "../../../../../../../components/ui/orders/TableForApproveCard";
@@ -131,7 +126,7 @@ export default function OrderManagementApprovePage() {
         }}
       />
       <Surface style={{ flex: 1, padding: 16 }}>
-        <Surface style={{ height: 50, marginBottom: 10, boxShadow: "none" }}>
+        <Surface mode="flat" style={{ height: 50, marginBottom: 10 }}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -183,19 +178,19 @@ export default function OrderManagementApprovePage() {
         </Surface>
 
         {/* Tables list */}
-        <Surface style={{ flex: 1, boxShadow: "none" }}>
+        <Surface mode="flat" style={{ flex: 1 }}>
           <ScrollView>
             {_.map(filteredTables, (tables, positionId) => {
               return (
-                <Surface key={positionId} style={{ boxShadow: "none" }}>
+                <Surface mode="flat" key={positionId}>
                   <Text variant="titleLarge">
                     {tablePositionById[positionId]?.name}
                   </Text>
                   <Surface
+                    mode="flat"
                     style={{
                       flexDirection: "row",
                       flexWrap: "wrap",
-                      boxShadow: "none",
                     }}
                   >
                     {tables.map((table) => (

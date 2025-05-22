@@ -15,6 +15,7 @@ import { useDispatch } from "react-redux";
 import { updateCartSingleDish } from "../../../stores/customerSlice";
 import { Image } from "expo-image";
 import { BLURHASH } from "../../../constants/common";
+import { memo } from "react";
 
 function QuantityControlForCustomer({
   dish,
@@ -131,7 +132,7 @@ function QuantityControlForCustomer({
   );
 }
 
-export const DishCardForCustomer = ({
+const DishCardForCustomer = ({
   dish,
   cartItems,
   containerWidth = 0,
@@ -152,6 +153,7 @@ export const DishCardForCustomer = ({
       style={{
         margin: 3,
         width: cardWidth,
+        height: 294,
         backgroundColor: theme.colors.background,
         borderRadius: 5,
       }}
@@ -197,3 +199,6 @@ export const DishCardForCustomer = ({
     </Card>
   );
 };
+
+export default DishCardForCustomer;
+export const MemoizedDishCardForCustomer = memo(DishCardForCustomer);
