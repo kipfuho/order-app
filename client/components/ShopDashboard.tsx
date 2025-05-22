@@ -17,6 +17,10 @@ import {
   VictoryPie,
   VictoryLabel,
   VictoryLegend,
+  VictoryTooltip,
+  VictoryVoronoiContainer,
+  VictoryCursorContainer,
+  VictoryScatter,
 } from "victory-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DailySalesChart from "./ui/analytics/DailySalesChart";
@@ -24,6 +28,7 @@ import PopularDishesChart from "./ui/analytics/PopularDishesChart";
 import HourlyDistributionChart from "./ui/analytics/HourlyDistributionChart";
 import PaymentMethodsChart from "./ui/analytics/PaymentMethodsChart";
 import { Surface } from "react-native-paper";
+import _ from "lodash";
 
 const { width } = Dimensions.get("window");
 

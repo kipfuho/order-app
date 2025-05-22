@@ -61,6 +61,20 @@ const DailySalesChart = ({ width }: { width: number }) => {
         domainPadding={{ x: 20 }}
         width={width * 0.9}
         height={300}
+        containerComponent={
+          <VictoryVoronoiContainer
+            voronoiDimension="x"
+            labels={({ datum }) => `y: ${datum.revenue}`}
+            labelComponent={
+              <VictoryTooltip
+                cornerRadius={0}
+                flyoutStyle={{
+                  fill: "white",
+                }}
+              />
+            }
+          />
+        }
       >
         <VictoryAxis
           style={{
@@ -90,13 +104,11 @@ const DailySalesChart = ({ width }: { width: number }) => {
           data={salesData}
           x="date"
           y={normalize(revenueRange, "revenue")}
-          labels={({ datum }) => {
-            console.log(datum);
-            return datum.y;
-          }}
+          labels={({ datum }) => datum.revenue}
           labelComponent={<VictoryTooltip />}
           style={{
             data: { stroke: theme.colors.primary, strokeWidth: 3 },
+            labels: { fill: theme.colors.primary },
           }}
         />
 
@@ -105,10 +117,11 @@ const DailySalesChart = ({ width }: { width: number }) => {
           data={salesData}
           x="date"
           y={normalize(ordersRange, "orders")}
-          labels={({ datum }) => datum.y}
+          labels={({ datum }) => datum.orders}
           labelComponent={<VictoryTooltip />}
           style={{
             data: { stroke: theme.colors.secondary, strokeWidth: 3 },
+            labels: { fill: theme.colors.secondary },
           }}
         />
         {/* 
