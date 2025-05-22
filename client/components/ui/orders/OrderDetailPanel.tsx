@@ -23,11 +23,10 @@ import { goToTablesForOrderList } from "../../../apis/navigate.service";
 import { useDispatch, useSelector } from "react-redux";
 import { resetCurrentTable } from "../../../stores/shop.slice";
 import Toast from "react-native-toast-message";
-import { AppBar } from "../../AppBar";
 import CreateOrder from "../CreateOrderView";
 import _ from "lodash";
 import { RootState } from "../../../stores/store";
-import { FlatList } from "react-native";
+import { LegendList } from "@legendapp/list";
 
 export default function ActiveOrderSessionPage({
   activeOrderSession,
@@ -268,7 +267,7 @@ export default function ActiveOrderSessionPage({
               </TouchableRipple>
             </View>
 
-            <FlatList
+            <LegendList
               data={activeOrderSession.orders || []}
               keyExtractor={(item) => item.id}
               style={{ gap: 12 }}
@@ -277,7 +276,7 @@ export default function ActiveOrderSessionPage({
                   <Text style={{ alignSelf: "flex-end" }}>
                     {t("times")}: {index + 1}
                   </Text>
-                  <FlatList
+                  <LegendList
                     data={order.dishOrders || []}
                     keyExtractor={(item) => item.id}
                     style={{ gap: 12 }}

@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Button, Surface, useTheme } from "react-native-paper";
 import { KitchenDishOrder, Shop } from "../../../stores/state.interface";
 import { getMinuteForDisplay, getStatusColor } from "../../../constants/utils";
@@ -18,6 +12,7 @@ import {
   deleteKitchenDishOrder,
   updateKitchenDishOrder,
 } from "../../../stores/shop.slice";
+import { LegendList } from "@legendapp/list";
 
 export default function KitchenDishOrderGroup({
   dishOrders,
@@ -92,7 +87,7 @@ export default function KitchenDishOrderGroup({
 
       <View style={{ flex: 1 }}>
         <ScrollView>
-          <FlatList
+          <LegendList
             data={dishOrders}
             keyExtractor={(_, index) => index.toString()}
             renderItem={({ item }) => {

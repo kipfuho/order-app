@@ -12,12 +12,13 @@ import {
   useGetTablePositionsQuery,
   useGetTablesQuery,
 } from "../../../../../../../stores/apiSlices/tableApi.slice";
-import { FlatList, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { useEffect, useState } from "react";
 import _ from "lodash";
 import { TableForApproveCard } from "../../../../../../../components/ui/orders/TableForApproveCard";
 import { UnconfirmedOrderCard } from "../../../../../../../components/ui/orders/UnconfirmedOrderCard";
 import Toast from "react-native-toast-message";
+import { LegendList } from "@legendapp/list";
 
 export default function OrderManagementApprovePage() {
   const router = useRouter();
@@ -104,7 +105,7 @@ export default function OrderManagementApprovePage() {
             />
             <Surface mode="flat" style={{ flex: 1 }}>
               <ScrollView>
-                <FlatList
+                <LegendList
                   data={unconfirmedOrderByTable[selectedTable?.id || ""] || []}
                   keyExtractor={(item) => item.id}
                   renderItem={({ item }) => (

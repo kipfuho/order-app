@@ -25,7 +25,7 @@ const getDishByCategory = (dishes: Dish[], categories: DishCategory[]) => {
   const dishesByCategory = _.groupBy(dishes, "category.id");
   dishesByCategory["all"] = dishes;
   const availableDishCategories = _.concat(
-    [{ id: "all", name: t("all") }],
+    [{ id: "all", code: "all", name: t("all") }],
     _.filter(categories, (c) => !_.isEmpty(dishesByCategory[c.id]))
   );
   return { availableDishCategories, dishesByCategory };

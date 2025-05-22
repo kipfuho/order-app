@@ -10,7 +10,6 @@ import {
 } from "react-native-paper";
 import _ from "lodash";
 import {
-  FlatList,
   ScrollView,
   TouchableOpacity,
   useWindowDimensions,
@@ -27,6 +26,7 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "../../../stores/store";
 import { DiscountType, DiscountValueType } from "../../../constants/common";
+import { LegendList } from "@legendapp/list";
 
 export default function OrderSessionDetailPage({
   orderSessionDetail,
@@ -139,7 +139,7 @@ export default function OrderSessionDetailPage({
               </Text>
             </View>
 
-            <FlatList
+            <LegendList
               data={dishOrders}
               renderItem={({ item }) => (
                 <View
@@ -225,7 +225,7 @@ export default function OrderSessionDetailPage({
               </Text>
             </View>
 
-            <FlatList
+            <LegendList
               data={orderSessionDetail.taxDetails || []}
               renderItem={({ item }) => (
                 <View

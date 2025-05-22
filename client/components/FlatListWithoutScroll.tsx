@@ -1,16 +1,11 @@
-import {
-  FlatList,
-  GestureResponderEvent,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { GestureResponderEvent, useWindowDimensions, View } from "react-native";
 import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
 import {
   Dispatch,
-  Fragment,
   memo,
   SetStateAction,
   useCallback,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -23,6 +18,7 @@ import {
   ItemTypeMap,
   UNIVERSAL_WIDTH_PIVOT,
 } from "./FlatListWithScroll";
+import { LegendList, LegendListRef } from "@legendapp/list";
 
 function GroupList({
   groups = [],
@@ -154,34 +150,41 @@ const FlatListWithoutScroll = ({
   openMenu?: (item: any, event: GestureResponderEvent) => void;
   shouldShowGroup?: boolean;
 }) => {
-  const flatListRef = useRef<FlatList<any>>(null);
+  const flatListRef = useRef<LegendListRef>(null);
   const { width } = useWindowDimensions();
 
   const [selectedGroup, setSelectGroup] = useState("");
   const [itemContainerWidth, setItemContainerWidth] = useState<number>(1);
   const [numColumns, setNumColumns] = useState<number>(0);
 
-  const flatListData = groups.flatMap((g) => {
-    if (numColumns <= 0 || (selectedGroup && g.id !== selectedGroup)) {
+  const flatListData = useMemo(() => {
+    if (numColumns <= 0) {
       return [];
     }
 
-    const items = itemByGroup[g.id] || [];
+    return groups.flatMap((g) => {
+      if (selectedGroup && g.id !== selectedGroup) {
+        return [];
+      }
 
-    const itemRows: FlatListItem[] = [];
-    for (let i = 0; i < items.length; i += numColumns) {
-      itemRows.push({
-        type: "row",
-        id: `row-${g.id}-${i}`,
-        items: items.slice(i, i + numColumns),
-        startIdx: i,
-        group: g,
-      });
-    }
+      const items = itemByGroup[g.id] || [];
+      const itemRows: FlatListItem[] = [];
+      for (let i = 0; i < items.length; i += numColumns) {
+        itemRows.push({
+          type: "row",
+          id: `row-${g.id}-${i}`,
+          items: items.slice(i, i + numColumns),
+          startIdx: i,
+          group: g,
+        });
+      }
 
-    return [{ type: "header", id: `header-${g.id}`, group: g }, ...itemRows];
-  });
+      return [{ type: "header", id: `header-${g.id}`, group: g }, ...itemRows];
+    });
+  }, [groups, itemByGroup, numColumns, selectedGroup]);
 
+  const ROW_HEIGHT = ItemTypeFlatListProperties[itemType].ROW_HEIGHT;
+  const MARGIN_BOTTOM = 8;
   const renderItem = useCallback(
     ({ item }: { item: FlatListItem }) => {
       if (item.type === "header") {
@@ -241,11 +244,12 @@ const FlatListWithoutScroll = ({
           }}
         />
       )}
-      <FlatList
+      <LegendList
         ref={flatListRef}
         data={flatListData}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
+        estimatedItemSize={ROW_HEIGHT + MARGIN_BOTTOM}
         onLayout={(event) => {
           const { width } = event.nativeEvent.layout;
           const containerUsablewidth = width - 20; // padding

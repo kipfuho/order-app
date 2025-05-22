@@ -1,7 +1,7 @@
 import { t } from "i18next";
 import { DishOrder, UnconfirmedOrder } from "../../../stores/state.interface";
 import { memo, useEffect, useRef, useState } from "react";
-import { FlatList, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import { View } from "react-native";
 import {
   Button,
@@ -30,6 +30,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../stores/store";
 import Toast from "react-native-toast-message";
 import _ from "lodash";
+import { LegendList } from "@legendapp/list";
 
 export const UnconfirmedOrderCard = memo(
   ({ unconfirmedOrder }: { unconfirmedOrder: UnconfirmedOrder }) => {
@@ -288,7 +289,7 @@ export const UnconfirmedOrderCard = memo(
               }}
               onLayout={measureContentHeight}
             >
-              <FlatList
+              <LegendList
                 data={unconfirmedOrder.dishOrders || []}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (

@@ -1,5 +1,12 @@
 import { Dish } from "../../../stores/state.interface";
-import { Card, IconButton, Switch, Text, Tooltip } from "react-native-paper";
+import {
+  Card,
+  IconButton,
+  Text,
+  Tooltip,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 import { memo, useCallback, useState } from "react";
 import { View } from "react-native";
 import { convertPaymentAmount } from "../../../constants/utils";
@@ -8,6 +15,7 @@ import { BLURHASH, DishStatus } from "../../../constants/common";
 import { useTranslation } from "react-i18next";
 import { useUpdateDishMutation } from "../../../stores/apiSlices/dishApi.slice";
 import { debounce } from "lodash";
+import { SymbolSwitch } from "../../SymbolSwitch";
 
 const DishCard = ({
   dish,
@@ -19,6 +27,8 @@ const DishCard = ({
   containerWidth?: number;
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+
   const cardWidth = Math.min(300, containerWidth * 0.48);
   const [onSale, setOnSale] = useState(dish.status === DishStatus.activated);
 
@@ -50,7 +60,7 @@ const DishCard = ({
   }
 
   return (
-    <Card style={{ width: cardWidth, height: 288 }}>
+    <Card style={{ width: cardWidth, height: 300 }}>
       <Image
         source={dish.imageUrls[0] || require("@assets/images/savora.png")}
         placeholder={{ blurhash: BLURHASH }}
@@ -100,7 +110,12 @@ const DishCard = ({
           }}
         >
           <Text>{t("on_sale")}</Text>
-          <Switch value={onSale} onValueChange={onToggleSwitch} />
+          <SymbolSwitch
+            value={onSale}
+            onChange={onToggleSwitch}
+            activeColor={theme.colors.primary}
+            inactiveColor={theme.colors.secondary}
+          />
         </View>
       </Card.Actions>
     </Card>

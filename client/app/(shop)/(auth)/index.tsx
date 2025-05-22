@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { FlatList, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import { Button, Searchbar, Surface, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { AppBar } from "../../../components/AppBar";
@@ -11,6 +11,7 @@ import { Image } from "expo-image";
 import { View } from "react-native";
 import _, { debounce } from "lodash";
 import { Shop } from "../../../stores/state.interface";
+import { LegendList } from "@legendapp/list";
 
 export default function ShopsPage() {
   const router = useRouter();
@@ -52,7 +53,7 @@ export default function ShopsPage() {
         </Button>
       </AppBar>
       <Surface mode="flat" style={{ flex: 1 }}>
-        <FlatList
+        <LegendList
           data={filteredShops}
           keyExtractor={(item) => item.id.toString()}
           ListHeaderComponent={

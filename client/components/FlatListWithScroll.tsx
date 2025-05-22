@@ -1,5 +1,4 @@
 import {
-  FlatList,
   GestureResponderEvent,
   StyleSheet,
   useWindowDimensions,
@@ -8,13 +7,13 @@ import {
 import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
 import {
   createElement,
-  memo,
   ReactNode,
   useCallback,
   useMemo,
   useRef,
   useState,
 } from "react";
+import { LegendList, LegendListRef } from "@legendapp/list";
 import { ScrollView } from "react-native";
 import { CartItem, Dish, KitchenDishOrder } from "../stores/state.interface";
 import KitchenDishOrderByOrderCard from "./ui/kitchen/KitchenDishOrderByOrderCard";
@@ -40,7 +39,7 @@ export const ItemTypeFlatListProperties = {
   [ItemTypeFlatList.DISH_CARD]: {
     MAX_WIDTH: 300 + 12,
     HEADER_HEIGHT: 24,
-    ROW_HEIGHT: 288,
+    ROW_HEIGHT: 300,
   },
   [ItemTypeFlatList.DISH_CARD_ORDER]: {
     MAX_WIDTH: 200 + 12,
@@ -306,7 +305,7 @@ const FlatListWithScroll = ({
   const [itemContainerWidth, setItemContainerWidth] = useState<number>(1);
   const [numColumns, setNumColumns] = useState<number>(0);
 
-  const flatListRef = useRef<FlatList<any>>(null);
+  const flatListRef = useRef<LegendListRef | null>(null);
   const flatListData = useMemo(() => {
     if (numColumns <= 0) return [];
 
@@ -382,34 +381,23 @@ const FlatListWithScroll = ({
   const scrollToCategory = (categoryId: string) => {
     const index = indexMap[categoryId];
     if (index !== undefined && flatListRef.current) {
-      flatListRef.current.scrollToIndex({ index, animated: true });
+      flatListRef.current.scrollToItem({
+        item: flatListData[index],
+        animated: true,
+      });
     }
   };
 
-  const getItemLayout = (
-    _: ArrayLike<FlatListItem> | null | undefined,
-    index: number
-  ) => {
-    // Alternate between headers and rows
-    const HEADER_HEIGHT = ItemTypeFlatListProperties[itemType].HEADER_HEIGHT;
-    const ROW_HEIGHT = ItemTypeFlatListProperties[itemType].ROW_HEIGHT;
-    const MARGIN_BOTTOM = 8;
-
-    // You must be able to calculate item height based on index or item type
-    const offset = flatListData
-      .slice(0, index)
-      .reduce(
-        (sum, item) =>
-          sum +
-          (item.type === "header" ? HEADER_HEIGHT : ROW_HEIGHT) +
-          MARGIN_BOTTOM,
-        0
-      );
-
-    const length =
-      flatListData[index].type === "header" ? HEADER_HEIGHT : ROW_HEIGHT;
-
-    return { length, offset, index };
+  const HEADER_HEIGHT = ItemTypeFlatListProperties[itemType].HEADER_HEIGHT;
+  const ROW_HEIGHT = ItemTypeFlatListProperties[itemType].ROW_HEIGHT;
+  const MARGIN_BOTTOM = 8;
+  const getEstimatedItemSize = (index: number, item: FlatListItem) => {
+    if (item.type === "header") {
+      return HEADER_HEIGHT + MARGIN_BOTTOM;
+    } else if (item.type === "row") {
+      return ROW_HEIGHT + MARGIN_BOTTOM;
+    }
+    return 0;
   };
 
   return (
@@ -423,20 +411,14 @@ const FlatListWithScroll = ({
       {shouldShowGroup && (
         <GroupList groups={groups} scrollToGroup={scrollToCategory} />
       )}
-      <FlatList
+      <LegendList
         ref={flatListRef}
         data={flatListData}
         renderItem={renderItem}
-        getItemLayout={getItemLayout}
         keyExtractor={(item) => item.id}
-        onScrollToIndexFailed={(info) => {
-          setTimeout(() => {
-            flatListRef.current?.scrollToIndex({
-              index: info.index,
-              animated: true,
-            });
-          }, 100);
-        }}
+        getEstimatedItemSize={getEstimatedItemSize}
+        estimatedItemSize={ROW_HEIGHT + MARGIN_BOTTOM}
+        initialContainerPoolRatio={1.5}
         onLayout={(event) => {
           const { width } = event.nativeEvent.layout;
           const containerUsablewidth = width - 20; // padding
