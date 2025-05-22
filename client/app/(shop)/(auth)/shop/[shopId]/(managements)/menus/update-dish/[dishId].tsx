@@ -30,7 +30,7 @@ import {
   useUpdateDishMutation,
 } from "../../../../../../../../stores/apiSlices/dishApi.slice";
 import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
-import { goBackShopDishList } from "../../../../../../../../apis/navigate.service";
+import { goToShopDishList } from "../../../../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { uploadDishImageRequest } from "../../../../../../../../apis/dish.api.service";
 
@@ -132,7 +132,7 @@ export default function UpdateDishPage() {
       }).unwrap();
 
       // Navigate back to table position list
-      goBackShopDishList({ router, shopId: shop.id });
+      goToShopDishList({ router, shopId: shop.id });
     } catch (error: any) {
       Toast.show({
         type: "error",
@@ -165,7 +165,7 @@ export default function UpdateDishPage() {
     return (
       <Surface style={{ flex: 1 }}>
         <Text>{t("dish_not_found")}</Text>
-        <Button onPress={() => goBackShopDishList({ router, shopId: shop.id })}>
+        <Button onPress={() => goToShopDishList({ router, shopId: shop.id })}>
           <Text>{t("go_back")}</Text>
         </Button>
       </Surface>
@@ -176,7 +176,7 @@ export default function UpdateDishPage() {
     <>
       <AppBar
         title={t("update_dish")}
-        goBack={() => goBackShopDishList({ router, shopId: shop.id })}
+        goBack={() => goToShopDishList({ router, shopId: shop.id })}
       />
       <Surface style={{ flex: 1 }}>
         <ScrollView>

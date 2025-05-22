@@ -1,13 +1,14 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
+import { goToShopDishList } from "../../../../../../../apis/navigate.service";
 
 export default function DishRedirect() {
-  const { shopId } = useLocalSearchParams();
+  const { shopId } = useLocalSearchParams() as { shopId: string };
   const router = useRouter();
 
   useEffect(() => {
     if (shopId) {
-      router.push(`/shop/${shopId}/menus/dishes`);
+      goToShopDishList({ router, shopId });
     }
   }, [shopId]);
 

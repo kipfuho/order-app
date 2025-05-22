@@ -6,7 +6,7 @@ import {
 } from "expo-router";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { TouchableOpacity, View } from "react-native";
-import { goBackShopHome } from "../../../../../../../apis/navigate.service";
+import { goToShopHome } from "../../../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { Icon, Menu, Text, useTheme } from "react-native-paper";
 import { memo, useEffect, useState } from "react";
@@ -88,7 +88,7 @@ export default function TabLayout() {
   return (
     <>
       <AppBar
-        goBack={() => goBackShopHome({ router, shopId })}
+        goBack={() => goToShopHome({ router, shopId })}
         actions={
           <View
             style={{ flex: 1, flexDirection: "row", height: "100%" }}

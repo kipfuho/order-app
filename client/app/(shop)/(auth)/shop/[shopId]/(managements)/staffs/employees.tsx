@@ -19,7 +19,7 @@ import {
 import { useRouter } from "expo-router";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import {
-  goBackShopHome,
+  goToShopHome,
   goToCreateEmployee,
   goToUpdateEmployee,
 } from "../../../../../../../apis/navigate.service";
@@ -98,7 +98,7 @@ export default function StaffEmployeePage() {
       </Portal>
       <AppBar
         title={t("employee")}
-        goBack={() => goBackShopHome({ router, shopId: shop.id })}
+        goBack={() => goToShopHome({ router, shopId: shop.id })}
       />
       <Surface
         style={{

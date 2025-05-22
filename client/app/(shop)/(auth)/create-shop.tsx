@@ -11,7 +11,7 @@ import {
 import { AppBar } from "../../../components/AppBar";
 import { styles } from "../../_layout";
 import { ScrollView, View } from "react-native";
-import { goBackShopList } from "../../../apis/navigate.service";
+import { goToShopList } from "../../../apis/navigate.service";
 import { useCreateShopMutation } from "../../../stores/apiSlices/shopApi.slice";
 import { useTranslation } from "react-i18next";
 import UploadImages from "../../../components/ui/UploadImage";
@@ -79,7 +79,7 @@ export default function CreateShopPage() {
         imageUrls: _.map(images, "uri"),
       }).unwrap();
 
-      goBackShopList({ router });
+      goToShopList({ router });
       resetField();
     } catch (err) {
       console.error(err);
@@ -90,7 +90,7 @@ export default function CreateShopPage() {
     <>
       <AppBar
         title={t("create_shop")}
-        goBack={() => goBackShopList({ router })}
+        goBack={() => goToShopList({ router })}
       />
       <Surface style={{ flex: 1 }}>
         <Surface mode="flat" style={styles.baseContainer}>

@@ -6,7 +6,7 @@ import { Button, Surface, Icon, Text } from "react-native-paper";
 import { Shop } from "../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { styles } from "../../../../../../_layout";
-import { goBackShopHome } from "../../../../../../../apis/navigate.service";
+import { goToShopHome } from "../../../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
 
 interface Item {
@@ -51,7 +51,7 @@ export default function SettingManagementPage() {
     <>
       <AppBar
         title={t("settings")}
-        goBack={() => goBackShopHome({ router, shopId: shop.id })}
+        goBack={() => goToShopHome({ router, shopId: shop.id })}
       />
       <Surface style={styles.baseContainer}>
         <ScrollView>
@@ -63,7 +63,7 @@ export default function SettingManagementPage() {
                 mode="contained-tonal"
                 style={{ width: buttonSize, height: 100, borderRadius: 10 }}
                 onPress={() =>
-                  router.push({
+                  router.navigate({
                     pathname: `/shop/[shopId]/settings/${item.route}`,
                     params: { shopId: shop.id },
                   })

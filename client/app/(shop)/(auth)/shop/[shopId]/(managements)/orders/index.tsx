@@ -21,7 +21,7 @@ import CreateOrder from "../../../../../../../components/ui/CreateOrderView";
 import { updateCurrentTable } from "../../../../../../../stores/shop.slice";
 import Toast from "react-native-toast-message";
 import {
-  goBackShopHome,
+  goToShopHome,
   goToTableCurrentOrderSessions,
 } from "../../../../../../../apis/navigate.service";
 import { useRouter } from "expo-router";
@@ -52,7 +52,8 @@ export default function OrderManagementOrderPage() {
   tablePositionById["ALL"] = {
     id: "ALL",
     name: t("all"),
-    shop: "",
+    code: "all",
+    shopId: "",
     dishCategoryIds: [],
   };
 
@@ -108,7 +109,7 @@ export default function OrderManagementOrderPage() {
       <AppBar
         title={t("order_management")}
         goBack={() => {
-          goBackShopHome({ router, shopId: shop.id });
+          goToShopHome({ router, shopId: shop.id });
         }}
       />
       {/* Update & Delete Modal */}

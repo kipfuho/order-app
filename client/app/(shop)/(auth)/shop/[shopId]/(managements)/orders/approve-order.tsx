@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { goBackShopHome } from "../../../../../../../apis/navigate.service";
+import { goToShopHome } from "../../../../../../../apis/navigate.service";
 import { AppBar } from "../../../../../../../components/AppBar";
 import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
 import { useSelector } from "react-redux";
@@ -49,7 +49,8 @@ export default function OrderManagementApprovePage() {
   tablePositionById["ALL"] = {
     id: "ALL",
     name: t("all"),
-    shop: "",
+    code: "all",
+    shopId: "",
     dishCategoryIds: [],
   };
 
@@ -123,7 +124,7 @@ export default function OrderManagementApprovePage() {
       <AppBar
         title={t("shop_approve_order")}
         goBack={() => {
-          goBackShopHome({ router, shopId: shop.id });
+          goToShopHome({ router, shopId: shop.id });
         }}
       />
       <Surface style={{ flex: 1, padding: 16 }}>

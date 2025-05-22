@@ -12,7 +12,7 @@ import {
   useGetTablesQuery,
 } from "../../../../../../../../stores/apiSlices/tableApi.slice";
 import {
-  goBackShopSetting,
+  goToShopSetting,
   goToCreateTable,
   goToUpdateTable,
 } from "../../../../../../../../apis/navigate.service";
@@ -41,7 +41,7 @@ export default function TablesManagementPage() {
     <>
       <AppBar
         title={t("table")}
-        goBack={() => goBackShopSetting({ router, shopId: shop.id })}
+        goBack={() => goToShopSetting({ router, shopId: shop.id })}
       />
 
       <Surface

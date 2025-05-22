@@ -11,7 +11,7 @@ import { useGetShopsQuery } from "../../../../../stores/apiSlices/shopApi.slice"
 import { updateCurrentShop } from "../../../../../stores/shop.slice";
 import { RootState } from "../../../../../stores/store";
 import { LoaderBasic } from "../../../../../components/ui/Loader";
-import { goBackShopList } from "../../../../../apis/navigate.service";
+import { goToShopList } from "../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { closeAppSyncChannel } from "../../../../../stores/awsSlice";
 
@@ -53,7 +53,7 @@ export default function AppLayout() {
         <Button
           mode="contained"
           style={styles.baseButton}
-          onPress={() => goBackShopList({ router })}
+          onPress={() => goToShopList({ router })}
         >
           {t("go_back")}
         </Button>

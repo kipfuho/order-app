@@ -1,63 +1,50 @@
-import { Href, Router } from "expo-router";
+import { Router } from "expo-router";
 
-enum ALL_PATHS {
-  HOME = "/",
-  SHOP = "/shop",
-  DISHES = "/shop/[shopId]/menus/dishes",
-}
+const goToShopList = ({ router }: { router: Router }) => router.navigate("/");
 
-export const goBack = (
-  router: Router,
-  path: ALL_PATHS,
-  params?: {
-    shopId: string;
-  }
-) => {
-  if (params) {
-    router.push({
-      pathname: path,
-      params,
-    });
-    return;
-  }
-
-  router.push(path);
-};
-
-const goBackShopList = ({ router }: { router: Router }) => router.push("/");
-
-const goBackShopHome = ({
-  router,
-  shopId,
-}: {
-  router: Router;
-  shopId: string;
-}) =>
-  router.push({
+const goToShopHome = ({ router, shopId }: { router: Router; shopId: string }) =>
+  router.navigate({
     pathname: "/shop/[shopId]/home",
     params: { shopId },
   });
 
-const goBackShopDishList = ({
+const goToCreateShop = ({ router }: { router: Router }) =>
+  router.navigate({
+    pathname: "/create-shop",
+  });
+
+const goToUpdateShop = ({
   router,
   shopId,
 }: {
   router: Router;
   shopId: string;
 }) =>
-  router.push({
+  router.navigate({
+    pathname: "/shop/[shopId]/update-shop",
+    params: { shopId },
+  });
+
+const goToShopDishList = ({
+  router,
+  shopId,
+}: {
+  router: Router;
+  shopId: string;
+}) =>
+  router.navigate({
     pathname: "/shop/[shopId]/menus/dishes",
     params: { shopId },
   });
 
-const goBackShopSetting = ({
+const goToShopSetting = ({
   router,
   shopId,
 }: {
   router: Router;
   shopId: string;
 }) =>
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/settings",
     params: { shopId },
   });
@@ -71,7 +58,7 @@ const goToDishUpdatePage = ({
   shopId: string;
   dishId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/menus/update-dish/[dishId]",
     params: { shopId, dishId },
   });
@@ -84,7 +71,7 @@ const goToTableList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/settings/table-management/tables",
     params: { shopId },
   });
@@ -97,7 +84,7 @@ const goToTablePositionList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/settings/table-management/table-positions",
     params: { shopId },
   });
@@ -112,7 +99,7 @@ const goToUpdateDishCategory = ({
   shopId: string;
   dishCategoryId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/menus/update-dish-category/[dishCategoryId]",
     params: { shopId, dishCategoryId },
   });
@@ -125,7 +112,7 @@ const goToDishCategoryList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/menus/categories",
     params: { shopId },
   });
@@ -138,7 +125,7 @@ const goToCreateTablePosition = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/settings/table-management/create-table-position",
     params: { shopId },
   });
@@ -153,7 +140,7 @@ const goToUpdateTablePosition = ({
   shopId: string;
   tablePositionId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname:
       "/shop/[shopId]/settings/table-management/update-table-position/[tablePositionId]",
     params: { shopId, tablePositionId },
@@ -167,7 +154,7 @@ const goToCreateTable = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/settings/table-management/create-table",
     params: { shopId },
   });
@@ -182,7 +169,7 @@ const goToUpdateTable = ({
   shopId: string;
   tableId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/settings/table-management/update-table/[tableId]",
     params: { shopId, tableId },
   });
@@ -195,7 +182,7 @@ const goToCreateDish = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/menus/create-dish",
     params: { shopId },
   });
@@ -208,7 +195,7 @@ const goToCreateDishCategory = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/menus/create-dish-category",
     params: { shopId },
   });
@@ -221,7 +208,7 @@ const goToTablesForOrderList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/orders",
     params: { shopId },
   });
@@ -236,7 +223,7 @@ const goToTableCurrentOrderSessions = ({
   shopId: string;
   tableId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/orders/table/[tableId]/current-orders",
     params: { shopId, tableId },
   });
@@ -253,7 +240,7 @@ const goToOrderSessionPayment = ({
   tableId: string;
   orderSessionId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/orders/table/[tableId]/payment/[orderSessionId]",
     params: { shopId, tableId, orderSessionId },
   });
@@ -266,7 +253,7 @@ const goToEmployeeList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/staffs",
     params: { shopId },
   });
@@ -279,7 +266,7 @@ const goToEmployeePositionList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/staffs/employee-positions",
     params: { shopId },
   });
@@ -292,7 +279,7 @@ const goToDepartmentList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/staffs/departments",
     params: { shopId },
   });
@@ -305,7 +292,7 @@ const goToCreateEmployee = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/staffs/create-employee",
     params: { shopId },
   });
@@ -318,7 +305,7 @@ const goToCreateEmployeePosition = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/staffs/create-employee-position",
     params: { shopId },
   });
@@ -331,7 +318,7 @@ const goToCreateDepartment = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/staffs/create-department",
     params: { shopId },
   });
@@ -346,7 +333,7 @@ const goToUpdateEmployee = ({
   shopId: string;
   employeeId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/staffs/update-employee/[employeeId]",
     params: { shopId, employeeId },
   });
@@ -361,7 +348,7 @@ const goToUpdateEmployeePosition = ({
   shopId: string;
   employeePositionId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname:
       "/shop/[shopId]/staffs/update-employee-position/[employeePositionId]",
     params: { shopId, employeePositionId },
@@ -377,7 +364,7 @@ const goToUpdateDepartment = ({
   shopId: string;
   departmentId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/staffs/update-department/[departmentId]",
     params: { shopId, departmentId },
   });
@@ -390,7 +377,7 @@ const goToKitchenList = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/settings/kitchen-management",
     params: { shopId },
   });
@@ -403,7 +390,7 @@ const goToCreateKitchen = ({
   router: Router;
   shopId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname: "/shop/[shopId]/settings/kitchen-management/create-kitchen",
     params: { shopId },
   });
@@ -418,7 +405,7 @@ const goToUpdateKitchen = ({
   shopId: string;
   kitchenId: string;
 }) => {
-  router.push({
+  router.navigate({
     pathname:
       "/shop/[shopId]/settings/kitchen-management/update-kitchen/[kitchenId]",
     params: { shopId, kitchenId },
@@ -426,10 +413,12 @@ const goToUpdateKitchen = ({
 };
 
 export {
-  goBackShopList,
-  goBackShopHome,
-  goBackShopDishList,
-  goBackShopSetting,
+  goToShopList,
+  goToShopHome,
+  goToCreateShop,
+  goToUpdateShop,
+  goToShopDishList,
+  goToShopSetting,
   goToDishUpdatePage,
   goToTableList,
   goToTablePositionList,

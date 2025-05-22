@@ -16,7 +16,10 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../../../stores/store";
 import { AppBar } from "../../../../../components/AppBar";
 import { Shop } from "../../../../../stores/state.interface";
-import { goBackShopList } from "../../../../../apis/navigate.service";
+import {
+  goToShopList,
+  goToUpdateShop,
+} from "../../../../../apis/navigate.service";
 import { View } from "react-native";
 import { styles } from "../../../../_layout";
 import { createDefaultUnitsRequest } from "../../../../../apis/dish.api.service";
@@ -90,10 +93,7 @@ export default function ShopPage() {
 
   const handleUpdate = () => {
     setModalVisible(false);
-    router.push({
-      pathname: "/shop/[shopId]/update-shop",
-      params: { shopId: shop.id },
-    });
+    goToUpdateShop({ router, shopId: shop.id });
   };
 
   const handleDelete = () => {
@@ -109,12 +109,12 @@ export default function ShopPage() {
   const confirmDelete = async () => {
     await deleteShop(shop.id).unwrap();
     setConfirmModalVisible(false);
-    router.push("/");
+    goToShopList({ router });
   };
 
   return (
     <>
-      <AppBar title={shop.name} goBack={() => goBackShopList({ router })}>
+      <AppBar title={shop.name} goBack={() => goToShopList({ router })}>
         <Appbar.Action
           icon="dots-vertical"
           onPress={() => setModalVisible(true)}
@@ -183,7 +183,7 @@ export default function ShopPage() {
                 key={item.route}
                 mode="contained-tonal"
                 onPress={() =>
-                  router.push({
+                  router.navigate({
                     pathname: `/shop/[shopId]/${item.route}`,
                     params: { shopId: shop.id },
                   })

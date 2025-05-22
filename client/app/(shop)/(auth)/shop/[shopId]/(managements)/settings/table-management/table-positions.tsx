@@ -10,7 +10,7 @@ import { AppBar } from "../../../../../../../../components/AppBar";
 import { useGetTablePositionsQuery } from "../../../../../../../../stores/apiSlices/tableApi.slice";
 import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
 import {
-  goBackShopSetting,
+  goToShopSetting,
   goToCreateTablePosition,
   goToUpdateTablePosition,
 } from "../../../../../../../../apis/navigate.service";
@@ -36,7 +36,7 @@ export default function TablePositionsManagementPage() {
     <>
       <AppBar
         title={t("table_position")}
-        goBack={() => goBackShopSetting({ router, shopId: shop.id })}
+        goBack={() => goToShopSetting({ router, shopId: shop.id })}
       />
       <Surface
         style={{

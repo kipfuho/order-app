@@ -29,7 +29,7 @@ import {
   useGetUnitsQuery,
 } from "../../../../../../../stores/apiSlices/dishApi.slice";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
-import { goBackShopDishList } from "../../../../../../../apis/navigate.service";
+import { goToShopDishList } from "../../../../../../../apis/navigate.service";
 import { View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { uploadDishImageRequest } from "../../../../../../../apis/dish.api.service";
@@ -60,11 +60,6 @@ export default function CreateDishPage() {
   const [taxRate, setTaxRate] = useState("");
   const [images, setImages] = useState<{ uri: string; loading: boolean }[]>([]);
   const [isTaxIncludedPrice, setIsTaxIncludedPrice] = useState(false);
-
-  const goBack = () => {
-    resetField();
-    goBackShopDishList({ router, shopId: shop.id });
-  };
 
   const resetField = () => {
     setName("");
@@ -132,7 +127,9 @@ export default function CreateDishPage() {
         isTaxIncludedPrice,
         imageUrls: _.map(images, "uri"),
       }).unwrap();
-      goBack();
+
+      resetField();
+      goToShopDishList({ router, shopId: shop.id });
     } catch (error: any) {
       Toast.show({
         type: "error",
@@ -148,7 +145,10 @@ export default function CreateDishPage() {
 
   return (
     <>
-      <AppBar title={t("create_dish")} goBack={goBack} />
+      <AppBar
+        title={t("create_dish")}
+        goBack={() => goToShopDishList({ router, shopId: shop.id })}
+      />
       <Surface style={{ flex: 1 }}>
         <ScrollView>
           <Surface mode="flat" style={{ flex: 1, gap: 16 }}>

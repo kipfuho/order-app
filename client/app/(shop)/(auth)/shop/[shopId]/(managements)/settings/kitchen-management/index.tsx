@@ -9,7 +9,7 @@ import { Shop } from "../../../../../../../../stores/state.interface";
 import { AppBar } from "../../../../../../../../components/AppBar";
 import { useGetKitchensQuery } from "../../../../../../../../stores/apiSlices/kitchenApi.slice";
 import {
-  goBackShopSetting,
+  goToShopSetting,
   goToCreateKitchen,
   goToUpdateKitchen,
 } from "../../../../../../../../apis/navigate.service";
@@ -34,7 +34,7 @@ export default function KitchensManagementPage() {
     <>
       <AppBar
         title={t("kitchen")}
-        goBack={() => goBackShopSetting({ router, shopId: shop.id })}
+        goBack={() => goToShopSetting({ router, shopId: shop.id })}
       />
 
       <Surface

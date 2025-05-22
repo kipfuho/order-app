@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { AppBar } from "../../../../../../../components/AppBar";
-import { goBackShopHome } from "../../../../../../../apis/navigate.service";
+import { goToShopHome } from "../../../../../../../apis/navigate.service";
 import {
   Surface,
   Text,
@@ -71,7 +71,7 @@ export default function OrderManagementHistoryPage() {
       <AppBar
         title={t("history")}
         goBack={() => {
-          goBackShopHome({ router, shopId: shop.id });
+          goToShopHome({ router, shopId: shop.id });
         }}
       />
 

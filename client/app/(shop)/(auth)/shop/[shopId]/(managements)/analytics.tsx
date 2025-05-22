@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { AppBar } from "../../../../../../components/AppBar";
-import { goBackShopHome } from "../../../../../../apis/navigate.service";
+import { goToShopHome } from "../../../../../../apis/navigate.service";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import ShopDashboard from "../../../../../../components/ShopDashboard";
 
@@ -13,7 +13,7 @@ const AnalyticManagement = () => {
     <>
       <AppBar
         title={t("analytics")}
-        goBack={() => goBackShopHome({ router, shopId })}
+        goBack={() => goToShopHome({ router, shopId })}
       />
       <ShopDashboard />
     </>

@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { View, KeyboardAvoidingView, Platform } from "react-native";
 import { loginRequest } from "../../../apis/auth.api.service";
 import Logo from "../../../assets/svg/logo.svg";
+import { goToShopList } from "../../../apis/navigate.service";
 
 const LoginScreen = () => {
   const { t } = useTranslation();
@@ -36,7 +37,7 @@ const LoginScreen = () => {
     try {
       const result = await loginRequest({ email, password });
       if (result) {
-        router.push("/");
+        goToShopList({ router });
       }
     } catch (error) {
       Toast.show({

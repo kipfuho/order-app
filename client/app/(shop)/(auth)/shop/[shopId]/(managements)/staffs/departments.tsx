@@ -18,7 +18,7 @@ import {
 } from "../../../../../../../stores/apiSlices/staffApi.slice";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import {
-  goBackShopHome,
+  goToShopHome,
   goToCreateDepartment,
   goToUpdateDepartment,
 } from "../../../../../../../apis/navigate.service";
@@ -93,7 +93,7 @@ export default function StaffDepartmentPage() {
       </Portal>
       <AppBar
         title={t("department")}
-        goBack={() => goBackShopHome({ router, shopId: shop.id })}
+        goBack={() => goToShopHome({ router, shopId: shop.id })}
       />
       <Surface
         style={{

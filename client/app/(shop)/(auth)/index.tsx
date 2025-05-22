@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import { AppBar } from "../../../components/AppBar";
 import { useGetShopsQuery } from "../../../stores/apiSlices/shopApi.slice";
 import { LoaderBasic } from "../../../components/ui/Loader";
-import { goBackShopHome } from "../../../apis/navigate.service";
+import { goToShopHome, goToCreateShop } from "../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
 import { View } from "react-native";
@@ -47,7 +47,7 @@ export default function ShopsPage() {
       <AppBar title={t("shop")}>
         <Button
           mode="contained-tonal"
-          onPress={() => router.push("/create-shop")}
+          onPress={() => goToCreateShop({ router })}
         >
           {t("create_shop")}
         </Button>
@@ -68,7 +68,7 @@ export default function ShopsPage() {
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
           renderItem={({ item: shop }) => (
             <TouchableOpacity
-              onPress={() => goBackShopHome({ router, shopId: shop.id })}
+              onPress={() => goToShopHome({ router, shopId: shop.id })}
               activeOpacity={1}
             >
               <Surface

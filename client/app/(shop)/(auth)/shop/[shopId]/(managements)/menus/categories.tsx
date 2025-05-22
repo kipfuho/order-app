@@ -26,7 +26,7 @@ import {
 } from "../../../../../../../stores/apiSlices/dishApi.slice";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import {
-  goBackShopHome,
+  goToShopHome,
   goToCreateDishCategory,
   goToUpdateDishCategory,
 } from "../../../../../../../apis/navigate.service";
@@ -100,7 +100,7 @@ export default function CategoriesManagementPage() {
       </Portal>
       <AppBar
         title={t("dish_category")}
-        goBack={() => goBackShopHome({ router, shopId: shop.id })}
+        goBack={() => goToShopHome({ router, shopId: shop.id })}
       />
       <Surface style={{ flex: 1, paddingHorizontal: 16 }}>
         <ScrollView>

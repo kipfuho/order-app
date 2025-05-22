@@ -1,13 +1,14 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
+import { goToTableList } from "../../../../../../../../apis/navigate.service";
 
 export default function TableRedirect() {
-  const { shopId } = useLocalSearchParams();
+  const { shopId } = useLocalSearchParams() as { shopId: string };
   const router = useRouter();
 
   useEffect(() => {
     if (shopId) {
-      router.push(`/shop/${shopId}/settings/table-management/tables`);
+      goToTableList({ router, shopId });
     }
   }, [shopId]);
 

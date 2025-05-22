@@ -12,7 +12,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../../../stores/store";
 import { Shop } from "../../../../../stores/state.interface";
 import { AppBar } from "../../../../../components/AppBar";
-import { goBackShopHome } from "../../../../../apis/navigate.service";
+import { goToShopHome } from "../../../../../apis/navigate.service";
 import { ScrollView, View } from "react-native";
 import { styles } from "../../../../_layout";
 import { useUpdateShopMutation } from "../../../../../stores/apiSlices/shopApi.slice";
@@ -72,7 +72,7 @@ export default function UpdateShopPage() {
         imageUrls: _.map(images, "uri"),
       }).unwrap();
 
-      goBackShopHome({ router, shopId: shop.id });
+      goToShopHome({ router, shopId: shop.id });
     } catch (err) {
       console.error(err);
     }
@@ -95,7 +95,7 @@ export default function UpdateShopPage() {
     <>
       <AppBar
         title={t("update_shop")}
-        goBack={() => goBackShopHome({ router, shopId: shop.id })}
+        goBack={() => goToShopHome({ router, shopId: shop.id })}
       />
       <Surface style={styles.baseContainer}>
         <ScrollView>

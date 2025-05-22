@@ -22,7 +22,7 @@ import {
 } from "../../../../../../../stores/apiSlices/dishApi.slice";
 import { LoaderBasic } from "../../../../../../../components/ui/Loader";
 import {
-  goBackShopHome,
+  goToShopHome,
   goToCreateDish,
   goToDishUpdatePage,
 } from "../../../../../../../apis/navigate.service";
@@ -139,7 +139,7 @@ export default function DishesManagementPage() {
     <>
       <AppBar
         title={t("dishes")}
-        goBack={() => goBackShopHome({ router, shopId: shop.id })}
+        goBack={() => goToShopHome({ router, shopId: shop.id })}
         actions={
           <AppBarSearchBox
             searchValue={searchValue}
