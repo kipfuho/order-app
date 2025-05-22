@@ -57,7 +57,7 @@ interface TablePosition {
   id: string;
   name: string;
   code?: string;
-  shop: string;
+  shopId: string;
   dishCategoryIds: string[];
 }
 
@@ -90,7 +90,7 @@ interface Dish {
   id: string;
   name: string;
   code: string;
-  shop: string;
+  shopId: string;
   category: DishCategory;
   unit: Unit;
   price: number;
@@ -119,7 +119,7 @@ interface Customer {
 }
 
 interface Cart {
-  shop: string;
+  shopId: string;
   customer: string;
   cartItems: CartItem[];
   totalAmount: number;

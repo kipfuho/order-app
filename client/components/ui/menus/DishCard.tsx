@@ -2,9 +2,9 @@ import { Dish } from "../../../stores/state.interface";
 import {
   Card,
   IconButton,
+  Switch,
   Text,
   Tooltip,
-  TouchableRipple,
   useTheme,
 } from "react-native-paper";
 import { memo, useCallback, useState } from "react";
@@ -15,7 +15,6 @@ import { BLURHASH, DishStatus } from "../../../constants/common";
 import { useTranslation } from "react-i18next";
 import { useUpdateDishMutation } from "../../../stores/apiSlices/dishApi.slice";
 import { debounce } from "lodash";
-import { SymbolSwitch } from "../../SymbolSwitch";
 
 const DishCard = ({
   dish,
@@ -36,7 +35,7 @@ const DishCard = ({
     useUpdateDishMutation();
 
   const onToggleSwitch = () => {
-    setOnSale(!onSale);
+    setOnSale((prev) => !prev);
     updateDishStatus(!onSale);
   };
 
@@ -48,7 +47,7 @@ const DishCard = ({
 
       await updateDish({
         dishId: dish.id,
-        shopId: dish.shop,
+        shopId: dish.shopId,
         status: activated ? DishStatus.activated : DishStatus.deactivated,
       }).unwrap();
     }, 500),
@@ -110,12 +109,7 @@ const DishCard = ({
           }}
         >
           <Text>{t("on_sale")}</Text>
-          <SymbolSwitch
-            value={onSale}
-            onChange={onToggleSwitch}
-            activeColor={theme.colors.primary}
-            inactiveColor={theme.colors.secondary}
-          />
+          <Switch value={onSale} onValueChange={onToggleSwitch} />
         </View>
       </Card.Actions>
     </Card>

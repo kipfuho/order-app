@@ -1,6 +1,7 @@
+import { memo } from "react";
 import { ActivityIndicator, Surface } from "react-native-paper";
 
-export function LoaderBasic() {
+const LoaderBasicComponent = () => {
   return (
     <Surface mode="flat" style={{ flex: 1, padding: 16 }}>
       <ActivityIndicator
@@ -14,4 +15,6 @@ export function LoaderBasic() {
       />
     </Surface>
   );
-}
+};
+
+export const LoaderBasic = memo(LoaderBasicComponent);

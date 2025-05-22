@@ -2,8 +2,12 @@ import axios, { AxiosRequestConfig } from "axios";
 import { auth } from "../generated/auth";
 import { signOut, signOutForCustomer } from "../stores/authSlice";
 import _ from "lodash";
+import { Platform } from "react-native";
 
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+export const API_BASE_URL =
+  Platform.OS === "web"
+    ? process.env.EXPO_PUBLIC_WEB_API_BASE_URL
+    : process.env.EXPO_PUBLIC_API_BASE_URL;
 
 // Create an Axios instance
 const apiClient = axios.create({

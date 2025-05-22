@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { View } from "react-native";
 import { useTheme } from "react-native-paper";
 
-export default function VerticalDivider({ width = 1 }: { width?: number }) {
+const VerticalDivider = ({ width = 1 }: { width?: number }) => {
   const theme = useTheme();
 
   return (
@@ -14,4 +15,6 @@ export default function VerticalDivider({ width = 1 }: { width?: number }) {
       }}
     />
   );
-}
+};
+
+export default memo(VerticalDivider);

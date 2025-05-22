@@ -90,13 +90,11 @@ const DailySalesChart = ({ width }: { width: number }) => {
           data={salesData}
           x="date"
           y={normalize(revenueRange, "revenue")}
-          labels={({ datum }) => `$${datum.revenue}`}
-          labelComponent={
-            <VictoryTooltip
-              style={{ fontSize: 10 }}
-              flyoutStyle={{ fill: theme.colors.background }}
-            />
-          }
+          labels={({ datum }) => {
+            console.log(datum);
+            return datum.y;
+          }}
+          labelComponent={<VictoryTooltip />}
           style={{
             data: { stroke: theme.colors.primary, strokeWidth: 3 },
           }}
@@ -107,18 +105,13 @@ const DailySalesChart = ({ width }: { width: number }) => {
           data={salesData}
           x="date"
           y={normalize(ordersRange, "orders")}
-          labels={({ datum }) => `${datum.orders} ${t("orders")}`}
-          labelComponent={
-            <VictoryTooltip
-              style={{ fontSize: 10 }}
-              flyoutStyle={{ fill: theme.colors.background }}
-            />
-          }
+          labels={({ datum }) => datum.y}
+          labelComponent={<VictoryTooltip />}
           style={{
             data: { stroke: theme.colors.secondary, strokeWidth: 3 },
           }}
         />
-
+        {/* 
         <VictoryLegend
           x={50}
           y={0}
@@ -128,10 +121,16 @@ const DailySalesChart = ({ width }: { width: number }) => {
             labels: { fontSize: 10 },
           }}
           data={[
-            { name: "Revenue ($)", symbol: { fill: theme.colors.primary } },
-            { name: "Orders", symbol: { fill: theme.colors.secondary } },
+            {
+              name: t("report_revenue"),
+              symbol: { fill: theme.colors.primary },
+            },
+            {
+              name: t("report_order_count"),
+              symbol: { fill: theme.colors.secondary },
+            },
           ]}
-        />
+        /> */}
       </VictoryChart>
 
       <Text
