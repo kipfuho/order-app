@@ -4,10 +4,10 @@ import { Surface, Text, useTheme } from "react-native-paper";
 import { VictoryPie } from "victory-native";
 
 const paymentData = [
-  { name: "Credit Card", value: 68 },
-  { name: "Cash", value: 15 },
-  { name: "Mobile Pay", value: 12 },
-  { name: "Gift Card", value: 5 },
+  { paymentMethod: "Credit Card", percentage: 68 },
+  { paymentMethod: "Cash", percentage: 15 },
+  { paymentMethod: "Mobile Pay", percentage: 12 },
+  { paymentMethod: "Gift Card", percentage: 5 },
 ];
 
 const generateColors = (count: number): string[] => {
@@ -45,7 +45,7 @@ const PaymentMethodsChart = ({ width }: { width: number }) => {
       <View style={{ alignItems: "center" }}>
         <VictoryPie
           data={paymentData}
-          x="name"
+          x={(datum) => t(datum.paymentMethod)}
           y="value"
           width={width}
           height={400}

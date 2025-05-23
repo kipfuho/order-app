@@ -4,17 +4,19 @@ const config = require('../config/config');
 const { processJob } = require('./job.service');
 
 const _sendJobMessage = async ({ messageBody }) => {
-  if (config.env !== 'batch') {
+  if (config.env !== 'production' || config.env !== 'batch') {
     logger.debug(messageBody);
-    return;
+    return false;
   }
 
   try {
     logger.info(`send Job to redis queue ${config.jobKey}`);
     await redis.pushToQueue({ key: config.jobKey, val: messageBody });
+    return true;
   } catch (err) {
     const message = `error when send job to redis queue. ${config.jobKey} = ${err.stack}`;
     logger.error(message);
+    return false;
   }
 };
 
@@ -35,8 +37,10 @@ const _registerJob = async (jobData) => {
   try {
     const jobMessage = JSON.stringify(jobData);
     logger.info(`registerJob: ${jobMessage}`);
-    await _sendJobMessage({ messageBody: jobMessage });
-    processJob(jobData);
+    const canSend = await _sendJobMessage({ messageBody: jobMessage });
+    if (!canSend) {
+      processJob(jobData);
+    }
   } catch (err) {
     logger.error(`error registerJob. ${err}`);
   }
@@ -47,12 +51,12 @@ const _registerJob = async (jobData) => {
  * @param {*} jobData
  * @returns
  */
-const registerJob = async (jobData) => {
+const registerJob = async (jobData, delay = 1000) => {
   if (config.env === 'test') {
     await _registerJob(jobData);
     return;
   }
-  setTimeout(() => _registerJob(jobData), 1000);
+  setTimeout(() => _registerJob(jobData), delay);
 };
 
 module.exports = {

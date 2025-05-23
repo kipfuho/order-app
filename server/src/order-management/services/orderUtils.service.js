@@ -13,6 +13,8 @@ const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
 const { getRoundTaxAmount, getRoundDishPrice, getStartTimeOfToday } = require('../../utils/common');
 const { getCustomerFromCache } = require('../../metadata/customerMetadata.service');
 const { notifyNewOrder, EventActionType } = require('../../utils/awsUtils/appSync.utils');
+const { JobTypes } = require('../../jobs/constant');
+const { registerJob } = require('../../jobs/jobUtils');
 
 // Merge các dish order có trùng tên và giá
 const _mergeDishOrders = (dishOrders) => {
@@ -624,6 +626,7 @@ const getOrderSessionById = async (orderSessionId, shopId) => {
 
   orderSessionJson.totalDiscountAmountBeforeTax = totalDiscountAmountBeforeTax;
   orderSessionJson.totalDiscountAmountAfterTax = totalDiscountAmountAfterTax;
+  orderSessionJson.revenueAmount = Math.max(0, pretaxPaymentAmount - totalDiscountAmountBeforeTax);
   orderSessionJson.paymentAmount = Math.max(0, pretaxPaymentAmount + totalTaxAmount - totalDiscountAmountAfterTax);
 
   // update order if not audited
@@ -645,6 +648,12 @@ const getOrderSessionById = async (orderSessionId, shopId) => {
       },
       where: { id: orderSessionId },
     });
+    registerJob({
+      type: JobTypes.UPDATE_FULL_ORDER_SESSION,
+      data: {
+        orderSessionId,
+      },
+    });
   }
   return orderSessionJson;
 };
@@ -657,6 +666,25 @@ const updateOrderSession = async ({ orderSessionId, shopId, updateBody }) => {
       shopId,
     },
   });
+
+  return getOrderSessionById(orderSessionId);
+};
+
+const updateFullOrderSession = async ({ orderSessionId }) => {
+  const key = `update_full_order_session_${orderSessionId}`;
+  const canGetLock = await redisClient.getCloudLock({ key, periodInSecond: 10 });
+  if (!canGetLock) {
+    return registerJob(
+      {
+        type: JobTypes.UPDATE_FULL_ORDER_SESSION,
+        data: {
+          orderSessionId,
+        },
+      },
+      10000
+    );
+  }
+  const orderSession = await getOrderSessionById({ orderSessionId });
 
   return getOrderSessionById(orderSessionId);
 };
@@ -752,4 +780,5 @@ module.exports = {
   updateAfterPayOrderSession,
   updateAfterCancelOrderSession,
   updateAfterCancelPaidStatusOrderSession,
+  updateFullOrderSession,
 };

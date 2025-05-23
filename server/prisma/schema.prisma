@@ -312,6 +312,7 @@ model OrderSession {
   totalDiscountAmountAfterTax  Float?
   createdAt                    DateTime           @default(now())
   updatedAt                    DateTime           @updatedAt
+  revenueAmount                Float?
   discounts                    Discount[]
   orders                       Order[]
   shop                         Shop               @relation(fields: [shopId], references: [id])

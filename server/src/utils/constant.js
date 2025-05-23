@@ -62,6 +62,7 @@ const DiscountValueType = {
 const PaymentMethod = {
   CASH: 'cash',
   BANK_TRANSFER: 'bank_transfer',
+  CREDIT_CARD: 'credit_card',
   VNPAY: 'vnpay',
 };
 

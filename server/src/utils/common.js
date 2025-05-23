@@ -159,6 +159,47 @@ const getReportPeriod = (period) => {
   return 1;
 };
 
+/**
+ * Divide a number into n parts proportionally, while ensuring the sum of those n parts equals the initial sum.
+ * Curreny precision is involved to handle different currencies like VND, JPY, USD, ...
+ * @param {number} initialSum - The total sum to be divided.
+ * @param {number[]} parts - An array representing the proportional weights of the parts.
+ * @returns {array[]} - An array of corresponding represent divided initialSum to parts
+ */
+const divideToNPart = ({ initialSum, parts, precision }) => {
+  const totalPartWeight = parts.reduce((sum, part) => sum + part, 0);
+  if (totalPartWeight === 0) {
+    return parts.map(() => 0);
+  }
+
+  let dividedParts = parts.map((part) => [(initialSum * part) / totalPartWeight, part]);
+  const dividedPartByKey = _.keyBy(dividedParts, (part) => part[1]);
+
+  dividedParts = dividedParts.sort((value1, value2) => {
+    const fraction1 = value1[0] - _.floor(value1[0], precision);
+    const fraction2 = value2[0] - _.floor(value2[0], precision);
+    return fraction1 - fraction2;
+  });
+  dividedParts.forEach((value) => {
+    // eslint-disable-next-line no-param-reassign
+    value[0] = _.round(value[0], precision);
+  });
+  const roundedSum = dividedParts.reduce((sum, arr) => sum + arr[0], 0);
+  let difference = initialSum - roundedSum;
+
+  // Chỉnh lại tiền thành phần nếu cộng lại không bằng tổng ban đầu
+  const offset = 10 ** -precision;
+  for (let i = 0; difference !== 0; i += 1) {
+    const adjustment = difference > 0 ? offset : -offset;
+    dividedParts[i % dividedParts.length][0] += adjustment;
+    difference -= adjustment;
+    // Làm tròn lại để tránh loop vô hạn do floating point
+    difference = _.round(difference, precision);
+  }
+
+  return parts.map((part) => dividedPartByKey[part][0]);
+};
+
 module.exports = {
   sleep,
   getStartTimeOfToday,
@@ -173,4 +214,5 @@ module.exports = {
   getDayOfWeek,
   sortObject,
   getReportPeriod,
+  divideToNPart,
 };

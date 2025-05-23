@@ -152,7 +152,7 @@ const deleteShop = async ({ shopId, userId }) => {
 
   // job to update s3 logs -> inUse = true
   registerJob({
-    type: JobTypes.DISABLE_S3_OBJECT_USAGE,
+    type: JobTypes.REMOVE_S3_OBJECT_USAGE,
     data: {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },

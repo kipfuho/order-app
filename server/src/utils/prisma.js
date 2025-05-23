@@ -699,7 +699,7 @@ const prisma = new PrismaClient({
         return prisma.s3Log.updateMany({ where: { key: { in: keys } }, data: { inUse: true } });
       },
 
-      async disableInUseKeys({ keys }) {
+      async removeInUseKeys({ keys }) {
         return prisma.s3Log.updateMany({ where: { key: { in: keys } }, data: { inUse: false } });
       },
     },
