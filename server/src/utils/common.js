@@ -153,6 +153,12 @@ function sortObject(obj) {
   return sorted;
 }
 
+const getReportPeriod = (period) => {
+  if (period === constant.ReportPeriod.MONTH) return 30;
+  if (period === constant.ReportPeriod.WEEK) return 7;
+  return 1;
+};
+
 module.exports = {
   sleep,
   getStartTimeOfToday,
@@ -166,4 +172,5 @@ module.exports = {
   createSearchByDateOptionWithShopTimezone,
   getDayOfWeek,
   sortObject,
+  getReportPeriod,
 };

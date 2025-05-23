@@ -264,6 +264,12 @@ const DefaultUnitList = {
   ],
 };
 
+const ReportPeriod = {
+  DAY: 'day',
+  WEEK: 'week',
+  MONTH: 'month',
+};
+
 module.exports = {
   SESSION_NAME_SPACE,
   MAX_FILE_SIZE,
@@ -284,4 +290,5 @@ module.exports = {
   DishOrderStatus,
   KitchenAction,
   DefaultUnitList,
+  ReportPeriod,
 };

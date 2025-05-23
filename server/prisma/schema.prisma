@@ -224,7 +224,8 @@ model Order {
   returnedDishOrders   ReturnedDishOrder[]
 
   @@index([shopId, customerId])
-  @@index([orderSessionId, shopId, orderSessionStatus, status, createdAt])
+  @@index([shopId, orderSessionId])
+  @@index([shopId, orderSessionStatus, status, createdAt])
 }
 
 model DiscountProduct {
