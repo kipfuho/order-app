@@ -130,6 +130,7 @@ const getClientLanguageWithHook = () => {
 
 module.exports = {
   clsHooked,
+  bindMongooseToCLS,
   setSession,
   getSession,
   setShopToSession,

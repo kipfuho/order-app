@@ -25,6 +25,7 @@
   "table.alreadyExist": "Same table already exists",
   "department.notFound": "Department not found",
   "employee.notFound": "Employee not found",
+  "error.cannotDeleteSelf": "Cannot delete your own information",
   "employeePosition.notFound": "Employee position not found",
   "shop.notFound": "Shop not found",
   "tablePosition.notFound": "Table position not found",
@@ -39,5 +40,6 @@
   "import.missingDishCategory": "Dish category is required",
   "import.missingUnit": "Unit is required",
   "success": "Success",
-  "kitchen.notFound": "Kitchen not found"
+  "kitchen.notFound": "Kitchen not found",
+  "discount.invalidDiscountValue": "Invalid discount value"
 }

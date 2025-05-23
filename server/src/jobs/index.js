@@ -7,18 +7,12 @@ const { receiveJobMessage } = require('./jobUtils');
 const { SESSION_NAME_SPACE } = require('../utils/constant');
 const common = require('../utils/common');
 const { processJob } = require('./job.service');
+const { bindMongooseToCLS } = require('../middlewares/clsHooked');
 
 // initial setup
 let retry = 0;
 let runningJob = false;
 let isAllowReceiveJob = true;
-
-let mongodbConnected = false;
-mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
-  mongodbConnected = true;
-  logger.info('Connected to MongoDB');
-});
-
 // end initial setup
 
 const fetchJobAndExecute = async () => {
@@ -29,10 +23,6 @@ const fetchJobAndExecute = async () => {
   let jobPayload;
   try {
     runningJob = true;
-    if (!mongodbConnected) {
-      logger.info('Waiting for mongodb connection. return');
-      return;
-    }
 
     const jobDataString = await receiveJobMessage(config.jobKey);
     if (_.isEmpty(jobDataString)) {
@@ -59,6 +49,8 @@ const runningTask = async () => {
     } else {
       clsSession = getNamespace(SESSION_NAME_SPACE);
     }
+    bindMongooseToCLS(clsSession);
+
     clsSession.run(() => {
       fetchJobAndExecute();
     });
@@ -72,7 +64,10 @@ const runningTask = async () => {
   }
 };
 
-runningTask();
+mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
+  logger.info('Connected to MongoDB');
+  runningTask();
+});
 
 const beforeExit = async (signal) => {
   logger.info('before exit');

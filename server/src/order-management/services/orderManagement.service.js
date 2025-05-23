@@ -412,6 +412,11 @@ const discountDishOrder = async ({ shopId, requestBody }) => {
   const { orderSessionId, dishOrderId, orderId, discountReason, discountValue, discountType } = requestBody;
   let { discountAfterTax } = requestBody;
 
+  throwBadRequest(discountValue < 0, getMessageByLocale({ key: 'discount.invalidDiscountValue' }));
+  throwBadRequest(
+    discountType === DiscountValueType.PERCENTAGE && discountValue > 100,
+    getMessageByLocale({ key: 'discount.invalidDiscountValue' })
+  );
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSessionId, shopId);
   throwBadRequest(!orderSessionJson, getMessageByLocale({ key: 'orderSession.notFound' }));
   const order = _.find(orderSessionJson.orders, (_order) => _order.id === orderId);

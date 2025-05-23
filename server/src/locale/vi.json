@@ -25,6 +25,7 @@
   "table.alreadyExist": "Bàn đã tồn tại",
   "department.notFound": "Không tìm thấy bộ phận",
   "employee.notFound": "Không tìm thấy nhân viên",
+  "error.cannotDeleteSelf": "Không thể xoá thông tin chính mình",
   "employeePosition.notFound": "Không tìm thấy vị trí nhân viên",
   "shop.notFound": "Không tìm thấy nhà hàng",
   "tablePosition.notFound": "Không tìm thấy khu vực bàn",
@@ -39,5 +40,6 @@
   "import.missingDishCategory": "Thiếu danh mục",
   "import.missingUnit": "Thiếu đơn vị",
   "success": "Thành công",
-  "kitchen.notFound": "Không tìm thấy bếp"
+  "kitchen.notFound": "Không tìm thấy bếp",
+  "discount.invalidDiscountValue": "Giá trị chiết khấu không hợp lệ"
 }

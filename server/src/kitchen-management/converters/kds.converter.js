@@ -10,6 +10,7 @@ const convertDishOrderForKitchenResponse = (dishOrder) => {
   delete dishOrder.beforeTaxTotalDiscountAmount;
   delete dishOrder.afterTaxTotalDiscountAmount;
   delete dishOrder.taxTotalDiscountAmount;
+  delete dishOrder.revenueAmount;
   delete dishOrder.paymentAmount;
   return dishOrder;
 };
