@@ -1,6 +1,5 @@
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
 import { Surface, Text, useTheme } from "react-native-paper";
 import {
   VictoryAxis,
@@ -9,30 +8,30 @@ import {
   VictoryLegend,
   VictoryLine,
   VictoryTheme,
-  VictoryTooltip,
-  VictoryVoronoiContainer,
 } from "victory-native";
+import { convertPaymentAmount } from "../../../constants/utils";
 
 const salesData = [
-  { date: "May 15", revenue: 3200, orders: 78 },
-  { date: "May 16", revenue: 3800, orders: 85 },
-  { date: "May 17", revenue: 4200, orders: 92 },
-  { date: "May 18", revenue: 5100, orders: 105 },
-  { date: "May 19", revenue: 5800, orders: 118 },
-  { date: "May 20", revenue: 6200, orders: 124 },
-  { date: "May 21", revenue: 4900, orders: 98 },
+  { date: "May 15", revenue: 3200000, orders: 78 },
+  { date: "May 16", revenue: 3800000, orders: 85 },
+  { date: "May 17", revenue: 4200000, orders: 92 },
+  { date: "May 18", revenue: 5100000, orders: 105 },
+  { date: "May 19", revenue: 5800000, orders: 118 },
+  { date: "May 20", revenue: 62000000, orders: 124 },
+  { date: "May 21", revenue: 4900000, orders: 98 },
 ];
 
-const revenueRange = [0, (_.maxBy(salesData, "revenue")?.revenue || 0) + 500];
-const ordersRange = [0, (_.maxBy(salesData, "orders")?.orders || 0) + 50];
-
-const ticks = 10;
-const tickValues = _.range(ticks + 1);
-const tickFormat = (range: number[]) => (t: number) =>
-  (t * (range[1] - range[0])) / ticks;
+const revenueRange = [
+  (_.minBy(salesData, "revenue")?.revenue || 0) * 0.6,
+  _.maxBy(salesData, "revenue")?.revenue || 0,
+];
+const ordersRange = [
+  (_.minBy(salesData, "orders")?.orders || 0) * 0.6,
+  _.maxBy(salesData, "orders")?.orders || 0,
+];
 
 const normalize = (range: number[], props: string) => (datum: any) =>
-  datum[props] / ((range[1] - range[0]) / ticks);
+  (datum[props] - range[0]) / (range[1] - range[0]);
 
 const DailySalesChart = ({ width }: { width: number }) => {
   const { t } = useTranslation();
@@ -57,45 +56,19 @@ const DailySalesChart = ({ width }: { width: number }) => {
         {t("daily_sales_trend")} ({t("last_7days")})
       </Text>
       <VictoryChart
-        theme={VictoryTheme.material}
-        domainPadding={{ x: 20 }}
-        width={width * 0.9}
-        height={300}
-        containerComponent={
-          <VictoryVoronoiContainer
-            voronoiDimension="x"
-            labels={({ datum }) => `y: ${datum.revenue}`}
-            labelComponent={
-              <VictoryTooltip
-                cornerRadius={0}
-                flyoutStyle={{
-                  fill: "white",
-                }}
-              />
-            }
-          />
-        }
+        theme={VictoryTheme.clean}
+        domainPadding={{ x: 50, y: [10, 50] }}
+        width={width}
+        height={400}
       >
         <VictoryAxis
           style={{
-            tickLabels: { fontSize: 8, padding: 5, angle: -45 },
-          }}
-        />
-        <VictoryAxis
-          dependentAxis
-          tickValues={tickValues}
-          tickFormat={(tt) => `$${tickFormat(revenueRange)(tt)}`}
-          style={{
-            tickLabels: { fontSize: 8, padding: 5 },
-          }}
-        />
-        <VictoryAxis
-          dependentAxis
-          orientation="right"
-          tickValues={tickValues}
-          tickFormat={tickFormat(ordersRange)}
-          style={{
-            tickLabels: { fontSize: 8, padding: 5 },
+            tickLabels: {
+              fontSize: 12,
+              padding: 5,
+              angle: -30,
+              fill: theme.colors.onBackground,
+            },
           }}
         />
 
@@ -104,11 +77,27 @@ const DailySalesChart = ({ width }: { width: number }) => {
           data={salesData}
           x="date"
           y={normalize(revenueRange, "revenue")}
-          labels={({ datum }) => datum.revenue}
-          labelComponent={<VictoryTooltip />}
+          labels={({ datum }) => [
+            datum.orders,
+            convertPaymentAmount(datum.revenue),
+          ]}
+          labelComponent={
+            <VictoryLabel
+              y={93}
+              style={[
+                {
+                  fill: theme.colors.secondary,
+                  fontFamily: "monospace",
+                },
+                {
+                  fill: theme.colors.primary,
+                  fontFamily: "monospace",
+                },
+              ]}
+            />
+          }
           style={{
-            data: { stroke: theme.colors.primary, strokeWidth: 3 },
-            labels: { fill: theme.colors.primary },
+            data: { stroke: theme.colors.primary, strokeWidth: 2 },
           }}
         />
 
@@ -117,21 +106,18 @@ const DailySalesChart = ({ width }: { width: number }) => {
           data={salesData}
           x="date"
           y={normalize(ordersRange, "orders")}
-          labels={({ datum }) => datum.orders}
-          labelComponent={<VictoryTooltip />}
           style={{
-            data: { stroke: theme.colors.secondary, strokeWidth: 3 },
-            labels: { fill: theme.colors.secondary },
+            data: { stroke: theme.colors.secondary, strokeWidth: 2 },
           }}
         />
-        {/* 
+
         <VictoryLegend
           x={50}
           y={0}
           orientation="horizontal"
           gutter={20}
           style={{
-            labels: { fontSize: 10 },
+            labels: { fontSize: 12, fill: theme.colors.onBackground },
           }}
           data={[
             {
@@ -143,7 +129,7 @@ const DailySalesChart = ({ width }: { width: number }) => {
               symbol: { fill: theme.colors.secondary },
             },
           ]}
-        /> */}
+        />
       </VictoryChart>
 
       <Text

@@ -2,115 +2,137 @@ import React, { useState } from "react";
 import {
   StyleSheet,
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  SafeAreaView,
 } from "react-native";
-import {
-  VictoryBar,
-  VictoryChart,
-  VictoryTheme,
-  VictoryLine,
-  VictoryAxis,
-  VictoryPie,
-  VictoryLabel,
-  VictoryLegend,
-  VictoryTooltip,
-  VictoryVoronoiContainer,
-  VictoryCursorContainer,
-  VictoryScatter,
-} from "victory-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DailySalesChart from "./ui/analytics/DailySalesChart";
 import PopularDishesChart from "./ui/analytics/PopularDishesChart";
 import HourlyDistributionChart from "./ui/analytics/HourlyDistributionChart";
 import PaymentMethodsChart from "./ui/analytics/PaymentMethodsChart";
-import { Surface } from "react-native-paper";
+import { Icon, Surface, Text, useTheme } from "react-native-paper";
 import _ from "lodash";
+import { useTranslation } from "react-i18next";
+import { CustomMD3Theme } from "../constants/theme";
 
 const { width } = Dimensions.get("window");
 
 const ShopDashboard = () => {
+  const theme = useTheme<CustomMD3Theme>();
+  const { t } = useTranslation();
+
   const [activeTab, setActiveTab] = useState("sales");
 
   const renderDailySalesChart = () => <DailySalesChart width={width} />;
-
   const renderPopularDishesChart = () => <PopularDishesChart width={width} />;
-
   const renderHourlyDistributionChart = () => (
     <HourlyDistributionChart width={width} />
   );
-
   const renderPaymentMethodsChart = () => <PaymentMethodsChart width={width} />;
 
   const renderSummaryCards = () => (
     <View style={styles.summaryContainer}>
-      <View style={[styles.summaryCard, { backgroundColor: "#E6F0FF" }]}>
-        <Text style={[styles.summaryTitle, { color: "#003399" }]}>
-          Total Revenue
+      <Surface
+        style={[
+          styles.summaryCard,
+          { backgroundColor: theme.colors.primaryContainer },
+        ]}
+      >
+        <Text style={[styles.summaryTitle, { color: theme.colors.primary }]}>
+          {t("total_revenue")}
         </Text>
-        <Text style={[styles.summaryValue, { color: "#001F5C" }]}>$29,200</Text>
-        <Text style={[styles.summarySubtitle, { color: "#0055CC" }]}>
-          Last 7 days
+        <Text
+          style={[
+            styles.summaryValue,
+            { color: theme.colors.onPrimaryContainer },
+          ]}
+        >
+          $29,200
         </Text>
-      </View>
+        <Text style={[styles.summarySubtitle, { color: theme.colors.primary }]}>
+          {t("last_7days")}
+        </Text>
+      </Surface>
 
-      <View style={[styles.summaryCard, { backgroundColor: "#E6F9F1" }]}>
-        <Text style={[styles.summaryTitle, { color: "#006644" }]}>
-          Total Orders
+      <Surface
+        style={[
+          styles.summaryCard,
+          { backgroundColor: theme.colors.secondaryContainer },
+        ]}
+      >
+        <Text style={[styles.summaryTitle, { color: theme.colors.secondary }]}>
+          {t("report_order_count")}
         </Text>
-        <Text style={[styles.summaryValue, { color: "#00331A" }]}>700</Text>
-        <Text style={[styles.summarySubtitle, { color: "#00994D" }]}>
-          Last 7 days
+        <Text
+          style={[
+            styles.summaryValue,
+            { color: theme.colors.onSecondaryContainer },
+          ]}
+        >
+          700
         </Text>
-      </View>
+        <Text
+          style={[styles.summarySubtitle, { color: theme.colors.secondary }]}
+        >
+          {t("last_7days")}
+        </Text>
+      </Surface>
 
-      <View style={[styles.summaryCard, { backgroundColor: "#F3E6FF" }]}>
-        <Text style={[styles.summaryTitle, { color: "#5200CC" }]}>
-          Avg Order Value
+      <Surface
+        style={[
+          styles.summaryCard,
+          { backgroundColor: theme.colors.tertiaryContainer },
+        ]}
+      >
+        <Text style={[styles.summaryTitle, { color: theme.colors.tertiary }]}>
+          {t("avg_order_value")}
         </Text>
-        <Text style={[styles.summaryValue, { color: "#2B0066" }]}>$41.71</Text>
-        <Text style={[styles.summarySubtitle, { color: "#7700FF" }]}>
-          Last 7 days
+        <Text
+          style={[
+            styles.summaryValue,
+            { color: theme.colors.onTertiaryContainer },
+          ]}
+        >
+          $41.71
         </Text>
-      </View>
+        <Text
+          style={[styles.summarySubtitle, { color: theme.colors.tertiary }]}
+        >
+          {t("last_7days")}
+        </Text>
+      </Surface>
 
-      <View style={[styles.summaryCard, { backgroundColor: "#FFF9E6" }]}>
-        <Text style={[styles.summaryTitle, { color: "#996600" }]}>
-          Peak Hour
+      <Surface
+        style={[
+          styles.summaryCard,
+          { backgroundColor: theme.colors.yellowContainer },
+        ]}
+      >
+        <Text style={[styles.summaryTitle, { color: theme.colors.yellow }]}>
+          {t("peak_hour")}
         </Text>
-        <Text style={[styles.summaryValue, { color: "#664400" }]}>7 PM</Text>
-        <Text style={[styles.summarySubtitle, { color: "#CC8800" }]}>
+        <Text
+          style={[
+            styles.summaryValue,
+            { color: theme.colors.onYellowContainer },
+          ]}
+        >
+          7 PM
+        </Text>
+        <Text style={[styles.summarySubtitle, { color: theme.colors.yellow }]}>
           42 orders, $1,890
         </Text>
-      </View>
+      </Surface>
     </View>
   );
 
   return (
-    <Surface style={{ flex: 1 }}>
-      <ScrollView
-        style={{
-          flex: 1,
-          padding: 16,
-        }}
-      >
-        {activeTab === "sales" && renderDailySalesChart()}
-        {activeTab === "dishes" && renderPopularDishesChart()}
-        {activeTab === "hourly" && renderHourlyDistributionChart()}
-        {activeTab === "payment" && renderPaymentMethodsChart()}
-
-        {renderSummaryCards()}
-      </ScrollView>
-
-      <View
+    <Surface style={{ flex: 1, gap: 8 }}>
+      <Surface
+        mode="flat"
         style={{
           flexDirection: "row",
-          backgroundColor: "#fff",
           borderBottomWidth: 1,
-          borderBottomColor: "#E5E7EB",
         }}
       >
         <TouchableOpacity
@@ -125,29 +147,32 @@ const ShopDashboard = () => {
             },
             activeTab === "sales" && {
               borderBottomWidth: 2,
-              borderBottomColor: "#4F46E5",
+              borderBottomColor: theme.colors.primary,
             },
           ]}
           onPress={() => setActiveTab("sales")}
         >
-          <MaterialCommunityIcons
-            name="chart-line"
+          <Icon
+            source="chart-line"
             size={16}
-            color={activeTab === "sales" ? "#4F46E5" : "#6B7280"}
+            color={
+              activeTab === "sales"
+                ? theme.colors.primary
+                : theme.colors.secondary
+            }
           />
           <Text
             style={[
               {
                 fontSize: 12,
-                color: "#6B7280",
               },
               activeTab === "sales" && {
-                color: "#4F46E5",
+                color: theme.colors.primary,
                 fontWeight: "bold",
               },
             ]}
           >
-            Sales
+            {t("report_sales")}
           </Text>
         </TouchableOpacity>
 
@@ -163,29 +188,32 @@ const ShopDashboard = () => {
             },
             activeTab === "dishes" && {
               borderBottomWidth: 2,
-              borderBottomColor: "#4F46E5",
+              borderBottomColor: theme.colors.primary,
             },
           ]}
           onPress={() => setActiveTab("dishes")}
         >
-          <MaterialCommunityIcons
-            name="food"
+          <Icon
+            source="food"
             size={16}
-            color={activeTab === "dishes" ? "#4F46E5" : "#6B7280"}
+            color={
+              activeTab === "sales"
+                ? theme.colors.primary
+                : theme.colors.secondary
+            }
           />
           <Text
             style={[
               {
                 fontSize: 12,
-                color: "#6B7280",
               },
               activeTab === "dishes" && {
-                color: "#4F46E5",
+                color: theme.colors.primary,
                 fontWeight: "bold",
               },
             ]}
           >
-            Dishes
+            {t("report_dishes")}
           </Text>
         </TouchableOpacity>
 
@@ -201,29 +229,32 @@ const ShopDashboard = () => {
             },
             activeTab === "hourly" && {
               borderBottomWidth: 2,
-              borderBottomColor: "#4F46E5",
+              borderBottomColor: theme.colors.primary,
             },
           ]}
           onPress={() => setActiveTab("hourly")}
         >
-          <MaterialCommunityIcons
-            name="clock-outline"
+          <Icon
+            source="clock-outline"
             size={16}
-            color={activeTab === "hourly" ? "#4F46E5" : "#6B7280"}
+            color={
+              activeTab === "sales"
+                ? theme.colors.primary
+                : theme.colors.secondary
+            }
           />
           <Text
             style={[
               {
                 fontSize: 12,
-                color: "#6B7280",
               },
               activeTab === "hourly" && {
-                color: "#4F46E5",
+                color: theme.colors.primary,
                 fontWeight: "bold",
               },
             ]}
           >
-            Hourly
+            {t("report_hourly")}
           </Text>
         </TouchableOpacity>
 
@@ -239,102 +270,53 @@ const ShopDashboard = () => {
             },
             activeTab === "payment" && {
               borderBottomWidth: 2,
-              borderBottomColor: "#4F46E5",
+              borderBottomColor: theme.colors.primary,
             },
           ]}
           onPress={() => setActiveTab("payment")}
         >
-          <MaterialCommunityIcons
-            name="credit-card-outline"
+          <Icon
+            source="credit-card-outline"
             size={16}
-            color={activeTab === "payment" ? "#4F46E5" : "#6B7280"}
+            color={
+              activeTab === "sales"
+                ? theme.colors.primary
+                : theme.colors.secondary
+            }
           />
           <Text
             style={[
               {
                 fontSize: 12,
-                color: "#6B7280",
               },
               activeTab === "payment" && {
-                color: "#4F46E5",
+                color: theme.colors.primary,
                 fontWeight: "bold",
               },
             ]}
           >
-            Payment
+            {t("report_payment")}
           </Text>
         </TouchableOpacity>
-      </View>
+      </Surface>
+      <ScrollView
+        style={{
+          flex: 1,
+          padding: 16,
+        }}
+      >
+        {activeTab === "sales" && renderDailySalesChart()}
+        {activeTab === "dishes" && renderPopularDishesChart()}
+        {activeTab === "hourly" && renderHourlyDistributionChart()}
+        {activeTab === "payment" && renderPaymentMethodsChart()}
+
+        {renderSummaryCards()}
+      </ScrollView>
     </Surface>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F9FAFB",
-  },
-  header: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    paddingVertical: 15,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-  },
-  tabContainer: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-  },
-  tab: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    gap: 4,
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: "#4F46E5",
-  },
-  tabText: {
-    fontSize: 12,
-    color: "#6B7280",
-  },
-  activeTabText: {
-    color: "#4F46E5",
-    fontWeight: "bold",
-  },
-  content: {
-    flex: 1,
-    padding: 16,
-  },
-  chartContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  chartTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  chartDescription: {
-    fontSize: 12,
-    color: "#6B7280",
-    marginTop: 10,
-  },
   summaryContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -343,15 +325,9 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     width: "48%",
-    backgroundColor: "#fff",
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
   summaryTitle: {
     fontSize: 12,

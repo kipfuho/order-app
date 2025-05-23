@@ -1,27 +1,35 @@
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
-import { Text } from "react-native-paper";
+import { Surface, Text, useTheme } from "react-native-paper";
 import { VictoryPie } from "victory-native";
 
 const paymentData = [
-  { name: "Credit Card", value: 68, color: "#0088FE" },
-  { name: "Cash", value: 15, color: "#00C49F" },
-  { name: "Mobile Pay", value: 12, color: "#FFBB28" },
-  { name: "Gift Card", value: 5, color: "#FF8042" },
+  { name: "Credit Card", value: 68 },
+  { name: "Cash", value: 15 },
+  { name: "Mobile Pay", value: 12 },
+  { name: "Gift Card", value: 5 },
 ];
 
+const generateColors = (count: number): string[] => {
+  const saturation = 70;
+  const lightness = 50;
+  return Array.from({ length: count }, (_, i) => {
+    const hue = Math.round((360 / count) * i);
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  });
+};
+
 const PaymentMethodsChart = ({ width }: { width: number }) => {
+  const theme = useTheme();
+  const { t } = useTranslation();
+  const chartColors = generateColors(paymentData.length);
+
   return (
-    <View
+    <Surface
       style={{
-        backgroundColor: "#fff",
         borderRadius: 8,
         padding: 16,
         marginBottom: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
       }}
     >
       <Text
@@ -32,25 +40,24 @@ const PaymentMethodsChart = ({ width }: { width: number }) => {
           textAlign: "center",
         }}
       >
-        Payment Method Distribution (%)
+        {t("payment_method_report_distribution")}
       </Text>
       <View style={{ alignItems: "center" }}>
         <VictoryPie
           data={paymentData}
           x="name"
           y="value"
-          width={width * 0.8}
-          height={300}
-          colorScale={paymentData.map((item) => item.color)}
+          width={width}
+          height={400}
+          colorScale={chartColors}
           style={{
             labels: {
               fontSize: 10,
-              fill: "#000",
-              padding: 10,
+              fill: theme.colors.onBackground,
             },
           }}
           labelRadius={({ innerRadius }) =>
-            (typeof innerRadius === "number" ? innerRadius : 0) + 65
+            (typeof innerRadius === "number" ? innerRadius : 0) + 85
           }
           innerRadius={70}
           labelPlacement="perpendicular"
@@ -60,14 +67,12 @@ const PaymentMethodsChart = ({ width }: { width: number }) => {
       <Text
         style={{
           fontSize: 12,
-          color: "#6B7280",
           marginTop: 10,
         }}
       >
-        This chart shows the distribution of payment methods used by your
-        customers, helping you understand their preferences.
+        {t("payment_method_report_description")}
       </Text>
-    </View>
+    </Surface>
   );
 };
 
