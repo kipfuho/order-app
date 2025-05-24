@@ -194,32 +194,56 @@ export default function OrderSessionDetailPage({
                 {t("edit")}
               </Text>
             </TouchableOpacity>
-            {orderSessionDetail.totalDiscountAmountAfterTax > 0 && (
-              <View>
-                {removeDiscountLoading ? (
-                  <ActivityIndicator size={18} />
-                ) : (
-                  <TouchableOpacity onPress={removeDiscountOnInvoice}>
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        color: theme.colors.error,
-                        textDecorationLine: "underline",
-                      }}
-                    >
-                      {t("delete")}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
           </View>
           <Text style={{ fontSize: 16 }}>
             {convertPaymentAmount(
-              orderSessionDetail.totalDiscountAmountAfterTax
+              orderSessionDetail.afterTaxTotalDiscountAmount
             )}
           </Text>
         </View>
+
+        {(orderSessionDetail.discounts || []).map((discount) => (
+          <View
+            key={discount.id}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginLeft: 16,
+              paddingHorizontal: 12,
+              paddingBottom: 6,
+            }}
+          >
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              <Text>{discount.name}</Text>
+              {removeDiscountLoading ? (
+                <ActivityIndicator size={18} />
+              ) : (
+                <TouchableOpacity onPress={removeDiscountOnInvoice}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: theme.colors.error,
+                      textDecorationLine: "underline",
+                    }}
+                  >
+                    {t("delete")}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={{ alignItems: "flex-end" }}>
+              <Text style={{ fontSize: 14 }}>
+                {convertPaymentAmount(discount.beforeTaxTotalDiscountAmount)}
+              </Text>
+              {discount.taxTotalDiscountAmount > 0 && (
+                <Text style={{ fontSize: 12 }}>
+                  (VAT:{" "}
+                  {convertPaymentAmount(discount.afterTaxTotalDiscountAmount)})
+                </Text>
+              )}
+            </View>
+          </View>
+        ))}
 
         {(orderSessionDetail.taxDetails || []).map((taxDetail) => (
           <View

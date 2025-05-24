@@ -10,6 +10,7 @@
   "user.notFound": "User not found",
   "table.alreadyHasCustomer": "Table already has customer",
   "orderSession.alreadyPaid": "Order already paid",
+  "orderSession.alreadyCancelled": "Order already cancelled",
   "orderSession.paymentAmountNotMatch": "Payment amount not match",
   "dishCategory.notFound": "Dish category not found",
   "dishCategory.alreadyExist": "Same dish category exists",
@@ -41,5 +42,9 @@
   "import.missingUnit": "Unit is required",
   "success": "Success",
   "kitchen.notFound": "Kitchen not found",
-  "discount.invalidDiscountValue": "Invalid discount value"
+  "discount.invalidDiscountValue": "Invalid discount value",
+  "orderSession.canOnlyCancelUnpaid": "Can only cancel unpaid order",
+  "orderSession.canOnlyPayUnpaid": "Can only pay unpaid order",
+  "discount.order": "Discount order",
+  "discount.dish": "Discount dish"
 }

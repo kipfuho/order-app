@@ -499,7 +499,7 @@ const discountDishOrder = async ({ shopId, requestBody }) => {
       afterTaxTotalDiscountAmount: 0,
       discounts: _.pickBy({
         create: {
-          name: 'DISCOUNT_DISHORDER',
+          name: `${getMessageByLocale({ key: 'discount.dish' })} - ${dishOrder.name}`,
           discountReason,
           discountType: OrderSessionDiscountType.PRODUCT,
           discountValue,
@@ -560,7 +560,7 @@ const discountOrderSession = async ({ shopId, requestBody }) => {
               }
             : null,
           create: {
-            name: 'DISCOUNT_ORDER',
+            name: getMessageByLocale({ key: 'discount.order' }),
             discountType: OrderSessionDiscountType.INVOICE,
             discountValueType: discountType,
             discountValue,

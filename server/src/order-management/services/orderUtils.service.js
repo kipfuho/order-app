@@ -10,7 +10,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { getTableFromCache, getTablesFromCache } = require('../../metadata/tableMetadata.service');
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
-const { getRoundTaxAmount, getRoundDishPrice, getStartTimeOfToday } = require('../../utils/common');
+const { getRoundTaxAmount, getRoundDishPrice, getStartTimeOfToday, getRoundDiscountAmount } = require('../../utils/common');
 const { getCustomerFromCache } = require('../../metadata/customerMetadata.service');
 const { notifyNewOrder, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 
@@ -561,13 +561,13 @@ const _calculateDiscountOnInvoice = ({ discount, pretaxPaymentAmount, totalTaxAm
   let taxTotalDiscountAmount;
 
   if (discountValueType === DiscountValueType.PERCENTAGE) {
-    beforeTaxTotalDiscountAmount = (pretaxPaymentAmount * discountValue) / 100;
-    afterTaxTotalDiscountAmount = ((pretaxPaymentAmount + totalTaxAmount) * discountValue) / 100;
-    taxTotalDiscountAmount = afterTaxTotalDiscountAmount - beforeTaxTotalDiscountAmount;
+    beforeTaxTotalDiscountAmount = getRoundDiscountAmount((pretaxPaymentAmount * discountValue) / 100);
+    afterTaxTotalDiscountAmount = getRoundDiscountAmount(((pretaxPaymentAmount + totalTaxAmount) * discountValue) / 100);
+    taxTotalDiscountAmount = getRoundDiscountAmount(afterTaxTotalDiscountAmount - beforeTaxTotalDiscountAmount);
   } else {
-    beforeTaxTotalDiscountAmount = (pretaxPaymentAmount * discountValue) / 100;
-    afterTaxTotalDiscountAmount = ((pretaxPaymentAmount + totalTaxAmount) * discountValue) / 100;
-    taxTotalDiscountAmount = afterTaxTotalDiscountAmount - beforeTaxTotalDiscountAmount;
+    beforeTaxTotalDiscountAmount = getRoundDiscountAmount((pretaxPaymentAmount * discountValue) / 100);
+    afterTaxTotalDiscountAmount = getRoundDiscountAmount(((pretaxPaymentAmount + totalTaxAmount) * discountValue) / 100);
+    taxTotalDiscountAmount = getRoundDiscountAmount(afterTaxTotalDiscountAmount - beforeTaxTotalDiscountAmount);
   }
 
   // eslint-disable-next-line no-param-reassign
@@ -596,13 +596,13 @@ const _calculateDiscountOnProduct = ({ discount, dishOrderById }) => {
   });
 
   // eslint-disable-next-line no-param-reassign
-  discount.beforeTaxTotalDiscountAmount = beforeTaxTotalDiscountAmount;
+  discount.beforeTaxTotalDiscountAmount = getRoundDiscountAmount(beforeTaxTotalDiscountAmount);
   // eslint-disable-next-line no-param-reassign
-  discount.afterTaxTotalDiscountAmount = afterTaxTotalDiscountAmount;
+  discount.afterTaxTotalDiscountAmount = getRoundDiscountAmount(afterTaxTotalDiscountAmount);
   // eslint-disable-next-line no-param-reassign
-  discount.taxTotalDiscountAmount = taxTotalDiscountAmount;
+  discount.taxTotalDiscountAmount = getRoundDiscountAmount(taxTotalDiscountAmount);
 
-  return { beforeTaxAmount: beforeTaxTotalDiscountAmount, afterTaxAmount: afterTaxTotalDiscountAmount };
+  return { beforeTaxAmount: discount.beforeTaxTotalDiscountAmount, afterTaxAmount: discount.afterTaxTotalDiscountAmount };
 };
 
 const _calculateDiscountByDiscountType = {

@@ -186,15 +186,13 @@ interface OrderSession {
   paymentDetails: PaymentDetail[];
   pretaxPaymentAmount: number;
   paymentAmount: number;
-  customerInfo: {
-    numberOfCustomer: number;
-    customerName: string;
-    customerPhone: string;
-    customerId: string;
-    customerAddress: string;
-  };
-  totalDiscountAmountBeforeTax: number;
-  totalDiscountAmountAfterTax: number;
+  numberOfCustomer: number;
+  customerName: string;
+  customerPhone: string;
+  customerId: string;
+  customerAddress: string;
+  beforeTaxTotalDiscountAmount: number;
+  afterTaxTotalDiscountAmount: number;
   employeeName?: string;
 }
 

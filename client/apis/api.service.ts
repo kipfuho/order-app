@@ -69,11 +69,17 @@ export const apiRequest = async <T>({
   isCustomerApp?: boolean;
 }): Promise<T> => {
   try {
+    const store = require("../stores/store").default;
+    const lang = _.get(store.getState(), "setting.locale");
+    console.log(lang);
     const config: AxiosRequestConfig = {
       method,
       url: endpoint,
       data,
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      headers: {
+        lang,
+        ...(token ? { Authorization: `Bearer ${token}` } : undefined),
+      },
     };
 
     const response = await apiClient.request<T>(config);

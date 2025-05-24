@@ -10,6 +10,7 @@
   "user.notFound": "Không tìm thấy người dùng",
   "table.alreadyHasCustomer": "Bàn đã có khách",
   "orderSession.alreadyPaid": "Đơn đã thanh toán",
+  "orderSession.alreadyCancelled": "Đơn đã bị huỷ",
   "orderSession.paymentAmountNotMatch": "Số tiền thanh toán không khớp số tiền đơn",
   "dishCategory.notFound": "Không tìm thấy danh mục",
   "dishCategory.alreadyExist": "Danh mục đã tồn tại",
@@ -41,5 +42,9 @@
   "import.missingUnit": "Thiếu đơn vị",
   "success": "Thành công",
   "kitchen.notFound": "Không tìm thấy bếp",
-  "discount.invalidDiscountValue": "Giá trị chiết khấu không hợp lệ"
+  "discount.invalidDiscountValue": "Giá trị chiết khấu không hợp lệ",
+  "orderSession.canOnlyCancelUnpaid": "Chỉ có thể huỷ đơn chưa thanh toán",
+  "orderSession.canOnlyPayUnpaid": "Chỉ có thể thanh toán đơn chưa thanh toán",
+  "discount.order": "Chiết khấu đơn",
+  "discount.dish": "Chiết khấu món"
 }

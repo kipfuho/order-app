@@ -15,18 +15,16 @@ export default function OrderCustomerInfo({
   return (
     <Surface mode="flat" style={{ gap: 8 }}>
       <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-        {orderSession.customerInfo?.customerName ?? t("guest")}
+        {orderSession.customerName ?? t("guest")}
       </Text>
       <Text style={{ fontSize: 15 }}>
         {t("bill_no")}: {orderSession.billNo}
       </Text>
       <Text style={{ fontSize: 15 }}>
-        {t("customer_phone")}:{" "}
-        {orderSession.customerInfo?.customerPhone ?? "N/A"}
+        {t("customer_phone")}: {orderSession.customerPhone ?? "N/A"}
       </Text>
       <Text style={{ fontSize: 15 }}>
-        {t("customer_number")}:{" "}
-        {orderSession.customerInfo?.numberOfCustomer ?? 1}
+        {t("customer_number")}: {orderSession.numberOfCustomer ?? 1}
       </Text>
       <Text style={{ fontSize: 15 }}>
         {t("table_name")}: {orderSession.tableName}

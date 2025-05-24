@@ -28,7 +28,7 @@ const clsHooked = (req, res, next) => {
   bindMongooseToCLS(clsSession);
 
   clsSession.run(() => {
-    clsSession.set('clientLanguage', _.get(req, 'headers.lang') || Language.english);
+    clsSession.set('clientLanguage', _.get(req, 'headers.lang') || Language.vietnamese);
     clsSession.set('path', _.get(req, 'path') || '');
     next();
   });
