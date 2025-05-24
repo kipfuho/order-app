@@ -68,6 +68,15 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
   runningTask();
 });
 
+setInterval(() => {
+  const mem = process.memoryUsage();
+  logger.info(
+    `Heap status - Used: ${(mem.heapUsed / 1024 / 1024).toFixed(2)} MB / Total: ${(mem.heapTotal / 1024 / 1024).toFixed(
+      2
+    )} MB | RSS: ${(mem.rss / 1024 / 1024).toFixed(2)} MB`
+  );
+}, 10000);
+
 const beforeExit = async (signal) => {
   logger.info('before exit');
   isAllowReceiveJob = false;
