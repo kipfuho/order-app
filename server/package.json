@@ -26,7 +26,8 @@
     "docker:dev": "docker-compose -f docker-compose.yml -f docker-compose.dev.yml up",
     "docker:test": "docker-compose -f docker-compose.yml -f docker-compose.test.yml up",
     "prepare": "husky install",
-    "import-locale": "cross-env NODE_ENV=development node src/locale/import-locales.js"
+    "import-locale": "cross-env NODE_ENV=development node src/locale/import-locales.js",
+    "vercel-build": "prisma generate"
   },
   "keywords": [
     "node",
