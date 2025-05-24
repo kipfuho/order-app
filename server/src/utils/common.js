@@ -61,6 +61,10 @@ const getRoundTaxAmount = (amount) => {
   return _getRoundPrice(amount, 'taxRoundingType');
 };
 
+const getRoundPaymentAmount = (amount) => {
+  return _getRoundPrice(amount, 'taxRoundingType');
+};
+
 const refineFileNameForUploading = (fileName) => {
   const splits = (fileName || '').split('.');
   const ext = splits.pop();
@@ -215,6 +219,7 @@ module.exports = {
   getRoundDishPrice,
   getRoundDiscountAmount,
   getRoundTaxAmount,
+  getRoundPaymentAmount,
   refineFileNameForUploading,
   formatOrderSessionNo,
   createSearchByDateOptionWithShopTimezone,
