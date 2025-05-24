@@ -15,7 +15,7 @@ const { notifyUpdateDish, EventActionType } = require('../../utils/awsUtils/appS
 const { getMessageByLocale } = require('../../locale');
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
 const logger = require('../../config/logger');
-const prisma = require('../../utils/prisma');
+const { bulkUpdate, PostgreSQLTable } = require('../../utils/prisma');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -223,11 +223,14 @@ const importDishes = async ({ dishes, shopId }) => {
         return;
       }
 
-      const updateBody = _.cloneDeep(dish);
-      updateBody.shopId = shopId;
-      updateBody.unitId = unit.id;
-      updateBody.categoryId = dishCategory.id;
-      updateBody.imageUrls = imageUrls;
+      // eslint-disable-next-line no-param-reassign
+      dish.shopId = shopId;
+      // eslint-disable-next-line no-param-reassign
+      dish.unitId = unit.id;
+      // eslint-disable-next-line no-param-reassign
+      dish.categoryId = dishCategory.id;
+      // eslint-disable-next-line no-param-reassign
+      dish.imageUrls = imageUrls;
       if (imageUrls) {
         newImageUrls.push(...imageUrls);
         registerJob({
@@ -237,35 +240,45 @@ const importDishes = async ({ dishes, shopId }) => {
           },
         });
       }
-      delete updateBody.dishCategoryId;
-      delete updateBody.dishCategoryName;
-      delete updateBody.unitName;
-      delete updateBody.images;
+      // eslint-disable-next-line no-param-reassign
+      delete dish.dishCategoryId;
+      // eslint-disable-next-line no-param-reassign
+      delete dish.dishCategoryName;
+      // eslint-disable-next-line no-param-reassign
+      delete dish.unitName;
+      // eslint-disable-next-line no-param-reassign
+      delete dish.images;
 
       if (shopDishByCode[code]) {
-        updatedDishes.push(updateBody);
+        updatedDishes.push({ ...shopDishByCode[code], ...dish });
       } else {
-        createdDishes.push(updateBody);
+        createdDishes.push(dish);
       }
     })
   );
 
   await Dish.createMany({ data: createdDishes });
   if (updatedDishes.length > 0) {
-    await prisma.$transaction(
-      updatedDishes.map((dish) =>
-        Dish.update({
-          data: {
-            ...dish,
-          },
-          where: {
-            dish_code_unique: {
-              shopId,
-              code: dish.code,
-            },
-          },
-        })
-      )
+    await bulkUpdate(
+      PostgreSQLTable.Dish,
+      updatedDishes.map((dish) => ({
+        id: dish.id,
+        name: dish.name,
+        code: dish.code,
+        price: dish.price,
+        isTaxIncludedPrice: dish.isTaxIncludedPrice,
+        categoryId: dish.categoryId,
+        taxRate: dish.taxRate,
+        isNewlyCreated: dish.isNewlyCreated,
+        isBestSeller: dish.isBestSeller,
+        stockQuantity: dish.stockQuantity,
+        hideForCustomers: dish.hideForCustomers,
+        hideForEmployees: dish.hideForEmployees,
+        outOfStockNotification: dish.outOfStockNotification,
+        description: dish.description,
+        imageUrls: dish.imageUrls,
+        type: dish.type,
+      }))
     );
   }
 

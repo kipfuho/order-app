@@ -389,7 +389,6 @@ model Dish {
   code                   String
   unitId                 String
   price                  Float
-  taxIncludedPrice       Float?
   isTaxIncludedPrice     Boolean             @default(false)
   categoryId             String
   taxRate                Float               @default(0)

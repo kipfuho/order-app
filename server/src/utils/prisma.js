@@ -706,4 +706,80 @@ const prisma = new PrismaClient({
   },
 });
 
-module.exports = prisma;
+const PostgreSQLTable = {
+  Cart: 'Cart',
+  CartItem: 'CartItem',
+  Customer: 'Customer',
+  Discount: 'Discount',
+  DiscountProduct: 'DiscountProduct',
+  Dish: 'Dish',
+  DishCategory: 'DishCategory',
+  DishOrder: 'DishOrder',
+  Employee: 'Employee',
+  EmployeePosition: 'EmployeePosition',
+  EmployeeDepartment: 'EmployeeDepartment',
+  Kitchen: 'Kitchen',
+  KitchenLog: 'KitchenLog',
+  Order: 'Order',
+  OrderSession: 'OrderSession',
+  PaymentDetail: 'PaymentDetail',
+  ReturnedDishOrder: 'ReturnedDishOrder',
+  S3Log: 'S3Log',
+  Shop: 'Shop',
+  Table: 'Table',
+  TablePosition: 'TablePosition',
+  TaxDetail: 'TaxDetail',
+  Token: 'Token',
+  Unit: 'Unit',
+  User: 'User',
+};
+
+/**
+ * Bulk update for prisma
+ * Only accept primitive values and array
+ */
+const bulkUpdate = (tableName, entries) => {
+  if (entries.length === 0) return prisma.$executeRawUnsafe(`SELECT 1;`);
+
+  const sanitizedTable = tableName.replace(/[^a-zA-Z0-9_]/g, '');
+  const fields = Object.keys(entries[0]).filter((key) => key !== 'id');
+
+  const setSql = fields.map((field) => `"${field}" = data."${field}"`).join(', ');
+
+  const valuesSql = entries
+    .map((entry) => {
+      const values = fields.map((field) => {
+        const value = entry[field];
+        if (Array.isArray(value)) {
+          return `ARRAY[${value.map((v) => (typeof v === 'string' ? `'${v.replace(/'/g, "''")}'` : v)).join(', ')}]`;
+        }
+        if (typeof value === 'string') {
+          return `'${value.replace(/'/g, "''")}'`;
+        }
+        if (value instanceof Date) {
+          return `'${value.toISOString()}'`;
+        }
+        if (value === null || value === undefined) {
+          return `NULL`;
+        }
+        return value;
+      });
+      return `('${entry.id}', ${values.join(', ')})`;
+    })
+    .join(', ');
+
+  const sql = `
+    UPDATE "${sanitizedTable}"
+    SET ${setSql}
+    FROM (VALUES ${valuesSql}) AS data(id, ${fields.map((field) => `"${field}"`).join(', ')})
+    WHERE "${sanitizedTable}".id::text = data.id;
+  `;
+
+  return prisma.$executeRawUnsafe(sql);
+};
+
+module.exports = {
+  prisma,
+  bulkUpdate,
+  PostgreSQLTable,
+};

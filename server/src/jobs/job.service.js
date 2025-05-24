@@ -1,11 +1,11 @@
 const _ = require('lodash');
 const logger = require('../config/logger');
-const { KitchenLog, S3Log, Order, DishOrder } = require('../models');
+const { KitchenLog, S3Log, Order } = require('../models');
 const { JobTypes } = require('./constant');
 const redisClient = require('../utils/redis');
 const { getOrderSessionById } = require('../order-management/services/orderUtils.service');
-const prisma = require('../utils/prisma');
 const config = require('../config/config');
+const { bulkUpdate, PostgreSQLTable } = require('../utils/prisma');
 
 const _sendJobToQueue = async (jobData, delay) => {
   if (delay) {
@@ -98,30 +98,26 @@ const updateFullOrderSession = async ({ orderSessionId }) => {
     const allOrders = orderSession.orders;
     const allDishOrders = orderSession.orders.flatMap((order) => order.dishOrders);
 
-    await prisma.$transaction([
-      ...allDishOrders.map((dishOrder) =>
-        DishOrder.update({
-          where: { id: dishOrder.id },
-          data: {
-            beforeTaxTotalDiscountAmount: dishOrder.beforeTaxTotalDiscountAmount,
-            afterTaxTotalDiscountAmount: dishOrder.afterTaxTotalDiscountAmount,
-            revenueAmount: dishOrder.revenueAmount,
-            paymentAmount: dishOrder.paymentAmount,
-          },
-        })
-      ),
-      ...allOrders.map((order) =>
-        Order.update({
-          where: { id: order.id },
-          data: {
-            beforeTaxTotalDiscountAmount: order.beforeTaxTotalDiscountAmount,
-            afterTaxTotalDiscountAmount: order.afterTaxTotalDiscountAmount,
-            revenueAmount: order.revenueAmount,
-            paymentAmount: order.paymentAmount,
-          },
-        })
-      ),
-    ]);
+    await bulkUpdate(
+      PostgreSQLTable.DishOrder,
+      allDishOrders.map((dishOrder) => ({
+        id: dishOrder.id,
+        beforeTaxTotalDiscountAmount: dishOrder.beforeTaxTotalDiscountAmount,
+        afterTaxTotalDiscountAmount: dishOrder.afterTaxTotalDiscountAmount,
+        revenueAmount: dishOrder.revenueAmount,
+        paymentAmount: dishOrder.paymentAmount,
+      }))
+    );
+    await bulkUpdate(
+      PostgreSQLTable.Order,
+      allOrders.map((order) => ({
+        id: order.id,
+        beforeTaxTotalDiscountAmount: order.beforeTaxTotalDiscountAmount,
+        afterTaxTotalDiscountAmount: order.afterTaxTotalDiscountAmount,
+        revenueAmount: order.revenueAmount,
+        paymentAmount: order.paymentAmount,
+      }))
+    );
   } finally {
     redisClient.deleteKey(key);
   }

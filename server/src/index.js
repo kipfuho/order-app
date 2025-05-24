@@ -1,7 +1,7 @@
 const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
-const prisma = require('./utils/prisma');
+const { prisma } = require('./utils/prisma');
 
 let server;
 prisma.$connect().then(() => {

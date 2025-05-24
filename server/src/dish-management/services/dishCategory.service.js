@@ -5,7 +5,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { notifyUpdateDishCategory, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
 const { Status } = require('../../utils/constant');
-const prisma = require('../../utils/prisma');
+const { bulkUpdate, PostgreSQLTable } = require('../../utils/prisma');
 
 const getDishCategory = async ({ shopId, dishCategoryId }) => {
   const dishCategory = await getDishCategoryFromCache({ shopId, dishCategoryId });
@@ -103,27 +103,20 @@ const importDishCategories = async ({ dishCategories, shopId }) => {
     }
 
     if (dishCategoryByCode[code]) {
-      updatedDishCategories.push(dishCategory);
+      updatedDishCategories.push({ ...dishCategoryByCode[code], ...dishCategory });
     } else {
       createdDishCategories.push(dishCategory);
     }
   });
 
   await DishCategory.createMany({ data: createdDishCategories });
-  await prisma.$transaction(
-    updatedDishCategories.map((dc) =>
-      DishCategory.update({
-        data: {
-          ...dc,
-        },
-        where: {
-          dishcategory_code_unique: {
-            shopId,
-            code: dc.code,
-          },
-        },
-      })
-    )
+  await bulkUpdate(
+    PostgreSQLTable.DishCategory,
+    updatedDishCategories.map((dc) => ({
+      id: dc.id,
+      name: dc.name,
+      code: dc.name,
+    }))
   );
 
   return errorDishCategories;

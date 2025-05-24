@@ -1,4 +1,4 @@
-const prisma = require('../utils/prisma');
+const { prisma } = require('../utils/prisma');
 
 module.exports.Token = prisma.token;
 module.exports.User = prisma.user;
