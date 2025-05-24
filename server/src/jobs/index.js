@@ -28,7 +28,7 @@ const fetchJobAndExecute = async () => {
     if (_.isEmpty(jobDataString)) {
       return;
     }
-    jobPayload = JSON.stringify(jobDataString);
+    jobPayload = JSON.parse(jobDataString);
     logger.debug(`fetched job...${jobPayload}`);
     await processJob(jobPayload);
   } catch (err) {
@@ -38,18 +38,17 @@ const fetchJobAndExecute = async () => {
   }
 };
 
+let clsSession = getNamespace(SESSION_NAME_SPACE);
+if (!clsSession) {
+  clsSession = createNamespace(SESSION_NAME_SPACE);
+}
+bindMongooseToCLS(clsSession);
+
 const runningTask = async () => {
   try {
     if (runningJob) {
       return;
     }
-    let clsSession;
-    if (!getNamespace(SESSION_NAME_SPACE)) {
-      clsSession = createNamespace(SESSION_NAME_SPACE);
-    } else {
-      clsSession = getNamespace(SESSION_NAME_SPACE);
-    }
-    bindMongooseToCLS(clsSession);
 
     clsSession.run(() => {
       fetchJobAndExecute();
@@ -59,7 +58,7 @@ const runningTask = async () => {
     logger.error(errorMessage);
   } finally {
     if (isAllowReceiveJob) {
-      setTimeout(() => runningTask(), 1);
+      setImmediate(runningTask);
     }
   }
 };
