@@ -26,6 +26,7 @@ const fetchJobAndExecute = async () => {
 
     const jobDataString = await receiveJobMessage(config.jobKey);
     if (_.isEmpty(jobDataString)) {
+      await common.sleep(500); // add backoff delay if no job
       return;
     }
     jobPayload = JSON.parse(jobDataString);
