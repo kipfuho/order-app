@@ -320,6 +320,7 @@ model OrderSession {
   beforeTaxTotalDiscountAmount Float?
   customerPaidAmount           Float?
   customerReturnAmount         Float?
+  shouldRecalculateTax         Boolean?
   discounts                    Discount[]
   orders                       Order[]
   shop                         Shop               @relation(fields: [shopId], references: [id])

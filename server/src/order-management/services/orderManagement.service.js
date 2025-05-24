@@ -21,6 +21,7 @@ const {
 const { getCustomerFromCache } = require('../../metadata/customerMetadata.service');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
+const { prisma } = require('../../utils/prisma');
 
 const _validateBeforeCreateOrder = (orderSession) => {
   throwBadRequest(orderSession.status === OrderSessionStatus.paid, getMessageByLocale({ key: 'orderSession.alreadyPaid' }));
@@ -67,7 +68,14 @@ const changeDishQuantity = async ({ shopId, requestBody }) => {
   // decrease quantity
   if (newQuantity < targetDishOrder.quantity) {
     await ReturnedDishOrder.create({
-      data: { ...targetDishOrder, quantity: targetDishOrder.quantity - newQuantity },
+      data: {
+        dishOrderNo: targetDishOrder.dishOrderNo,
+        dishId: targetDishOrder.dishId,
+        name: targetDishOrder.name,
+        note: targetDishOrder.note,
+        orderId: targetDishOrder.orderId,
+        quantity: targetDishOrder.quantity - newQuantity,
+      },
     });
   }
   if (newQuantity === 0) {
@@ -111,7 +119,14 @@ const updateOrder = async ({ shopId, requestBody }) => {
       const dishOrder = _.find(order.dishOrders, { dishId: orderUpdate.dishId });
       if (dishOrder) {
         if (newQuantity < dishOrder.quantity) {
-          returnedDishOrders.push({ ...dishOrder, quantity: dishOrder.quantity - newQuantity });
+          returnedDishOrders.push({
+            dishOrderNo: dishOrder.dishOrderNo,
+            dishId: dishOrder.dishId,
+            name: dishOrder.name,
+            note: dishOrder.note,
+            orderId: dishOrder.orderId,
+            quantity: dishOrder.quantity - newQuantity,
+          });
         }
         dishOrder.quantity = newQuantity;
         updatedDishOrders.push(dishOrder);
@@ -119,8 +134,12 @@ const updateOrder = async ({ shopId, requestBody }) => {
     }
   });
 
-  await Promise.all(returnedDishOrders.map((returnedDishOrder) => ReturnedDishOrder.create({ data: returnedDishOrder })));
-  await Promise.all(
+  if (returnedDishOrders.length > 0) {
+    await ReturnedDishOrder.createMany({
+      data: returnedDishOrders,
+    });
+  }
+  await prisma.$transaction(
     updatedDishOrders.map((dishOrder) => {
       if (dishOrder.quantity === 0) {
         return DishOrder.delete({

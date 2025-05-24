@@ -527,7 +527,7 @@ const getOrderSessionJsonWithLimit = async ({ shopId, limit }) => {
   return orderSessionJsons;
 };
 
-const calculateTax = async ({ orderSessionJson, dishOrders }) => {
+const calculateTax = async ({ orderSessionJson, dishOrders, calculateTaxDirectly = false }) => {
   const shopTaxRate = _.get(orderSessionJson, 'taxRate', 0);
   if (shopTaxRate < 0.001) {
     return {
@@ -540,6 +540,31 @@ const calculateTax = async ({ orderSessionJson, dishOrders }) => {
   const taxAmountByTaxRate = {};
   _.forEach(dishOrders, (dishOrder) => {
     const dishTaxRate = dishOrder.taxRate || shopTaxRate;
+
+    if (orderSessionJson.shouldRecalculateTax) {
+      const { beforeTaxPrice, beforeTaxTotalPrice, afterTaxPrice, afterTaxTotalPrice } = _getPaymentDetailForDishOrder({
+        isTaxIncludedPrice: dishOrder.isTaxIncludedPrice,
+        price: dishOrder.price,
+        quantity: dishOrder.quantity,
+        taxRate: dishTaxRate,
+        calculateTaxDirectly,
+      });
+
+      // eslint-disable-next-line no-param-reassign
+      dishOrder.beforeTaxPrice = beforeTaxPrice;
+      // eslint-disable-next-line no-param-reassign
+      dishOrder.afterTaxPrice = afterTaxPrice;
+      // eslint-disable-next-line no-param-reassign
+      dishOrder.taxAmount = afterTaxTotalPrice - beforeTaxTotalPrice;
+      // eslint-disable-next-line no-param-reassign
+      dishOrder.revenueAmount = beforeTaxTotalPrice;
+      // eslint-disable-next-line no-param-reassign
+      dishOrder.paymentAmount = afterTaxTotalPrice;
+      const dishOrderTotalTaxAmount = afterTaxTotalPrice - beforeTaxTotalPrice;
+      totalTaxAmount += dishOrderTotalTaxAmount;
+      taxAmountByTaxRate[dishTaxRate] = getRoundTaxAmount((taxAmountByTaxRate[dishTaxRate] || 0) + dishOrderTotalTaxAmount);
+      return;
+    }
 
     const dishOrderTotalTaxAmount = dishOrder.afterTaxTotalPrice - dishOrder.beforeTaxTotalPrice;
     totalTaxAmount += dishOrderTotalTaxAmount;
@@ -667,6 +692,7 @@ const getOrderSessionById = async (orderSessionId, shopId) => {
   ) {
     await OrderSession.update({
       data: {
+        shouldRecalculateTax: false,
         pretaxPaymentAmount: orderSessionJson.pretaxPaymentAmount,
         revenueAmount: orderSessionJson.revenueAmount,
         paymentAmount: orderSessionJson.paymentAmount,
