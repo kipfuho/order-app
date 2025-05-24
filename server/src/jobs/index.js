@@ -20,20 +20,21 @@ const fetchJobAndExecute = async () => {
   if (runningJob) {
     return;
   }
-  let jobPayload;
+  let jobDataString;
   try {
     runningJob = true;
 
-    const jobDataString = await receiveJobMessage(config.jobKey);
-    if (_.isEmpty(jobDataString)) {
+    const sqsData = await receiveJobMessage(config.jobKey);
+    if (!_.get(sqsData, 'Messages.0.Body')) {
       await common.sleep(500); // add backoff delay if no job
       return;
     }
-    jobPayload = JSON.parse(jobDataString);
-    logger.debug(`fetched job...${jobPayload}`);
+    jobDataString = _.get(sqsData, 'Messages.0.Body');
+    const jobPayload = JSON.parse(jobDataString);
+    logger.debug(`fetched job...${jobDataString}`);
     await processJob(jobPayload);
   } catch (err) {
-    logger.error(`error process job. ${jobPayload}. ${err.stack}`);
+    logger.error(`error process job. ${jobDataString}. ${err.stack}`);
   } finally {
     runningJob = false;
   }
@@ -51,9 +52,7 @@ const runningTask = async () => {
       return;
     }
 
-    clsSession.run(() => {
-      fetchJobAndExecute();
-    });
+    await clsSession.runPromise(fetchJobAndExecute);
   } catch (err) {
     const errorMessage = `error running job. ${err.stack}`;
     logger.error(errorMessage);
