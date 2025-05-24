@@ -454,7 +454,7 @@ const discountDishOrder = async ({ shopId, requestBody }) => {
   const { orderSessionId, dishOrderId, orderId, discountReason, discountValue, discountType } = requestBody;
   let { discountAfterTax } = requestBody;
 
-  throwBadRequest(discountValue < 0, getMessageByLocale({ key: 'discount.invalidDiscountValue' }));
+  throwBadRequest(discountValue <= 0, getMessageByLocale({ key: 'discount.invalidDiscountValue' }));
   throwBadRequest(
     discountType === DiscountValueType.PERCENTAGE && discountValue > 100,
     getMessageByLocale({ key: 'discount.invalidDiscountValue' })
@@ -471,68 +471,65 @@ const discountDishOrder = async ({ shopId, requestBody }) => {
     (discount) =>
       discount.discountType === OrderSessionDiscountType.PRODUCT && discount.discountProducts[0].dishOrderId === dishOrderId
   );
-  let newDiscount;
-  if (discountValue > 0) {
-    // eslint-disable-next-line no-param-reassign
-    if (dishOrder.isTaxIncludedPrice) discountAfterTax = true;
-    let dishTaxRate = dishOrder.dishVAT || orderSessionJson.taxRate || 0;
-    if (orderSessionJson.taxRate <= 0.001) {
-      dishTaxRate = 0;
-    }
-
-    const afterTaxDishPrice = dishOrder.taxIncludedPrice || getRoundDishPrice(dishOrder.price * (1 + dishTaxRate / 100));
-    let beforeTaxDiscountPrice = 0;
-    let afterTaxDiscountPrice = 0;
-    if (discountType === DiscountValueType.PERCENTAGE) {
-      beforeTaxDiscountPrice = getRoundDiscountAmount(dishOrder.price * (discountValue / 100));
-      afterTaxDiscountPrice = getRoundDiscountAmount(afterTaxDishPrice * (discountValue / 100));
-    } else if (discountAfterTax) {
-      afterTaxDiscountPrice = Math.min(discountValue, afterTaxDishPrice);
-      beforeTaxDiscountPrice = getRoundDiscountAmount(afterTaxDiscountPrice / (1 + dishTaxRate / 100));
-    } else {
-      beforeTaxDiscountPrice = Math.min(discountValue, dishOrder.price);
-      afterTaxDiscountPrice = getRoundDiscountAmount(beforeTaxDiscountPrice * (1 + dishTaxRate / 100));
-    }
-    const taxDiscountPrice = getRoundDiscountAmount(afterTaxDiscountPrice - beforeTaxDiscountPrice);
-
-    newDiscount = {
-      discountType: OrderSessionDiscountType.PRODUCT,
-      discountAfterTax,
-      discountReason,
-      taxDiscountPrice,
-      productAppliedPromotions: [
-        {
-          dishOrderId,
-          dishId: _.get(dishOrder, 'dishId.id') || _.get(dishOrder, 'dishId', '').toString(),
-          dishName: _.get(dishOrder, 'dishName'),
-          discountValue,
-          discountValueType: discountType,
-          discountRate:
-            discountType === DiscountValueType.PERCENTAGE
-              ? discountValue
-              : _.min(100, (100 * discountValue) / (discountAfterTax ? afterTaxDishPrice : dishOrder.price)),
-          beforeTaxDiscountPrice,
-          afterTaxDiscountPrice,
-          taxDiscountPrice,
-        },
-      ],
-    };
+  // eslint-disable-next-line no-param-reassign
+  if (dishOrder.isTaxIncludedPrice) discountAfterTax = true;
+  let dishTaxRate = dishOrder.dishVAT || orderSessionJson.taxRate || 0;
+  if (orderSessionJson.taxRate <= 0.001) {
+    dishTaxRate = 0;
   }
+
+  const afterTaxDishPrice = dishOrder.taxIncludedPrice || getRoundDishPrice(dishOrder.price * (1 + dishTaxRate / 100));
+  let beforeTaxDiscountPrice = 0;
+  let afterTaxDiscountPrice = 0;
+  if (discountType === DiscountValueType.PERCENTAGE) {
+    beforeTaxDiscountPrice = getRoundDiscountAmount(dishOrder.price * (discountValue / 100));
+    afterTaxDiscountPrice = getRoundDiscountAmount(afterTaxDishPrice * (discountValue / 100));
+  } else if (discountAfterTax) {
+    afterTaxDiscountPrice = Math.min(discountValue, afterTaxDishPrice);
+    beforeTaxDiscountPrice = getRoundDiscountAmount(afterTaxDiscountPrice / (1 + dishTaxRate / 100));
+  } else {
+    beforeTaxDiscountPrice = Math.min(discountValue, dishOrder.price);
+    afterTaxDiscountPrice = getRoundDiscountAmount(beforeTaxDiscountPrice * (1 + dishTaxRate / 100));
+  }
+  const taxDiscountPrice = getRoundDiscountAmount(afterTaxDiscountPrice - beforeTaxDiscountPrice);
 
   await OrderSession.update({
     data: {
-      totalDiscountAmount: 0,
-      discounts: {
+      beforeTaxTotalDiscountAmount: 0,
+      afterTaxTotalDiscountAmount: 0,
+      discounts: _.pickBy({
         create: {
-          ...newDiscount,
+          name: 'DISCOUNT_DISHORDER',
+          discountReason,
+          discountType: OrderSessionDiscountType.PRODUCT,
+          discountValue,
+          discountValueType: discountType,
+          discountAfterTax,
           discountProducts: {
-            createMany: newDiscount.productAppliedPromotions,
+            delete: deletedDiscount
+              ? {
+                  id: deletedDiscount.id,
+                }
+              : null,
+            createMany: [
+              {
+                dishOrderId,
+                dishId: dishOrder.dishId,
+                dishName: dishOrder.name,
+                discountValue,
+                discountValueType: discountType,
+                discountRate:
+                  discountType === DiscountValueType.PERCENTAGE
+                    ? discountValue
+                    : _.min(100, (100 * discountValue) / (discountAfterTax ? afterTaxDishPrice : dishOrder.price)),
+                beforeTaxDiscountPrice,
+                afterTaxDiscountPrice,
+                taxDiscountPrice,
+              },
+            ],
           },
         },
-        delete: {
-          id: deletedDiscount.id,
-        },
-      },
+      }),
     },
     where: { id: orderSessionId },
   });
@@ -552,23 +549,25 @@ const discountOrderSession = async ({ shopId, requestBody }) => {
     (discountValue && _.get(previousDiscount, 'discountValueType') !== discountType) ||
     _.get(previousDiscount, 'discountValue') !== discountValue
   ) {
-    const newDiscount = {
-      discountType: OrderSessionDiscountType.INVOICE,
-      discountValueType: discountType,
-      discountValue,
-      discountAfterTax,
-      discountReason,
-    };
-
     await OrderSession.update({
       data: {
-        totalDiscountAmount: 0,
-        discounts: {
-          delete: {
-            id: previousDiscount.id,
+        beforeTaxTotalDiscountAmount: 0,
+        afterTaxTotalDiscountAmount: 0,
+        discounts: _.pickBy({
+          delete: previousDiscount
+            ? {
+                id: previousDiscount.id,
+              }
+            : null,
+          create: {
+            name: 'DISCOUNT_ORDER',
+            discountType: OrderSessionDiscountType.INVOICE,
+            discountValueType: discountType,
+            discountValue,
+            discountAfterTax,
+            discountReason,
           },
-          create: newDiscount,
-        },
+        }),
       },
       where: { id: orderSessionId },
     });

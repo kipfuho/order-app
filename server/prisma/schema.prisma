@@ -163,7 +163,6 @@ model DishOrder {
   beforeTaxTotalPrice          Float?
   afterTaxTotalPrice           Float?
   taxRate                      Float?
-  taxAmount                    Float?
   beforeTaxTotalDiscountAmount Float?
   afterTaxTotalDiscountAmount  Float?
   paymentAmount                Float?
@@ -263,6 +262,8 @@ model Discount {
   orderSessionId               String
   createdAt                    DateTime          @default(now())
   updatedAt                    DateTime          @updatedAt
+  discountAfterTax             Boolean
+  discountReason               String            @default("")
   orderSession                 OrderSession      @relation(fields: [orderSessionId], references: [id])
   discountProducts             DiscountProduct[]
 

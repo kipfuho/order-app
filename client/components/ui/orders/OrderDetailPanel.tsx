@@ -267,7 +267,7 @@ export default function ActiveOrderSessionPage({
         <LegendList
           data={activeOrderSession.orders || []}
           keyExtractor={(item) => item.id}
-          style={{ maxHeight: height * 0.6 }}
+          style={{ maxHeight: height * 0.6, padding: 12 }}
           renderItem={({ item: order, index }) => (
             <Surface mode="flat">
               <Text

@@ -69,6 +69,8 @@ export default function OrderSessionDetailPage({
       discountValue: _.toNumber(discountValue),
       discountType,
     }).unwrap();
+
+    setDiscountModalVisible(false);
   };
 
   const removeDiscountOnInvoice = async () => {
@@ -109,156 +111,149 @@ export default function OrderSessionDetailPage({
         />
         <Toast />
       </Portal>
-      <Surface
-        mode="flat"
-        style={{
-          flex: 1,
-          padding: 8,
-          borderRadius: 10,
-        }}
-      >
-        <Surface mode="flat" style={{ flex: 1 }}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginVertical: 4,
-              flexWrap: "wrap",
-            }}
+      <Surface mode="flat" style={{ flex: 1, borderRadius: 10 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            padding: 12,
+          }}
+        >
+          <Text
+            variant="titleMedium"
+            style={{ marginBottom: 12, fontSize: 18 }}
+            numberOfLines={3}
           >
-            <Text
-              variant="titleMedium"
-              style={{ marginBottom: 12, fontSize: 18 }}
-              numberOfLines={3}
+            {t("total_payment_amount")}
+          </Text>
+          <Text style={{ fontSize: 18 }}>
+            {convertPaymentAmount(orderSessionDetail.paymentAmount)}
+          </Text>
+        </View>
+
+        <Divider style={{ marginVertical: 8 }} />
+
+        <LegendList
+          data={dishOrders}
+          style={{ maxHeight: height * 0.6, padding: 12 }}
+          renderItem={({ item }) => (
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginVertical: 4,
+              }}
             >
-              {t("total_payment_amount")}
-            </Text>
-            <Text style={{ fontSize: 18 }}>
-              {convertPaymentAmount(orderSessionDetail.paymentAmount)}
-            </Text>
-          </View>
-
-          <LegendList
-            data={dishOrders}
-            style={{ maxHeight: height * 0.6 }}
-            renderItem={({ item }) => (
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  marginVertical: 4,
-                }}
-              >
-                <Text style={{ flex: 1, marginRight: 8 }}>
-                  <Text style={{ fontSize: 16 }}>{item.quantity}</Text>
-                  <Text style={{ marginLeft: 4, fontSize: 16 }}>x</Text>
-                  <Text style={{ marginLeft: 8, fontSize: 16 }}>
-                    {item.name}
-                  </Text>
-                </Text>
-                <Text style={{ fontSize: 16 }}>
-                  {convertPaymentAmount(item.price)}
-                </Text>
-              </View>
-            )}
-          />
-
-          <Divider style={{ marginVertical: 10 }} />
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginTop: 6,
-            }}
-          >
-            <Text style={{ fontSize: 16 }}>{t("total")}</Text>
-            <Text style={{ fontSize: 16 }}>
-              {convertPaymentAmount(orderSessionDetail.pretaxPaymentAmount)}
-            </Text>
-          </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginTop: 6,
-            }}
-          >
-            <View style={{ flexDirection: "row", gap: 8 }}>
-              <Text style={{ fontSize: 16 }}>{t("discount")}</Text>
-              <TouchableOpacity onPress={() => setDiscountModalVisible(true)}>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: theme.colors.error,
-                    textDecorationLine: "underline",
-                  }}
-                >
-                  {t("edit")}
-                </Text>
-              </TouchableOpacity>
-              {orderSessionDetail.totalDiscountAmountAfterTax > 0 && (
-                <View>
-                  {removeDiscountLoading ? (
-                    <ActivityIndicator size={18} />
-                  ) : (
-                    <TouchableOpacity onPress={removeDiscountOnInvoice}>
-                      <Text
-                        style={{
-                          fontSize: 16,
-                          color: theme.colors.error,
-                          textDecorationLine: "underline",
-                        }}
-                      >
-                        {t("delete")}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
+              <Text style={{ flex: 1, marginRight: 8 }}>
+                <Text style={{ fontSize: 16 }}>{item.quantity}</Text>
+                <Text style={{ marginLeft: 4, fontSize: 16 }}>x</Text>
+                <Text style={{ marginLeft: 8, fontSize: 16 }}>{item.name}</Text>
+              </Text>
+              <Text style={{ fontSize: 16 }}>
+                {convertPaymentAmount(item.price)}
+              </Text>
             </View>
-            <Text style={{ fontSize: 16 }}>
-              {convertPaymentAmount(
-                orderSessionDetail.totalDiscountAmountAfterTax
-              )}
-            </Text>
-          </View>
+          )}
+        />
 
-          <LegendList
-            data={orderSessionDetail.taxDetails || []}
-            renderItem={({ item }) => (
-              <View
+        <Divider style={{ marginVertical: 8 }} />
+
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+          }}
+        >
+          <Text style={{ fontSize: 16 }}>{t("total")}</Text>
+          <Text style={{ fontSize: 16 }}>
+            {convertPaymentAmount(orderSessionDetail.pretaxPaymentAmount)}
+          </Text>
+        </View>
+
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+          }}
+        >
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <Text style={{ fontSize: 16 }}>{t("discount")}</Text>
+            <TouchableOpacity onPress={() => setDiscountModalVisible(true)}>
+              <Text
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  marginTop: 6,
-                  marginLeft: 16,
+                  fontSize: 16,
+                  color: theme.colors.error,
+                  textDecorationLine: "underline",
                 }}
               >
-                <Text style={{ fontSize: 16 }}>{`${t("tax")}(${
-                  item.taxRate
-                }%)`}</Text>
-                <Text style={{ fontSize: 16 }}>
-                  {convertPaymentAmount(item.taxAmount)}
-                </Text>
+                {t("edit")}
+              </Text>
+            </TouchableOpacity>
+            {orderSessionDetail.totalDiscountAmountAfterTax > 0 && (
+              <View>
+                {removeDiscountLoading ? (
+                  <ActivityIndicator size={18} />
+                ) : (
+                  <TouchableOpacity onPress={removeDiscountOnInvoice}>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        color: theme.colors.error,
+                        textDecorationLine: "underline",
+                      }}
+                    >
+                      {t("delete")}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
             )}
-          />
+          </View>
+          <Text style={{ fontSize: 16 }}>
+            {convertPaymentAmount(
+              orderSessionDetail.totalDiscountAmountAfterTax
+            )}
+          </Text>
+        </View>
 
+        {(orderSessionDetail.taxDetails || []).map((taxDetail) => (
           <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
               marginTop: 6,
+              marginLeft: 16,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
             }}
           >
-            <Text style={{ fontSize: 16 }}>{t("tax")}</Text>
+            <Text style={{ fontSize: 16 }}>{`${t("tax")}(${
+              taxDetail.taxRate
+            }%)`}</Text>
             <Text style={{ fontSize: 16 }}>
-              {convertPaymentAmount(orderSessionDetail.totalTaxAmount)}
+              {convertPaymentAmount(taxDetail.taxAmount)}
             </Text>
           </View>
-        </Surface>
+        ))}
+
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+          }}
+        >
+          <Text style={{ fontSize: 16 }}>{t("tax")}</Text>
+          <Text style={{ fontSize: 16 }}>
+            {convertPaymentAmount(orderSessionDetail.totalTaxAmount)}
+          </Text>
+        </View>
       </Surface>
     </>
   );

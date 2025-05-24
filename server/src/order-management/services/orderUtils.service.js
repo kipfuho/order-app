@@ -31,7 +31,14 @@ const _mergeDishOrders = (dishOrders) => {
     const existingDishOrderQuantity = (_.get(existingItem, 'quantity') || 0) * 1;
     const currentOrderQuantity = (dishOrder.quantity || 0) * 1;
     item.quantity = currentOrderQuantity + existingDishOrderQuantity;
-    item.taxAmount = (_.get(existingItem, 'taxAmount') || 0) + (dishOrder.taxAmount || 0);
+    item.beforeTaxTotalPrice = (_.get(existingItem, 'beforeTaxTotalPrice') || 0) + (dishOrder.beforeTaxTotalPrice || 0);
+    item.afterTaxTotalPrice = (_.get(existingItem, 'afterTaxTotalPrice') || 0) + (dishOrder.afterTaxTotalPrice || 0);
+    item.beforeTaxTotalDiscountAmount =
+      (_.get(existingItem, 'beforeTaxTotalDiscountAmount') || 0) + (dishOrder.beforeTaxTotalDiscountAmount || 0);
+    item.afterTaxTotalDiscountAmount =
+      (_.get(existingItem, 'afterTaxTotalDiscountAmount') || 0) + (dishOrder.afterTaxTotalDiscountAmount || 0);
+    item.revenueAmount = (_.get(existingItem, 'revenueAmount') || 0) + (dishOrder.revenueAmount || 0);
+    item.paymentAmount = (_.get(existingItem, 'paymentAmount') || 0) + (dishOrder.paymentAmount || 0);
     dishOrderMap[key] = item;
   }
   return Object.values(dishOrderMap);
@@ -302,6 +309,11 @@ const _setMetatadaForDishOrder = ({ dishOrder, dishById, unitById, orderSessionT
       isTaxIncludedPrice,
       beforeTaxTotalPrice,
       afterTaxTotalPrice,
+      beforeTaxTotalDiscountAmount: 0,
+      afterTaxTotalDiscountAmount: 0,
+      taxAmount: afterTaxTotalPrice - beforeTaxTotalPrice,
+      revenueAmount: beforeTaxTotalPrice,
+      paymentAmount: afterTaxTotalPrice,
     };
   }
   const dish = dishById[dishId];
@@ -328,6 +340,10 @@ const _setMetatadaForDishOrder = ({ dishOrder, dishById, unitById, orderSessionT
     isTaxIncludedPrice: dish.isTaxIncludedPrice,
     beforeTaxTotalPrice,
     afterTaxTotalPrice,
+    beforeTaxTotalDiscountAmount: 0,
+    afterTaxTotalDiscountAmount: 0,
+    revenueAmount: beforeTaxTotalPrice,
+    paymentAmount: afterTaxTotalPrice,
   };
 };
 
@@ -351,7 +367,13 @@ const createNewOrder = async ({
     const orderDishOrders = _.map(
       _.filter(dishOrders, (dishOrder) => dishOrder.quantity > 0),
       (dishOrder, index) => {
-        const _dishOrder = _setMetatadaForDishOrder({ dishById, dishOrder, unitById, orderSessionTaxRate });
+        const _dishOrder = _setMetatadaForDishOrder({
+          dishById,
+          dishOrder,
+          unitById,
+          orderSessionTaxRate,
+          calculateTaxDirectly: shop.calculateTaxDirectly,
+        });
         _dishOrder.dishOrderNo = index + 1;
         return _dishOrder;
       }
@@ -371,6 +393,10 @@ const createNewOrder = async ({
         totalQuantity: _.sumBy(orderDishOrders, 'quantity') || 0,
         totalBeforeTaxAmount: _.sumBy(orderDishOrders, 'beforeTaxTotalPrice') || 0,
         totalAfterTaxAmount: _.sumBy(orderDishOrders, 'afterTaxTotalPrice') || 0,
+        beforeTaxTotalDiscountAmount: _.sumBy(orderDishOrders, 'beforeTaxTotalDiscountAmount') || 0,
+        afterTaxTotalDiscountAmount: _.sumBy(orderDishOrders, 'afterTaxTotalDiscountAmount') || 0,
+        revenueAmount: _.sumBy(orderDishOrders, 'revenueAmount') || 0,
+        paymentAmount: _.sumBy(orderDishOrders, 'paymentAmount') || 0,
       },
     });
     if (orderSession) {
@@ -501,45 +527,23 @@ const getOrderSessionJsonWithLimit = async ({ shopId, limit }) => {
   return orderSessionJsons;
 };
 
-const calculateTax = async ({ orderSessionJson, dishOrders, calculateTaxDirectly = false }) => {
+const calculateTax = async ({ orderSessionJson, dishOrders }) => {
+  const shopTaxRate = _.get(orderSessionJson, 'taxRate', 0);
+  if (shopTaxRate < 0.001) {
+    return {
+      totalTaxAmount: 0,
+      taxDetails: [],
+    };
+  }
+
   let totalTaxAmount = 0;
   const taxAmountByTaxRate = {};
-  const shopTaxRate = _.get(orderSessionJson, 'taxRate', 0);
   _.forEach(dishOrders, (dishOrder) => {
-    let dishTaxRate = dishOrder.taxRate || shopTaxRate;
-    const beforeTaxPrice = dishOrder.price;
+    const dishTaxRate = dishOrder.taxRate || shopTaxRate;
 
-    if (shopTaxRate < 0.001) {
-      dishTaxRate = 0;
-      // eslint-disable-next-line no-param-reassign
-      dishOrder.taxIncludedPrice = dishOrder.price;
-    }
-
-    const afterTaxPrice = dishOrder.taxIncludedPrice || getRoundTaxAmount((beforeTaxPrice * (100 + dishTaxRate)) / 100);
-    let beforeTaxTotalPrice;
-    let afterTaxTotalPrice;
-    let taxAmount;
-    if (calculateTaxDirectly) {
-      beforeTaxTotalPrice = beforeTaxPrice * (dishOrder.quantity || 1);
-      afterTaxTotalPrice = getRoundTaxAmount((beforeTaxTotalPrice * (100 + dishTaxRate)) / 100);
-      taxAmount = getRoundTaxAmount(afterTaxTotalPrice - beforeTaxTotalPrice);
-    } else {
-      beforeTaxTotalPrice = beforeTaxPrice * (dishOrder.quantity || 1);
-      afterTaxTotalPrice = afterTaxPrice * (dishOrder.quantity || 1);
-      taxAmount = getRoundTaxAmount(afterTaxTotalPrice - beforeTaxTotalPrice);
-    }
-
-    // eslint-disable-next-line no-param-reassign
-    dishOrder.beforeTaxTotalPrice = beforeTaxTotalPrice;
-    // eslint-disable-next-line no-param-reassign
-    dishOrder.afterTaxTotalPrice = afterTaxTotalPrice;
-    // eslint-disable-next-line no-param-reassign
-    dishOrder.taxAmount = taxAmount;
-
-    if (taxAmount) {
-      totalTaxAmount += taxAmount;
-      taxAmountByTaxRate[dishTaxRate] = getRoundTaxAmount((taxAmountByTaxRate[dishTaxRate] || 0) + taxAmount);
-    }
+    const dishOrderTotalTaxAmount = dishOrder.afterTaxTotalPrice - dishOrder.beforeTaxTotalPrice;
+    totalTaxAmount += dishOrderTotalTaxAmount;
+    taxAmountByTaxRate[dishTaxRate] = getRoundTaxAmount((taxAmountByTaxRate[dishTaxRate] || 0) + dishOrderTotalTaxAmount);
   });
 
   const taxDetails = _.map(taxAmountByTaxRate, (taxAmount, taxRate) => ({ taxRate: _.toNumber(taxRate), taxAmount }));
