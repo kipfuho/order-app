@@ -57,7 +57,7 @@ if (config.env === 'production') {
 // v1 api routes
 app.use('/v1', routes);
 
-app.get('/', (req, res) => res.send('Express on Vercel'));
+app.get('/', (req, res) => res.send(`Express on Vercel. ENV=${config.env}`));
 
 // serve static files
 const staticFolder = path.join(__dirname, 'static');

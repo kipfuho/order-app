@@ -4,19 +4,17 @@ const config = require('../config/config');
 const { processJob } = require('./job.service');
 
 const _sendJobMessage = async ({ messageBody }) => {
-  if (config.env !== 'production' || config.env !== 'batch') {
+  if (config.env !== 'production') {
     logger.debug(messageBody);
-    return false;
+    return;
   }
 
   try {
     logger.info(`send Job to redis queue ${config.jobKey}`);
     await redis.pushToQueue({ key: config.jobKey, val: messageBody });
-    return true;
   } catch (err) {
     const message = `error when send job to redis queue. ${config.jobKey} = ${err.stack}`;
     logger.error(message);
-    return false;
   }
 };
 

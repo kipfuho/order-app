@@ -3,7 +3,7 @@ const moment = require('moment-timezone');
 const redisClient = require('../../utils/redis');
 const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { getShopTimeZone } = require('../../middlewares/clsHooked');
-const { Order, OrderSession, Cart, DishOrder } = require('../../models');
+const { Order, OrderSession, Cart } = require('../../models');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const { OrderSessionDiscountType, DiscountValueType, OrderSessionStatus } = require('../../utils/constant');
 const { throwBadRequest } = require('../../utils/errorHandling');
@@ -13,9 +13,6 @@ const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
 const { getRoundTaxAmount, getRoundDishPrice, getStartTimeOfToday } = require('../../utils/common');
 const { getCustomerFromCache } = require('../../metadata/customerMetadata.service');
 const { notifyNewOrder, EventActionType } = require('../../utils/awsUtils/appSync.utils');
-const { JobTypes } = require('../../jobs/constant');
-const { registerJob } = require('../../jobs/jobUtils');
-const prisma = require('../../utils/prisma');
 
 // Merge các dish order có trùng tên và giá
 const _mergeDishOrders = (dishOrders) => {
@@ -629,11 +626,19 @@ const getOrderSessionById = async (orderSessionId, shopId) => {
     (orderSession.paymentAmount !== orderSessionJson.paymentAmount ||
       orderSession.totalDiscountAmountAfterTax !== orderSessionJson.totalDiscountAmountAfterTax)
   ) {
-    registerJob({
-      type: JobTypes.UPDATE_FULL_ORDER_SESSION,
+    await OrderSession.update({
       data: {
-        orderSessionId,
+        pretaxPaymentAmount: orderSession.pretaxPaymentAmount,
+        revenueAmount: orderSession.revenueAmount,
+        paymentAmount: orderSession.paymentAmount,
+        beforeTaxTotalDiscountAmount: orderSession.beforeTaxTotalDiscountAmount,
+        afterTaxTotalDiscountAmount: orderSession.afterTaxTotalDiscountAmount,
+        taxDetails: {
+          deleteMany: {},
+          createMany: orderSession.taxDetails,
+        },
       },
+      where: { id: orderSessionId },
     });
   }
   return orderSessionJson;
@@ -649,82 +654,6 @@ const updateOrderSession = async ({ orderSessionId, shopId, updateBody }) => {
   });
 
   return getOrderSessionById(orderSessionId);
-};
-
-const updateFullOrderSession = async ({ orderSessionId }) => {
-  const key = `update_full_order_session_${orderSessionId}`;
-  const canGetLock = await redisClient.getCloudLock({ key, periodInSecond: 10 });
-  if (!canGetLock) {
-    return registerJob(
-      {
-        type: JobTypes.UPDATE_FULL_ORDER_SESSION,
-        data: {
-          orderSessionId,
-        },
-      },
-      10000
-    );
-  }
-  const orderSession = await getOrderSessionById({ orderSessionId });
-  const discountPercent = Math.min(orderSession.beforeTaxTotalDiscountAmount / orderSession.pretaxPaymentAmount, 1);
-
-  /* eslint-disable no-param-reassign */
-  orderSession.orders.forEach((order) => {
-    order.dishOrders.forEach((dishOrder) => {
-      dishOrder.beforeTaxTotalDiscountAmount = dishOrder.beforeTaxTotalPrice * discountPercent;
-      dishOrder.afterTaxTotalDiscountAmount = dishOrder.afterTaxTotalPrice * discountPercent;
-      dishOrder.revenueAmount = dishOrder.beforeTaxTotalPrice - dishOrder.beforeTaxTotalDiscountAmount;
-      dishOrder.paymentAmount = dishOrder.afterTaxTotalPrice - dishOrder.afterTaxTotalDiscountAmount;
-    });
-
-    order.beforeTaxTotalDiscountAmount = _.sumBy(order.dishOrders, 'beforeTaxTotalDiscountAmount');
-    order.afterTaxTotalDiscountAmount = _.sumBy(order.dishOrders, 'afterTaxTotalDiscountAmount');
-    order.revenueAmount = _.sumBy(order.dishOrders, 'revenueAmount');
-    order.paymentAmount = _.sumBy(order.dishOrders, 'paymentAmount');
-  });
-  /* eslint-enable no-param-reassign */
-
-  const allOrders = orderSession.orders;
-  const allDishOrders = orderSession.orders.flatMap((order) => order.dishOrders);
-
-  await prisma.$transaction([
-    ...allDishOrders.map((dishOrder) =>
-      DishOrder.update({
-        where: { id: dishOrder.id },
-        data: {
-          beforeTaxTotalDiscountAmount: dishOrder.beforeTaxTotalDiscountAmount,
-          afterTaxTotalDiscountAmount: dishOrder.afterTaxTotalDiscountAmount,
-          revenueAmount: dishOrder.revenueAmount,
-          paymentAmount: dishOrder.paymentAmount,
-        },
-      })
-    ),
-    ...allOrders.map((order) =>
-      Order.update({
-        where: { id: order.id },
-        data: {
-          beforeTaxTotalDiscountAmount: order.beforeTaxTotalDiscountAmount,
-          afterTaxTotalDiscountAmount: order.afterTaxTotalDiscountAmount,
-          revenueAmount: order.revenueAmount,
-          paymentAmount: order.paymentAmount,
-        },
-      })
-    ),
-    await OrderSession.update({
-      data: {
-        pretaxPaymentAmount: orderSession.pretaxPaymentAmount,
-        revenueAmount: orderSession.revenueAmount,
-        paymentAmount: orderSession.paymentAmount,
-        beforeTaxTotalDiscountAmount: orderSession.beforeTaxTotalDiscountAmount,
-        afterTaxTotalDiscountAmount: orderSession.afterTaxTotalDiscountAmount,
-        taxDetails: {
-          deleteMany: {},
-          createMany: orderSession.taxDetails,
-        },
-      },
-      where: { id: orderSessionId },
-    }),
-  ]);
 };
 
 const mergeDishOrdersOfOrders = (orderSessionJson) => {
@@ -770,41 +699,6 @@ const getCart = async ({ shopId, customerId }) => {
   return cart;
 };
 
-const _updateOrderSessionStatusForOrders = async ({ shopId, orderIds = [], status }) => {
-  await Promise.all(
-    orderIds.map((orderId) => {
-      return Order.update({
-        data: { orderSessionStatus: status },
-        where: {
-          id: orderId,
-          shopId,
-        },
-      });
-    })
-  );
-};
-
-const updateAfterPayOrderSession = async ({ orderSession }) => {
-  if (!orderSession) return;
-  const { shopId } = orderSession;
-  const orderIds = _.map(orderSession.orders, 'id');
-  return _updateOrderSessionStatusForOrders({ shopId, status: orderSession.status, orderIds });
-};
-
-const updateAfterCancelOrderSession = async ({ orderSession }) => {
-  if (!orderSession) return;
-  const { shopId } = orderSession;
-  const orderIds = _.map(orderSession.orders, 'id');
-  return _updateOrderSessionStatusForOrders({ shopId, status: orderSession.status, orderIds });
-};
-
-const updateAfterCancelPaidStatusOrderSession = async ({ orderSession }) => {
-  if (!orderSession) return;
-  const { shopId } = orderSession;
-  const orderIds = _.map(orderSession.orders, 'id');
-  return _updateOrderSessionStatusForOrders({ shopId, status: orderSession.status, orderIds });
-};
-
 module.exports = {
   createNewOrder,
   getOrCreateOrderSession,
@@ -815,8 +709,4 @@ module.exports = {
   getCart,
   getActiveOrderSessionStatus,
   getOrderSessionJsonWithLimit,
-  updateAfterPayOrderSession,
-  updateAfterCancelOrderSession,
-  updateAfterCancelPaidStatusOrderSession,
-  updateFullOrderSession,
 };
