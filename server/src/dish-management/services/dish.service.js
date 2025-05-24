@@ -35,8 +35,8 @@ const createDish = async ({ shopId, createBody, userId }) => {
       code: createBody.code,
       price: createBody.price,
       type: createBody.type,
-      categoryId: createBody.category,
-      unitId: createBody.unit,
+      categoryId: createBody.categoryId,
+      unitId: createBody.unitId,
       shopId,
       imageUrls: createBody.imageUrls || [],
       description: createBody.description,
@@ -76,8 +76,8 @@ const updateDish = async ({ shopId, dishId, updateBody, userId }) => {
       code: updateBody.code,
       price: updateBody.price,
       type: updateBody.type,
-      categoryId: updateBody.category,
-      unitId: updateBody.unit,
+      categoryId: updateBody.categoryId,
+      unitId: updateBody.unitId,
       shopId,
       imageUrls: updateBody.imageUrls || [],
       description: updateBody.description,
@@ -291,7 +291,7 @@ const importDishes = async ({ dishes, shopId }) => {
   notifyUpdateDish({
     action: EventActionType.UPDATE,
     dish: {
-      shop: shopId,
+      shopId,
     },
   });
   return errorDishes;

@@ -61,6 +61,7 @@ const notifyOrderSessionPayment = async ({ orderSession, userId }) => {
       orderSessionId: orderSession.id,
       tableId: _.get(orderSession, 'tableIds.0'),
       userId,
+      billNo: formatOrderSessionNo(orderSession),
     },
   };
   await publishSingleAppSyncEvent({ channel, event });

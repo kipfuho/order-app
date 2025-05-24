@@ -228,7 +228,7 @@ model Order {
   returnedDishOrders           ReturnedDishOrder[]
 
   @@index([shopId, customerId])
-  @@index([shopId, orderSessionId])
+  @@index([orderSessionId])
   @@index([shopId, orderSessionStatus, status, createdAt])
 }
 
@@ -317,6 +317,8 @@ model OrderSession {
   revenueAmount                Float?
   afterTaxTotalDiscountAmount  Float?
   beforeTaxTotalDiscountAmount Float?
+  customerPaidAmount           Float?
+  customerReturnAmount         Float?
   discounts                    Discount[]
   orders                       Order[]
   shop                         Shop               @relation(fields: [shopId], references: [id])

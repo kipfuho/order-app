@@ -169,6 +169,7 @@ const payOrderSessionRequest = async ({
   shopId,
   orderSessionId,
   paymentDetails,
+  customerPaidAmount,
 }: PayOrderSessionRequest) => {
   const accessToken = await getAccessTokenLazily();
 
@@ -179,6 +180,7 @@ const payOrderSessionRequest = async ({
     data: {
       orderSessionId,
       paymentDetails,
+      customerPaidAmount,
     },
   });
 };

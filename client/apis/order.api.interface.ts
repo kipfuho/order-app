@@ -40,6 +40,7 @@ interface PayOrderSessionRequest {
   shopId: string;
   orderSessionId: string;
   paymentDetails: PaymentDetail[];
+  customerPaidAmount?: number;
 }
 
 interface CancelOrderSessionRequest {

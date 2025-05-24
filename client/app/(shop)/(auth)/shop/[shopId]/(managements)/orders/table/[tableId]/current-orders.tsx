@@ -104,7 +104,7 @@ export default function OrderTableCurrentOrderSessionsPage() {
           goToTablesForOrderList({ router, shopId: shop.id });
         }}
       />
-      <Surface style={{ flex: 1, padding: 16 }}>
+      <Surface mode="flat" style={{ flex: 1, padding: 16 }}>
         <ScrollView>
           {/* List of Table Positions */}
           <List.Section style={{ gap: 40 }}>
@@ -117,7 +117,6 @@ export default function OrderTableCurrentOrderSessionsPage() {
             ))}
           </List.Section>
         </ScrollView>
-        <Divider />
         <Button
           mode="contained"
           style={[styles.baseButton, { marginTop: 20 }]}

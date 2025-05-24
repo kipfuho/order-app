@@ -152,21 +152,21 @@ const createDishRequest = async ({
   const body: {
     name: string;
     code: string;
-    category: string;
+    categoryId: string;
     type: string;
     price: number;
     taxRate: number;
-    unit: string;
+    unitId: string;
     isTaxIncludedPrice: boolean;
     imageUrls: string[];
   } = {
     name,
     code,
-    category: category.id,
+    categoryId: category.id,
     type: dishType,
     price,
     taxRate,
-    unit: unit.id,
+    unitId: unit.id,
     isTaxIncludedPrice,
     imageUrls,
   };
@@ -223,11 +223,11 @@ const updateDishRequest = async ({
   const body: {
     name?: string;
     code?: string;
-    category?: string;
+    categoryId?: string;
     type?: string;
     price?: number;
     taxRate?: number;
-    unit?: string;
+    unitId?: string;
     isTaxIncludedPrice?: boolean;
     imageUrls?: string[];
     status?: string;
@@ -240,7 +240,7 @@ const updateDishRequest = async ({
     body.code = code;
   }
   if (category) {
-    body.category = category.id;
+    body.categoryId = category.id;
   }
   if (dishType) {
     body.type = dishType;
@@ -252,7 +252,7 @@ const updateDishRequest = async ({
     body.taxRate = taxRate;
   }
   if (unit) {
-    body.unit = unit.id;
+    body.unitId = unit.id;
   }
   if (isTaxIncludedPrice) {
     body.isTaxIncludedPrice = isTaxIncludedPrice;

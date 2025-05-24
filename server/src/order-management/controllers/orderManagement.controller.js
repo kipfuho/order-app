@@ -58,9 +58,8 @@ const getOrderSessionDetail = catchAsync(async (req, res) => {
 
 const payOrderSession = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
   const requestBody = req.body;
-  await orderManagementService.payOrderSession({ shopId, requestBody, userId });
+  await orderManagementService.payOrderSession({ shopId, requestBody, user: req.user });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 

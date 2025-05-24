@@ -22,39 +22,13 @@ const _sendJobToQueue = async (jobData, delay) => {
   }
 };
 
-const _updateOrderSessionStatusForOrders = async ({ shopId, orderIds = [], status }) => {
-  await Promise.all(
-    orderIds.map((orderId) => {
-      return Order.update({
-        data: { orderSessionStatus: status },
-        where: {
-          id: orderId,
-          shopId,
-        },
-      });
-    })
-  );
-};
-
-const updateAfterPayOrderSession = async ({ orderSession }) => {
-  if (!orderSession) return;
-  const { shopId } = orderSession;
-  const orderIds = _.map(orderSession.orders, 'id');
-  return _updateOrderSessionStatusForOrders({ shopId, status: orderSession.status, orderIds });
-};
-
-const updateAfterCancelOrderSession = async ({ orderSession }) => {
-  if (!orderSession) return;
-  const { shopId } = orderSession;
-  const orderIds = _.map(orderSession.orders, 'id');
-  return _updateOrderSessionStatusForOrders({ shopId, status: orderSession.status, orderIds });
-};
-
-const updateAfterCancelPaidStatusOrderSession = async ({ orderSession }) => {
-  if (!orderSession) return;
-  const { shopId } = orderSession;
-  const orderIds = _.map(orderSession.orders, 'id');
-  return _updateOrderSessionStatusForOrders({ shopId, status: orderSession.status, orderIds });
+const updateOrderSessionStatusForOrders = async ({ orderSessionId, status }) => {
+  return Order.updateMany({
+    data: { orderSessionStatus: status },
+    where: {
+      orderSessionId,
+    },
+  });
 };
 
 const updateFullOrderSession = async ({ orderSessionId }) => {
@@ -72,7 +46,7 @@ const updateFullOrderSession = async ({ orderSessionId }) => {
     );
   }
   try {
-    const orderSession = await getOrderSessionById({ orderSessionId });
+    const orderSession = await getOrderSessionById(orderSessionId);
     const discountPercent = Math.min(orderSession.beforeTaxTotalDiscountAmount / orderSession.pretaxPaymentAmount, 1);
 
     if (discountPercent < 0.001) {
@@ -88,10 +62,10 @@ const updateFullOrderSession = async ({ orderSessionId }) => {
         dishOrder.paymentAmount = dishOrder.afterTaxTotalPrice - dishOrder.afterTaxTotalDiscountAmount;
       });
 
-      order.beforeTaxTotalDiscountAmount = _.sumBy(order.dishOrders, 'beforeTaxTotalDiscountAmount');
-      order.afterTaxTotalDiscountAmount = _.sumBy(order.dishOrders, 'afterTaxTotalDiscountAmount');
-      order.revenueAmount = _.sumBy(order.dishOrders, 'revenueAmount');
-      order.paymentAmount = _.sumBy(order.dishOrders, 'paymentAmount');
+      order.beforeTaxTotalDiscountAmount = _.sumBy(order.dishOrders, 'beforeTaxTotalDiscountAmount') || 0;
+      order.afterTaxTotalDiscountAmount = _.sumBy(order.dishOrders, 'afterTaxTotalDiscountAmount') || 0;
+      order.revenueAmount = _.sumBy(order.dishOrders, 'revenueAmount') || 0;
+      order.paymentAmount = _.sumBy(order.dishOrders, 'paymentAmount') || 0;
     });
     /* eslint-enable no-param-reassign */
 
@@ -140,20 +114,24 @@ const processJob = async (jobPayload) => {
   }
 
   if (type === JobTypes.PAY_ORDER) {
-    await updateAfterPayOrderSession({ orderSession: data });
-    await updateFullOrderSession({ orderSessionId: data.id });
+    const { orderSessionId } = data;
+    await updateOrderSessionStatusForOrders({ orderSessionId });
+    await updateFullOrderSession({ orderSessionId });
     return;
   }
   if (type === JobTypes.CANCEL_ORDER) {
-    await updateAfterCancelOrderSession({ orderSession: data });
+    const { orderSessionId } = data;
+    await updateOrderSessionStatusForOrders({ orderSessionId });
     return;
   }
   if (type === JobTypes.CANCEL_ORDER_PAID_STATUS) {
-    await updateAfterCancelPaidStatusOrderSession({ orderSession: data });
+    const { orderSessionId } = data;
+    await updateOrderSessionStatusForOrders({ orderSessionId });
     return;
   }
   if (type === JobTypes.UPDATE_FULL_ORDER_SESSION) {
-    await updateFullOrderSession(data);
+    const { orderSessionId } = data;
+    await updateFullOrderSession({ orderSessionId });
     return;
   }
 

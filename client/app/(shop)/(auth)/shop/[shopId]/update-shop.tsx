@@ -124,7 +124,8 @@ export default function UpdateShopPage() {
             mode="outlined"
             label={t("phone")}
             value={phone}
-            onChangeText={setPhone}
+            keyboardType="numeric" // Shows numeric keyboard
+            onChangeText={(text) => setPhone(text.replace(/[^0-9.]/g, ""))}
           />
 
           <TextInput

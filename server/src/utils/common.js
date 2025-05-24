@@ -160,16 +160,23 @@ const getReportPeriod = (period) => {
 };
 
 /**
- * Divide a number into n parts proportionally, while ensuring the sum of those n parts equals the initial sum.
- * Curreny precision is involved to handle different currencies like VND, JPY, USD, ...
- * @param {number} initialSum - The total sum to be divided.
- * @param {number[]} parts - An array representing the proportional weights of the parts.
- * @returns {array[]} - An array of corresponding represent divided initialSum to parts
+ * Divides an amount into `n` parts proportionally, ensuring the total of all parts equals the original sum.
+ * Currency precision is handled to support different currencies like VND, JPY, USD, etc.
+ *
+ * @param {Object} params - The function parameters.
+ * @param {number} params.initialSum - The total amount to be divided.
+ * @param {number[]} params.parts - An array of proportional weights for each part.
+ * @param {number} params.precision - The number of decimal places to round each part (e.g., 0 for VND/JPY, 2 for USD).
+ * @returns {number[]} - An array of values representing the divided parts of the initial sum.
  */
 const divideToNPart = ({ initialSum, parts, precision }) => {
   const totalPartWeight = parts.reduce((sum, part) => sum + part, 0);
   if (totalPartWeight === 0) {
     return parts.map(() => 0);
+  }
+  if (precision === null || precision === undefined) {
+    // eslint-disable-next-line no-param-reassign
+    precision = getCurrencyPrecision();
   }
 
   let dividedParts = parts.map((part) => [(initialSum * part) / totalPartWeight, part]);

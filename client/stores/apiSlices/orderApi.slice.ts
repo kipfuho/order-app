@@ -198,12 +198,18 @@ export const orderApiSlice = createApi({
     }),
 
     payOrderSession: builder.mutation<boolean, PayOrderSessionRequest>({
-      queryFn: async ({ orderSessionId, shopId, paymentDetails }) => {
+      queryFn: async ({
+        orderSessionId,
+        shopId,
+        paymentDetails,
+        customerPaidAmount,
+      }) => {
         try {
           await payOrderSessionRequest({
             shopId,
             orderSessionId,
             paymentDetails,
+            customerPaidAmount,
           });
 
           return { data: true };

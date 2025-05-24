@@ -9,6 +9,7 @@ const {
   getRoundDishPrice,
   getRoundDiscountAmount,
   createSearchByDateOptionWithShopTimezone,
+  divideToNPart,
 } = require('../../utils/common');
 const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
@@ -27,9 +28,20 @@ const _validateBeforeCreateOrder = (orderSession) => {
 
 const createOrder = async ({ shopId, userId, requestBody }) => {
   const { tableId, orderSessionId, dishOrders } = requestBody;
-  const orderSession = await orderUtilService.getOrCreateOrderSession({ orderSessionId, tableId, shopId });
+  const { orderSession, isNewOrderSession } = await orderUtilService.getOrCreateOrderSession({
+    orderSessionId,
+    tableId,
+    shopId,
+  });
   _validateBeforeCreateOrder(orderSession);
-  const newOrder = await orderUtilService.createNewOrder({ tableId, shopId, userId, orderSession, dishOrders });
+  const newOrder = await orderUtilService.createNewOrder({
+    tableId,
+    shopId,
+    userId,
+    orderSession,
+    dishOrders,
+    isNewOrderSession,
+  });
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSession.id);
   orderSessionJson.orders = _.filter(orderSessionJson.orders, (order) => order.id === newOrder.id);
   return orderSessionJson;
@@ -195,43 +207,58 @@ const getOrderSessionDetail = async ({ shopId, orderSessionId }) => {
 };
 
 const _validateBeforePayment = (orderSession, paymentDetails) => {
+  throwBadRequest(
+    orderSession.status !== OrderSessionStatus.unpaid,
+    getMessageByLocale({ key: 'orderSession.canOnlyPayUnpaid' })
+  );
   throwBadRequest(orderSession.status === OrderSessionStatus.paid, getMessageByLocale({ key: 'orderSession.alreadyPaid' }));
   throwBadRequest(
-    orderSession.paymentAmount > _.sumBy(paymentDetails, 'paymentAmount'),
+    orderSession.status === OrderSessionStatus.cancelled,
+    getMessageByLocale({ key: 'orderSession.alreadyCancelled' })
+  );
+  throwBadRequest(
+    orderSession.paymentAmount > _.sumBy(paymentDetails, 'paymentAmount') || 0,
     getMessageByLocale({ key: 'orderSession.paymentAmountNotMatch' })
   );
 };
 
-const payOrderSession = async ({ shopId, requestBody, userId }) => {
-  const { orderSessionId, paymentDetails } = requestBody;
+const payOrderSession = async ({ shopId, requestBody, user }) => {
+  const { orderSessionId, paymentDetails, customerPaidAmount } = requestBody;
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSessionId, shopId);
   _validateBeforePayment(orderSessionJson, paymentDetails);
+
+  const normalizedPaymentAmount = divideToNPart({
+    initialSum: orderSessionJson.paymentAmount,
+    parts: paymentDetails.map((paymentDetail) => paymentDetail.paymentAmount),
+  });
 
   const updatedOrderSession = await orderUtilService.updateOrderSession({
     orderSessionId,
     shopId: orderSessionJson.shopId,
-    updateBody: {
+    updateBody: _.pickBy({
       status: OrderSessionStatus.paid,
-      paymentDetails: paymentDetails.map((paymentDetail) => ({
-        upsert: {
-          where: { orderSessionId, paymentMethod: paymentDetail.paymentMethod },
-          update: {
-            paymentMethod: paymentDetail.paymentAmount,
-          },
-          create: {
-            paymentAmount: paymentDetail.paymentAmount,
+      paidByEmployeeId: _.get(user, 'id'),
+      paidByEmployeeName: _.get(user, 'name') || _.get(user, 'email'),
+      customerPaidAmount,
+      customerReturnAmount: Math.max(0, customerPaidAmount - orderSessionJson.paymentAmount),
+      paymentDetails: {
+        deleteMany: {},
+        createMany: {
+          data: paymentDetails.map((paymentDetail, index) => ({
+            paymentAmount: normalizedPaymentAmount[index],
             paymentMethod: paymentDetail.paymentMethod,
-            orderSessionId,
-          },
+          })),
         },
-      })),
-    },
+      },
+    }),
   });
 
-  notifyOrderSessionPayment({ orderSession: updatedOrderSession, userId });
+  notifyOrderSessionPayment({ orderSession: updatedOrderSession, userId: _.get(user, 'id') });
   registerJob({
     type: JobTypes.PAY_ORDER,
-    data: updatedOrderSession,
+    data: {
+      orderSessionId,
+    },
   });
 
   return updatedOrderSession;
@@ -240,6 +267,18 @@ const payOrderSession = async ({ shopId, requestBody, userId }) => {
 const cancelOrder = async ({ shopId, user, requestBody }) => {
   const { orderSessionId, reason } = requestBody;
   throwBadRequest(!reason, getMessageByLocale({ key: 'reason.empty' }));
+  const orderSession = await OrderSession.findFirst({
+    where: {
+      id: orderSessionId,
+      shopId,
+    },
+  });
+  throwBadRequest(!orderSession, getMessageByLocale({ key: 'order.notFound' }));
+  throwBadRequest(
+    orderSession.status !== OrderSessionStatus.unpaid,
+    getMessageByLocale({ key: 'orderSession.canOnlyCancelUnpaid' })
+  );
+
   const updatedOrderSession = await orderUtilService.updateOrderSession({
     orderSessionId,
     shopId,
@@ -254,7 +293,9 @@ const cancelOrder = async ({ shopId, user, requestBody }) => {
   notifyUpdateOrderSession({ orderSession: updatedOrderSession, userId: user.id, action: EventActionType.CANCEL });
   registerJob({
     type: JobTypes.CANCEL_ORDER,
-    data: updatedOrderSession,
+    data: {
+      orderSessionId,
+    },
   });
   return updatedOrderSession;
 };
@@ -265,12 +306,10 @@ const cancelPaidStatus = async ({ orderSessionId, shopId, user }) => {
     shopId,
     updateBody: {
       status: OrderSessionStatus.unpaid,
+      paidByEmployeeId: null,
+      paidByEmployeeName: null,
       paymentDetails: {
-        deleteMany: {
-          where: {
-            orderSessionId,
-          },
-        },
+        deleteMany: {},
       },
     },
   });
@@ -278,7 +317,9 @@ const cancelPaidStatus = async ({ orderSessionId, shopId, user }) => {
   notifyUpdateOrderSession({ orderSession: updatedOrderSession, userId: user.id, action: EventActionType.CANCEL });
   registerJob({
     type: JobTypes.CANCEL_ORDER_PAID_STATUS,
-    data: updatedOrderSession,
+    data: {
+      orderSessionId,
+    },
   });
   return updatedOrderSession;
 };
@@ -326,7 +367,7 @@ const updateCart = async ({ customerId, shopId, requestBody }) => {
     });
   });
   const deletedCartItemIds = cart.cartItems.filter((cartItem) => !cartItem.update).map((cartItem) => cartItem.id);
-  const totalAmount = _.sumBy(updatedItems, (item) => item.quantity * item.price);
+  const totalAmount = _.sumBy(updatedItems, (item) => item.quantity * item.price) || 0;
 
   return Cart.update({
     data: {
@@ -389,7 +430,7 @@ const checkoutCart = async ({ customerId, shopId, requestBody }) => {
     return;
   }
 
-  const orderSession = await orderUtilService.getOrCreateOrderSession({
+  const { orderSession, isNewOrderSession } = await orderUtilService.getOrCreateOrderSession({
     tableId,
     shopId,
     customerId,
@@ -401,6 +442,7 @@ const checkoutCart = async ({ customerId, shopId, requestBody }) => {
     orderSession,
     dishOrders: cart.cartItems,
     customerId,
+    isNewOrderSession,
   });
   await clearCart({ customerId, shopId });
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSession.id);
@@ -681,7 +723,7 @@ const approveUnconfirmedOrder = async ({ userId, shopId, orderId, orderSessionId
   throwBadRequest(!order, getMessageByLocale({ key: 'order.notFound' }));
   throwBadRequest(order.status === Status.disabled, getMessageByLocale({ key: 'order.disabled' }));
 
-  const orderSession = await orderUtilService.getOrCreateOrderSession({
+  const { orderSession } = await orderUtilService.getOrCreateOrderSession({
     customerId: order.customerId,
     tableId: order.tableId,
     shopId,

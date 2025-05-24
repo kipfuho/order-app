@@ -81,7 +81,7 @@ const QuantityControl = memo(
         <Portal>
           <Dialog
             visible={dialogVisible}
-            style={{ width: "80%", maxWidth: 400, alignSelf: "center" }}
+            style={{ width: "80%", maxWidth: 500, alignSelf: "center" }}
             onDismiss={() => setDialogVisible(false)}
           >
             <Dialog.Title>{t("update_dish_quantity")}</Dialog.Title>

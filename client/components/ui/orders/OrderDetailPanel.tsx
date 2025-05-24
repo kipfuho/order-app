@@ -209,91 +209,89 @@ export default function ActiveOrderSessionPage({
         </Modal>
         <Toast />
       </Portal>
-      <Surface mode="flat" style={{ flex: 1, padding: 12, borderRadius: 10 }}>
-        <ScrollView
-          style={{ flex: 1, maxHeight: height }}
-          showsVerticalScrollIndicator={false}
-        >
-          <Surface mode="flat" style={{ flex: 1 }}>
-            <OrderCustomerInfo orderSession={activeOrderSession} />
-            <View
+      <Surface mode="flat" style={{ flex: 1 }}>
+        <Surface mode="flat" style={{ padding: 12 }}>
+          <OrderCustomerInfo orderSession={activeOrderSession} />
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 8,
+              marginTop: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <TouchableRipple
+              onPress={() => setCreateOrderVisible(true)}
               style={{
-                flexDirection: "row",
-                gap: 8,
-                marginTop: 10,
-                flexWrap: "wrap",
+                flex: 1,
+                borderRadius: 4,
+                backgroundColor: theme.colors.primary,
+                paddingVertical: 12,
+                paddingHorizontal: 8,
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
-              <TouchableRipple
-                onPress={() => setCreateOrderVisible(true)}
-                style={{
-                  flex: 1,
-                  borderRadius: 4,
-                  backgroundColor: theme.colors.primary,
-                  paddingVertical: 12,
-                  paddingHorizontal: 8,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
+              <Text
+                style={{ textAlign: "center", color: theme.colors.onPrimary }}
+                numberOfLines={2}
               >
-                <Text
-                  style={{ textAlign: "center", color: theme.colors.onPrimary }}
-                  numberOfLines={2}
-                >
-                  {t("add_product")}
-                </Text>
-              </TouchableRipple>
-              <TouchableRipple
-                onPress={() => setCancelDialogVisible(true)}
+                {t("add_product")}
+              </Text>
+            </TouchableRipple>
+            <TouchableRipple
+              onPress={() => setCancelDialogVisible(true)}
+              style={{
+                flex: 1,
+                borderRadius: 4,
+                backgroundColor: theme.colors.errorContainer,
+                paddingVertical: 12,
+                paddingHorizontal: 8,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text
                 style={{
-                  flex: 1,
-                  borderRadius: 4,
-                  backgroundColor: theme.colors.errorContainer,
-                  paddingVertical: 12,
-                  paddingHorizontal: 8,
-                  justifyContent: "center",
-                  alignItems: "center",
+                  textAlign: "center",
+                  color: theme.colors.onErrorContainer,
                 }}
+                numberOfLines={2}
               >
-                <Text
-                  style={{
-                    textAlign: "center",
-                    color: theme.colors.onErrorContainer,
-                  }}
-                  numberOfLines={2}
-                >
-                  {t("cancel")}
-                </Text>
-              </TouchableRipple>
-            </View>
+                {t("cancel")}
+              </Text>
+            </TouchableRipple>
+          </View>
+        </Surface>
 
-            <LegendList
-              data={activeOrderSession.orders || []}
-              keyExtractor={(item) => item.id}
-              style={{ gap: 12 }}
-              renderItem={({ item: order, index }) => (
-                <Surface mode="flat" style={{ marginTop: 10, gap: 10 }}>
-                  <Text style={{ alignSelf: "flex-end" }}>
-                    {t("times")}: {index + 1}
-                  </Text>
-                  <LegendList
-                    data={order.dishOrders || []}
-                    keyExtractor={(item) => item.id}
-                    style={{ gap: 12 }}
-                    nestedScrollEnabled
-                    renderItem={({ item }) => (
-                      <DishOrderCard
-                        order={order}
-                        dishOrder={item}
-                        onQuantityClick={onDishQuantityClick}
-                      />
-                    )}
+        <LegendList
+          data={activeOrderSession.orders || []}
+          keyExtractor={(item) => item.id}
+          style={{ maxHeight: height * 0.6 }}
+          renderItem={({ item: order, index }) => (
+            <Surface mode="flat">
+              <Text
+                style={{
+                  alignSelf: "flex-end",
+                  fontSize: 16,
+                  fontWeight: "bold",
+                }}
+              >
+                {t("times")}: {index + 1}
+              </Text>
+              <View style={{ gap: 8 }}>
+                {order.dishOrders.map((dishOrder) => (
+                  <DishOrderCard
+                    key={dishOrder.id}
+                    order={order}
+                    dishOrder={dishOrder}
+                    onQuantityClick={onDishQuantityClick}
                   />
-                </Surface>
-              )}
-            />
-          </Surface>
-        </ScrollView>
+                ))}
+              </View>
+            </Surface>
+          )}
+        />
       </Surface>
     </>
   );

@@ -78,9 +78,6 @@ const getLastActiveOrderSessionBeforeCreatedAt = async (shopId, createdAt) => {
       createdAt: {
         lt: createdAt,
       },
-      NOT: {
-        orderSessionNo: null,
-      },
     },
     orderBy: {
       createdAt: 'desc',
@@ -101,9 +98,6 @@ const getLastActiveOrderSessionSortByOrderSessionNo = async (shopId) => {
       shopId,
       createdAt: {
         gte: startOfDay,
-      },
-      NOT: {
-        orderSessionNo: null,
       },
     },
     select: {
@@ -206,7 +200,10 @@ const getOrCreateOrderSession = async ({
       where: { id: orderSessionId },
     });
     if (orderSession) {
-      return orderSession;
+      return {
+        isNewOrderSession: false,
+        orderSession,
+      };
     }
   }
 
@@ -217,14 +214,20 @@ const getOrCreateOrderSession = async ({
         _.get(orderSession, 'customerId') !== customerId,
         getMessageByLocale({ key: 'table.alreadyHasCustomer' })
       );
-      return orderSession;
+      return {
+        isNewOrderSession: false,
+        orderSession,
+      };
     }
   }
 
   if (isCustomerApp || isApproveOrder) {
     const orderSession = await getActiveOrderSessionByTable({ tableId, shopId, customerId });
     if (orderSession) {
-      return orderSession;
+      return {
+        isNewOrderSession: false,
+        orderSession,
+      };
     }
   }
 
@@ -235,14 +238,17 @@ const getOrCreateOrderSession = async ({
     data: {
       tableIds: [tableId],
       tableNames: [table.name],
-      shop: shopId,
+      shopId,
       orderSessionNo,
       taxRate: _.get(shop, 'taxRate', 0),
       ...customerInfo,
     },
   });
 
-  return orderSession;
+  return {
+    isNewOrderSession: true,
+    orderSession,
+  };
 };
 
 const _getPaymentDetailForDishOrder = ({ price, taxRate, isTaxIncludedPrice, quantity, calculateTaxDirectly = false }) => {
@@ -271,7 +277,7 @@ const _getPaymentDetailForDishOrder = ({ price, taxRate, isTaxIncludedPrice, qua
 };
 
 const _setMetatadaForDishOrder = ({ dishOrder, dishById, unitById, orderSessionTaxRate, calculateTaxDirectly = false }) => {
-  const { dishId, quantity, name, price, isTaxIncludedPrice } = dishOrder;
+  const { dishId, unitId, quantity, name, price, isTaxIncludedPrice } = dishOrder;
   let taxRate = _.get(dishOrder, 'taxRate', 0) || orderSessionTaxRate;
   if (orderSessionTaxRate < 0.001) {
     taxRate = 0;
@@ -289,6 +295,7 @@ const _setMetatadaForDishOrder = ({ dishOrder, dishById, unitById, orderSessionT
       dishId,
       quantity,
       name,
+      unit: _.get(unitById[unitId], 'name'),
       taxRate,
       price: beforeTaxPrice,
       taxIncludedPrice: afterTaxPrice,
@@ -311,10 +318,10 @@ const _setMetatadaForDishOrder = ({ dishOrder, dishById, unitById, orderSessionT
     calculateTaxDirectly,
   });
   return {
-    dish: dishId,
+    dishId,
     quantity,
     name: dish.name,
-    unit: _.get(unitById[dish.unit], 'name'),
+    unit: _.get(unitById[dish.unitId], 'name'),
     taxRate,
     price: beforeTaxPrice,
     taxIncludedPrice: afterTaxPrice,
@@ -324,39 +331,65 @@ const _setMetatadaForDishOrder = ({ dishOrder, dishById, unitById, orderSessionT
   };
 };
 
-const createNewOrder = async ({ tableId, shopId, userId, orderSession, dishOrders, orderNo, customerId }) => {
-  const shop = await getShopFromCache({ shopId });
-  const dishes = await getDishesFromCache({ shopId });
-  const units = await getUnitsFromCache({ shopId });
-  const unitById = _.keyBy(units, 'id');
-  const dishById = _.keyBy(dishes, 'id');
-  const orderSessionTaxRate = _.get(orderSession, 'taxRate') || _.get(shop, 'taxRate', 0);
-  const orderDishOrders = _.map(
-    _.filter(dishOrders, (dishOrder) => dishOrder.quantity > 0),
-    (dishOrder, index) => {
-      const _dishOrder = _setMetatadaForDishOrder({ dishById, dishOrder, unitById, orderSessionTaxRate });
-      _dishOrder.dishOrderNo = index + 1;
-      return _dishOrder;
+const createNewOrder = async ({
+  tableId,
+  shopId,
+  userId,
+  orderSession,
+  dishOrders,
+  orderNo,
+  customerId,
+  isNewOrderSession,
+}) => {
+  try {
+    const shop = await getShopFromCache({ shopId });
+    const dishes = await getDishesFromCache({ shopId });
+    const units = await getUnitsFromCache({ shopId });
+    const unitById = _.keyBy(units, 'id');
+    const dishById = _.keyBy(dishes, 'id');
+    const orderSessionTaxRate = _.get(orderSession, 'taxRate') || _.get(shop, 'taxRate', 0);
+    const orderDishOrders = _.map(
+      _.filter(dishOrders, (dishOrder) => dishOrder.quantity > 0),
+      (dishOrder, index) => {
+        const _dishOrder = _setMetatadaForDishOrder({ dishById, dishOrder, unitById, orderSessionTaxRate });
+        _dishOrder.dishOrderNo = index + 1;
+        return _dishOrder;
+      }
+    );
+    const order = await Order.create({
+      data: {
+        tableId,
+        shopId,
+        orderSessionId: _.get(orderSession, 'id'),
+        orderNo,
+        dishOrders: {
+          createMany: {
+            data: orderDishOrders,
+          },
+        },
+        customerId,
+        totalQuantity: _.sumBy(orderDishOrders, 'quantity') || 0,
+        totalBeforeTaxAmount: _.sumBy(orderDishOrders, 'beforeTaxTotalPrice') || 0,
+        totalAfterTaxAmount: _.sumBy(orderDishOrders, 'afterTaxTotalPrice') || 0,
+      },
+    });
+    if (orderSession) {
+      notifyNewOrder({ order, userId, action: EventActionType.CREATE });
     }
-  );
-  const order = await Order.create({
-    data: {
-      tableId,
-      shopId,
-      orderSessionId: _.get(orderSession, 'id'),
-      orderNo,
-      dishOrders: orderDishOrders,
-      customerId,
-      totalQuantity: _.sumBy(orderDishOrders, 'quantity'),
-      totalBeforeTaxAmount: _.sumBy(orderDishOrders, 'beforeTaxTotalPrice'),
-      totalAfterTaxAmount: _.sumBy(orderDishOrders, 'afterTaxTotalPrice'),
-    },
-  });
-  if (orderSession) {
-    notifyNewOrder({ order, userId, action: EventActionType.CREATE });
-  }
 
-  return order;
+    return order;
+  } catch (err) {
+    // xoá order session rỗng được tạo ra
+    if (isNewOrderSession) {
+      await OrderSession.delete({
+        where: {
+          id: orderSession.id,
+        },
+      });
+    }
+
+    throw err;
+  }
 };
 
 /**
@@ -596,10 +629,10 @@ const calculateDiscount = async ({ orderSessionJson, pretaxPaymentAmount, totalT
 
 const getOrderSessionById = async (orderSessionId, shopId) => {
   const { orderSession, orderSessionJson } = await _getOrderSessionJson({ orderSessionId, shopId });
-  const { shop } = orderSession;
+  const { shop } = orderSessionJson;
   const dishOrders = _.flatMap(orderSessionJson.orders, 'dishOrders');
 
-  const pretaxPaymentAmount = _.sumBy(dishOrders, (dishOrder) => dishOrder.price * dishOrder.quantity);
+  const pretaxPaymentAmount = _.sumBy(dishOrders, (dishOrder) => dishOrder.price * dishOrder.quantity) || 0;
   orderSessionJson.pretaxPaymentAmount = pretaxPaymentAmount;
   const { totalTaxAmount, taxDetails } = await calculateTax({
     orderSessionJson,
@@ -615,27 +648,32 @@ const getOrderSessionById = async (orderSessionId, shopId) => {
     totalTaxAmount,
   });
 
-  orderSessionJson.beforeTaxTotalDiscountAmount = Math.max(beforeTaxTotalDiscountAmount, pretaxPaymentAmount);
-  orderSessionJson.afterTaxTotalDiscountAmount = Math.max(afterTaxTotalDiscountAmount, pretaxPaymentAmount + totalTaxAmount);
-  orderSessionJson.revenueAmount = pretaxPaymentAmount - beforeTaxTotalDiscountAmount;
-  orderSessionJson.paymentAmount = pretaxPaymentAmount + totalTaxAmount - afterTaxTotalDiscountAmount;
+  orderSessionJson.beforeTaxTotalDiscountAmount = Math.min(beforeTaxTotalDiscountAmount, pretaxPaymentAmount);
+  orderSessionJson.afterTaxTotalDiscountAmount = Math.min(afterTaxTotalDiscountAmount, pretaxPaymentAmount + totalTaxAmount);
+  orderSessionJson.revenueAmount = pretaxPaymentAmount - orderSessionJson.beforeTaxTotalDiscountAmount;
+  orderSessionJson.paymentAmount = pretaxPaymentAmount + totalTaxAmount - orderSessionJson.afterTaxTotalDiscountAmount;
 
   // update order if not audited
   if (
     !orderSession.auditedAt &&
     (orderSession.paymentAmount !== orderSessionJson.paymentAmount ||
-      orderSession.totalDiscountAmountAfterTax !== orderSessionJson.totalDiscountAmountAfterTax)
+      orderSession.totalTaxAmount !== orderSessionJson.totalTaxAmount ||
+      orderSession.beforeTaxTotalDiscountAmount !== orderSessionJson.beforeTaxTotalDiscountAmount ||
+      orderSession.afterTaxTotalDiscountAmount !== orderSessionJson.afterTaxTotalDiscountAmount)
   ) {
     await OrderSession.update({
       data: {
-        pretaxPaymentAmount: orderSession.pretaxPaymentAmount,
-        revenueAmount: orderSession.revenueAmount,
-        paymentAmount: orderSession.paymentAmount,
-        beforeTaxTotalDiscountAmount: orderSession.beforeTaxTotalDiscountAmount,
-        afterTaxTotalDiscountAmount: orderSession.afterTaxTotalDiscountAmount,
+        pretaxPaymentAmount: orderSessionJson.pretaxPaymentAmount,
+        revenueAmount: orderSessionJson.revenueAmount,
+        paymentAmount: orderSessionJson.paymentAmount,
+        beforeTaxTotalDiscountAmount: orderSessionJson.beforeTaxTotalDiscountAmount,
+        afterTaxTotalDiscountAmount: orderSessionJson.afterTaxTotalDiscountAmount,
+        totalTaxAmount: orderSessionJson.totalTaxAmount,
         taxDetails: {
           deleteMany: {},
-          createMany: orderSession.taxDetails,
+          createMany: {
+            data: orderSessionJson.taxDetails,
+          },
         },
       },
       where: { id: orderSessionId },

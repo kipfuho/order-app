@@ -23,7 +23,11 @@ export function ConfirmCancelDialog({
   const { t } = useTranslation();
 
   return (
-    <Dialog visible={dialogVisible} onDismiss={() => setDialogVisible(false)}>
+    <Dialog
+      visible={dialogVisible}
+      onDismiss={() => setDialogVisible(false)}
+      style={{ width: "80%", maxWidth: 500, alignSelf: "center" }}
+    >
       <Dialog.Title>{title}</Dialog.Title>
       {children}
       <Dialog.Actions style={{ justifyContent: "center" }}>

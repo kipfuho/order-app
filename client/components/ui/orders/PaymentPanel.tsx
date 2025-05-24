@@ -1,9 +1,9 @@
-import { Modal, Portal, Surface, Text, useTheme } from "react-native-paper";
+import { Modal, Portal, Surface, Text, TextInput } from "react-native-paper";
 import {
   PaymentComponentMap,
   PaymentMethod,
 } from "../../../constants/paymentMethod";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { usePayOrderSessionMutation } from "../../../stores/apiSlices/orderApi.slice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../stores/store";
@@ -16,6 +16,8 @@ import { resetCurrentTable } from "../../../stores/shop.slice";
 import { goToTablesForOrderList } from "../../../apis/navigate.service";
 import { useRouter } from "expo-router";
 import QRCode from "react-native-qrcode-svg";
+import _ from "lodash";
+import { convertPaymentAmount } from "../../../constants/utils";
 
 export default function PaymentMethodPage() {
   const { t } = useTranslation();
@@ -36,13 +38,19 @@ export default function PaymentMethodPage() {
   const [watingVisible, setWaitingVisible] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState("");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+  const [customPaymentAmount, setCustomPaymentAmount] = useState("");
 
   const handlePayOrderSession = async () => {
     try {
       await payOrderSession({
         orderSessionId: orderSession.id,
+        customerPaidAmount: _.toNumber(customPaymentAmount),
         paymentDetails: [
-          { paymentMethod: selectedPaymentMethod as PaymentMethod },
+          {
+            paymentMethod: selectedPaymentMethod as PaymentMethod,
+            paymentAmount:
+              _.toNumber(customPaymentAmount) || orderSession.paymentAmount,
+          },
         ],
         shopId: shop.id,
       }).unwrap();
@@ -67,7 +75,7 @@ export default function PaymentMethodPage() {
     <>
       <Portal>
         <ConfirmCancelDialog
-          title={`${t("confirm")} ${t("payment")} ${selectedPaymentMethod}`}
+          title={`${t("confirm")} ${t("payment")} ${t(selectedPaymentMethod)}`}
           isLoading={payOrderSessionLoading}
           dialogVisible={paymentDialogVisible}
           setDialogVisible={setPaymentDialogVisible}
@@ -75,7 +83,36 @@ export default function PaymentMethodPage() {
             setPaymentDialogVisible(false);
           }}
           onConfirmClick={handlePayOrderSession}
-        />
+        >
+          <View style={{ padding: 16, gap: 12 }}>
+            {selectedPaymentMethod === PaymentMethod.CASH && (
+              <>
+                <TextInput
+                  mode="outlined"
+                  label={t("customer_paid_amount")}
+                  value={customPaymentAmount}
+                  keyboardType="numeric" // Shows numeric keyboard
+                  onChangeText={(text) =>
+                    setCustomPaymentAmount(text.replace(/[^0-9.]/g, ""))
+                  }
+                />
+                {_.toNumber(customPaymentAmount) - orderSession.paymentAmount >
+                  0 && (
+                  <Text style={{ fontSize: 16 }}>
+                    {t("customer_return_amount")}:{" "}
+                    {convertPaymentAmount(
+                      _.toNumber(customPaymentAmount) -
+                        orderSession.paymentAmount
+                    )}
+                  </Text>
+                )}
+              </>
+            )}
+            <Text style={{ fontSize: 16 }}>
+              {t("total")}: {convertPaymentAmount(orderSession.paymentAmount)}
+            </Text>
+          </View>
+        </ConfirmCancelDialog>
 
         <Modal
           visible={watingVisible}
@@ -105,7 +142,13 @@ export default function PaymentMethodPage() {
         </Modal>
         <Toast />
       </Portal>
-      <Surface mode="flat" style={{ flex: 1, padding: 12, borderRadius: 10 }}>
+      <Surface
+        mode="flat"
+        style={{ flex: 1, maxWidth: 250, padding: 12, borderRadius: 10 }}
+      >
+        <Text style={{ fontSize: 18, marginBottom: 12 }}>
+          {t("payment_at_counter")}
+        </Text>
         <ScrollView style={{ flex: 1 }}>
           <Surface mode="flat" style={{ flex: 1, gap: 12 }}>
             {paymentMethods.map((paymentMethod) =>
