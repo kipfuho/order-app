@@ -105,7 +105,7 @@ const formatOrderSessionNo = (orderSessionJson) => {
 };
 
 /**
- * Creates a query options for date in mongoose.
+ * Creates a query options for date.
  * @params: from date ( ex: 2021-11-02)
  * @params: to date ( ex: 2021-11-03)
  * Tinh theo timezone, khong tinh report time

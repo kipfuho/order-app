@@ -9,7 +9,6 @@ const envVarsSchema = Joi.object()
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
     PORT: Joi.number().default(3000),
     BASE_URL: Joi.string().required().description('Server base url'),
-    MONGODB_URL: Joi.string().required().description('Mongo DB url'),
     DATABASE_URL: Joi.string().required().description('PostgreSql DB url'),
     DATABASE_DIRECT_URL: Joi.string().required().description('PostgreSql DB url'),
     REDIS_HOST: Joi.string().required().description('Redis host'),
@@ -53,12 +52,6 @@ module.exports = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   baseUrl: envVars.BASE_URL,
-  mongoose: {
-    url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
-    options: {
-      maxPoolSize: 100,
-    },
-  },
   postgresql: {
     url: envVars.DATABASE_URL,
     directUrl: envVars.DATABASE_DIRECT_URL,

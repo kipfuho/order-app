@@ -1,71 +1,45 @@
 const _ = require('lodash');
-const mongoose = require('mongoose');
-const { createNamespace, getNamespace } = require('cls-hooked');
+const { AsyncLocalStorage } = require('async_hooks');
 const logger = require('../config/logger');
-const { Countries, SESSION_NAME_SPACE, Language } = require('../utils/constant');
+const { Countries, Language } = require('../utils/constant');
 
-if (!getNamespace(SESSION_NAME_SPACE)) {
-  createNamespace(SESSION_NAME_SPACE);
-}
-const CLS_HOOK_KEYS = 'ALL_CLS_HOOK_KEY';
+const asyncLocalStorage = new AsyncLocalStorage();
 
-// Patch Mongoose to use the namespace
-const bindMongooseToCLS = (clsSession) => {
-  mongoose.Query.prototype.exec = clsSession.bind(mongoose.Query.prototype.exec);
-  mongoose.Aggregate.prototype.exec = clsSession.bind(mongoose.Aggregate.prototype.exec);
-};
-
-const clsHooked = (req, res, next) => {
+const alsHooked = (req, res, next) => {
   if (req.method === 'OPTIONS') {
-    return;
+    return next();
   }
-  let clsSession;
-  if (!getNamespace(SESSION_NAME_SPACE)) {
-    clsSession = createNamespace(SESSION_NAME_SPACE);
-  } else {
-    clsSession = getNamespace(SESSION_NAME_SPACE);
-  }
-  bindMongooseToCLS(clsSession);
 
-  clsSession.run(() => {
-    clsSession.set('clientLanguage', _.get(req, 'headers.lang') || Language.vietnamese);
-    clsSession.set('path', _.get(req, 'path') || '');
+  const store = new Map();
+  store.set('clientLanguage', _.get(req, 'headers.lang') || Language.vietnamese);
+  store.set('path', _.get(req, 'path') || '');
+  asyncLocalStorage.run(store, () => {
     next();
   });
 };
 
 const getSession = ({ key }) => {
   try {
-    const clsSession = getNamespace(SESSION_NAME_SPACE);
-    if (clsSession) {
-      return clsSession.get(key);
+    const store = asyncLocalStorage.getStore();
+    if (store && store.has(key)) {
+      return store.get(key);
     }
     return null;
   } catch (err) {
-    const message = `error set session errStack = ${err.stack}. `;
+    const message = `error get session errStack = ${err.stack}. `;
     logger.error(message);
+    return null;
   }
-};
-
-const _putKeysForAllClsHook = (key) => {
-  try {
-    const clsSession = getNamespace(SESSION_NAME_SPACE);
-    let clsHookAllKeys = getSession({ key: CLS_HOOK_KEYS }) || [];
-    clsHookAllKeys = [...clsHookAllKeys, key];
-    clsHookAllKeys = _.uniq(clsHookAllKeys);
-    clsSession.set(CLS_HOOK_KEYS, clsHookAllKeys);
-    // eslint-disable-next-line
-  } catch (err) {}
 };
 
 const setSession = ({ key, value }) => {
   try {
-    const clsSession = getNamespace(SESSION_NAME_SPACE);
-    if (clsSession) {
-      clsSession.set(key, value);
+    const store = asyncLocalStorage.getStore();
+    if (store) {
+      store.set(key, value);
+      return true;
     }
-    _putKeysForAllClsHook(key);
-    return true;
+    return false;
   } catch (err) {
     const message = `error set session errStack = ${err.stack}.`;
     logger.error(message);
@@ -128,9 +102,25 @@ const getClientLanguageWithHook = () => {
   return getSession({ key: 'clientLanguage' }) || getShopLang();
 };
 
+const runInAsyncContext = (fn, initialData = {}) => {
+  const store = new Map();
+
+  Object.entries(initialData).forEach(([key, value]) => {
+    store.set(key, value);
+  });
+  return asyncLocalStorage.run(store, fn);
+};
+
+const getCurrentStore = () => {
+  return asyncLocalStorage.getStore();
+};
+
+const hasActiveContext = () => {
+  return asyncLocalStorage.getStore() !== undefined;
+};
+
 module.exports = {
-  clsHooked,
-  bindMongooseToCLS,
+  alsHooked,
   setSession,
   getSession,
   setShopToSession,
@@ -142,4 +132,8 @@ module.exports = {
   setEmployeePermissions,
   getEmployeePermissions,
   getClientLanguageWithHook,
+  runInAsyncContext,
+  getCurrentStore,
+  hasActiveContext,
+  asyncLocalStorage,
 };

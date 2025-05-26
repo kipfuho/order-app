@@ -1,13 +1,11 @@
-const mongoose = require('mongoose');
 const _ = require('lodash');
-const { getNamespace, createNamespace } = require('cls-hooked');
 const logger = require('../config/logger');
 const config = require('../config/config');
 const { receiveJobMessage } = require('./jobUtils');
-const { SESSION_NAME_SPACE } = require('../utils/constant');
 const common = require('../utils/common');
 const { processJob } = require('./job.service');
-const { bindMongooseToCLS } = require('../middlewares/clsHooked');
+const { runInAsyncContext, hasActiveContext, getCurrentStore } = require('../middlewares/clsHooked');
+const { prisma } = require('../utils/prisma');
 
 // initial setup
 let retry = 0;
@@ -32,7 +30,17 @@ const fetchJobAndExecute = async () => {
     jobDataString = _.get(sqsData, 'Messages.0.Body');
     const jobPayload = JSON.parse(jobDataString);
     logger.debug(`fetched job...${jobDataString}`);
-    await processJob(jobPayload);
+
+    await runInAsyncContext(
+      async () => {
+        await processJob(jobPayload);
+      },
+      {
+        jobId: jobPayload.id || 'unknown',
+        jobType: jobPayload.type || 'unknown',
+        startTime: Date.now(),
+      }
+    );
   } catch (err) {
     logger.error(`error process job. ${jobDataString}. ${err.stack}`);
   } finally {
@@ -40,19 +48,13 @@ const fetchJobAndExecute = async () => {
   }
 };
 
-let clsSession = getNamespace(SESSION_NAME_SPACE);
-if (!clsSession) {
-  clsSession = createNamespace(SESSION_NAME_SPACE);
-}
-bindMongooseToCLS(clsSession);
-
 const runningTask = async () => {
   try {
     if (runningJob) {
       return;
     }
 
-    await clsSession.runPromise(fetchJobAndExecute);
+    await fetchJobAndExecute();
   } catch (err) {
     const errorMessage = `error running job. ${err.stack}`;
     logger.error(errorMessage);
@@ -63,17 +65,23 @@ const runningTask = async () => {
   }
 };
 
-mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
-  logger.info('Connected to MongoDB');
+prisma.$connect().then(() => {
+  logger.info('Connected to PostgreSQL');
   runningTask();
 });
 
 setInterval(() => {
   const mem = process.memoryUsage();
+
   logger.info(
     `Heap status - Used: ${(mem.heapUsed / 1024 / 1024).toFixed(2)} MB / Total: ${(mem.heapTotal / 1024 / 1024).toFixed(
       2
-    )} MB | RSS: ${(mem.rss / 1024 / 1024).toFixed(2)} MB`
+    )} MB | RSS: ${(mem.rss / 1024 / 1024).toFixed(2)} MB | External: ${(mem.external / 1024 / 1024).toFixed(
+      2
+    )} MB | AsyncLocalStorage: ${JSON.stringify({
+      hasActiveContext: hasActiveContext(),
+      currentStore: getCurrentStore() ? Object.keys(getCurrentStore()).length : 0,
+    })}`
   );
 }, 10000);
 
@@ -90,7 +98,7 @@ const beforeExit = async (signal) => {
     retry += 1;
     // eslint-disable-next-line no-await-in-loop
     await common.sleep(5000);
-    logger.info(`runingJob = ${runningJob}`);
+    logger.info(`runningJob = ${runningJob}`);
   }
   logger.info(`process exit. isAllowReceiveJob = ${isAllowReceiveJob}, runningJob = ${runningJob}`);
   process.exit(0);
