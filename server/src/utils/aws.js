@@ -65,7 +65,6 @@ const uploadFileBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType }) =>
     });
 
     const resultUrl = `${s3BaseUrl}/${targetFilePath}`;
-    logger.debug(`upload file to ${resultUrl}`);
     return resultUrl;
   } catch (err) {
     logger.error(`Error deleting file: ${err.message}`);
@@ -87,7 +86,6 @@ const deleteObjectFromS3 = async (key) => {
       },
     });
 
-    logger.debug(`Deleted file: ${key}`);
     return true;
   } catch (err) {
     logger.error(`Error deleting file: ${err.message}`);
@@ -97,7 +95,7 @@ const deleteObjectFromS3 = async (key) => {
 
 const publishAppSyncEvents = async ({ channel, events }) => {
   try {
-    const response = await axios.post(
+    await axios.post(
       `${config.aws.appsyncHttp}/event`,
       {
         channel,
@@ -110,8 +108,6 @@ const publishAppSyncEvents = async ({ channel, events }) => {
         },
       }
     );
-
-    logger.debug('AppSync event published successfully:', response.data);
 
     return true;
   } catch (error) {

@@ -5,16 +5,17 @@ const { processJob } = require('./job.service');
 
 const _sendJobMessage = async ({ messageBody }) => {
   if (config.env !== 'production') {
-    logger.debug(messageBody);
-    return;
+    return false;
   }
 
   try {
     logger.info(`send Job to redis queue ${config.jobKey}`);
     await redis.pushToQueue({ key: config.jobKey, val: messageBody });
+    return true;
   } catch (err) {
     const message = `error when send job to redis queue. ${config.jobKey} = ${err.stack}`;
     logger.error(message);
+    return false;
   }
 };
 
@@ -22,11 +23,11 @@ const receiveJobMessage = async (jobKey) => {
   try {
     const result = await redis.popFromQueue({ key: jobKey });
     if (result) {
-      logger.info(`Get message Job from redis queue ${jobKey}`);
+      logger.info(`Get job message from redis queue ${jobKey}: ${result}`);
       return { Messages: [{ Body: result }] };
     }
   } catch (err) {
-    const message = `error when get job from redis queeu. ${jobKey} = ${err.stack}`;
+    const message = `error when get job from redis queue. ${jobKey} = ${err.stack}`;
     logger.error(message);
   }
 };

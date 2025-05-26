@@ -18,10 +18,9 @@ const {
   notifyUpdateOrderSession,
   EventActionType,
 } = require('../../utils/awsUtils/appSync.utils');
-const { getCustomerFromCache } = require('../../metadata/customerMetadata.service');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
-const { prisma } = require('../../utils/prisma');
+const { prisma, bulkUpdate, PostgreSQLTable } = require('../../utils/prisma');
 
 const _validateBeforeCreateOrder = (orderSession) => {
   throwBadRequest(orderSession.status === OrderSessionStatus.paid, getMessageByLocale({ key: 'orderSession.alreadyPaid' }));
@@ -671,20 +670,11 @@ const getOrderNeedApproval = async ({ shopId }) => {
     },
     include: {
       dishOrders: true,
+      customer: true,
     },
   });
 
-  const orderNeedApprovalDetails = Promise.all(
-    _.map(orders, async (order) => {
-      const customer = await getCustomerFromCache({ customerId: order.customerId });
-      // eslint-disable-next-line no-param-reassign
-      delete order.customerId;
-      // eslint-disable-next-line no-param-reassign
-      order.customer = customer;
-      return order;
-    })
-  );
-  return orderNeedApprovalDetails;
+  return orders;
 };
 
 // cập nhật đơn hàng chưa xác nhận
@@ -709,12 +699,19 @@ const updateUnconfirmedOrder = async ({ shopId, orderId, updateDishOrders }) => 
     dishOrder.quantity = updateDishOrder.quantity;
     dishOrder.beforeTaxTotalPrice = dishOrder.price * dishOrder.quantity;
     dishOrder.afterTaxTotalPrice = dishOrder.taxIncludedPrice * dishOrder.quantity;
-    dishOrder.note = updateDishOrder.note;
+    dishOrder.note = updateDishOrder.note || '';
     updatedDishOrders.push(dishOrder);
   }
 
-  await Promise.all(
-    updatedDishOrders.map((dishOrder) => DishOrder.update({ data: dishOrder, where: { id: dishOrder.id } }))
+  await bulkUpdate(
+    PostgreSQLTable.DishOrder,
+    updatedDishOrders.map((dishOrder) => ({
+      id: dishOrder.id,
+      quantity: dishOrder.quantity,
+      beforeTaxTotalPrice: dishOrder.beforeTaxTotalPrice,
+      afterTaxTotalPrice: dishOrder.afterTaxTotalPrice,
+      note: dishOrder.note,
+    }))
   );
   return order;
 };

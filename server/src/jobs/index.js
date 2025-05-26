@@ -29,7 +29,13 @@ const fetchJobAndExecute = async () => {
     }
     jobDataString = _.get(sqsData, 'Messages.0.Body');
     const jobPayload = JSON.parse(jobDataString);
-    logger.debug(`fetched job...${jobDataString}`);
+    logger.debug(
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      `process job...${_.truncate(jobDataString, {
+        length: 1000,
+        omission: '... [Truncated]',
+      })}`
+    );
 
     await runInAsyncContext(
       async () => {
@@ -41,6 +47,7 @@ const fetchJobAndExecute = async () => {
         startTime: Date.now(),
       }
     );
+    logger.debug(`fetched job...${jobDataString}`);
   } catch (err) {
     logger.error(`error process job. ${jobDataString}. ${err.stack}`);
   } finally {
