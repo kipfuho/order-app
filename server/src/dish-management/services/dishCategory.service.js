@@ -32,7 +32,7 @@ const createDishCategory = async ({ shopId, createBody, userId }) => {
       shopId,
     }),
   });
-  notifyUpdateDishCategory({
+  await notifyUpdateDishCategory({
     action: EventActionType.CREATE,
     dishCategory,
     userId,
@@ -56,7 +56,7 @@ const updateDishCategory = async ({ shopId, dishCategoryId, updateBody, userId }
   });
   throwBadRequest(!dishCategory, getMessageByLocale({ key: 'dishCategory.notFound' }));
 
-  notifyUpdateDishCategory({
+  await notifyUpdateDishCategory({
     action: EventActionType.UPDATE,
     dishCategory,
     userId,
@@ -71,7 +71,7 @@ const deleteDishCategory = async ({ shopId, dishCategoryId, userId }) => {
   });
   throwBadRequest(!dishCategory, getMessageByLocale({ key: 'dishCategory.notFound' }));
 
-  notifyUpdateDishCategory({
+  await notifyUpdateDishCategory({
     action: EventActionType.DELETE,
     dishCategory,
     userId,

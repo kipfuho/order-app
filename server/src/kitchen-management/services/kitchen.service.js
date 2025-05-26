@@ -24,7 +24,7 @@ const createKitchen = async ({ shopId, createBody, userId }) => {
     },
   });
 
-  notifyUpdateKitchen({
+  await notifyUpdateKitchen({
     action: EventActionType.CREATE,
     kitchen,
     userId,
@@ -42,7 +42,7 @@ const updateKitchen = async ({ shopId, kitchenId, updateBody, userId }) => {
   });
   throwBadRequest(!kitchen, getMessageByLocale({ key: 'kitchen.notFound' }));
 
-  notifyUpdateKitchen({
+  await notifyUpdateKitchen({
     action: EventActionType.UPDATE,
     kitchen,
     userId,
@@ -62,7 +62,7 @@ const deleteKitchen = async ({ shopId, kitchenId, userId }) => {
   });
   throwBadRequest(!kitchen, getMessageByLocale({ key: 'kitchen.notFound' }));
 
-  notifyUpdateKitchen({
+  await notifyUpdateKitchen({
     action: EventActionType.DELETE,
     kitchen,
     userId,

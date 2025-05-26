@@ -55,13 +55,13 @@ const createDish = async ({ shopId, createBody, userId }) => {
   });
 
   // job to update s3 logs -> inUse = true
-  registerJob({
+  await registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
     data: {
       keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  notifyUpdateDish({
+  await notifyUpdateDish({
     action: EventActionType.CREATE,
     dish,
     userId,
@@ -98,13 +98,13 @@ const updateDish = async ({ shopId, dishId, updateBody, userId }) => {
   throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
 
   // job to update s3 logs -> inUse = true
-  registerJob({
+  await registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
     data: {
       keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  notifyUpdateDish({
+  await notifyUpdateDish({
     action: EventActionType.UPDATE,
     dish,
     userId,
@@ -123,13 +123,13 @@ const deleteDish = async ({ shopId, dishId, userId }) => {
   throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
 
   // job to update s3 logs -> inUse = true
-  registerJob({
+  await registerJob({
     type: JobTypes.REMOVE_S3_OBJECT_USAGE,
     data: {
       keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  notifyUpdateDish({
+  await notifyUpdateDish({
     action: EventActionType.DELETE,
     dish,
     userId,
@@ -233,7 +233,7 @@ const importDishes = async ({ dishes, shopId }) => {
       dish.imageUrls = imageUrls;
       if (imageUrls) {
         newImageUrls.push(...imageUrls);
-        registerJob({
+        await registerJob({
           type: JobTypes.REMOVE_S3_OBJECT_USAGE,
           data: {
             keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
@@ -282,13 +282,13 @@ const importDishes = async ({ dishes, shopId }) => {
     );
   }
 
-  registerJob({
+  await registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
     data: {
       keys: _.map(newImageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  notifyUpdateDish({
+  await notifyUpdateDish({
     action: EventActionType.UPDATE,
     dish: {
       shopId,

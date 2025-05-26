@@ -64,7 +64,7 @@ const createEmployee = async ({ shopId, createBody, userId }) => {
     },
   });
 
-  notifyUpdateEmployee({
+  await notifyUpdateEmployee({
     employee,
     action: EventActionType.CREATE,
     userId,
@@ -89,7 +89,7 @@ const updateEmployee = async ({ shopId, employeeId, updateBody, userId }) => {
   });
   throwBadRequest(!employee, getMessageByLocale({ key: 'employee.notFound' }));
 
-  notifyUpdateEmployee({
+  await notifyUpdateEmployee({
     employee,
     action: EventActionType.UPDATE,
     userId,
@@ -105,7 +105,7 @@ const deleteEmployee = async ({ shopId, employeeId, userId }) => {
   });
   throwBadRequest(!employee, getMessageByLocale({ key: 'employee.notFound' }));
 
-  notifyUpdateEmployee({
+  await notifyUpdateEmployee({
     employee,
     action: EventActionType.DELETE,
     userId,
@@ -132,7 +132,7 @@ const createEmployeePosition = async ({ shopId, createBody, userId }) => {
     }),
   });
 
-  notifyUpdateEmployeePosition({
+  await notifyUpdateEmployeePosition({
     employeePosition,
     action: EventActionType.CREATE,
     userId,
@@ -147,7 +147,7 @@ const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody, 
   });
   throwBadRequest(!employeePosition, getMessageByLocale({ key: 'employeePosition.notFound' }));
 
-  notifyUpdateEmployeePosition({
+  await notifyUpdateEmployeePosition({
     employeePosition,
     action: EventActionType.UPDATE,
     userId,
@@ -164,7 +164,7 @@ const deleteEmployeePosition = async ({ shopId, employeePositionId, userId }) =>
     },
   });
 
-  notifyUpdateEmployeePosition({
+  await notifyUpdateEmployeePosition({
     employeePosition,
     action: EventActionType.DELETE,
     userId,

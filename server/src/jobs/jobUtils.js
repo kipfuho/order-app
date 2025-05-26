@@ -31,7 +31,12 @@ const receiveJobMessage = async (jobKey) => {
   }
 };
 
-const _registerJob = async (jobData) => {
+/**
+ *
+ * @param {*} jobData
+ * @returns
+ */
+const registerJob = async (jobData) => {
   try {
     const jobMessage = JSON.stringify(jobData);
     logger.info(`registerJob: ${jobMessage}`);
@@ -42,19 +47,6 @@ const _registerJob = async (jobData) => {
   } catch (err) {
     logger.error(`error registerJob. ${err}`);
   }
-};
-
-/**
- *
- * @param {*} jobData
- * @returns
- */
-const registerJob = async (jobData, delay = 1000) => {
-  if (config.env === 'test') {
-    await _registerJob(jobData);
-    return;
-  }
-  setTimeout(() => _registerJob(jobData), delay);
 };
 
 module.exports = {

@@ -272,8 +272,8 @@ const payOrderSession = async ({ shopId, requestBody, user }) => {
     }),
   });
 
-  notifyOrderSessionPayment({ orderSession: updatedOrderSession, userId: _.get(user, 'id') });
-  registerJob({
+  await notifyOrderSessionPayment({ orderSession: updatedOrderSession, userId: _.get(user, 'id') });
+  await registerJob({
     type: JobTypes.PAY_ORDER,
     data: {
       orderSessionId,
@@ -309,8 +309,8 @@ const cancelOrder = async ({ shopId, user, requestBody }) => {
     },
   });
 
-  notifyUpdateOrderSession({ orderSession: updatedOrderSession, userId: user.id, action: EventActionType.CANCEL });
-  registerJob({
+  await notifyUpdateOrderSession({ orderSession: updatedOrderSession, userId: user.id, action: EventActionType.CANCEL });
+  await registerJob({
     type: JobTypes.CANCEL_ORDER,
     data: {
       orderSessionId,
@@ -333,8 +333,8 @@ const cancelPaidStatus = async ({ orderSessionId, shopId, user }) => {
     },
   });
 
-  notifyUpdateOrderSession({ orderSession: updatedOrderSession, userId: user.id, action: EventActionType.CANCEL });
-  registerJob({
+  await notifyUpdateOrderSession({ orderSession: updatedOrderSession, userId: user.id, action: EventActionType.CANCEL });
+  await registerJob({
     type: JobTypes.CANCEL_ORDER_PAID_STATUS,
     data: {
       orderSessionId,

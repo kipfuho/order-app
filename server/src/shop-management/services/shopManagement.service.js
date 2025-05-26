@@ -122,13 +122,13 @@ const createShop = async ({ createBody, userId }) => {
   }
 
   // job to update s3 logs -> inUse = true
-  registerJob({
+  await registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
     data: {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  notifyUpdateShop({ shop, action: EventActionType.CREATE, userId });
+  await notifyUpdateShop({ shop, action: EventActionType.CREATE, userId });
   return shop;
 };
 
@@ -137,13 +137,13 @@ const updateShop = async ({ shopId, updateBody, userId }) => {
   throwBadRequest(!shop, getMessageByLocale({ key: 'shop.notFound' }));
 
   // job to update s3 logs -> inUse = true
-  registerJob({
+  await registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
     data: {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  notifyUpdateShop({ shop, action: EventActionType.UPDATE, userId });
+  await notifyUpdateShop({ shop, action: EventActionType.UPDATE, userId });
   return shop;
 };
 
@@ -151,13 +151,13 @@ const deleteShop = async ({ shopId, userId }) => {
   const shop = await Shop.update({ data: { status: Status.disabled }, where: { id: shopId } });
 
   // job to update s3 logs -> inUse = true
-  registerJob({
+  await registerJob({
     type: JobTypes.REMOVE_S3_OBJECT_USAGE,
     data: {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  notifyUpdateShop({ shop, action: EventActionType.CREATE, userId });
+  await notifyUpdateShop({ shop, action: EventActionType.CREATE, userId });
   return shop;
 };
 

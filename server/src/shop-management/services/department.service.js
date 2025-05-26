@@ -27,7 +27,7 @@ const createDepartment = async ({ shopId, createBody, userId }) => {
     }),
   });
 
-  notifyUpdateDepartment({
+  await notifyUpdateDepartment({
     department,
     action: EventActionType.CREATE,
     userId,
@@ -46,7 +46,7 @@ const updateDepartment = async ({ shopId, departmentId, updateBody, userId }) =>
   });
   throwBadRequest(!department, getMessageByLocale({ key: 'department.notFound' }));
 
-  notifyUpdateDepartment({
+  await notifyUpdateDepartment({
     department,
     action: EventActionType.UPDATE,
     userId,
@@ -63,7 +63,7 @@ const deleteDepartment = async ({ shopId, departmentId, userId }) => {
     },
   });
 
-  notifyUpdateDepartment({
+  await notifyUpdateDepartment({
     department,
     action: EventActionType.DELETE,
     userId,

@@ -400,7 +400,7 @@ const createNewOrder = async ({
       },
     });
     if (orderSession) {
-      notifyNewOrder({ order, userId, action: EventActionType.CREATE });
+      await notifyNewOrder({ order, userId, action: EventActionType.CREATE });
     }
 
     return order;

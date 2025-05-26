@@ -54,7 +54,7 @@ const createTable = async ({ shopId, createBody, userId }) => {
     },
   });
 
-  notifyUpdateTable({ table, action: EventActionType.CREATE, userId });
+  await notifyUpdateTable({ table, action: EventActionType.CREATE, userId });
   return table;
 };
 
@@ -89,7 +89,7 @@ const updateTable = async ({ shopId, tableId, updateBody, userId }) => {
   });
   throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
 
-  notifyUpdateTable({ table, action: EventActionType.UPDATE, userId });
+  await notifyUpdateTable({ table, action: EventActionType.UPDATE, userId });
   return table;
 };
 
@@ -101,7 +101,7 @@ const deleteTable = async ({ shopId, tableId, userId }) => {
   });
   throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
 
-  notifyUpdateTable({
+  await notifyUpdateTable({
     table,
     action: EventActionType.DELETE,
     userId,
@@ -139,7 +139,7 @@ const createTablePosition = async ({ shopId, createBody, userId }) => {
     }),
   });
 
-  notifyUpdateTablePosition({ tablePosition, action: EventActionType.CREATE, userId });
+  await notifyUpdateTablePosition({ tablePosition, action: EventActionType.CREATE, userId });
   return tablePosition;
 };
 
@@ -171,7 +171,7 @@ const updateTablePosition = async ({ shopId, tablePositionId, updateBody, userId
   });
   throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));
 
-  notifyUpdateTablePosition({ tablePosition, action: EventActionType.UPDATE, userId });
+  await notifyUpdateTablePosition({ tablePosition, action: EventActionType.UPDATE, userId });
   return tablePosition;
 };
 
@@ -182,7 +182,7 @@ const deleteTablePosition = async ({ shopId, tablePositionId, userId }) => {
   });
   throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));
 
-  notifyUpdateTablePosition({
+  await notifyUpdateTablePosition({
     tablePosition,
     userId,
   });

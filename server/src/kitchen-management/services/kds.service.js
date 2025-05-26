@@ -116,7 +116,7 @@ const _updateDishOrdersByStatus = async ({ shopId, updateRequests, userId, befor
       })
     )
   );
-  registerJob({
+  await registerJob({
     type: JobTypes.LOG_KITCHEN,
     data: logs,
   });
