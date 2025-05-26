@@ -53,6 +53,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
         try {
           console.log("Received event for shop:", event);
           const { type, data } = event;
+          const { userId } = data;
 
           // unskippable events
           if (type === EventType.PAYMENT_COMPLETE) {
@@ -85,11 +86,10 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           }
 
           // skippable events
-          const { userId } = data;
-          if (store.getState().auth.session?.id === userId) {
-            console.log("Skipped event for shop:", event);
-            return;
-          }
+          // if (store.getState().auth.session?.id === userId) {
+          //   console.log("Skipped event for shop:", event);
+          //   return;
+          // }
 
           if (type === EventType.SHOP_CHANGED) {
             const { action, shop } = data;
@@ -99,6 +99,9 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
 
           if (type === EventType.TABLE_CHANGED) {
             const { action, table } = data;
+            store.dispatch(
+              orderApiSlice.util.invalidateTags(["TablesForOrder"])
+            );
             store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
             return;
           }
