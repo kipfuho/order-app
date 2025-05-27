@@ -4,7 +4,6 @@ const catchAsync = require('../../utils/catchAsync');
 const shopManagementService = require('../services/shopManagement.service');
 const tableService = require('../services/table.service');
 const employeeService = require('../services/employee.service');
-const departmentService = require('../services/department.service');
 const { convertEmployeeForResponse } = require('../converters/employee.converter');
 
 const uploadImage = catchAsync(async (req, res) => {
@@ -216,13 +215,13 @@ const deleteEmployeePosition = catchAsync(async (req, res) => {
 const getDepartment = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const departmentId = _.get(req, 'params.departmentId');
-  const department = await departmentService.getDepartment({ shopId, departmentId });
+  const department = await employeeService.getDepartment({ shopId, departmentId });
   res.status(httpStatus.OK).send({ department });
 });
 
 const getDepartments = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const departments = await departmentService.getDepartments({ shopId });
+  const departments = await employeeService.getDepartments({ shopId });
   res.status(httpStatus.OK).send({ departments });
 });
 
@@ -230,7 +229,7 @@ const createDepartment = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const userId = _.get(req, 'user.id');
   const createBody = req.body;
-  const department = await departmentService.createDepartment({ shopId, createBody, userId });
+  const department = await employeeService.createDepartment({ shopId, createBody, userId });
   res.status(httpStatus.CREATED).send({ department });
 });
 
@@ -239,7 +238,7 @@ const updateDepartment = catchAsync(async (req, res) => {
   const userId = _.get(req, 'user.id');
   const departmentId = _.get(req, 'params.departmentId');
   const updateBody = req.body;
-  const department = await departmentService.updateDepartment({ shopId, departmentId, updateBody, userId });
+  const department = await employeeService.updateDepartment({ shopId, departmentId, updateBody, userId });
   res.status(httpStatus.OK).send({ message: 'Cập nhật thành công', department });
 });
 
@@ -247,7 +246,7 @@ const deleteDepartment = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const userId = _.get(req, 'user.id');
   const departmentId = _.get(req, 'params.departmentId');
-  await departmentService.deleteDepartment({ shopId, departmentId, userId });
+  await employeeService.deleteDepartment({ shopId, departmentId, userId });
   res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
 });
 

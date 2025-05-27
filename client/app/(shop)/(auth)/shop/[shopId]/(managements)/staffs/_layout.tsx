@@ -64,6 +64,7 @@ export default function StaffTabLayout() {
           key={name}
           name={name}
           options={{ href: null, tabBarStyle: { display: "none" } }}
+          initialParams={{ shopId }}
         />
       ))}
     </Tabs>

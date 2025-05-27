@@ -88,7 +88,14 @@ export default function ShopsPage() {
                     borderRadius: 15,
                   }}
                 />
-                <View style={{ flex: 1, justifyContent: "center", gap: 8 }}>
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    gap: 8,
+                    marginLeft: 8,
+                  }}
+                >
                   <Text
                     style={{
                       fontSize: 24,

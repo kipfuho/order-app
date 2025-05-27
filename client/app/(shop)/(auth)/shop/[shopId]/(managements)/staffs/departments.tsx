@@ -132,7 +132,7 @@ export default function StaffDepartmentPage() {
                 )}
               />
             ))}
-          </List.Section>{" "}
+          </List.Section>
           <View style={{ height: 60 }} />
         </ScrollView>
 

@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { goToEmployeeList } from "../../../../../../../apis/navigate.service";
 
@@ -12,5 +12,5 @@ export default function EmployeeRedirect() {
     }
   }, [shopId]);
 
-  return null;
+  return <Redirect href={`/shop/${shopId}/staffs/employees`} />;
 }

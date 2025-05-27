@@ -1,4 +1,4 @@
-import { Redirect, Stack, useLocalSearchParams } from "expo-router";
+import { Redirect, Stack, useGlobalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../../../../../../../../stores/store";
@@ -12,8 +12,7 @@ import {
 import { OrderSessionStatus } from "../../../../../../../../../../../constants/common";
 
 export default function PaymentOrderSessionLayout() {
-  const { orderSessionId } = useLocalSearchParams() as {
-    shopId: string;
+  const { orderSessionId } = useGlobalSearchParams() as {
     orderSessionId: string;
   };
   const dispatch = useDispatch();

@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useGlobalSearchParams } from "expo-router";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Surface, Text, useTheme } from "react-native-paper";
@@ -15,7 +15,7 @@ import { updateShop } from "../../../../stores/customerSlice";
 import { closeAppSyncChannel } from "../../../../stores/awsSlice";
 
 export default function AppLayout() {
-  const { shopId } = useLocalSearchParams() as { shopId: string };
+  const { shopId } = useGlobalSearchParams() as { shopId: string };
   const dispatch = useDispatch();
   const theme = useTheme();
   const { t } = useTranslation();

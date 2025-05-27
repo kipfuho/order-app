@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useGlobalSearchParams, useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
 import {
@@ -35,7 +35,7 @@ import { useTranslation } from "react-i18next";
 import { uploadDishImageRequest } from "../../../../../../../../apis/dish.api.service";
 
 export default function UpdateDishPage() {
-  const { dishId } = useLocalSearchParams();
+  const { dishId } = useGlobalSearchParams();
   const router = useRouter();
   const { t } = useTranslation();
 

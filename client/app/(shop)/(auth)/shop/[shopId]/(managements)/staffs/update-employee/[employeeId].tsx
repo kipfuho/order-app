@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useGlobalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import {
   ActivityIndicator,
@@ -33,7 +33,7 @@ import { DropdownMenu } from "../../../../../../../../components/DropdownMenu";
 import { Collapsible } from "../../../../../../../../components/Collapsible";
 
 export default function UpdateEmployeePage() {
-  const { employeeId } = useLocalSearchParams() as { employeeId: string };
+  const { employeeId } = useGlobalSearchParams() as { employeeId: string };
   const router = useRouter();
   const { t } = useTranslation();
 

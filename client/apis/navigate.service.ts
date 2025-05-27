@@ -254,7 +254,7 @@ const goToEmployeeList = ({
   shopId: string;
 }) => {
   router.navigate({
-    pathname: "/shop/[shopId]/staffs",
+    pathname: "/shop/[shopId]/staffs/employees",
     params: { shopId },
   });
 };

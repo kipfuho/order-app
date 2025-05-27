@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useGlobalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import {
   ActivityIndicator,
@@ -23,7 +23,7 @@ import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
 import { AppBar } from "../../../../../../../../components/AppBar";
 
 export default function UpdateEmployeePositionPage() {
-  const { employeePositionId } = useLocalSearchParams() as {
+  const { employeePositionId } = useGlobalSearchParams() as {
     employeePositionId: string;
   };
   const router = useRouter();

@@ -71,7 +71,6 @@ export const apiRequest = async <T>({
   try {
     const store = require("../stores/store").default;
     const lang = _.get(store.getState(), "setting.locale");
-    console.log(lang);
     const config: AxiosRequestConfig = {
       method,
       url: endpoint,

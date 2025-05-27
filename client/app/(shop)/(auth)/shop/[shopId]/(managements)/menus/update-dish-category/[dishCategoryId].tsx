@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useGlobalSearchParams, useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
 import {
@@ -24,7 +24,7 @@ import { ScrollView, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 export default function UpdateDishCategoryPage() {
-  const { dishCategoryId } = useLocalSearchParams();
+  const { dishCategoryId } = useGlobalSearchParams();
   const router = useRouter();
   const { t } = useTranslation();
 

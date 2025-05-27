@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
@@ -9,10 +9,10 @@ import { updateCurrentTable } from "../../../../../../../../../stores/shop.slice
 import { styles } from "../../../../../../../../_layout";
 import { goToTablesForOrderList } from "../../../../../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
+import { Shop } from "../../../../../../../../../stores/state.interface";
 
 export default function TableCurrentOrderLayout() {
-  const { shopId, tableId } = useLocalSearchParams() as {
-    shopId: string;
+  const { tableId } = useGlobalSearchParams() as {
     tableId: string;
   };
   const router = useRouter();
@@ -20,8 +20,11 @@ export default function TableCurrentOrderLayout() {
   const theme = useTheme();
   const { t } = useTranslation();
 
-  const { currentTable } = useSelector((state: RootState) => state.shop);
-  const { data: tables = [], isLoading } = useGetTablesQuery(shopId);
+  const { currentTable, currentShop } = useSelector(
+    (state: RootState) => state.shop
+  );
+  const shop = currentShop as Shop;
+  const { data: tables = [], isLoading } = useGetTablesQuery(shop.id);
   const table = tables.find((t) => t.id.toString() === tableId);
 
   useEffect(() => {
@@ -46,7 +49,7 @@ export default function TableCurrentOrderLayout() {
         <Button
           mode="contained"
           style={styles.baseButton}
-          onPress={() => goToTablesForOrderList({ router, shopId })}
+          onPress={() => goToTablesForOrderList({ router, shopId: shop.id })}
         >
           {t("go_back")}
         </Button>
