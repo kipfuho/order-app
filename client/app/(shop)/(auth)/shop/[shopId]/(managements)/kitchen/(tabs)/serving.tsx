@@ -8,6 +8,7 @@ import _ from "lodash";
 import { ScrollView } from "react-native";
 import FlatListWithoutScroll from "../../../../../../../../components/FlatListWithoutScroll";
 import { ItemTypeFlatList } from "../../../../../../../../components/FlatListWithScroll";
+import { SwipeablePage } from "../../../../../../../../components/SwipeablePage";
 
 export default function KitchenServing() {
   const { currentShop } = useSelector((state: RootState) => state.shop);
@@ -24,15 +25,17 @@ export default function KitchenServing() {
   }
 
   return (
-    <Surface style={{ flex: 1 }}>
-      <ScrollView>
-        <FlatListWithoutScroll
-          groups={[{ id: "all" }]}
-          itemByGroup={{ all: unservedDishOrders }}
-          itemType={ItemTypeFlatList.KITCHEN_DISHORDER_SERVING}
-          shouldShowGroup={false}
-        />
-      </ScrollView>
-    </Surface>
+    <SwipeablePage>
+      <Surface style={{ flex: 1 }}>
+        <ScrollView>
+          <FlatListWithoutScroll
+            groups={[{ id: "all" }]}
+            itemByGroup={{ all: unservedDishOrders }}
+            itemType={ItemTypeFlatList.KITCHEN_DISHORDER_SERVING}
+            shouldShowGroup={false}
+          />
+        </ScrollView>
+      </Surface>
+    </SwipeablePage>
   );
 }

@@ -10,6 +10,7 @@ import { goToShopHome } from "../../../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { Icon, Menu, Text, useTheme } from "react-native-paper";
 import { memo, useEffect, useState } from "react";
+import { SwipeContext } from "../../../../../../../hooks/useSwipeNavigation";
 
 interface Item {
   title: string;
@@ -79,14 +80,54 @@ export default function TabLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };
   const router = useRouter();
   const { t } = useTranslation();
+  const pathName = usePathname();
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [visibleCount, setVisibleCount] = useState(0);
+  const [currentRouteIndex, setCurrentRouteIndex] = useState(0);
   const allVisibleRoutes = allRoutes.slice(0, visibleCount);
   const allAdditionalRoutes = allRoutes.slice(visibleCount);
 
+  // Find current route index
+  useEffect(() => {
+    const currentIndex = allRoutes.findIndex((route) =>
+      pathName.endsWith(`/kitchen/${route.route}`)
+    );
+    if (currentIndex !== -1) {
+      setCurrentRouteIndex(currentIndex);
+    }
+  }, [pathName]);
+
+  // Navigation functions
+  const navigateToNext = () => {
+    if (currentRouteIndex < allRoutes.length - 1) {
+      const nextRoute = allRoutes[currentRouteIndex + 1];
+      router.replace({
+        pathname: `/shop/[shopId]/kitchen/${nextRoute.route}`,
+        params: { shopId },
+      });
+    }
+  };
+
+  const navigateToPrevious = () => {
+    if (currentRouteIndex > 0) {
+      const prevRoute = allRoutes[currentRouteIndex - 1];
+      router.replace({
+        pathname: `/shop/[shopId]/kitchen/${prevRoute.route}`,
+        params: { shopId },
+      });
+    }
+  };
+
+  const swipeContextValue = {
+    navigateToNext,
+    navigateToPrevious,
+    currentIndex: currentRouteIndex,
+    totalPages: allRoutes.length,
+  };
+
   return (
-    <>
+    <SwipeContext.Provider value={swipeContextValue}>
       <AppBar
         goBack={() => goToShopHome({ router, shopId })}
         actions={
@@ -145,6 +186,6 @@ export default function TabLayout() {
         }
       />
       <Stack screenOptions={{ headerShown: false }} />
-    </>
+    </SwipeContext.Provider>
   );
 }

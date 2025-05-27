@@ -13,8 +13,8 @@
   "scripts": {
     "start": "pm2 start ecosystem.config.json --no-daemon",
     "start:job": "cross-env NODE_ENV=production node src/jobs/index.js",
-    "dev": "cross-env NODE_ENV=development nodemon src/index.js",
-    "dev:job": "cross-env NODE_ENV=development nodemon src/jobs/index.js",
+    "dev": "cross-env NODE_ENV=development nodemon src/index.js --inspect",
+    "dev:job": "cross-env NODE_ENV=development nodemon src/jobs/index.js --inspect",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check **/*.js",

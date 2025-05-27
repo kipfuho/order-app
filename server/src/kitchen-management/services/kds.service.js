@@ -5,7 +5,6 @@ const { OrderSessionStatus, Status, DishOrderStatus, KitchenAction } = require('
 const { getMessageByLocale } = require('../../locale');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
-const prisma = require('../../utils/prisma');
 
 const _getDishOrdersByStatus = async ({ shopId, status }) => {
   // currently disable filter time filter to dev
@@ -19,6 +18,7 @@ const _getDishOrdersByStatus = async ({ shopId, status }) => {
       // ...timeOptions,
     },
     select: {
+      id: true,
       orderSessionId: true,
       createdAt: true,
       dishOrders: true,
@@ -31,6 +31,7 @@ const _getDishOrdersByStatus = async ({ shopId, status }) => {
       id: { in: orderSessionIds },
     },
     select: {
+      id: true,
       orderSessionNo: true,
       tableNames: true,
     },
@@ -70,9 +71,12 @@ const _updateDishOrdersByStatus = async ({ shopId, updateRequests, userId, befor
       id: { in: orderIds },
       shopId,
     },
+    include: {
+      dishOrders: true,
+    },
   });
   const orderById = _.keyBy(orders, (order) => order.id);
-  const updatedDishOrders = [];
+  const updatedDishOrderIds = [];
   _.forEach(updateRequestGroupByOrderId, async (updateGroup, orderId) => {
     try {
       const order = orderById[orderId];
@@ -82,10 +86,8 @@ const _updateDishOrdersByStatus = async ({ shopId, updateRequests, userId, befor
       }
 
       const dishOrderSet = new Set(_.map(updateGroup, 'dishOrderId'));
-      order.dishOrders.map((dishOrder) => {
+      order.dishOrders.forEach((dishOrder) => {
         if (dishOrderSet.has(dishOrder.id) && dishOrder.status === beforeStatus) {
-          // eslint-disable-next-line no-param-reassign
-          dishOrder.status = afterStatus;
           logs.push({
             shopId,
             userId,
@@ -95,27 +97,22 @@ const _updateDishOrdersByStatus = async ({ shopId, updateRequests, userId, befor
             dishName: dishOrder.name,
             dishQuantity: dishOrder.quantity,
           });
-          updatedDishOrders.push(dishOrder);
+          updatedDishOrderIds.push(dishOrder.id);
         }
-        return dishOrder;
       });
     } catch (err) {
       errors.push({ message: err.message, orderId });
     }
   });
 
-  await prisma.$transaction(
-    updatedDishOrders.map((dishOrder) =>
-      DishOrder.update({
-        data: {
-          status: dishOrder.status,
-        },
-        where: {
-          id: dishOrder.id,
-        },
-      })
-    )
-  );
+  await DishOrder.updateMany({
+    data: {
+      status: afterStatus,
+    },
+    where: {
+      id: { in: updatedDishOrderIds },
+    },
+  });
   await registerJob({
     type: JobTypes.LOG_KITCHEN,
     data: logs,

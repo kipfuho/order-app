@@ -1,5 +1,12 @@
-import { Surface } from "react-native-paper";
+import { Surface, Text } from "react-native-paper";
+import { SwipeablePage } from "../../../../../../../../components/SwipeablePage";
 
-export default function ServeHistory() {
-  return <Surface style={{ flex: 1 }}>serve history</Surface>;
+export default function ServingHistory() {
+  return (
+    <SwipeablePage>
+      <Surface>
+        <Text>ServingHistory</Text>
+      </Surface>
+    </SwipeablePage>
+  );
 }

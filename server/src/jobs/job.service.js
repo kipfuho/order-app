@@ -109,7 +109,7 @@ const processJob = async (jobPayload) => {
     return;
   }
   if (type === JobTypes.LOG_KITCHEN) {
-    await KitchenLog.createMany(data);
+    await KitchenLog.createMany({ data });
     return;
   }
 
