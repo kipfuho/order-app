@@ -11,23 +11,20 @@ import {
   TextInput,
 } from "react-native-paper";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../../../stores/store";
-import {
-  Shop,
-  TablePosition,
-} from "../../../../../../../../../stores/state.interface";
-import { AppBar } from "../../../../../../../../../components/AppBar";
-import { DropdownMenu } from "../../../../../../../../../components/DropdownMenu";
+import { RootState } from "@stores/store";
+import { Shop, TablePosition } from "@stores/state.interface";
+import { AppBar } from "@components/AppBar";
+import { DropdownMenu } from "@components/DropdownMenu";
 import {
   useGetTablePositionsQuery,
   useGetTablesQuery,
   useUpdateTableMutation,
-} from "../../../../../../../../../stores/apiSlices/tableApi.slice";
-import { goToTableList } from "../../../../../../../../../apis/navigate.service";
-import { LoaderBasic } from "../../../../../../../../../components/ui/Loader";
+} from "@stores/apiSlices/tableApi.slice";
+import { goToTableList } from "@apis/navigate.service";
+import { LoaderBasic } from "@components/ui/Loader";
 import { ScrollView, View } from "react-native";
 import { useTranslation } from "react-i18next";
-import { Collapsible } from "../../../../../../../../../components/Collapsible";
+import { Collapsible } from "@components/Collapsible";
 
 export default function UpdateTablePage() {
   const { tableId } = useGlobalSearchParams();
@@ -35,7 +32,7 @@ export default function UpdateTablePage() {
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const {
     data: tables = [],
@@ -70,7 +67,7 @@ export default function UpdateTablePage() {
             !name.trim() && t("table_name"),
             !tablePosition && t("table_position"),
           ]),
-          ","
+          ",",
         )}`,
       });
       return;

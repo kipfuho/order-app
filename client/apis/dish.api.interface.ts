@@ -1,4 +1,4 @@
-import { DishCategory, Unit } from "../stores/state.interface";
+import { DishCategory, Unit } from "@stores/state.interface";
 
 interface UploadDishImageRequest {
   shopId: string;

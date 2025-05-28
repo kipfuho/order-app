@@ -11,28 +11,24 @@ import {
   TextInput,
 } from "react-native-paper";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../../stores/store";
-import {
-  DishCategory,
-  Shop,
-  Unit,
-} from "../../../../../../../../stores/state.interface";
-import { AppBar } from "../../../../../../../../components/AppBar";
+import { RootState } from "@stores/store";
+import { DishCategory, Shop, Unit } from "@stores/state.interface";
+import { AppBar } from "@components/AppBar";
 import { ScrollView, View } from "react-native";
-import { Collapsible } from "../../../../../../../../components/Collapsible";
-import { DropdownMenu } from "../../../../../../../../components/DropdownMenu";
-import UploadImages from "../../../../../../../../components/ui/UploadImage";
+import { Collapsible } from "@components/Collapsible";
+import { DropdownMenu } from "@components/DropdownMenu";
+import UploadImages from "@components/ui/UploadImage";
 import {
   useGetDishCategoriesQuery,
   useGetDishesQuery,
   useGetDishTypesQuery,
   useGetUnitsQuery,
   useUpdateDishMutation,
-} from "../../../../../../../../stores/apiSlices/dishApi.slice";
-import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
-import { goToShopDishList } from "../../../../../../../../apis/navigate.service";
+} from "@stores/apiSlices/dishApi.slice";
+import { LoaderBasic } from "@components/ui/Loader";
+import { goToShopDishList } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
-import { uploadDishImageRequest } from "../../../../../../../../apis/dish.api.service";
+import { uploadDishImageRequest } from "@apis/dish.api.service";
 
 export default function UpdateDishPage() {
   const { dishId } = useGlobalSearchParams();
@@ -40,7 +36,7 @@ export default function UpdateDishPage() {
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const {
     data: dishes = [],
@@ -52,7 +48,7 @@ export default function UpdateDishPage() {
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
     useGetDishCategoriesQuery({ shopId: shop.id });
   const { data: units = [], isLoading: unitLoading } = useGetUnitsQuery(
-    shop.id
+    shop.id,
   );
   const dish = _.find(dishes, (d) => d.id === dishId);
   const [updateDish, { isLoading: updateDishLoading }] =
@@ -101,7 +97,7 @@ export default function UpdateDishPage() {
             !unit && t("unit"),
             !price.trim() && t("price"),
           ]),
-          ","
+          ",",
         )}`,
       });
       return;

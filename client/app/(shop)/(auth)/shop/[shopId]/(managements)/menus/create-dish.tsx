@@ -1,13 +1,9 @@
 import React, { useState } from "react";
-import { ScrollView } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../stores/store";
-import {
-  DishCategory,
-  Shop,
-  Unit,
-} from "../../../../../../../stores/state.interface";
+import { RootState } from "@stores/store";
+import { DishCategory, Shop, Unit } from "@stores/state.interface";
 import {
   Button,
   TextInput,
@@ -17,36 +13,35 @@ import {
   Text,
 } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import { Collapsible } from "../../../../../../../components/Collapsible";
-import { AppBar } from "../../../../../../../components/AppBar";
-import { DropdownMenu } from "../../../../../../../components/DropdownMenu";
+import { Collapsible } from "@components/Collapsible";
+import { AppBar } from "@components/AppBar";
+import { DropdownMenu } from "@components/DropdownMenu";
 import _ from "lodash";
-import UploadImages from "../../../../../../../components/ui/UploadImage";
+import UploadImages from "@components/ui/UploadImage";
 import {
   useCreateDishMutation,
   useGetDishCategoriesQuery,
   useGetDishTypesQuery,
   useGetUnitsQuery,
-} from "../../../../../../../stores/apiSlices/dishApi.slice";
-import { LoaderBasic } from "../../../../../../../components/ui/Loader";
-import { goToShopDishList } from "../../../../../../../apis/navigate.service";
-import { View } from "react-native";
+} from "@stores/apiSlices/dishApi.slice";
+import { LoaderBasic } from "@components/ui/Loader";
+import { goToShopDishList } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
-import { uploadDishImageRequest } from "../../../../../../../apis/dish.api.service";
+import { uploadDishImageRequest } from "@apis/dish.api.service";
 
 export default function CreateDishPage() {
   const router = useRouter();
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const { data: dishTypes = [], isLoading: dishTypeLoading } =
     useGetDishTypesQuery({ shopId: shop.id });
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
     useGetDishCategoriesQuery({ shopId: shop.id });
   const { data: units = [], isLoading: unitLoading } = useGetUnitsQuery(
-    shop.id
+    shop.id,
   );
   const [createDish, { isLoading: createDishLoading }] =
     useCreateDishMutation();
@@ -101,7 +96,7 @@ export default function CreateDishPage() {
             !unit && t("unit"),
             !price.trim() && t("price"),
           ]),
-          ","
+          ",",
         )}`,
       });
       return;

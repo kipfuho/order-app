@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ScrollView, useWindowDimensions } from "react-native";
+import { View, ScrollView, useWindowDimensions } from "react-native";
 import {
   Button,
   Dialog,
@@ -13,21 +13,16 @@ import {
 } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../stores/store";
-import { AppBar } from "../../../../../components/AppBar";
-import { Shop } from "../../../../../stores/state.interface";
-import {
-  goToShopList,
-  goToUpdateShop,
-} from "../../../../../apis/navigate.service";
-import { View } from "react-native";
+import { RootState } from "@stores/store";
+import { AppBar } from "@components/AppBar";
+import { Shop } from "@stores/state.interface";
+import { goToShopList, goToUpdateShop } from "@apis/navigate.service";
 import { styles } from "../../../../_layout";
-import { createDefaultUnitsRequest } from "../../../../../apis/dish.api.service";
-import { useDeleteShopMutation } from "../../../../../stores/apiSlices/shopApi.slice";
-import { LoaderBasic } from "../../../../../components/ui/Loader";
+import { useDeleteShopMutation } from "@stores/apiSlices/shopApi.slice";
+import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
-import { BLURHASH } from "../../../../../constants/common";
+import { BLURHASH } from "@constants/common";
 
 interface Item {
   title: string;
@@ -80,7 +75,7 @@ export default function ShopPage() {
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const [deleteShop, { isLoading: deleteShopLoading }] =
     useDeleteShopMutation();
@@ -99,11 +94,6 @@ export default function ShopPage() {
   const handleDelete = () => {
     setModalVisible(false);
     setConfirmModalVisible(true);
-  };
-
-  const handleCreateDefaultUnits = async () => {
-    setModalVisible(false);
-    await createDefaultUnitsRequest({ shopId: shop.id });
   };
 
   const confirmDelete = async () => {

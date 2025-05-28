@@ -1,28 +1,21 @@
-import {
-  Button,
-  Divider,
-  List,
-  Modal,
-  Portal,
-  Surface,
-} from "react-native-paper";
+import { Button, List, Modal, Portal, Surface } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../../../../../../../../stores/store";
-import { useGetActiveOrderSessionsQuery } from "../../../../../../../../../stores/apiSlices/orderApi.slice";
-import { Shop, Table } from "../../../../../../../../../stores/state.interface";
-import { LoaderBasic } from "../../../../../../../../../components/ui/Loader";
+import { RootState } from "@stores/store";
+import { useGetActiveOrderSessionsQuery } from "@stores/apiSlices/orderApi.slice";
+import { Shop, Table } from "@stores/state.interface";
+import { LoaderBasic } from "@components/ui/Loader";
 import { ScrollView } from "react-native";
-import { ActiveOrderSession } from "../../../../../../../../../components/ui/orders/ActiveOrderSession";
-import { AppBar } from "../../../../../../../../../components/AppBar";
-import { goToTablesForOrderList } from "../../../../../../../../../apis/navigate.service";
+import { ActiveOrderSession } from "@components/ui/orders/ActiveOrderSession";
+import { AppBar } from "@components/AppBar";
+import { goToTablesForOrderList } from "@apis/navigate.service";
 import { Redirect, useRouter } from "expo-router";
 import { styles } from "../../../../../../../../_layout";
 import { useTranslation } from "react-i18next";
-import CreateOrder from "../../../../../../../../../components/ui/CreateOrderView";
+import CreateOrder from "@components/ui/CreateOrderView";
 import { useState } from "react";
 import Toast from "react-native-toast-message";
-import { CustomerInfoDialog } from "../../../../../../../../../components/ui/orders/CustomerInfoDialog";
-import { resetCurrentOrder } from "../../../../../../../../../stores/shop.slice";
+import { CustomerInfoDialog } from "@components/ui/orders/CustomerInfoDialog";
+import { resetCurrentOrder } from "@stores/shop.slice";
 import _ from "lodash";
 
 export default function OrderTableCurrentOrderSessionsPage() {
@@ -31,7 +24,7 @@ export default function OrderTableCurrentOrderSessionsPage() {
   const { t } = useTranslation();
 
   const { currentShop, currentTable } = useSelector(
-    (state: RootState) => state.shop
+    (state: RootState) => state.shop,
   );
   const shop = currentShop as Shop;
   const table = currentTable as Table;

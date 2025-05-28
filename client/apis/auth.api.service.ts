@@ -8,7 +8,8 @@ import {
 } from "./auth.api.interface";
 
 export const getAccessTokenLazily = async (isCustomerApp: boolean = false) => {
-  const { getAccessToken } = await import("./utils.service");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getAccessToken } = await require("@apis/utils.service");
 
   return getAccessToken(isCustomerApp);
 };
@@ -32,7 +33,8 @@ const loginRequest = async ({
     },
   });
 
-  require("../stores/store").default.dispatch(signIn({ ...user, tokens }));
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require("@stores/store").default.dispatch(signIn({ ...user, tokens }));
   return true;
 };
 
@@ -41,7 +43,7 @@ let customerRefreshingPromise: Promise<Tokens> | null = null;
 
 const refreshTokensRequest = async (
   refreshToken: string,
-  isCustomerApp: boolean = false
+  isCustomerApp: boolean = false,
 ) => {
   try {
     let tokens;
@@ -109,7 +111,6 @@ let loginForAnonymousCustomerRequestPromise: Promise<{
 
 const loginForAnonymousCustomerRequest = async (customerId?: string) => {
   try {
-    let response: { customer: Customer; tokens: Tokens };
     if (!loginForAnonymousCustomerRequestPromise) {
       loginForAnonymousCustomerRequestPromise = apiRequest({
         method: "POST",
@@ -121,11 +122,13 @@ const loginForAnonymousCustomerRequest = async (customerId?: string) => {
       });
     }
 
-    response = await loginForAnonymousCustomerRequestPromise;
+    const response: { customer: Customer; tokens: Tokens } =
+      await loginForAnonymousCustomerRequestPromise;
 
     if (!customerId) {
-      require("../stores/store").default.dispatch(
-        signInForCustomer({ ...response.customer, tokens: response.tokens })
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require("@stores/store").default.dispatch(
+        signInForCustomer({ ...response.customer, tokens: response.tokens }),
       );
     }
     return response.tokens;
@@ -151,8 +154,9 @@ const loginForCustomerRequest = async ({
         },
       });
 
-    require("../stores/store").default.dispatch(
-      signInForCustomer({ ...customer, tokens })
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("@stores/store").default.dispatch(
+      signInForCustomer({ ...customer, tokens }),
     );
     return true;
   } catch (error) {
@@ -179,8 +183,9 @@ const registerForCustomerRequest = async ({
         },
       });
 
-    require("../stores/store").default.dispatch(
-      signInForCustomer({ ...customer, tokens })
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("@stores/store").default.dispatch(
+      signInForCustomer({ ...customer, tokens }),
     );
     return true;
   } catch (error) {

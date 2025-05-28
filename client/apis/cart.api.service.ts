@@ -1,4 +1,4 @@
-import { Cart, CartItem, Dish, Order } from "../stores/state.interface";
+import { Cart, CartItem, Dish, Order } from "@stores/state.interface";
 import { apiRequest } from "./api.service";
 import { getAccessTokenLazily } from "./auth.api.service";
 

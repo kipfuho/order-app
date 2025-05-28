@@ -1,6 +1,6 @@
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { goToTableList } from "../../../../../../../../apis/navigate.service";
+import { goToTableList } from "@apis/navigate.service";
 
 export default function TableRedirect() {
   const { shopId } = useLocalSearchParams() as { shopId: string };

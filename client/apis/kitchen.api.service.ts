@@ -1,8 +1,4 @@
-import {
-  KitchenDishOrder,
-  Kitchen,
-  KitchenLog,
-} from "../stores/state.interface";
+import { KitchenDishOrder, Kitchen, KitchenLog } from "@stores/state.interface";
 import { apiRequest } from "./api.service";
 import { getAccessTokenLazily } from "./auth.api.service";
 import {

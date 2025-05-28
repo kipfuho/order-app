@@ -6,14 +6,14 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 import { PaperProvider } from "react-native-paper";
-import store, { persistor, RootState } from "../stores/store";
+import store, { persistor, RootState } from "@stores/store";
 import { StyleSheet } from "react-native";
 import { Amplify } from "aws-amplify";
 import { AmplifyConfig } from "../amplify_outputs";
 import Toast from "react-native-toast-message";
 import { I18nextProvider, useTranslation } from "react-i18next";
-import i18n from "../locales/i18n";
-import { darkTheme, lightTheme } from "../constants/theme";
+import i18n from "@locales/i18n";
+import { darkTheme, lightTheme } from "@constants/theme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 Amplify.configure(AmplifyConfig);
@@ -28,7 +28,7 @@ function ThemeLayout() {
 
   useEffect(() => {
     i18n.changeLanguage(locale);
-  }, [locale]);
+  }, [i18n, locale]);
 
   return (
     <PaperProvider theme={theme}>

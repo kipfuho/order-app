@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../../stores/store";
+import { RootState } from "@stores/store";
 import {
   ActivityIndicator,
   Button,
@@ -11,29 +11,26 @@ import {
   Text,
   TextInput,
 } from "react-native-paper";
-import {
-  Shop,
-  TablePosition,
-} from "../../../../../../../../stores/state.interface";
-import { AppBar } from "../../../../../../../../components/AppBar";
+import { Shop, TablePosition } from "@stores/state.interface";
+import { AppBar } from "@components/AppBar";
 import Toast from "react-native-toast-message";
 import {
   useCreateTableMutation,
   useGetTablePositionsQuery,
-} from "../../../../../../../../stores/apiSlices/tableApi.slice";
-import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
-import { goToTableList } from "../../../../../../../../apis/navigate.service";
+} from "@stores/apiSlices/tableApi.slice";
+import { LoaderBasic } from "@components/ui/Loader";
+import { goToTableList } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
-import { Collapsible } from "../../../../../../../../components/Collapsible";
-import { DropdownMenu } from "../../../../../../../../components/DropdownMenu";
+import { Collapsible } from "@components/Collapsible";
+import { DropdownMenu } from "@components/DropdownMenu";
 
 export default function CreateTablePage() {
   const router = useRouter();
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
     useGetTablePositionsQuery(shop.id);
@@ -59,7 +56,7 @@ export default function CreateTablePage() {
             !code.trim() && t("table_code"),
             !tablePosition && t("table_position"),
           ]),
-          ","
+          ",",
         )}`,
       });
       return;
@@ -75,13 +72,12 @@ export default function CreateTablePage() {
         needApprovalWhenCustomerOrder,
       }).unwrap();
       goToTableList({ router, shopId: shop.id });
-    } catch (err) {
+    } catch {
       Toast.show({
         type: "error",
         text1: t("create_failed"),
         text2: t("error_any"),
       });
-      console.error(err);
     }
   };
 

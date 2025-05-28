@@ -13,17 +13,17 @@ import {
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
-import { RootState } from "../../../../../../../../stores/store";
-import { Shop } from "../../../../../../../../stores/state.interface";
+import { RootState } from "@stores/store";
+import { Shop } from "@stores/state.interface";
 import {
   useGetAllPermissionTypesQuery,
   useGetDepartmentsQuery,
   useUpdateDepartmentMutation,
-} from "../../../../../../../../stores/apiSlices/staffApi.slice";
-import { goToDepartmentList } from "../../../../../../../../apis/navigate.service";
-import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
-import { AppBar } from "../../../../../../../../components/AppBar";
-import { Collapsible } from "../../../../../../../../components/Collapsible";
+} from "@stores/apiSlices/staffApi.slice";
+import { goToDepartmentList } from "@apis/navigate.service";
+import { LoaderBasic } from "@components/ui/Loader";
+import { AppBar } from "@components/AppBar";
+import { Collapsible } from "@components/Collapsible";
 
 export default function UpdateDepartmentPage() {
   const { departmentId } = useGlobalSearchParams() as { departmentId: string };
@@ -31,7 +31,7 @@ export default function UpdateDepartmentPage() {
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const {
     data: departments = [],
@@ -50,7 +50,7 @@ export default function UpdateDepartmentPage() {
 
   const togglePermission = (perm: string) => {
     setSelectedPermissions((prev) =>
-      prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm]
+      prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm],
     );
   };
 
@@ -72,13 +72,12 @@ export default function UpdateDepartmentPage() {
         permissions: selectedPermissions,
       }).unwrap();
       goToDepartmentList({ router, shopId: shop.id });
-    } catch (err) {
+    } catch {
       Toast.show({
         type: "error",
         text1: t("update_failed"),
         text2: t("error_any"),
       });
-      console.error(err);
     }
   };
 

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../../stores/store";
+import { RootState } from "@stores/store";
 import {
   ActivityIndicator,
   Button,
@@ -11,23 +11,23 @@ import {
   TextInput,
   Surface,
 } from "react-native-paper";
-import { Shop } from "../../../../../../../../stores/state.interface";
-import { AppBar } from "../../../../../../../../components/AppBar";
+import { Shop } from "@stores/state.interface";
+import { AppBar } from "@components/AppBar";
 import Toast from "react-native-toast-message";
-import { useGetDishCategoriesQuery } from "../../../../../../../../stores/apiSlices/dishApi.slice";
-import { goToTablePositionList } from "../../../../../../../../apis/navigate.service";
-import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
+import { useGetDishCategoriesQuery } from "@stores/apiSlices/dishApi.slice";
+import { goToTablePositionList } from "@apis/navigate.service";
+import { LoaderBasic } from "@components/ui/Loader";
 import _ from "lodash";
-import { useCreateTablePositionMutation } from "../../../../../../../../stores/apiSlices/tableApi.slice";
+import { useCreateTablePositionMutation } from "@stores/apiSlices/tableApi.slice";
 import { useTranslation } from "react-i18next";
-import DishCategorySelectionDialog from "../../../../../../../../components/ui/settings/DishCategorySelectionDialog";
+import DishCategorySelectionDialog from "@components/ui/settings/DishCategorySelectionDialog";
 
 export default function CreateTablePositionPage() {
   const router = useRouter();
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
     useGetDishCategoriesQuery({ shopId: shop.id });
@@ -50,7 +50,7 @@ export default function CreateTablePositionPage() {
             !code.trim() && t("table_position_code"),
             selectedCategories.length === 0 && t("dish_category"),
           ]),
-          ","
+          ",",
         )}`,
       });
       return;
@@ -65,13 +65,12 @@ export default function CreateTablePositionPage() {
       }).unwrap();
 
       goToTablePositionList({ router, shopId: shop.id });
-    } catch (err) {
+    } catch {
       Toast.show({
         type: "error",
         text1: t("create_failed"),
         text2: t("error_any"),
       });
-      console.error(err);
     }
   };
   if (dishCategoryLoading) {
@@ -136,7 +135,7 @@ export default function CreateTablePositionPage() {
               {selectedCategories.map((categoryId) => {
                 const category = _.find(
                   dishCategories,
-                  (cat) => cat.id === categoryId
+                  (cat) => cat.id === categoryId,
                 );
                 return category ? (
                   <Text key={categoryId} style={{ marginVertical: 2 }}>

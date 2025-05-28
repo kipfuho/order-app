@@ -4,24 +4,24 @@ import { Keyboard, ScrollView, useWindowDimensions, View } from "react-native";
 import {
   useGetDishesQuery,
   useGetDishTypesQuery,
-} from "../../../stores/apiSlices/dishApi.slice";
+} from "@stores/apiSlices/dishApi.slice";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
-import { Dish, Shop, Table } from "../../../stores/state.interface";
-import { LoaderBasic } from "../../../components/ui/Loader";
+import { RootState } from "@stores/store";
+import { Dish, Shop, Table } from "@stores/state.interface";
+import { LoaderBasic } from "@components/ui/Loader";
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
-import ImageSlider from "../../../components/ImageSlider";
-import CustomerOrderMenu from "../../../components/ui/orders/CustomerOrderMenu";
-import { useEffect, useState } from "react";
-import { CustomerAppBar } from "../../../components/ui/customer/CustomerAppBar";
+import ImageSlider from "@components/ImageSlider";
+import CustomerOrderMenu from "@components/ui/orders/CustomerOrderMenu";
+import { useState } from "react";
+import { CustomerAppBar } from "@components/ui/customer/CustomerAppBar";
 import {
   useGetCartQuery,
   useGetRecommendationDishesQuery,
-} from "../../../stores/apiSlices/cartApi.slice";
+} from "@stores/apiSlices/cartApi.slice";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { AppBarSearchBox } from "../../../components/AppBarSearchBox";
 import { runOnJS } from "react-native-reanimated";
+import AppBarSearchBox from "@/components/AppBarSearchBox";
 
 const getButtonSize = (width: number) => {
   return width / 2 - 30;
@@ -35,20 +35,20 @@ const createDismissGesture = (onDismissSearch: () => void) =>
 const getDishGroupByDishType = (
   dishes: Dish[],
   dishTypes: string[],
-  table: Table
+  table: Table,
 ) => {
   const dishesGroupByCategoryId = _.groupBy(dishes, "category.id");
   const tableDishes = _.flatMap(
     table.position.dishCategoryIds,
     (dishCategoryId) => {
       return dishesGroupByCategoryId[dishCategoryId] || [];
-    }
+    },
   );
   const dishGroupByDishType = _.groupBy(tableDishes, "type");
   dishGroupByDishType["all"] = tableDishes;
   const availableDishTypes = _.filter(
     _.concat(["all"], dishTypes) as string[],
-    (type) => !_.isEmpty(dishGroupByDishType[type])
+    (type) => !_.isEmpty(dishGroupByDishType[type]),
   );
   return { availableDishTypes, dishGroupByDishType };
 };
@@ -72,6 +72,7 @@ export default function CustomerHomePage() {
       shopId: shop.id,
       isCustomerApp: true,
     });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: recommendationDishes, isLoading: recommendationDishLoading } =
     useGetRecommendationDishesQuery(shop.id);
   const { isLoading: cartLoading } = useGetCartQuery(shop.id);
@@ -79,7 +80,7 @@ export default function CustomerHomePage() {
   const { availableDishTypes, dishGroupByDishType } = getDishGroupByDishType(
     dishes,
     dishTypes,
-    table
+    table,
   );
 
   const [selectedDishType, setSelectedDishType] = useState("all");
@@ -93,10 +94,6 @@ export default function CustomerHomePage() {
   };
 
   const gesture = createDismissGesture(onDismissSearch);
-
-  useEffect(() => {
-    console.log(recommendationDishes);
-  }, [recommendationDishLoading]);
 
   if (dishLoading || dishTypeLoading || cartLoading) {
     return <LoaderBasic />;
@@ -126,7 +123,7 @@ export default function CustomerHomePage() {
                 dishes={
                   searchValue
                     ? _.filter(dishGroupByDishType[selectedDishType], (dish) =>
-                        _.includes(dish.name, searchValue)
+                        _.includes(dish.name, searchValue),
                       )
                     : dishGroupByDishType[selectedDishType]
                 }

@@ -1,6 +1,5 @@
-import _ from "lodash";
 import { apiFormDataRequest, apiRequest } from "./api.service";
-import { Dish, DishCategory, Unit } from "../stores/state.interface";
+import { Dish, DishCategory, Unit } from "@stores/state.interface";
 import {
   CreateDefaultUnitsRequest,
   CreateDishCategoryRequest,

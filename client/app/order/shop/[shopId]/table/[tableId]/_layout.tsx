@@ -3,11 +3,10 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Surface, Text, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-import { useGetTableQuery } from "../../../../../../stores/apiSlices/tableApi.slice";
-import { RootState } from "../../../../../../stores/store";
-import { LoaderBasic } from "../../../../../../components/ui/Loader";
-import { styles } from "../../../../../_layout";
-import { updateTable } from "../../../../../../stores/customerSlice";
+import { useGetTableQuery } from "@stores/apiSlices/tableApi.slice";
+import { RootState } from "@stores/store";
+import { LoaderBasic } from "@components/ui/Loader";
+import { updateTable } from "@stores/customerSlice";
 
 export default function TableCurrentOrderLayout() {
   const { shopId, tableId } = useLocalSearchParams() as {
@@ -33,7 +32,8 @@ export default function TableCurrentOrderLayout() {
     if (!table) return;
 
     dispatch(updateTable(table));
-  }, [isFetching]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFetching, dispatch]);
 
   if (isLoading) {
     return <LoaderBasic />;
@@ -41,7 +41,7 @@ export default function TableCurrentOrderLayout() {
 
   if (!table) {
     return (
-      <Surface style={styles.baseContainer}>
+      <Surface style={{ flex: 1, padding: 16 }}>
         <Text
           variant="displayMedium"
           style={{ color: theme.colors.error, alignSelf: "center" }}

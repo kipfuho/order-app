@@ -12,23 +12,23 @@ import {
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
-import { RootState } from "../../../../../../../stores/store";
-import { Shop } from "../../../../../../../stores/state.interface";
+import { RootState } from "@stores/store";
+import { Shop } from "@stores/state.interface";
 import {
   useCreateDepartmentMutation,
   useGetAllPermissionTypesQuery,
-} from "../../../../../../../stores/apiSlices/staffApi.slice";
-import { goToDepartmentList } from "../../../../../../../apis/navigate.service";
-import { AppBar } from "../../../../../../../components/AppBar";
-import { LoaderBasic } from "../../../../../../../components/ui/Loader";
-import { Collapsible } from "../../../../../../../components/Collapsible";
+} from "@stores/apiSlices/staffApi.slice";
+import { goToDepartmentList } from "@apis/navigate.service";
+import { AppBar } from "@components/AppBar";
+import { LoaderBasic } from "@components/ui/Loader";
+import { Collapsible } from "@components/Collapsible";
 
 export default function CreateDepartmentPage() {
   const router = useRouter();
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
 
   const { data: permissionTypes = [], isLoading: permissionTypeLoading } =
@@ -41,7 +41,7 @@ export default function CreateDepartmentPage() {
 
   const togglePermission = (perm: string) => {
     setSelectedPermissions((prev) =>
-      prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm]
+      prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm],
     );
   };
 
@@ -62,13 +62,12 @@ export default function CreateDepartmentPage() {
         permissions: selectedPermissions,
       }).unwrap();
       goToDepartmentList({ router, shopId: shop.id });
-    } catch (err) {
+    } catch {
       Toast.show({
         type: "error",
         text1: t("create_failed"),
         text2: t("error_any"),
       });
-      console.error(err);
     }
   };
 

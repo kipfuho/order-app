@@ -23,13 +23,14 @@ module.exports = {
     },
   },
   rules: {
-    "no-console": "error",
+    "no-console": "warn",
     "func-names": "off",
     "no-underscore-dangle": "off",
     "consistent-return": "off",
     "jest/expect-expect": "off",
     "security/detect-object-injection": "off",
     "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
   },
   ignorePatterns: [
     "/dist/*",
@@ -39,5 +40,8 @@ module.exports = {
     "/bin/*",
     "/scripts/*",
     "/generated/*",
+    "metro.config.js",
+    "babel.config.js",
+    "app.config.js",
   ],
 };

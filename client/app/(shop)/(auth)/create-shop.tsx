@@ -8,14 +8,14 @@ import {
   Surface,
   TextInput,
 } from "react-native-paper";
-import { AppBar } from "../../../components/AppBar";
+import { AppBar } from "@components/AppBar";
 import { styles } from "../../_layout";
 import { ScrollView, View } from "react-native";
-import { goToShopList } from "../../../apis/navigate.service";
-import { useCreateShopMutation } from "../../../stores/apiSlices/shopApi.slice";
+import { goToShopList } from "@apis/navigate.service";
+import { useCreateShopMutation } from "@stores/apiSlices/shopApi.slice";
 import { useTranslation } from "react-i18next";
-import UploadImages from "../../../components/ui/UploadImage";
-import { uploadImageRequest } from "../../../apis/shop.api.service";
+import UploadImages from "@components/ui/UploadImage";
+import { uploadImageRequest } from "@apis/shop.api.service";
 
 export default function CreateShopPage() {
   const router = useRouter();
@@ -54,7 +54,7 @@ export default function CreateShopPage() {
             !name.trim() && t("shop_name"),
             !email.trim() && t("email"),
           ]),
-          ","
+          ",",
         )}`,
       });
       return;
@@ -81,8 +81,12 @@ export default function CreateShopPage() {
 
       goToShopList({ router });
       resetField();
-    } catch (err) {
-      console.error(err);
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: t("create_failed"),
+        text2: t("error_any"),
+      });
     }
   };
 

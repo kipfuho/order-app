@@ -1,6 +1,6 @@
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { goToEmployeeList } from "../../../../../../../apis/navigate.service";
+import { goToEmployeeList } from "@apis/navigate.service";
 
 export default function EmployeeRedirect() {
   const { shopId } = useLocalSearchParams() as { shopId: string };

@@ -11,19 +11,19 @@ import {
 import Toast from "react-native-toast-message";
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
-import { useCreateEmployeePositionMutation } from "../../../../../../../stores/apiSlices/staffApi.slice";
-import { RootState } from "../../../../../../../stores/store";
-import { Shop } from "../../../../../../../stores/state.interface";
-import { LoaderBasic } from "../../../../../../../components/ui/Loader";
-import { AppBar } from "../../../../../../../components/AppBar";
-import { goToEmployeePositionList } from "../../../../../../../apis/navigate.service";
+import { useCreateEmployeePositionMutation } from "@stores/apiSlices/staffApi.slice";
+import { RootState } from "@stores/store";
+import { Shop } from "@stores/state.interface";
+import { LoaderBasic } from "@components/ui/Loader";
+import { AppBar } from "@components/AppBar";
+import { goToEmployeePositionList } from "@apis/navigate.service";
 
 export default function CreateEmployeePositionPage() {
   const router = useRouter();
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const [createEmployeePosition, { isLoading: createEmployeePositionLoading }] =
     useCreateEmployeePositionMutation();
@@ -37,7 +37,7 @@ export default function CreateEmployeePositionPage() {
         text1: t("create_failed"),
         text2: `${t("required")} ${_.join(
           _.compact([!name.trim() && t("employee_position_name")]),
-          ","
+          ",",
         )}`,
       });
       return;
@@ -50,13 +50,12 @@ export default function CreateEmployeePositionPage() {
       }).unwrap();
 
       goToEmployeePositionList({ router, shopId: shop.id });
-    } catch (err) {
+    } catch {
       Toast.show({
         type: "error",
         text1: t("create_failed"),
         text2: t("error_any"),
       });
-      console.error(err);
     }
   };
 

@@ -73,14 +73,14 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
                 { type: "OrderSessions", id: orderSessionId },
                 { type: "ActiveOrderSessions", id: tableId },
                 "TablesForOrder",
-              ])
+              ]),
             );
             return;
           }
 
           if (type === EventType.NEW_ORDER) {
             store.dispatch(
-              kitchenApiSlice.util.invalidateTags(["UncookedDishOrders"])
+              kitchenApiSlice.util.invalidateTags(["UncookedDishOrders"]),
             );
             return;
           }
@@ -100,7 +100,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           if (type === EventType.TABLE_CHANGED) {
             const { action, table } = data;
             store.dispatch(
-              orderApiSlice.util.invalidateTags(["TablesForOrder"])
+              orderApiSlice.util.invalidateTags(["TablesForOrder"]),
             );
             store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
             return;
@@ -109,7 +109,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           if (type === EventType.TABLE_POSITION_CHANGED) {
             const { action, tablePosition } = data;
             store.dispatch(
-              tableApiSlice.util.invalidateTags(["TablePositions"])
+              tableApiSlice.util.invalidateTags(["TablePositions"]),
             );
             return;
           }
@@ -123,7 +123,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           if (type === EventType.DISH_CATEGORY_CHANGED) {
             const { action, dishCategory } = data;
             store.dispatch(
-              dishApiSlice.util.invalidateTags(["DishCategories"])
+              dishApiSlice.util.invalidateTags(["DishCategories"]),
             );
             return;
           }
@@ -137,7 +137,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           if (type === EventType.EMPLOYEE_POSITION_CHANGED) {
             const { action, employeePosition } = data;
             store.dispatch(
-              staffApiSlice.util.invalidateTags(["EmployeePositions"])
+              staffApiSlice.util.invalidateTags(["EmployeePositions"]),
             );
             return;
           }
@@ -157,7 +157,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
               orderApiSlice.util.invalidateTags([
                 { type: "OrderSessions", id: orderSessionId },
                 { type: "ActiveOrderSessions", id: tableId },
-              ])
+              ]),
             );
             return;
           }
@@ -175,7 +175,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
         type: AppSyncChannelType.SHOP,
         channel,
         subscription,
-      })
+      }),
     );
   } catch (err) {
     console.error("Connection error:", err);
@@ -207,7 +207,7 @@ const connectAppSyncForShopForCustomer = async ({
             store.dispatch(
               shopApiSlice.util.invalidateTags([
                 { type: "Shops", id: shop?.id },
-              ])
+              ]),
             );
             return;
           }
@@ -217,7 +217,7 @@ const connectAppSyncForShopForCustomer = async ({
             store.dispatch(
               tableApiSlice.util.invalidateTags([
                 { type: "Tables", id: table?.id },
-              ])
+              ]),
             );
             return;
           }
@@ -227,7 +227,7 @@ const connectAppSyncForShopForCustomer = async ({
             store.dispatch(
               tableApiSlice.util.invalidateTags([
                 { type: "TablePositions", id: tablePosition?.id },
-              ])
+              ]),
             );
             return;
           }
@@ -241,7 +241,7 @@ const connectAppSyncForShopForCustomer = async ({
           if (type === EventType.DISH_CATEGORY_CHANGED) {
             const { action, dishCategory } = data;
             store.dispatch(
-              dishApiSlice.util.invalidateTags(["DishCategories"])
+              dishApiSlice.util.invalidateTags(["DishCategories"]),
             );
             return;
           }
@@ -259,7 +259,7 @@ const connectAppSyncForShopForCustomer = async ({
         type: AppSyncChannelType.CUSTOMER,
         channel,
         subscription,
-      })
+      }),
     );
   } catch (err) {
     console.error("Connection error:", err);
@@ -305,7 +305,7 @@ const connectAppSyncForOnlinePayment = async ({
         type: AppSyncChannelType.ONLINE_PAYMENT,
         channel,
         subscription,
-      })
+      }),
     );
   } catch (err) {
     console.error("Connection error:", err);

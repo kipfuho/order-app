@@ -2,14 +2,14 @@ import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
-import { useGetTablesQuery } from "../../../../../../../../../stores/apiSlices/tableApi.slice";
-import { RootState } from "../../../../../../../../../stores/store";
-import { LoaderBasic } from "../../../../../../../../../components/ui/Loader";
-import { updateCurrentTable } from "../../../../../../../../../stores/shop.slice";
+import { useGetTablesQuery } from "@stores/apiSlices/tableApi.slice";
+import { RootState } from "@stores/store";
+import { LoaderBasic } from "@components/ui/Loader";
+import { updateCurrentTable } from "@stores/shop.slice";
 import { styles } from "../../../../../../../../_layout";
-import { goToTablesForOrderList } from "../../../../../../../../../apis/navigate.service";
+import { goToTablesForOrderList } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
-import { Shop } from "../../../../../../../../../stores/state.interface";
+import { Shop } from "@stores/state.interface";
 
 export default function TableCurrentOrderLayout() {
   const { tableId } = useGlobalSearchParams() as {
@@ -21,7 +21,7 @@ export default function TableCurrentOrderLayout() {
   const { t } = useTranslation();
 
   const { currentTable, currentShop } = useSelector(
-    (state: RootState) => state.shop
+    (state: RootState) => state.shop,
   );
   const shop = currentShop as Shop;
   const { data: tables = [], isLoading } = useGetTablesQuery(shop.id);

@@ -1,5 +1,4 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { auth } from "../generated/auth";
 import { signOut, signOutForCustomer } from "../stores/authSlice";
 import _ from "lodash";
 import { Platform } from "react-native";
@@ -38,7 +37,7 @@ export const apiProtobufRequest = async <T>(
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   endpoint: string,
   data?: Uint8Array, // Expect Protobuf-encoded data
-  token?: string
+  token?: string,
 ): Promise<T> => {
   try {
     const config: AxiosRequestConfig = {
@@ -69,6 +68,7 @@ export const apiRequest = async <T>({
   isCustomerApp?: boolean;
 }): Promise<T> => {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const store = require("../stores/store").default;
     const lang = _.get(store.getState(), "setting.locale");
     const config: AxiosRequestConfig = {
@@ -86,6 +86,7 @@ export const apiRequest = async <T>({
   } catch (error: any) {
     // 401 Unauthorized
     if (error.status === 401) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const store = require("../stores/store").default;
       if (isCustomerApp) {
         store.dispatch(signOutForCustomer());
@@ -122,26 +123,27 @@ export const apiFormDataRequest = async <T>({
 };
 
 // example of using protobuf
-export const loginRequestProtobuf = async (email: string, password: string) => {
-  try {
-    // Encode login request using Protobuf
-    const encodedRequest = new Uint8Array(
-      auth.LoginRequest.encode({ email, password }).finish()
-    );
+// export const loginRequestProtobuf = async (email: string, password: string) => {
+//   try {
+//     // Encode login request using Protobuf
+//     const encodedRequest = new Uint8Array(
+//       auth.LoginRequest.encode({ email, password }).finish(),
+//     );
 
-    const responseBuffer = await apiRequest<Uint8Array>({
-      method: "POST",
-      endpoint: "v1/auth/login",
-      data: encodedRequest,
-    });
+//     const responseBuffer = await apiRequest<Uint8Array>({
+//       method: "POST",
+//       endpoint: "v1/auth/login",
+//       data: encodedRequest,
+//     });
 
-    // Decode Protobuf response
-    const decodedResponse = auth.LoginResponse.decode(
-      new Uint8Array(responseBuffer)
-    ).toJSON();
+//     // Decode Protobuf response
+//     const decodedResponse = auth.LoginResponse.decode(
+//       new Uint8Array(responseBuffer),
+//     ).toJSON();
 
-    return decodedResponse;
-  } catch (err) {
-    console.error(err);
-  }
-};
+//     return decodedResponse;
+//   } catch (err) {
+//     // eslint-disable-next-line no-console
+//     console.error(err);
+//   }
+// };

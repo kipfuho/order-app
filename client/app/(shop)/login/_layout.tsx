@@ -1,6 +1,5 @@
 import { Redirect, Stack } from "expo-router";
-import { useSession } from "../../../hooks/useSession";
-import { LoaderBasic } from "../../../components/ui/Loader";
+import { useSession } from "@hooks/useSession";
 
 export default function AppLayout() {
   const { session } = useSession();

@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
-import { AppBar } from "../../../../../../../components/AppBar";
-import { goToShopHome } from "../../../../../../../apis/navigate.service";
+import { AppBar } from "@components/AppBar";
+import { goToShopHome } from "@apis/navigate.service";
 import {
   Surface,
   Text,
@@ -11,17 +11,17 @@ import {
   useTheme,
   Icon,
 } from "react-native-paper";
-import { Shop } from "../../../../../../../stores/state.interface";
-import { RootState } from "../../../../../../../stores/store";
+import { Shop } from "@stores/state.interface";
+import { RootState } from "@stores/store";
 import { useSelector } from "react-redux";
-import { useGetOrderSessionHistoryQuery } from "../../../../../../../stores/apiSlices/orderApi.slice";
+import { useGetOrderSessionHistoryQuery } from "@stores/apiSlices/orderApi.slice";
 import { DatePickerModal } from "react-native-paper-dates";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { format } from "date-fns";
-import { LoaderBasic } from "../../../../../../../components/ui/Loader";
+import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
-import OrderHistoryCard from "../../../../../../../components/ui/orders/OrderHistoryCard";
+import OrderHistoryCard from "@components/ui/orders/OrderHistoryCard";
 
 export default function OrderManagementHistoryPage() {
   const router = useRouter();
@@ -100,7 +100,7 @@ export default function OrderManagementHistoryPage() {
                   {range.startDate && range.endDate
                     ? `${t("from")}: ${format(
                         range.startDate,
-                        "dd/MM/yyyy"
+                        "dd/MM/yyyy",
                       )} ${t("to")}: ${format(range.endDate, "dd/MM/yyyy")}`
                     : t("choose_time_range")}
                 </Text>

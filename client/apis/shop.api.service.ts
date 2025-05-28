@@ -1,4 +1,4 @@
-import { Shop } from "../stores/state.interface";
+import { Shop } from "@stores/state.interface";
 import { apiFormDataRequest, apiRequest } from "./api.service";
 import { getAccessTokenLazily } from "./auth.api.service";
 import {

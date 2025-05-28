@@ -15,12 +15,12 @@ import { useTranslation } from "react-i18next";
 import {
   useGetEmployeePositionsQuery,
   useUpdateEmployeePositionMutation,
-} from "../../../../../../../../stores/apiSlices/staffApi.slice";
-import { RootState } from "../../../../../../../../stores/store";
-import { Shop } from "../../../../../../../../stores/state.interface";
-import { goToEmployeePositionList } from "../../../../../../../../apis/navigate.service";
-import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
-import { AppBar } from "../../../../../../../../components/AppBar";
+} from "@stores/apiSlices/staffApi.slice";
+import { RootState } from "@stores/store";
+import { Shop } from "@stores/state.interface";
+import { goToEmployeePositionList } from "@apis/navigate.service";
+import { LoaderBasic } from "@components/ui/Loader";
+import { AppBar } from "@components/AppBar";
 
 export default function UpdateEmployeePositionPage() {
   const { employeePositionId } = useGlobalSearchParams() as {
@@ -30,7 +30,7 @@ export default function UpdateEmployeePositionPage() {
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const {
     data: employeePositions = [],
@@ -39,7 +39,7 @@ export default function UpdateEmployeePositionPage() {
   } = useGetEmployeePositionsQuery(shop.id);
   const employeePosition = _.find(
     employeePositions,
-    (ep) => ep.id === employeePositionId
+    (ep) => ep.id === employeePositionId,
   );
 
   const [updateEmployeePosition, { isLoading: updateEmployeePositionLoading }] =
@@ -54,7 +54,7 @@ export default function UpdateEmployeePositionPage() {
         text1: t("update_failed"),
         text2: `${t("required")} ${_.join(
           _.compact([!name.trim() && t("employee_position_name")]),
-          ","
+          ",",
         )}`,
       });
       return;
@@ -68,13 +68,12 @@ export default function UpdateEmployeePositionPage() {
       }).unwrap();
 
       goToEmployeePositionList({ router, shopId: shop.id });
-    } catch (err) {
+    } catch {
       Toast.show({
         type: "error",
         text1: t("update_failed"),
         text2: t("error_any"),
       });
-      console.error(err);
     }
   };
 

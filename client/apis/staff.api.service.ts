@@ -2,7 +2,7 @@ import {
   Department,
   Employee,
   EmployeePosition,
-} from "../stores/state.interface";
+} from "@stores/state.interface";
 import { apiRequest } from "./api.service";
 import { getAccessTokenLazily } from "./auth.api.service";
 import {

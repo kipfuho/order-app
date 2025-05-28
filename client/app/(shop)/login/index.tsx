@@ -11,9 +11,9 @@ import Toast from "react-native-toast-message";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { View, KeyboardAvoidingView, Platform } from "react-native";
-import { loginRequest } from "../../../apis/auth.api.service";
-import Logo from "../../../assets/svg/logo.svg";
-import { goToShopList } from "../../../apis/navigate.service";
+import { loginRequest } from "@apis/auth.api.service";
+import Logo from "@assets/svg/logo.svg";
+import { goToShopList } from "@apis/navigate.service";
 
 const LoginScreen = () => {
   const { t } = useTranslation();
@@ -39,7 +39,7 @@ const LoginScreen = () => {
       if (result) {
         goToShopList({ router });
       }
-    } catch (error) {
+    } catch {
       Toast.show({
         type: "error",
         text1: "Login Failed",

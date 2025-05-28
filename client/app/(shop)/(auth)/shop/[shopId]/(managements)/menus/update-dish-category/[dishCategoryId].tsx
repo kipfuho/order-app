@@ -11,15 +11,15 @@ import {
 } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { RootState } from "../../../../../../../../stores/store";
-import { Shop } from "../../../../../../../../stores/state.interface";
-import { AppBar } from "../../../../../../../../components/AppBar";
+import { RootState } from "@stores/store";
+import { Shop } from "@stores/state.interface";
+import { AppBar } from "@components/AppBar";
 import {
   useGetDishCategoriesQuery,
   useUpdateDishCategoryMutation,
-} from "../../../../../../../../stores/apiSlices/dishApi.slice";
-import { goToDishCategoryList } from "../../../../../../../../apis/navigate.service";
-import { LoaderBasic } from "../../../../../../../../components/ui/Loader";
+} from "@stores/apiSlices/dishApi.slice";
+import { goToDishCategoryList } from "@apis/navigate.service";
+import { LoaderBasic } from "@components/ui/Loader";
 import { ScrollView, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -29,7 +29,7 @@ export default function UpdateDishCategoryPage() {
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const {
     data: dishCategories,
@@ -65,7 +65,7 @@ export default function UpdateDishCategoryPage() {
             !name.trim() && t("dish_category_name"),
             !code.trim() && t("dish_category_code"),
           ]),
-          ","
+          ",",
         )}`,
       });
       return;

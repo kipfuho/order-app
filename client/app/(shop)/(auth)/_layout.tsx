@@ -1,7 +1,7 @@
 import { Redirect, Stack } from "expo-router";
-import { persistor } from "../../../stores/store";
+import { persistor } from "@stores/store";
 import { useEffect } from "react";
-import { useSession } from "../../../hooks/useSession";
+import { useSession } from "@hooks/useSession";
 import { Platform } from "react-native";
 
 export default function AppLayout() {
@@ -12,7 +12,6 @@ export default function AppLayout() {
 
     const handleKeyDown = async (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === "Delete") {
-        console.log("Wiping persisted store...");
         await persistor.purge();
       }
     };

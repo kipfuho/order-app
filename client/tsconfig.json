@@ -30,6 +30,9 @@
       "@stores/*": [
         "./stores/*"
       ],
+      "@locales/*": [
+        "./locales/*"
+      ],
     }
   },
   "include": [

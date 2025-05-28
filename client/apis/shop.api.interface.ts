@@ -1,4 +1,4 @@
-import { User } from "../stores/state.interface";
+import { User } from "@stores/state.interface";
 
 interface UploadImageRequest {
   formData: FormData;

@@ -1,4 +1,4 @@
-import { TablePosition } from "../stores/state.interface";
+import { TablePosition } from "@stores/state.interface";
 
 interface GetTablePositionsRequest {
   shopId: string;

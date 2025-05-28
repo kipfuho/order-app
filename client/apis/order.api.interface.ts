@@ -1,5 +1,5 @@
-import { DiscountValueType } from "../constants/common";
-import { DishOrder, PaymentDetail } from "../stores/state.interface";
+import { DiscountValueType } from "@constants/common";
+import { DishOrder, PaymentDetail } from "@stores/state.interface";
 
 interface GetTablesForOrderRequest {
   shopId: string;

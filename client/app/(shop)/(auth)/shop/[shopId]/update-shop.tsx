@@ -9,23 +9,23 @@ import {
   TextInput,
 } from "react-native-paper";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../stores/store";
-import { Shop } from "../../../../../stores/state.interface";
-import { AppBar } from "../../../../../components/AppBar";
-import { goToShopHome } from "../../../../../apis/navigate.service";
+import { RootState } from "@stores/store";
+import { Shop } from "@stores/state.interface";
+import { AppBar } from "@components/AppBar";
+import { goToShopHome } from "@apis/navigate.service";
 import { ScrollView, View } from "react-native";
 import { styles } from "../../../../_layout";
-import { useUpdateShopMutation } from "../../../../../stores/apiSlices/shopApi.slice";
+import { useUpdateShopMutation } from "@stores/apiSlices/shopApi.slice";
 import { useTranslation } from "react-i18next";
-import UploadImages from "../../../../../components/ui/UploadImage";
-import { uploadImageRequest } from "../../../../../apis/shop.api.service";
+import UploadImages from "@components/ui/UploadImage";
+import { uploadImageRequest } from "@apis/shop.api.service";
 
 export default function UpdateShopPage() {
   const { t } = useTranslation();
   const router = useRouter();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const [updateShop, { isLoading: updateShopLoading }] =
     useUpdateShopMutation();
@@ -73,8 +73,12 @@ export default function UpdateShopPage() {
       }).unwrap();
 
       goToShopHome({ router, shopId: shop.id });
-    } catch (err) {
-      console.error(err);
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: t("update_failed"),
+        text2: t("error_any"),
+      });
     }
   };
 

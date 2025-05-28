@@ -1,40 +1,32 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../stores/store";
-import { Dish, Shop } from "../../../../../../../stores/state.interface";
-import { AppBar } from "../../../../../../../components/AppBar";
-import {
-  Text,
-  Surface,
-  Menu,
-  Portal,
-  Dialog,
-  Button,
-  FAB,
-} from "react-native-paper";
+import { RootState } from "@stores/store";
+import { Dish, Shop } from "@stores/state.interface";
+import { AppBar } from "@components/AppBar";
+import { Text, Surface, Menu, Portal, Dialog, FAB } from "react-native-paper";
 import { GestureResponderEvent, Keyboard, View } from "react-native";
 import Toast from "react-native-toast-message";
 import {
   useDeleteDishMutation,
   useGetDishCategoriesQuery,
   useGetDishesQuery,
-} from "../../../../../../../stores/apiSlices/dishApi.slice";
-import { LoaderBasic } from "../../../../../../../components/ui/Loader";
+} from "@stores/apiSlices/dishApi.slice";
+import { LoaderBasic } from "@components/ui/Loader";
 import {
   goToShopHome,
   goToCreateDish,
   goToDishUpdatePage,
-} from "../../../../../../../apis/navigate.service";
+} from "@apis/navigate.service";
 import _, { debounce } from "lodash";
 import { useTranslation } from "react-i18next";
-import { ConfirmCancelDialog } from "../../../../../../../components/ui/CancelDialog";
+import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
 import FlatListWithScroll, {
   ItemTypeFlatList,
-} from "../../../../../../../components/FlatListWithScroll";
-import { AppBarSearchBox } from "../../../../../../../components/AppBarSearchBox";
+} from "@components/FlatListWithScroll";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
+import AppBarSearchBox from "@/components/AppBarSearchBox";
 
 const createDismissGesture = (onDismissSearch: () => void) =>
   Gesture.Tap().onStart(() => {
@@ -46,7 +38,7 @@ export default function DishesManagementPage() {
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery({
     shopId: shop.id,
@@ -86,8 +78,12 @@ export default function DishesManagementPage() {
         shopId: shop.id,
         dishId: selectedDish.id,
       }).unwrap();
-    } catch (err) {
-      console.error(err);
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: t("delete_failed"),
+        text2: t("error_any"),
+      });
     } finally {
       setDialogVisible(false);
       setMenuVisible(false);
@@ -115,12 +111,12 @@ export default function DishesManagementPage() {
         dishes,
         (dish) =>
           _.includes((dish.name || "").toLowerCase(), searchValueLowerCase) ||
-          _.includes((dish.code || "").toLowerCase(), searchValueLowerCase)
+          _.includes((dish.code || "").toLowerCase(), searchValueLowerCase),
       );
 
       setFilteredDishGroupById(_.groupBy(matchedDishes, "category.id"));
     }, 200),
-    [dishes]
+    [dishes],
   );
 
   useEffect(() => {

@@ -1,5 +1,4 @@
-import _ from "lodash";
-import { Table, TablePosition } from "../stores/state.interface";
+import { Table, TablePosition } from "@stores/state.interface";
 import { apiRequest } from "./api.service";
 import {
   CreateTablePositionRequest,

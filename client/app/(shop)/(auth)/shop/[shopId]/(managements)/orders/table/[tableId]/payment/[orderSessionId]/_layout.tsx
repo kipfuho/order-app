@@ -1,15 +1,12 @@
 import { Redirect, Stack, useGlobalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../../../../../../../../../../stores/store";
-import { LoaderBasic } from "../../../../../../../../../../../components/ui/Loader";
-import { useGetActiveOrderSessionsQuery } from "../../../../../../../../../../../stores/apiSlices/orderApi.slice";
-import { updateCurrentOrderSession } from "../../../../../../../../../../../stores/shop.slice";
-import {
-  Shop,
-  Table,
-} from "../../../../../../../../../../../stores/state.interface";
-import { OrderSessionStatus } from "../../../../../../../../../../../constants/common";
+import { RootState } from "@stores/store";
+import { LoaderBasic } from "@components/ui/Loader";
+import { useGetActiveOrderSessionsQuery } from "@stores/apiSlices/orderApi.slice";
+import { updateCurrentOrderSession } from "@stores/shop.slice";
+import { Shop, Table } from "@stores/state.interface";
+import { OrderSessionStatus } from "@constants/common";
 
 export default function PaymentOrderSessionLayout() {
   const { orderSessionId } = useGlobalSearchParams() as {
@@ -18,7 +15,7 @@ export default function PaymentOrderSessionLayout() {
   const dispatch = useDispatch();
 
   const { currentShop, currentTable } = useSelector(
-    (state: RootState) => state.shop
+    (state: RootState) => state.shop,
   );
   const shop = currentShop as Shop;
   const table = currentTable as Table;
@@ -33,7 +30,7 @@ export default function PaymentOrderSessionLayout() {
   });
 
   const activeOrderSession = activeOrderSessions.find(
-    (orderSession) => orderSession.id === orderSessionId
+    (orderSession) => orderSession.id === orderSessionId,
   );
 
   const [shouldRedirect, setShouldRedirect] = useState(false);

@@ -24,6 +24,9 @@
       "@stores/*": [
         "./stores/*"
       ],
+      "@locales/*": [
+        "./locales/*"
+      ],
     }
   }
 }

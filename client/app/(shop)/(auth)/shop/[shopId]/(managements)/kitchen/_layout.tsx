@@ -4,13 +4,13 @@ import {
   usePathname,
   useRouter,
 } from "expo-router";
-import { AppBar } from "../../../../../../../components/AppBar";
+import { AppBar } from "@components/AppBar";
 import { TouchableOpacity, View } from "react-native";
-import { goToShopHome } from "../../../../../../../apis/navigate.service";
+import { goToShopHome } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { Icon, Menu, Text, useTheme } from "react-native-paper";
 import { memo, useEffect, useMemo, useState } from "react";
-import { SwipeContext } from "../../../../../../../hooks/useSwipeNavigation";
+import { SwipeContext } from "@hooks/useSwipeNavigation";
 
 interface Item {
   title: string;
@@ -33,7 +33,7 @@ const allRoutes: Item[] = [
   { title: "serve_history", route: "serving-history" },
 ];
 
-const KitchenButton = memo(({ title, route }: Item) => {
+const KitchenButton = ({ title, route }: Item) => {
   const { shopId } = useLocalSearchParams() as { shopId: string };
   const theme = useTheme();
   const router = useRouter();
@@ -74,7 +74,9 @@ const KitchenButton = memo(({ title, route }: Item) => {
       </Text>
     </TouchableOpacity>
   );
-});
+};
+
+const MemoizedKitchenButton = memo(KitchenButton);
 
 export default function TabLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };
@@ -90,7 +92,7 @@ export default function TabLayout() {
   // Find current route index
   const currentRouteIndex = useMemo(() => {
     const currentIndex = allRoutes.findIndex((route) =>
-      pathName.endsWith(`/kitchen/${route.route}`)
+      pathName.endsWith(`/kitchen/${route.route}`),
     );
     return currentIndex !== -1 ? currentIndex : 0;
   }, [pathName]);
@@ -123,7 +125,7 @@ export default function TabLayout() {
       currentIndex: currentRouteIndex,
       totalPages: allRoutes.length,
     }),
-    [currentRouteIndex]
+    [currentRouteIndex],
   );
 
   return (
@@ -141,7 +143,7 @@ export default function TabLayout() {
             }}
           >
             {allVisibleRoutes.map((info, index) => (
-              <KitchenButton
+              <MemoizedKitchenButton
                 key={index}
                 route={info.route}
                 title={t(info.title)}

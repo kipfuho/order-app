@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { StyleSheet, ScrollView } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import {
-  Button,
   Dialog,
   List,
   Portal,
@@ -13,27 +12,22 @@ import {
   useTheme,
   FAB,
 } from "react-native-paper"; // Import IconButton for delete button
-import _ from "lodash";
-import { RootState } from "../../../../../../../stores/store";
-import {
-  DishCategory,
-  Shop,
-} from "../../../../../../../stores/state.interface";
-import { AppBar } from "../../../../../../../components/AppBar";
+import { RootState } from "@stores/store";
+import { DishCategory, Shop } from "@stores/state.interface";
+import { AppBar } from "@components/AppBar";
 import {
   useDeleteDishCategoryMutation,
   useGetDishCategoriesQuery,
-} from "../../../../../../../stores/apiSlices/dishApi.slice";
-import { LoaderBasic } from "../../../../../../../components/ui/Loader";
+} from "@stores/apiSlices/dishApi.slice";
+import { LoaderBasic } from "@components/ui/Loader";
 import {
   goToShopHome,
   goToCreateDishCategory,
   goToUpdateDishCategory,
-} from "../../../../../../../apis/navigate.service";
+} from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
-import { ConfirmCancelDialog } from "../../../../../../../components/ui/CancelDialog";
+import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
 import Toast from "react-native-toast-message";
-import { View } from "react-native";
 
 export default function CategoriesManagementPage() {
   const router = useRouter();
@@ -41,7 +35,7 @@ export default function CategoriesManagementPage() {
   const theme = useTheme();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
     useGetDishCategoriesQuery({ shopId: shop.id });
@@ -66,8 +60,12 @@ export default function CategoriesManagementPage() {
         shopId: shop.id,
         dishCategoryId: selectedDishCategory.id,
       }).unwrap();
-    } catch (err) {
-      console.error(err);
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: t("delete_failed"),
+        text2: t("error_any"),
+      });
     } finally {
       setDialogVisible(false);
     }

@@ -12,32 +12,28 @@ import {
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
-import { RootState } from "../../../../../../../stores/store";
-import {
-  Department,
-  EmployeePosition,
-  Shop,
-} from "../../../../../../../stores/state.interface";
+import { RootState } from "@stores/store";
+import { Department, EmployeePosition, Shop } from "@stores/state.interface";
 import {
   useCreateEmployeeMutation,
   useGetAllPermissionTypesQuery,
   useGetDepartmentsQuery,
   useGetEmployeePositionsQuery,
-} from "../../../../../../../stores/apiSlices/staffApi.slice";
-import { LoaderBasic } from "../../../../../../../components/ui/Loader";
-import { goToEmployeeList } from "../../../../../../../apis/navigate.service";
-import { AppBar } from "../../../../../../../components/AppBar";
-import { DropdownMenu } from "../../../../../../../components/DropdownMenu";
-import { Collapsible } from "../../../../../../../components/Collapsible";
-import { checkUserByEmailRequest } from "../../../../../../../apis/auth.api.service";
-import PasswordInput from "../../../../../../../components/ui/PasswordInput";
+} from "@stores/apiSlices/staffApi.slice";
+import { LoaderBasic } from "@components/ui/Loader";
+import { goToEmployeeList } from "@apis/navigate.service";
+import { AppBar } from "@components/AppBar";
+import { DropdownMenu } from "@components/DropdownMenu";
+import { Collapsible } from "@components/Collapsible";
+import { checkUserByEmailRequest } from "@apis/auth.api.service";
+import PasswordInput from "@components/ui/PasswordInput";
 
 export default function CreateEmployeePage() {
   const router = useRouter();
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const { data: permissionTypes = [], isLoading: permissionTypeLoading } =
     useGetAllPermissionTypesQuery(shop.id);
@@ -59,7 +55,7 @@ export default function CreateEmployeePage() {
 
   const togglePermission = (perm: string) => {
     setSelectedPermissions((prev) =>
-      prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm]
+      prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm],
     );
   };
 
@@ -80,7 +76,7 @@ export default function CreateEmployeePage() {
             text2: t("email_exist_cannot_enter_password"),
           });
         }
-      } catch (e) {
+      } catch {
         Toast.show({
           type: "error",
           text1: t("create_failed"),
@@ -89,7 +85,7 @@ export default function CreateEmployeePage() {
       } finally {
         setCheckingEmail(false);
       }
-    }, 800)
+    }, 800),
   ).current;
 
   const handleCreateEmployee = async () => {
@@ -111,7 +107,7 @@ export default function CreateEmployeePage() {
             !email.trim() && t("email"),
             !password.trim() && !emailExists && t("password"),
           ]),
-          ","
+          ",",
         )}`,
       });
       return;
@@ -128,7 +124,7 @@ export default function CreateEmployeePage() {
         permissions: selectedPermissions,
       }).unwrap();
       goToEmployeeList({ router, shopId: shop.id });
-    } catch (err) {
+    } catch {
       Toast.show({
         type: "error",
         text1: t("create_failed"),

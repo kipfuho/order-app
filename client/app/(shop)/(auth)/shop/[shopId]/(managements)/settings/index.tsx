@@ -1,12 +1,12 @@
 import { useRouter } from "expo-router";
 import { ScrollView, View, useWindowDimensions } from "react-native";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../stores/store";
+import { RootState } from "@stores/store";
 import { Button, Surface, Icon, Text } from "react-native-paper";
-import { Shop } from "../../../../../../../stores/state.interface";
-import { AppBar } from "../../../../../../../components/AppBar";
+import { Shop } from "@stores/state.interface";
+import { AppBar } from "@components/AppBar";
 import { styles } from "../../../../../../_layout";
-import { goToShopHome } from "../../../../../../../apis/navigate.service";
+import { goToShopHome } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
 
 interface Item {
@@ -44,7 +44,7 @@ export default function SettingManagementPage() {
   const buttonSize = getButtonSize(width);
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
 
   return (

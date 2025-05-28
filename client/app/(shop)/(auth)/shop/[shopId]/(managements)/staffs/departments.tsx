@@ -8,26 +8,26 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
-import { AppBar } from "../../../../../../../components/AppBar";
+import { AppBar } from "@components/AppBar";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import {
   useDeleteDepartmentMutation,
   useGetDepartmentsQuery,
-} from "../../../../../../../stores/apiSlices/staffApi.slice";
-import { LoaderBasic } from "../../../../../../../components/ui/Loader";
+} from "@stores/apiSlices/staffApi.slice";
+import { LoaderBasic } from "@components/ui/Loader";
 import {
   goToShopHome,
   goToCreateDepartment,
   goToUpdateDepartment,
-} from "../../../../../../../apis/navigate.service";
+} from "@apis/navigate.service";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../stores/store";
-import { Department, Shop } from "../../../../../../../stores/state.interface";
+import { RootState } from "@stores/store";
+import { Department, Shop } from "@stores/state.interface";
 import { useState } from "react";
 import Toast from "react-native-toast-message";
-import { ConfirmCancelDialog } from "../../../../../../../components/ui/CancelDialog";
+import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
 
 export default function StaffDepartmentPage() {
   const { t } = useTranslation();
@@ -35,7 +35,7 @@ export default function StaffDepartmentPage() {
   const theme = useTheme();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const { data: departments = [], isLoading: departmentLoading } =
     useGetDepartmentsQuery(shop.id);
@@ -59,8 +59,12 @@ export default function StaffDepartmentPage() {
         shopId: shop.id,
         departmentId: selectedDepartment.id,
       }).unwrap();
-    } catch (err) {
-      console.error(err);
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: t("delete_failed"),
+        text2: t("error_any"),
+      });
     } finally {
       setDialogVisible(false);
     }

@@ -11,19 +11,19 @@ import {
   TextInput,
 } from "react-native-paper";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../../../stores/store";
-import { Shop } from "../../../../../../../../../stores/state.interface";
-import { AppBar } from "../../../../../../../../../components/AppBar";
+import { RootState } from "@stores/store";
+import { Shop } from "@stores/state.interface";
+import { AppBar } from "@components/AppBar";
 import { ScrollView, View } from "react-native";
 import {
   useGetTablePositionsQuery,
   useUpdateTablePositionMutation,
-} from "../../../../../../../../../stores/apiSlices/tableApi.slice";
-import { useGetDishCategoriesQuery } from "../../../../../../../../../stores/apiSlices/dishApi.slice";
-import { LoaderBasic } from "../../../../../../../../../components/ui/Loader";
-import { goToTablePositionList } from "../../../../../../../../../apis/navigate.service";
+} from "@stores/apiSlices/tableApi.slice";
+import { useGetDishCategoriesQuery } from "@stores/apiSlices/dishApi.slice";
+import { LoaderBasic } from "@components/ui/Loader";
+import { goToTablePositionList } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
-import DishCategorySelectionDialog from "../../../../../../../../../components/ui/settings/DishCategorySelectionDialog";
+import DishCategorySelectionDialog from "@components/ui/settings/DishCategorySelectionDialog";
 
 export default function UpdateTablePositionPage() {
   const { tablePositionId } = useGlobalSearchParams();
@@ -31,7 +31,7 @@ export default function UpdateTablePositionPage() {
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const {
     data: tablePositions = [],
@@ -42,7 +42,7 @@ export default function UpdateTablePositionPage() {
     useGetDishCategoriesQuery({ shopId: shop.id });
   const tablePosition = _.find(
     tablePositions,
-    (tp) => tp.id === tablePositionId
+    (tp) => tp.id === tablePositionId,
   );
   const [updateTablePosition, { isLoading: updateTablePositionLoading }] =
     useUpdateTablePositionMutation();
@@ -66,7 +66,7 @@ export default function UpdateTablePositionPage() {
             !name.trim() && t("table_position_name"),
             _.isEmpty(selectedCategories) && t("dish_category"),
           ]),
-          ","
+          ",",
         )}`,
       });
       return;
@@ -168,7 +168,7 @@ export default function UpdateTablePositionPage() {
                 .map((categoryId) => {
                   const category = _.find(
                     dishCategories,
-                    (cat) => cat.id === categoryId
+                    (cat) => cat.id === categoryId,
                   );
                   if (category) {
                     return (

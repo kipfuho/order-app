@@ -1,20 +1,19 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { AppBar } from "../../../../../../../../../../../components/AppBar";
-import { LoaderBasic } from "../../../../../../../../../../../components/ui/Loader";
-import { useGetOrderSessionDetailQuery } from "../../../../../../../../../../../stores/apiSlices/orderApi.slice";
-import { goToTablesForOrderList } from "../../../../../../../../../../../apis/navigate.service";
+import { AppBar } from "@components/AppBar";
+import { LoaderBasic } from "@components/ui/Loader";
+import { useGetOrderSessionDetailQuery } from "@stores/apiSlices/orderApi.slice";
+import { goToTablesForOrderList } from "@apis/navigate.service";
 import { Surface, useTheme } from "react-native-paper";
-import { OrderSession } from "../../../../../../../../../../../stores/state.interface";
+import { OrderSession } from "@stores/state.interface";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../../../../../../../../../../stores/store";
+import { RootState } from "@stores/store";
 import { ScrollView, useWindowDimensions } from "react-native";
 import { useTranslation } from "react-i18next";
-import _ from "lodash";
-import { Collapsible } from "../../../../../../../../../../../components/Collapsible";
-import { resetCurrentTable } from "../../../../../../../../../../../stores/shop.slice";
-import ActiveOrderSessionPage from "../../../../../../../../../../../components/ui/orders/OrderDetailPanel";
-import OrderSessionDetailPage from "../../../../../../../../../../../components/ui/orders/PaymentDetailPanel";
-import PaymentMethodPage from "../../../../../../../../../../../components/ui/orders/PaymentPanel";
+import { Collapsible } from "@components/Collapsible";
+import { resetCurrentTable } from "@stores/shop.slice";
+import ActiveOrderSessionPage from "@components/ui/orders/OrderDetailPanel";
+import OrderSessionDetailPage from "@components/ui/orders/PaymentDetailPanel";
+import PaymentMethodPage from "@components/ui/orders/PaymentPanel";
 import { t } from "i18next";
 
 function Main({

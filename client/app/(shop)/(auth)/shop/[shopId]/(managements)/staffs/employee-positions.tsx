@@ -8,28 +8,25 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
-import { AppBar } from "../../../../../../../components/AppBar";
+import { AppBar } from "@components/AppBar";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import {
   useDeleteEmployeePositionMutation,
   useGetEmployeePositionsQuery,
-} from "../../../../../../../stores/apiSlices/staffApi.slice";
+} from "@stores/apiSlices/staffApi.slice";
 import { useRouter } from "expo-router";
-import { LoaderBasic } from "../../../../../../../components/ui/Loader";
+import { LoaderBasic } from "@components/ui/Loader";
 import {
   goToShopHome,
   goToCreateEmployeePosition,
   goToUpdateEmployeePosition,
-} from "../../../../../../../apis/navigate.service";
-import { RootState } from "../../../../../../../stores/store";
+} from "@apis/navigate.service";
+import { RootState } from "@stores/store";
 import { useSelector } from "react-redux";
-import {
-  EmployeePosition,
-  Shop,
-} from "../../../../../../../stores/state.interface";
+import { EmployeePosition, Shop } from "@stores/state.interface";
 import { useState } from "react";
-import { ConfirmCancelDialog } from "../../../../../../../components/ui/CancelDialog";
+import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
 import Toast from "react-native-toast-message";
 
 export default function StaffEmployeePositionPage() {
@@ -38,7 +35,7 @@ export default function StaffEmployeePositionPage() {
   const theme = useTheme();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const { data: employeePositions = [], isLoading: employeePositionLoading } =
     useGetEmployeePositionsQuery(shop.id);
@@ -63,8 +60,12 @@ export default function StaffEmployeePositionPage() {
         shopId: shop.id,
         employeePositionId: selectedEmployeePosition.id,
       }).unwrap();
-    } catch (err) {
-      console.error(err);
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: t("delete_failed"),
+        text2: t("error_any"),
+      });
     } finally {
       setDialogVisible(false);
     }

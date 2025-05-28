@@ -1,11 +1,11 @@
 import _ from "lodash";
-import store from "../stores/store";
+import store from "@stores/store";
 import {
   signIn,
   signInForCustomer,
   signOut,
   signOutForCustomer,
-} from "../stores/authSlice";
+} from "@stores/authSlice";
 import {
   loginForAnonymousCustomerRequest,
   refreshTokensRequest,
@@ -16,7 +16,7 @@ const isTokenExpired = (
     | Partial<{
         expires: number;
       }>
-    | undefined
+    | undefined,
 ) => {
   if (!token || !token.expires) return false;
   return Date.now() >= token.expires;
@@ -36,7 +36,7 @@ const _getCustomerAccessToken = async (): Promise<string> => {
   if (isTokenExpired(_.get(customer, "tokens.access"))) {
     let newTokens = await refreshTokensRequest(
       customer.tokens.refresh.token,
-      true
+      true,
     );
     if (!newTokens && customer.anonymous) {
       newTokens = await loginForAnonymousCustomerRequest(customer.id);
@@ -52,7 +52,7 @@ const _getCustomerAccessToken = async (): Promise<string> => {
 };
 
 export const getAccessToken = async (
-  isCustomerApp: boolean = false
+  isCustomerApp: boolean = false,
 ): Promise<string> => {
   const state = store.getState(); // Access Redux state
   if (isCustomerApp) {

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../../../stores/store";
+import { RootState } from "@stores/store";
 import {
   ActivityIndicator,
   Button,
@@ -11,21 +11,21 @@ import {
   TextInput,
   Surface,
 } from "react-native-paper";
-import { Shop } from "../../../../../../../../../stores/state.interface";
-import { AppBar } from "../../../../../../../../../components/AppBar";
+import { Shop } from "@stores/state.interface";
+import { AppBar } from "@components/AppBar";
 import Toast from "react-native-toast-message";
-import { goToKitchenList } from "../../../../../../../../../apis/navigate.service";
-import { LoaderBasic } from "../../../../../../../../../components/ui/Loader";
+import { goToKitchenList } from "@apis/navigate.service";
+import { LoaderBasic } from "@components/ui/Loader";
 import _ from "lodash";
 import {
   useGetKitchensQuery,
   useUpdateKitchenMutation,
-} from "../../../../../../../../../stores/apiSlices/kitchenApi.slice";
+} from "@stores/apiSlices/kitchenApi.slice";
 import { useTranslation } from "react-i18next";
-import DishCategorySelectionDialog from "../../../../../../../../../components/ui/settings/DishCategorySelectionDialog";
-import { useGetTablesQuery } from "../../../../../../../../../stores/apiSlices/tableApi.slice";
-import { useGetDishCategoriesQuery } from "../../../../../../../../../stores/apiSlices/dishApi.slice";
-import TableSelectionDialog from "../../../../../../../../../components/ui/settings/TableSelectionDialog";
+import DishCategorySelectionDialog from "@components/ui/settings/DishCategorySelectionDialog";
+import { useGetTablesQuery } from "@stores/apiSlices/tableApi.slice";
+import { useGetDishCategoriesQuery } from "@stores/apiSlices/dishApi.slice";
+import TableSelectionDialog from "@components/ui/settings/TableSelectionDialog";
 
 export default function UpdateKitchenPage() {
   const { kitchenId } = useLocalSearchParams() as { kitchenId: string };
@@ -33,7 +33,7 @@ export default function UpdateKitchenPage() {
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const {
     data: kitchens = [],
@@ -41,7 +41,7 @@ export default function UpdateKitchenPage() {
     isFetching: kitchenFetching,
   } = useGetKitchensQuery({ shopId: shop.id });
   const { data: tables = [], isLoading: tableLoading } = useGetTablesQuery(
-    shop.id
+    shop.id,
   );
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
     useGetDishCategoriesQuery({ shopId: shop.id });
@@ -69,7 +69,7 @@ export default function UpdateKitchenPage() {
         text1: t("update_failed"),
         text2: `${t("required")} ${_.join(
           [t("kitchen_position_name"), t("table"), t("dish_category")],
-          ","
+          ",",
         )}`,
       });
       return;
@@ -85,13 +85,12 @@ export default function UpdateKitchenPage() {
       }).unwrap();
 
       goToKitchenList({ router, shopId: shop.id });
-    } catch (err) {
+    } catch {
       Toast.show({
         type: "error",
         text1: t("update_failed"),
         text2: t("error_any"),
       });
-      console.error(err);
     }
   };
 
@@ -201,7 +200,7 @@ export default function UpdateKitchenPage() {
               {selectedDishCategories.map((categoryId) => {
                 const category = _.find(
                   dishCategories,
-                  (cat) => cat.id === categoryId
+                  (cat) => cat.id === categoryId,
                 );
                 return category ? (
                   <Text key={categoryId} style={{ marginVertical: 2 }}>

@@ -2,17 +2,16 @@ import { Stack, useGlobalSearchParams } from "expo-router";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Surface, Text, useTheme } from "react-native-paper";
-import { styles } from "../../../_layout";
 import {
   AppSyncChannelType,
   connectAppSyncForShopForCustomer,
-} from "../../../../apis/aws.service";
-import { useGetShopQuery } from "../../../../stores/apiSlices/shopApi.slice";
-import { RootState } from "../../../../stores/store";
-import { LoaderBasic } from "../../../../components/ui/Loader";
+} from "@apis/aws.service";
+import { useGetShopQuery } from "@stores/apiSlices/shopApi.slice";
+import { RootState } from "@stores/store";
+import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
-import { updateShop } from "../../../../stores/customerSlice";
-import { closeAppSyncChannel } from "../../../../stores/awsSlice";
+import { updateShop } from "@stores/customerSlice";
+import { closeAppSyncChannel } from "@stores/awsSlice";
 
 export default function AppLayout() {
   const { shopId } = useGlobalSearchParams() as { shopId: string };
@@ -36,7 +35,8 @@ export default function AppLayout() {
     return () => {
       dispatch(closeAppSyncChannel({ type: AppSyncChannelType.CUSTOMER }));
     };
-  }, [shopId, isFetching]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shopId, isFetching, dispatch]);
 
   if (isLoading) {
     return <LoaderBasic />;
@@ -44,7 +44,7 @@ export default function AppLayout() {
 
   if (!shop) {
     return (
-      <Surface style={styles.baseContainer}>
+      <Surface style={{ flex: 1, padding: 16 }}>
         <Text
           variant="displayMedium"
           style={{ color: theme.colors.error, alignSelf: "center" }}

@@ -9,12 +9,12 @@ import {
   TextInput,
 } from "react-native-paper";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../stores/store";
-import { Shop } from "../../../../../../../stores/state.interface";
-import { AppBar } from "../../../../../../../components/AppBar";
+import { RootState } from "@stores/store";
+import { Shop } from "@stores/state.interface";
+import { AppBar } from "@components/AppBar";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { goToDishCategoryList } from "../../../../../../../apis/navigate.service";
-import { useCreateDishCategoryMutation } from "../../../../../../../stores/apiSlices/dishApi.slice";
+import { goToDishCategoryList } from "@apis/navigate.service";
+import { useCreateDishCategoryMutation } from "@stores/apiSlices/dishApi.slice";
 import { useTranslation } from "react-i18next";
 
 export default function CreateDishCategoryPage() {
@@ -22,7 +22,7 @@ export default function CreateDishCategoryPage() {
   const { t } = useTranslation();
 
   const shop = useSelector(
-    (state: RootState) => state.shop.currentShop
+    (state: RootState) => state.shop.currentShop,
   ) as Shop;
   const [createDishCategory, { isLoading: createDishCategoryLoading }] =
     useCreateDishCategoryMutation();
@@ -45,7 +45,7 @@ export default function CreateDishCategoryPage() {
             !name.trim() && t("dish_category_name"),
             !code.trim() && t("dish_category_code"),
           ]),
-          ","
+          ",",
         )}`,
       });
       return;
