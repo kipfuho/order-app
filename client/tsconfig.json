@@ -35,6 +35,12 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "scripts/generate-protos.js"
+    "scripts/generate-protos.js",
+    "./metro.config.js",
+    "./eslint.config.js",
+    ".eslintrc.js"
   ],
+  "exclude": [
+    "node_modules",
+  ]
 }

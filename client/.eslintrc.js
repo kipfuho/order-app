@@ -1,12 +1,22 @@
 module.exports = {
-  root: true,
   extends: [
+    "expo",
     "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
     "plugin:import/recommended",
+    "plugin:prettier/recommended",
     "plugin:import/errors",
     "plugin:import/warnings",
+    "plugin:import/typescript",
   ],
-  plugins: ["import", "security", "prettier"],
+  plugins: ["@typescript-eslint", "import", "security", "prettier"],
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    ecmaVersion: 2020,
+    sourceType: "module",
+    ecmaFeatures: { jsx: true },
+    project: "./tsconfig.json",
+  },
   settings: {
     "import/resolver": {
       "babel-module": {},
@@ -20,4 +30,11 @@ module.exports = {
     "jest/expect-expect": "off",
     "security/detect-object-injection": "off",
   },
+  ignorePatterns: [
+    "/dist/*",
+    "/node_modules/*",
+    "/android/*",
+    "/ios/*",
+    "/bin/*",
+  ],
 };
