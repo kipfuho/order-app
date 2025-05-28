@@ -1,8 +1,8 @@
-import { Image } from "expo-image";
 import React from "react";
 import { StyleSheet, View, useWindowDimensions } from "react-native";
+import { Image } from "expo-image";
 import Carousel from "react-native-reanimated-carousel";
-import { BLURHASH } from "../constants/common";
+import { BLURHASH } from "@constants/common";
 
 export default function ImageSlider({ images }: { images: string[] }) {
   const { width, height } = useWindowDimensions();

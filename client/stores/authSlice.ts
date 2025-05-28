@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Customer, User } from "./state.interface";
 import { PURGE } from "redux-persist";
+import { Customer, User } from "./state.interface";
 
 interface AuthState {
   session: User | null;

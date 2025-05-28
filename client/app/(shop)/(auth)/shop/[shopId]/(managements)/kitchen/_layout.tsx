@@ -9,7 +9,7 @@ import { TouchableOpacity, View } from "react-native";
 import { goToShopHome } from "../../../../../../../apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { Icon, Menu, Text, useTheme } from "react-native-paper";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { SwipeContext } from "../../../../../../../hooks/useSwipeNavigation";
 
 interface Item {
@@ -84,18 +84,15 @@ export default function TabLayout() {
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [visibleCount, setVisibleCount] = useState(0);
-  const [currentRouteIndex, setCurrentRouteIndex] = useState(0);
   const allVisibleRoutes = allRoutes.slice(0, visibleCount);
   const allAdditionalRoutes = allRoutes.slice(visibleCount);
 
   // Find current route index
-  useEffect(() => {
+  const currentRouteIndex = useMemo(() => {
     const currentIndex = allRoutes.findIndex((route) =>
       pathName.endsWith(`/kitchen/${route.route}`)
     );
-    if (currentIndex !== -1) {
-      setCurrentRouteIndex(currentIndex);
-    }
+    return currentIndex !== -1 ? currentIndex : 0;
   }, [pathName]);
 
   // Navigation functions
@@ -119,12 +116,15 @@ export default function TabLayout() {
     }
   };
 
-  const swipeContextValue = {
-    navigateToNext,
-    navigateToPrevious,
-    currentIndex: currentRouteIndex,
-    totalPages: allRoutes.length,
-  };
+  const swipeContextValue = useMemo(
+    () => ({
+      navigateToNext,
+      navigateToPrevious,
+      currentIndex: currentRouteIndex,
+      totalPages: allRoutes.length,
+    }),
+    [currentRouteIndex]
+  );
 
   return (
     <SwipeContext.Provider value={swipeContextValue}>

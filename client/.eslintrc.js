@@ -29,6 +29,7 @@ module.exports = {
     "consistent-return": "off",
     "jest/expect-expect": "off",
     "security/detect-object-injection": "off",
+    "@typescript-eslint/no-explicit-any": "off",
   },
   ignorePatterns: [
     "/dist/*",
@@ -36,5 +37,7 @@ module.exports = {
     "/android/*",
     "/ios/*",
     "/bin/*",
+    "/scripts/*",
+    "/generated/*",
   ],
 };

@@ -1,8 +1,8 @@
-import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
 import { ScrollView } from "react-native";
 import { Button, Checkbox, Dialog } from "react-native-paper";
-import { Table } from "../../../stores/state.interface";
-import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Table } from "@stores/state.interface";
 
 const TableSelectionDialog = ({
   visible,

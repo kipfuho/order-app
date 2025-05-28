@@ -1,14 +1,14 @@
+import { combineReducers } from "redux";
 import { configureStore } from "@reduxjs/toolkit";
+import { persistStore, persistReducer } from "redux-persist";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { listenerMiddleware } from "./listenerMiddleware";
 import authReducer from "./authSlice";
 import settingReducer from "./appSetting.slice";
 import shopReducer from "./shop.slice";
 import customerReducer from "./customerSlice";
 import awsReducer from "./awsSlice";
 import { shopApiSlice } from "./apiSlices/shopApi.slice";
-import { persistStore, persistReducer } from "redux-persist";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { combineReducers } from "redux";
-import { listenerMiddleware } from "./listenerMiddleware";
 import { dishApiSlice } from "./apiSlices/dishApi.slice";
 import { tableApiSlice } from "./apiSlices/tableApi.slice";
 import { orderApiSlice } from "./apiSlices/orderApi.slice";
@@ -22,21 +22,21 @@ const persistedAuthReducer = persistReducer(
     key: "persist:auth",
     storage: AsyncStorage,
   },
-  authReducer
+  authReducer,
 );
 const persistedCustomerReducer = persistReducer(
   {
     key: "persist:customer",
     storage: AsyncStorage,
   },
-  customerReducer
+  customerReducer,
 );
 const persistedSettingReducer = persistReducer(
   {
     key: "persist:setting",
     storage: AsyncStorage,
   },
-  settingReducer
+  settingReducer,
 );
 
 // Combine reducers
@@ -78,7 +78,6 @@ export const persistor = persistStore(store);
 
 export const clearPersistedStorage = async () => {
   await persistor.purge();
-  console.log("Persisted storage wiped!");
 };
 
 // Define State

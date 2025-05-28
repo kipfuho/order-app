@@ -1,10 +1,16 @@
 import _, { debounce } from "lodash";
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { Button, Dialog, Text, TextInput } from "react-native-paper";
-import { useDispatch, useSelector } from "react-redux";
-import { updateCurrentCustomerInfo } from "../../../stores/shop.slice";
+import { useDispatch } from "react-redux";
 import { View } from "react-native";
-import { RootState } from "../../../stores/store";
+import { useTranslation } from "react-i18next";
+import { updateCurrentCustomerInfo } from "@stores/shop.slice";
 
 export function CustomerInfoDialog({
   customerDialogVisible,
@@ -16,11 +22,13 @@ export function CustomerInfoDialog({
   onCustomerInfoConfirmClick: () => void;
 }) {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [numberOfCustomer, setNumberOfCustomer] = useState("1");
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedUpdateCustomerInfo = useCallback(
     debounce(
       ({
@@ -37,15 +45,15 @@ export function CustomerInfoDialog({
             customerName,
             customerPhone,
             numberOfCustomer: _.toNumber(numberOfCustomer),
-          })
+          }),
         );
       },
-      300
+      300,
     ), // 300ms delay
-    [dispatch]
+    [dispatch],
   );
 
-  const setDefaultModalInfo = () => {
+  const setDefaultModalInfo = useCallback(() => {
     setCustomerName("");
     setCustomerPhone("");
     setNumberOfCustomer("1");
@@ -54,23 +62,23 @@ export function CustomerInfoDialog({
         customerName: "",
         customerPhone: "",
         numberOfCustomer: 1,
-      })
+      }),
     );
-  };
+  }, [dispatch]);
 
   useEffect(() => {
     setDefaultModalInfo();
-  }, [customerDialogVisible]);
+  }, [customerDialogVisible, setDefaultModalInfo]);
 
   return (
     <Dialog
       visible={customerDialogVisible}
       onDismiss={() => setCustomerDialogVisible(false)}
     >
-      <Dialog.Title>Nhập thông tin</Dialog.Title>
+      <Dialog.Title>{t("enter_information")}</Dialog.Title>
       <Dialog.Content>
         <TextInput
-          label="Customer Name"
+          label={t("customer_name")}
           mode="outlined"
           value={customerName}
           onChangeText={(text) => {
@@ -87,11 +95,11 @@ export function CustomerInfoDialog({
           style={{
             flexDirection: "row",
             alignItems: "center",
-            gap: 10, // Adds spacing between elements (Alternative: use marginRight)
+            gap: 10,
           }}
         >
           <TextInput
-            label="Customer Phone"
+            label={t("customer_phone")}
             mode="outlined"
             value={customerPhone}
             onChangeText={(text) => {
@@ -105,7 +113,7 @@ export function CustomerInfoDialog({
             }}
             style={{ flex: 1, minWidth: 150 }} // Ensures proper width
           />
-          <Text>Số người</Text>
+          <Text>{t("customer_number")}</Text>
           <TextInput
             label="P"
             mode="outlined"
@@ -130,7 +138,7 @@ export function CustomerInfoDialog({
           onPress={onCustomerInfoConfirmClick}
           style={{ width: 150 }}
         >
-          Confirm
+          {t("confirm")}
         </Button>
       </Dialog.Actions>
     </Dialog>

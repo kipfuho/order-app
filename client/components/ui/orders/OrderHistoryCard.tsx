@@ -1,12 +1,9 @@
 import React from "react";
 import { View } from "react-native";
-import { Surface, Text, Chip } from "react-native-paper";
-import { OrderSessionHistory } from "../../../stores/state.interface";
+import { Surface, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-import {
-  convertPaymentAmount,
-  getCountryCurrency,
-} from "../../../constants/utils";
+import { OrderSessionHistory } from "@stores/state.interface";
+import { convertPaymentAmount } from "@constants/utils";
 import OrderSessionStatusChip from "./OrderSessionStatusChip";
 
 export default function OrderHistoryCard({

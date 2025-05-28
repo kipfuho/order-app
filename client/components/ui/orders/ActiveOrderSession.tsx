@@ -1,12 +1,12 @@
-import { Button, Divider, Surface } from "react-native-paper";
-import { OrderSession } from "../../../stores/state.interface";
 import { View } from "react-native";
+import { Button, Divider, Surface } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
-import { updateCurrentOrderSession } from "../../../stores/shop.slice";
-import { useRouter } from "expo-router";
-import { goToOrderSessionPayment } from "../../../apis/navigate.service";
-import { RootState } from "../../../stores/store";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "expo-router";
+import { OrderSession } from "@stores/state.interface";
+import { updateCurrentOrderSession } from "@stores/shop.slice";
+import { goToOrderSessionPayment } from "@apis/navigate.service";
+import { RootState } from "@stores/store";
 import OrderCustomerInfo from "./OrderCutomerInfo";
 
 export function ActiveOrderSession({
@@ -21,7 +21,7 @@ export function ActiveOrderSession({
   const { t } = useTranslation();
 
   const { currentShop, currentTable } = useSelector(
-    (state: RootState) => state.shop
+    (state: RootState) => state.shop,
   );
 
   const onPaymentClick = () => {

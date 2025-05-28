@@ -10,7 +10,7 @@ import {
   getTablesRequest,
   updateTablePositionRequest,
   updateTableRequest,
-} from "../../apis/table.api.service";
+} from "@apis/table.api.service";
 import {
   CreateTablePositionRequest,
   CreateTableRequest,
@@ -18,8 +18,8 @@ import {
   DeleteTableRequest,
   UpdateTablePositionRequest,
   UpdateTableRequest,
-} from "../../apis/table.api.interface";
-import { API_BASE_URL } from "../../apis/api.service";
+} from "@apis/table.api.interface";
+import { API_BASE_URL } from "@apis/api.service";
 
 export const tableApiSlice = createApi({
   reducerPath: "tableApi",
@@ -84,13 +84,13 @@ export const tableApiSlice = createApi({
             args.shopId,
             (draft) => {
               const index = draft.findIndex(
-                (tp) => tp.id === args.tablePositionId
+                (tp) => tp.id === args.tablePositionId,
               );
               if (index !== -1) {
                 draft[index] = { ...draft[index], ...args };
               }
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -123,8 +123,8 @@ export const tableApiSlice = createApi({
             args.shopId,
             (draft) => {
               return draft.filter((tp) => tp.id !== args.tablePositionId);
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -214,8 +214,8 @@ export const tableApiSlice = createApi({
               if (index !== -1) {
                 draft[index] = { ...draft[index], ...args };
               }
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -247,8 +247,8 @@ export const tableApiSlice = createApi({
             args.shopId,
             (draft) => {
               return draft.filter((t) => t.id !== args.tableId);
-            }
-          )
+            },
+          ),
         );
 
         try {

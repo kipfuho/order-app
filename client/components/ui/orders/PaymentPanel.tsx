@@ -1,23 +1,20 @@
-import { Modal, Portal, Surface, Text, TextInput } from "react-native-paper";
-import {
-  PaymentComponentMap,
-  PaymentMethod,
-} from "../../../constants/paymentMethod";
-import { ScrollView, View } from "react-native";
-import { usePayOrderSessionMutation } from "../../../stores/apiSlices/orderApi.slice";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
-import { OrderSession, Shop } from "../../../stores/state.interface";
-import Toast from "react-native-toast-message";
-import { ConfirmCancelDialog } from "../CancelDialog";
-import { useTranslation } from "react-i18next";
-import { useState } from "react";
-import { resetCurrentTable } from "../../../stores/shop.slice";
-import { goToTablesForOrderList } from "../../../apis/navigate.service";
-import { useRouter } from "expo-router";
-import QRCode from "react-native-qrcode-svg";
 import _ from "lodash";
-import { convertPaymentAmount } from "../../../constants/utils";
+import { Modal, Portal, Surface, Text, TextInput } from "react-native-paper";
+import { ScrollView, View } from "react-native";
+import { useState } from "react";
+import { useRouter } from "expo-router";
+import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
+import QRCode from "react-native-qrcode-svg";
+import Toast from "react-native-toast-message";
+import { usePayOrderSessionMutation } from "@stores/apiSlices/orderApi.slice";
+import { RootState } from "@stores/store";
+import { OrderSession, Shop } from "@stores/state.interface";
+import { ConfirmCancelDialog } from "../CancelDialog";
+import { resetCurrentTable } from "@stores/shop.slice";
+import { goToTablesForOrderList } from "@apis/navigate.service";
+import { PaymentComponentMap, PaymentMethod } from "@constants/paymentMethod";
+import { convertPaymentAmount } from "@constants/utils";
 
 export default function PaymentMethodPage() {
   const { t } = useTranslation();
@@ -25,7 +22,7 @@ export default function PaymentMethodPage() {
   const router = useRouter();
 
   const { currentOrderSession, currentShop } = useSelector(
-    (state: RootState) => state.shop
+    (state: RootState) => state.shop,
   );
   const shop = currentShop as Shop;
   const orderSession = currentOrderSession as OrderSession;
@@ -102,7 +99,7 @@ export default function PaymentMethodPage() {
                     {t("customer_return_amount")}:{" "}
                     {convertPaymentAmount(
                       _.toNumber(customPaymentAmount) -
-                        orderSession.paymentAmount
+                        orderSession.paymentAmount,
                     )}
                   </Text>
                 )}
@@ -158,7 +155,7 @@ export default function PaymentMethodPage() {
                 setSelectedPaymentMethod,
                 setWaitingVisible,
                 setPaymentUrl,
-              })
+              }),
             )}
           </Surface>
         </ScrollView>

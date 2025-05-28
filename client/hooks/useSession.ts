@@ -4,13 +4,13 @@ import {
   signInForCustomer,
   signOut,
   signOutForCustomer,
-} from "../stores/authSlice";
-import { RootState } from "../stores/store";
-import { Customer, User } from "../stores/state.interface";
+} from "@stores/authSlice";
+import { RootState } from "@stores/store";
+import { Customer, User } from "@stores/state.interface";
 
 export function useSession() {
   const { session, customerSession } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
   const dispatch = useDispatch();
 

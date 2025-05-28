@@ -1,5 +1,6 @@
+import _ from "lodash";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { API_BASE_URL } from "../../apis/api.service";
+import { API_BASE_URL } from "@apis/api.service";
 import {
   approveUnconfirmedOrderRequest,
   cancelOrderSessionPaidStatusRequest,
@@ -17,7 +18,7 @@ import {
   payOrderSessionRequest,
   removeDiscountFromOrderSessionRequest,
   updateUnconfirmedOrderRequest,
-} from "../../apis/order.api.service";
+} from "@apis/order.api.service";
 import {
   OrderSession,
   OrderSessionHistory,
@@ -41,9 +42,8 @@ import {
   PayOrderSessionRequest,
   RemoveDiscountFromOrderSessionRequest,
   UpdateUnconfirmedOrderRequest,
-} from "../../apis/order.api.interface";
+} from "@apis/order.api.interface";
 import { resetCurrentOrder } from "../shop.slice";
-import _ from "lodash";
 
 export const orderApiSlice = createApi({
   reducerPath: "orderApi",
@@ -408,8 +408,8 @@ export const orderApiSlice = createApi({
             (draft) => {
               const index = draft.findIndex((uo) => uo.id === args.orderId);
               if (index !== -1) draft.splice(index, 1);
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -464,12 +464,12 @@ export const orderApiSlice = createApi({
                   ...draft[index],
                   dishOrders: _.filter(
                     Object.values(dishOrderById),
-                    (d) => d.quantity > 0
+                    (d) => d.quantity > 0,
                   ),
                 };
               }
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -508,8 +508,8 @@ export const orderApiSlice = createApi({
             (draft) => {
               const index = draft.findIndex((uo) => uo.id === args.orderId);
               if (index !== -1) draft.splice(index, 1);
-            }
-          )
+            },
+          ),
         );
 
         try {

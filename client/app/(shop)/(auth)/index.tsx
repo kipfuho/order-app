@@ -12,6 +12,7 @@ import { View } from "react-native";
 import _, { debounce } from "lodash";
 import { Shop } from "../../../stores/state.interface";
 import { LegendList } from "@legendapp/list";
+import { BLURHASH } from "../../../constants/common";
 
 export default function ShopsPage() {
   const router = useRouter();
@@ -82,6 +83,7 @@ export default function ShopsPage() {
                   source={
                     shop.imageUrls?.[0] || require("@assets/images/savora.png")
                   }
+                  placeholder={{ blurhash: BLURHASH }}
                   style={{
                     width: 100,
                     height: 100,

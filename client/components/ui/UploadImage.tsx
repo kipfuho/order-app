@@ -1,15 +1,16 @@
+import _ from "lodash";
 import { Dispatch, SetStateAction } from "react";
-import { removeImageRequest } from "../../apis/dish.api.service";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
-import _ from "lodash";
 import {
   ActivityIndicator,
   Button,
   IconButton,
   Surface,
 } from "react-native-paper";
-import { BLURHASH } from "../../constants/common";
+import { useTranslation } from "react-i18next";
+import { BLURHASH } from "@constants/common";
+import { removeImageRequest } from "@apis/dish.api.service";
 
 export default function UploadImages({
   images,
@@ -22,12 +23,14 @@ export default function UploadImages({
   allowsMultipleSelection?: boolean;
   uploadImage: (formData: FormData) => Promise<string>;
 }) {
+  const { t } = useTranslation();
+
   const uploadImageToServer = async (uri: string, index: number) => {
     try {
       const response = await fetch(uri);
       const blob = await response.blob(); // Convert URI to Blob
 
-      let formData = new FormData();
+      const formData = new FormData();
       formData.append("image", blob, `image_${Date.now()}.jpg`); // Properly append file
 
       // Replace with your server URL
@@ -36,21 +39,20 @@ export default function UploadImages({
       if (imageUrl) {
         setImages((prev) =>
           prev.map((img, i) =>
-            i === index ? { loading: false, uri: imageUrl } : img
-          )
+            i === index ? { loading: false, uri: imageUrl } : img,
+          ),
         );
       } else {
         throw new Error("Upload failed, no URL returned.");
       }
-    } catch (error) {
-      console.error("Error uploading image:", error);
+    } catch {
       // Optionally, you can remove the failed image or show an error state
       setImages((prev) => prev.filter((_, i) => i !== index));
     }
   };
 
   const pickImages = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
       allowsMultipleSelection,
       quality: 1,
@@ -73,7 +75,7 @@ export default function UploadImages({
 
       // Start uploading each image
       newImages.forEach((image, index) =>
-        uploadImageToServer(image.uri, index + currentImagesLength)
+        uploadImageToServer(image.uri, index + currentImagesLength),
       );
     }
   };
@@ -156,7 +158,7 @@ export default function UploadImages({
         onPress={pickImages}
         style={{ marginVertical: 10, width: 200, alignSelf: "center" }}
       >
-        {"Upload Images (< 5MB)"}
+        {t("upload_image")}
       </Button>
     </>
   );

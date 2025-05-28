@@ -11,8 +11,8 @@ import {
 } from "react-native-paper";
 import { View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import { DiscountValueType } from "../../../constants/common";
-import { SymbolSwitch } from "../../SymbolSwitch";
+import { DiscountValueType } from "@constants/common";
+import { SymbolSwitch } from "@/components/SymbolSwitch";
 
 export default function DiscountModal({
   visible,

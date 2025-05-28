@@ -1,5 +1,5 @@
+import _ from "lodash";
 import { useTranslation } from "react-i18next";
-import { OrderSession } from "../../../stores/state.interface";
 import {
   ActivityIndicator,
   Divider,
@@ -8,25 +8,20 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
-import _ from "lodash";
-import {
-  ScrollView,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
-import { convertPaymentAmount } from "../../../constants/utils";
 import { useState } from "react";
+import { TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { useSelector } from "react-redux";
+import { LegendList } from "@legendapp/list";
 import Toast from "react-native-toast-message";
+import { convertPaymentAmount } from "@constants/utils";
 import DiscountModal from "./DiscountModal";
 import {
   useDiscountOrderSessionMutation,
   useRemoveDiscountFromOrderSessionMutation,
-} from "../../../stores/apiSlices/orderApi.slice";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
-import { DiscountType, DiscountValueType } from "../../../constants/common";
-import { LegendList } from "@legendapp/list";
+} from "@stores/apiSlices/orderApi.slice";
+import { RootState } from "@stores/store";
+import { DiscountType, DiscountValueType } from "@constants/common";
+import { OrderSession } from "@stores/state.interface";
 
 export default function OrderSessionDetailPage({
   orderSessionDetail,
@@ -80,7 +75,7 @@ export default function OrderSessionDetailPage({
 
     const discount = _.find(
       orderSessionDetail.discounts,
-      (d) => d.discountType === DiscountType.INVOICE
+      (d) => d.discountType === DiscountType.INVOICE,
     );
 
     if (!discount) {
@@ -197,7 +192,7 @@ export default function OrderSessionDetailPage({
           </View>
           <Text style={{ fontSize: 16 }}>
             {convertPaymentAmount(
-              orderSessionDetail.afterTaxTotalDiscountAmount
+              orderSessionDetail.afterTaxTotalDiscountAmount,
             )}
           </Text>
         </View>

@@ -10,15 +10,15 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
-import { Dish } from "../../../stores/state.interface";
 import { Pressable, ScrollView, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { updateCartSingleDish } from "../../../stores/customerSlice";
-import { convertPaymentAmount } from "../../../constants/utils";
-import { useTranslation } from "react-i18next";
-import { RootState } from "../../../stores/store";
 import { Image } from "expo-image";
-import { BLURHASH } from "../../../constants/common";
+import { useTranslation } from "react-i18next";
+import { Dish } from "@stores/state.interface";
+import { updateCartSingleDish } from "@stores/customerSlice";
+import { convertPaymentAmount } from "@constants/utils";
+import { RootState } from "@stores/store";
+import { BLURHASH } from "@constants/common";
 
 export default function UpdateCartItem({
   cartItemId,
@@ -34,12 +34,12 @@ export default function UpdateCartItem({
   const { t } = useTranslation();
 
   const cartItem = useSelector(
-    (state: RootState) => state.customer.currentCartItem[cartItemId]
+    (state: RootState) => state.customer.currentCartItem[cartItemId],
   );
 
   const [note, setNote] = useState("");
   const [currentItemQuantity, setCurrentQuantity] = useState(
-    cartItem?.quantity ?? 0
+    cartItem?.quantity ?? 0,
   );
 
   const handleUpdateCartItem = () => {
@@ -50,7 +50,7 @@ export default function UpdateCartItem({
         id: cartItemId,
         dish,
         quantity: currentItemQuantity,
-      })
+      }),
     );
     setVisible(false);
   };

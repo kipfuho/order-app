@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Chip, useTheme } from "react-native-paper";
-import { OrderSessionStatus } from "../../../constants/common";
+import { OrderSessionStatus } from "@constants/common";
 
 export default function OrderSessionStatusChip({ status }: { status: string }) {
   const { t } = useTranslation();

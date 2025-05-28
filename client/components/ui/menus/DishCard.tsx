@@ -1,20 +1,13 @@
-import { Dish } from "../../../stores/state.interface";
-import {
-  Card,
-  IconButton,
-  Switch,
-  Text,
-  Tooltip,
-  useTheme,
-} from "react-native-paper";
+import { debounce } from "lodash";
 import { memo, useCallback, useState } from "react";
 import { View } from "react-native";
-import { convertPaymentAmount } from "../../../constants/utils";
+import { Card, IconButton, Switch, Text, Tooltip } from "react-native-paper";
 import { Image } from "expo-image";
-import { BLURHASH, DishStatus } from "../../../constants/common";
 import { useTranslation } from "react-i18next";
-import { useUpdateDishMutation } from "../../../stores/apiSlices/dishApi.slice";
-import { debounce } from "lodash";
+import { Dish } from "@stores/state.interface";
+import { convertPaymentAmount } from "@constants/utils";
+import { BLURHASH, DishStatus } from "@constants/common";
+import { useUpdateDishMutation } from "@stores/apiSlices/dishApi.slice";
 
 const DishCard = ({
   dish,
@@ -26,7 +19,6 @@ const DishCard = ({
   containerWidth?: number;
 }) => {
   const { t } = useTranslation();
-  const theme = useTheme();
 
   const cardWidth = Math.min(300, containerWidth * 0.48);
   const [onSale, setOnSale] = useState(dish.status === DishStatus.activated);
@@ -39,6 +31,7 @@ const DishCard = ({
     updateDishStatus(!onSale);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const updateDishStatus = useCallback(
     debounce(async (activated) => {
       if (updateDishLoading) {
@@ -51,7 +44,7 @@ const DishCard = ({
         status: activated ? DishStatus.activated : DishStatus.deactivated,
       }).unwrap();
     }, 500),
-    []
+    [],
   );
 
   if (cardWidth < 1) {

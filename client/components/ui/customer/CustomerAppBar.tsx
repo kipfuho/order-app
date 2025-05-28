@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { ReactNode, useState } from "react";
 import {
   Appbar,
@@ -11,15 +12,14 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
-import { setLocale, toggleDarkMode } from "../../../stores/appSetting.slice";
 import { View } from "react-native";
-import _ from "lodash";
-import CartDetail from "./CartDetail";
-import Toast from "react-native-toast-message";
-import CartCheckoutHistory from "./CartCheckoutHistory";
+import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import Toast from "react-native-toast-message";
+import { RootState } from "@stores/store";
+import { setLocale, toggleDarkMode } from "@stores/appSetting.slice";
+import CartDetail from "./CartDetail";
+import CartCheckoutHistory from "./CartCheckoutHistory";
 
 export function CustomerAppBar({
   children,
@@ -33,7 +33,7 @@ export function CustomerAppBar({
   const dispatch = useDispatch();
 
   const { shop, table, currentCartItem } = useSelector(
-    (state: RootState) => state.customer
+    (state: RootState) => state.customer,
   );
   const { darkMode, locale } = useSelector((state: RootState) => state.setting);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -42,7 +42,7 @@ export function CustomerAppBar({
 
   const totalCartQuantity = _.sumBy(
     Object.values(currentCartItem) || [],
-    "quantity"
+    "quantity",
   );
 
   const toggleLocale = (lang: "vi" | "en") => {

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from "react";
-import { Pressable, Text, View, StyleSheet, Animated } from "react-native";
-import { getCountryCurrency } from "../constants/utils";
+import { useEffect, useRef } from "react";
+import { Pressable, StyleSheet, Animated } from "react-native";
+import { getCountryCurrency } from "@constants/utils";
 
 type SymbolSwitchProps = {
   value: boolean;
@@ -23,7 +23,7 @@ export const SymbolSwitch = ({
       duration: 200,
       useNativeDriver: false,
     }).start();
-  }, [value]);
+  }, [anim, value]);
 
   const thumbTranslate = anim.interpolate({
     inputRange: [0, 1],

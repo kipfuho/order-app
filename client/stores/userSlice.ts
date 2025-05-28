@@ -1,5 +1,6 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import _ from "lodash";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { PURGE } from "redux-persist";
 import {
   Department,
   Dish,
@@ -11,7 +12,6 @@ import {
   TablePosition,
   Unit,
 } from "./state.interface";
-import { PURGE } from "redux-persist";
 
 interface ShopState {
   shops: Shop[];
@@ -69,13 +69,13 @@ export const userSlice = createSlice({
 
       const id = action.payload.id;
       state.tables = state.tables.map((t) =>
-        t.id === id ? action.payload : t
+        t.id === id ? action.payload : t,
       );
     },
 
     updateAllTablePositions: (
       state,
-      action: PayloadAction<TablePosition[]>
+      action: PayloadAction<TablePosition[]>,
     ) => {
       if (!_.get(action, "payload")) return;
       state.tablePositions = action.payload;
@@ -85,7 +85,7 @@ export const userSlice = createSlice({
 
       const id = action.payload.id;
       state.tablePositions = state.tablePositions.map((tp) =>
-        tp.id === id ? action.payload : tp
+        tp.id === id ? action.payload : tp,
       );
     },
 
@@ -98,7 +98,7 @@ export const userSlice = createSlice({
 
       const id = action.payload.id;
       state.employees = state.employees.map((e) =>
-        e.id === id ? action.payload : e
+        e.id === id ? action.payload : e,
       );
     },
 
@@ -111,7 +111,7 @@ export const userSlice = createSlice({
 
       const id = action.payload.id;
       state.departments = state.departments.map((d) =>
-        d.id === id ? action.payload : d
+        d.id === id ? action.payload : d,
       );
     },
 
@@ -135,7 +135,7 @@ export const userSlice = createSlice({
 
       const id = action.payload.id;
       state.dishes = state.dishes.map((d) =>
-        d.id === id ? action.payload : d
+        d.id === id ? action.payload : d,
       );
     },
 
@@ -154,7 +154,7 @@ export const userSlice = createSlice({
 
       const id = action.payload.id;
       state.dishCategories = state.dishCategories.map((dc) =>
-        dc.id === id ? action.payload : dc
+        dc.id === id ? action.payload : dc,
       );
     },
 

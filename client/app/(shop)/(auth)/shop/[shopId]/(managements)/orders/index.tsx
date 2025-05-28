@@ -1,32 +1,28 @@
-import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../../../../../../stores/store";
 import _ from "lodash";
+import { useEffect, useState } from "react";
 import { ScrollView } from "react-native";
-import { TableForOrderCard } from "../../../../../../../components/ui/orders/TableForOrderCard";
-import { AppBar } from "../../../../../../../components/AppBar";
-import {
-  Shop,
-  Table,
-  TableForOrder,
-} from "../../../../../../../stores/state.interface";
+import { useDispatch, useSelector } from "react-redux";
+import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
+import { useTranslation } from "react-i18next";
+import { useRouter } from "expo-router";
+import Toast from "react-native-toast-message";
+import { RootState } from "@stores/store";
+import { AppBar } from "@components/AppBar";
+import { Shop, Table, TableForOrder } from "@stores/state.interface";
 import {
   useGetTablePositionsQuery,
   useGetTablesQuery,
-} from "../../../../../../../stores/apiSlices/tableApi.slice";
-import { useGetTablesForOrderQuery } from "../../../../../../../stores/apiSlices/orderApi.slice";
-import { LoaderBasic } from "../../../../../../../components/ui/Loader";
-import CreateOrder from "../../../../../../../components/ui/CreateOrderView";
-import { updateCurrentTable } from "../../../../../../../stores/shop.slice";
-import Toast from "react-native-toast-message";
+} from "@stores/apiSlices/tableApi.slice";
+import { useGetTablesForOrderQuery } from "@stores/apiSlices/orderApi.slice";
+import { LoaderBasic } from "@components/ui/Loader";
+import CreateOrder from "@components/ui/CreateOrderView";
+import { updateCurrentTable } from "@stores/shop.slice";
 import {
   goToShopHome,
   goToTableCurrentOrderSessions,
-} from "../../../../../../../apis/navigate.service";
-import { useRouter } from "expo-router";
-import { CustomerInfoDialog } from "../../../../../../../components/ui/orders/CustomerInfoDialog";
-import { useTranslation } from "react-i18next";
+} from "@apis/navigate.service";
+import { CustomerInfoDialog } from "@components/ui/orders/CustomerInfoDialog";
+import TableForOrderCard from "@/components/ui/orders/TableForOrderCard";
 
 export default function OrderManagementOrderPage() {
   const router = useRouter();
@@ -44,7 +40,7 @@ export default function OrderManagementOrderPage() {
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
     useGetTablePositionsQuery(shop.id);
   const { data: tables = [], isLoading: tableLoading } = useGetTablesQuery(
-    shop.id
+    shop.id,
   );
 
   const tablesGroupByPosition = _.groupBy(tablesForOrder, "position");

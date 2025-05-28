@@ -1,6 +1,6 @@
 import _ from "lodash";
-import { CartItem, DishOrder } from "../stores/state.interface";
-import store from "../stores/store";
+import { CartItem } from "@stores/state.interface";
+import store from "@stores/store";
 import { Countries, CurrencyText } from "./common";
 import { CustomMD3Theme } from "./theme";
 
@@ -9,7 +9,7 @@ const getCountryCurrency = () => {
     const state = store.getState();
     const country = state.shop.currentShop?.country || Countries.VietNam;
     return CurrencyText[country.currency as keyof typeof CurrencyText];
-  } catch (error) {
+  } catch {
     return CurrencyText.USD;
   }
 };

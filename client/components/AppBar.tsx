@@ -1,8 +1,8 @@
 import { ReactNode, useState } from "react";
 import { Appbar, Menu } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../stores/store";
-import { setLocale, toggleDarkMode } from "../stores/appSetting.slice";
+import { RootState } from "@stores/store";
+import { setLocale, toggleDarkMode } from "@stores/appSetting.slice";
 
 export function AppBar({
   title,

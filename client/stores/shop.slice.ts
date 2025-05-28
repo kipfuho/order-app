@@ -1,7 +1,7 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Dish, DishOrder, OrderSession, Shop, Table } from "./state.interface";
-import { PURGE } from "redux-persist";
 import _ from "lodash";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { PURGE } from "redux-persist";
+import { Dish, DishOrder, OrderSession, Shop, Table } from "./state.interface";
 
 type CustomerInfo = {
   numberOfCustomer: number;
@@ -63,7 +63,7 @@ export const shopSlice = createSlice({
 
     updateCurrentOrder: (
       state,
-      action: PayloadAction<{ dish: Dish; quantity?: number }>
+      action: PayloadAction<{ dish: Dish; quantity?: number }>,
     ) => {
       if (!action.payload) return;
 
@@ -74,7 +74,7 @@ export const shopSlice = createSlice({
       if (!isPayloadQuantityValid) {
         quantity = 1;
       }
-      let previousQuantity = previousState?.quantity || 0;
+      const previousQuantity = previousState?.quantity || 0;
       if (!isPayloadQuantityValid && previousState) {
         quantity = (previousState.quantity ?? 0) + 1;
       }
@@ -89,7 +89,7 @@ export const shopSlice = createSlice({
 
     updateCurrentCustomerInfo: (
       state,
-      action: PayloadAction<Partial<CustomerInfo>>
+      action: PayloadAction<Partial<CustomerInfo>>,
     ) => {
       if (!action.payload) return;
 
@@ -113,7 +113,7 @@ export const shopSlice = createSlice({
 
     updateDishesByCategory: (
       state,
-      action: PayloadAction<{ dishes: Dish[] }>
+      action: PayloadAction<{ dishes: Dish[] }>,
     ) => {
       if (!action.payload) return;
 
@@ -122,7 +122,7 @@ export const shopSlice = createSlice({
 
     updateKitchenDishOrder: (
       state,
-      action: PayloadAction<{ dishOrderId: string; confirmed: boolean }>
+      action: PayloadAction<{ dishOrderId: string; confirmed: boolean }>,
     ) => {
       if (!action.payload) return;
 
@@ -135,7 +135,7 @@ export const shopSlice = createSlice({
 
     deleteKitchenDishOrder: (
       state,
-      action: PayloadAction<{ dishOrderId: string }>
+      action: PayloadAction<{ dishOrderId: string }>,
     ) => {
       if (!action.payload) return;
 

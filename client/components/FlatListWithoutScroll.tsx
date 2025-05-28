@@ -1,5 +1,3 @@
-import { GestureResponderEvent, useWindowDimensions, View } from "react-native";
-import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
 import {
   Dispatch,
   memo,
@@ -9,7 +7,14 @@ import {
   useRef,
   useState,
 } from "react";
-import { ScrollView } from "react-native";
+import {
+  GestureResponderEvent,
+  useWindowDimensions,
+  View,
+  ScrollView,
+} from "react-native";
+import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
+import { LegendList, LegendListRef } from "@legendapp/list";
 import {
   FlatListItem,
   flatListStyles,
@@ -18,7 +23,6 @@ import {
   ItemTypeMap,
   UNIVERSAL_WIDTH_PIVOT,
 } from "./FlatListWithScroll";
-import { LegendList, LegendListRef } from "@legendapp/list";
 
 function GroupList({
   groups = [],
@@ -183,8 +187,6 @@ const FlatListWithoutScroll = ({
     });
   }, [groups, itemByGroup, numColumns, selectedGroup]);
 
-  const ROW_HEIGHT = ItemTypeFlatListProperties[itemType].ROW_HEIGHT;
-  const MARGIN_BOTTOM = 8;
   const renderItem = useCallback(
     ({ item }: { item: FlatListItem }) => {
       if (item.type === "header") {
@@ -223,8 +225,20 @@ const FlatListWithoutScroll = ({
 
       return null;
     },
-    [itemType, itemContainerWidth, openMenu, additionalDatas, numColumns]
+    [itemType, itemContainerWidth, openMenu, additionalDatas, numColumns],
   );
+
+  const HEADER_HEIGHT = ItemTypeFlatListProperties[itemType].HEADER_HEIGHT;
+  const ROW_HEIGHT = ItemTypeFlatListProperties[itemType].ROW_HEIGHT;
+  const MARGIN_BOTTOM = 8;
+  const getEstimatedItemSize = (index: number, item: FlatListItem) => {
+    if (item.type === "header") {
+      return HEADER_HEIGHT + MARGIN_BOTTOM;
+    } else if (item.type === "row") {
+      return ROW_HEIGHT + MARGIN_BOTTOM;
+    }
+    return 0;
+  };
 
   return (
     <Surface
@@ -249,7 +263,9 @@ const FlatListWithoutScroll = ({
         data={flatListData}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
+        getEstimatedItemSize={getEstimatedItemSize}
         estimatedItemSize={ROW_HEIGHT + MARGIN_BOTTOM}
+        initialContainerPoolRatio={1.5}
         onLayout={(event) => {
           const { width } = event.nativeEvent.layout;
           const containerUsablewidth = width - 20; // padding
@@ -259,9 +275,9 @@ const FlatListWithoutScroll = ({
               (containerUsablewidth + 12) /
                 Math.min(
                   ItemTypeFlatListProperties[itemType].MAX_WIDTH,
-                  containerUsablewidth * 0.48 + 12
-                )
-            )
+                  containerUsablewidth * 0.48 + 12,
+                ),
+            ),
           );
         }}
         contentContainerStyle={{ padding: 10 }}

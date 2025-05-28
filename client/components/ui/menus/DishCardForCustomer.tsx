@@ -1,4 +1,7 @@
-import { CartItem, Dish } from "../../../stores/state.interface";
+import _ from "lodash";
+import { memo } from "react";
+import { Pressable, View } from "react-native";
+import { useDispatch } from "react-redux";
 import {
   Card,
   Icon,
@@ -8,14 +11,11 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
-import { Pressable, View } from "react-native";
-import _ from "lodash";
-import { convertPaymentAmount } from "../../../constants/utils";
-import { useDispatch } from "react-redux";
-import { updateCartSingleDish } from "../../../stores/customerSlice";
 import { Image } from "expo-image";
-import { BLURHASH } from "../../../constants/common";
-import { memo } from "react";
+import { CartItem, Dish } from "@stores/state.interface";
+import { convertPaymentAmount } from "@constants/utils";
+import { updateCartSingleDish } from "@stores/customerSlice";
+import { BLURHASH } from "@constants/common";
 
 function QuantityControlForCustomer({
   dish,
@@ -38,7 +38,7 @@ function QuantityControlForCustomer({
           id: cartItem.id,
           dish,
           quantity: cartItem.quantity - 1,
-        })
+        }),
       );
     }
   };
@@ -49,7 +49,7 @@ function QuantityControlForCustomer({
         id: cartItem?.id,
         dish,
         quantity: (cartItem?.quantity ?? 0) + 1,
-      })
+      }),
     );
   };
 

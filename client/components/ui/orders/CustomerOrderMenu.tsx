@@ -1,41 +1,41 @@
 import { Surface } from "react-native-paper";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import _, { debounce } from "lodash";
-import { LoaderBasic } from "../../../components/ui/Loader";
-import { RootState } from "../../../stores/store";
-import {
-  CartItem,
-  Dish,
-  DishCategory,
-  Shop,
-} from "../../../stores/state.interface";
-import { useGetDishCategoriesQuery } from "../../../stores/apiSlices/dishApi.slice";
+import { LoaderBasic } from "@components/ui/Loader";
+import { RootState } from "@stores/store";
+import { CartItem, Dish, DishCategory, Shop } from "@stores/state.interface";
+import { useGetDishCategoriesQuery } from "@stores/apiSlices/dishApi.slice";
 import {
   useGetCartQuery,
   useUpdateCartMutation,
-} from "../../../stores/apiSlices/cartApi.slice";
-import { mergeCartItems } from "../../../constants/utils";
-import FlatListWithoutScroll from "../../FlatListWithoutScroll";
-import { ItemTypeFlatList } from "../../FlatListWithScroll";
-import { t } from "i18next";
-import { updateIsUpdateCartDebouncing } from "../../../stores/customerSlice";
+} from "@stores/apiSlices/cartApi.slice";
+import { mergeCartItems } from "@constants/utils";
+import { ItemTypeFlatList } from "@/components/FlatListWithScroll";
+import { updateIsUpdateCartDebouncing } from "@stores/customerSlice";
+import FlatListWithoutScroll from "@/components/FlatListWithoutScroll";
+import { useTranslation } from "react-i18next";
 
-const getDishByCategory = (dishes: Dish[], categories: DishCategory[]) => {
+const getDishByCategory = (
+  dishes: Dish[],
+  categories: DishCategory[],
+  t: any,
+) => {
   const dishesByCategory = _.groupBy(dishes, "category.id");
   dishesByCategory["all"] = dishes;
   const availableDishCategories = _.concat(
     [{ id: "all", code: "all", name: t("all") }],
-    _.filter(categories, (c) => !_.isEmpty(dishesByCategory[c.id]))
+    _.filter(categories, (c) => !_.isEmpty(dishesByCategory[c.id])),
   );
   return { availableDishCategories, dishesByCategory };
 };
 
 export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const { shop, currentCartItem, currentCartAmount } = useSelector(
-    (state: RootState) => state.customer
+    (state: RootState) => state.customer,
   ) as {
     shop: Shop;
     currentCartItem: Record<string, CartItem>;
@@ -50,7 +50,8 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
     });
   const { availableDishCategories, dishesByCategory } = getDishByCategory(
     dishes,
-    dishCategories
+    dishCategories,
+    t,
   );
   const {
     data: cart,
@@ -61,6 +62,7 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
   const [updateCart, { isLoading: updateCartLoading }] =
     useUpdateCartMutation();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedUpdateCart = useCallback(
     debounce(
       ({ shopId, cartItems }: { shopId: string; cartItems: CartItem[] }) => {
@@ -69,24 +71,15 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
           updateCart({ cartItems, shopId });
         }
       },
-      1000
+      1000,
     ),
-    [updateCart]
+    [updateCart],
   );
 
   useEffect(() => {
     if (cartFetching) {
       return;
     }
-    // const mergedCartItems = mergeCartItems(currentCartItem);
-    // const cartItems = cart?.cartItems || [];
-
-    // const sameItems =
-    //   mergedCartItems.length === cartItems.length &&
-    //   mergedCartItems.every((item, i) => {
-    //     const other = cartItems[i];
-    //     return item.dishId === other.dishId && item.quantity === other.quantity;
-    //   });
 
     const isSameCart =
       currentCartAmount === cart?.totalAmount &&
@@ -98,7 +91,8 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
         cartItems: mergeCartItems(currentCartItem),
       });
     }
-  }, [currentCartItem, cartFetching]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentCartItem, cartFetching, debouncedUpdateCart]);
 
   if (dishCategoryLoading || cartLoading) {
     return <LoaderBasic />;

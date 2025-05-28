@@ -7,13 +7,13 @@ import {
   getShopRequest,
   queryShopsRequest,
   updateShopRequest,
-} from "../../apis/shop.api.service";
-import { API_BASE_URL } from "../../apis/api.service";
+} from "@apis/shop.api.service";
+import { API_BASE_URL } from "@apis/api.service";
 import {
   CreateShopRequest,
   QueryShopsRequest,
   UpdateShopRequest,
-} from "../../apis/shop.api.interface";
+} from "@apis/shop.api.interface";
 
 export const shopApiSlice = createApi({
   reducerPath: "shopApi",
@@ -37,7 +37,7 @@ export const shopApiSlice = createApi({
     getShops: builder.query<Shop[], QueryShopsRequest>({
       queryFn: async (
         { searchName, sortBy = "createdAt", page = 1, limit = 1000 },
-        api
+        api,
       ) => {
         const user = (api.getState() as RootState).auth.session;
         if (!user) {
@@ -99,7 +99,7 @@ export const shopApiSlice = createApi({
             if (index !== -1) {
               draft[index] = { ...draft[index], ...args };
             }
-          })
+          }),
         );
 
         try {
@@ -130,7 +130,7 @@ export const shopApiSlice = createApi({
         const patchResult = dispatch(
           shopApiSlice.util.updateQueryData("getShops", {}, (draft) => {
             return draft.filter((s) => s.id !== shopId);
-          })
+          }),
         );
 
         try {

@@ -1,18 +1,9 @@
 import { Fragment, memo, useMemo } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Card, Text, useTheme, Icon, Surface } from "react-native-paper";
-import { DishOrder, Order } from "../../../stores/state.interface";
-import { convertPaymentAmount } from "../../../constants/utils";
-import { DishOrderStatus } from "../../../constants/common";
-
-const ChildDishList = () => {
-  return (
-    <View style={styles.itemList}>
-      <Text>1 x Test 1</Text>
-      <Text>1 x Test 2</Text>
-    </View>
-  );
-};
+import { DishOrder, Order } from "@stores/state.interface";
+import { convertPaymentAmount } from "@constants/utils";
+import { DishOrderStatus } from "@constants/common";
 
 type Step = {
   icon: string;
@@ -25,40 +16,40 @@ const steps: Step[] = [
   { icon: "noodles", label: DishOrderStatus.served },
 ];
 
-const DishOrderStepper = memo(
-  ({ status }: { status: DishOrderStatus | string }) => {
-    const theme = useTheme();
+const DishOrderStepper = ({ status }: { status: DishOrderStatus | string }) => {
+  const theme = useTheme();
 
-    const currentStep = useMemo(() => {
-      return steps.findIndex((step) => step.label === status);
-    }, [status]);
+  const currentStep = useMemo(() => {
+    return steps.findIndex((step) => step.label === status);
+  }, [status]);
 
-    return (
-      <View style={styles.stepper}>
-        {steps.map((step, index) => (
-          <Fragment key={step.label}>
-            <Icon
-              source={index <= currentStep ? "check-circle" : step.icon}
-              size={24}
-              color={index <= currentStep ? theme.colors.primary : "#ccc"}
+  return (
+    <View style={styles.stepper}>
+      {steps.map((step, index) => (
+        <Fragment key={step.label}>
+          <Icon
+            source={index <= currentStep ? "check-circle" : step.icon}
+            size={24}
+            color={index <= currentStep ? theme.colors.primary : "#ccc"}
+          />
+          {index < steps.length - 1 && (
+            <View
+              style={[
+                styles.stepDivider,
+                {
+                  backgroundColor:
+                    index < currentStep ? theme.colors.primary : "#ccc",
+                },
+              ]}
             />
-            {index < steps.length - 1 && (
-              <View
-                style={[
-                  styles.stepDivider,
-                  {
-                    backgroundColor:
-                      index < currentStep ? theme.colors.primary : "#ccc",
-                  },
-                ]}
-              />
-            )}
-          </Fragment>
-        ))}
-      </View>
-    );
-  }
-);
+          )}
+        </Fragment>
+      ))}
+    </View>
+  );
+};
+
+const MemoiezdDishOrderStepper = memo(DishOrderStepper);
 
 export default function DishOrderCard({
   order,
@@ -70,7 +61,7 @@ export default function DishOrderCard({
   onQuantityClick: (
     dishOrder: DishOrder,
     orderId: string,
-    newQuantity: number
+    newQuantity: number,
   ) => void;
 }) {
   const theme = useTheme();
@@ -131,7 +122,7 @@ export default function DishOrderCard({
           </View>
         </View>
         {/* <ChildDishList /> */}
-        <DishOrderStepper status={dishOrder.status} />
+        <MemoiezdDishOrderStepper status={dishOrder.status} />
       </View>
     </Card>
   );

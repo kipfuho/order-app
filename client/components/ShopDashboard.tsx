@@ -6,14 +6,13 @@ import {
   TouchableOpacity,
   Dimensions,
 } from "react-native";
+import { Icon, Surface, Text, useTheme } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import DailySalesChart from "./ui/analytics/DailySalesChart";
 import PopularDishesChart from "./ui/analytics/PopularDishesChart";
 import HourlyDistributionChart from "./ui/analytics/HourlyDistributionChart";
 import PaymentMethodsChart from "./ui/analytics/PaymentMethodsChart";
-import { Icon, Surface, Text, useTheme } from "react-native-paper";
-import _ from "lodash";
-import { useTranslation } from "react-i18next";
-import { CustomMD3Theme } from "../constants/theme";
+import { CustomMD3Theme } from "@constants/theme";
 
 const { width } = Dimensions.get("window");
 

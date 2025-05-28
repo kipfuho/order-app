@@ -1,8 +1,8 @@
-import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
 import { ScrollView } from "react-native";
 import { Button, Checkbox, Dialog } from "react-native-paper";
-import { DishCategory } from "../../../stores/state.interface";
-import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { DishCategory } from "@stores/state.interface";
 
 const DishCategorySelectionDialog = ({
   visible,
@@ -27,7 +27,7 @@ const DishCategorySelectionDialog = ({
 
   const handleSelectAllPress = () => {
     setCurrentSelectedDishCategories(
-      new Set(dishCategories.map((dc) => dc.id))
+      new Set(dishCategories.map((dc) => dc.id)),
     );
   };
 

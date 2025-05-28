@@ -1,3 +1,4 @@
+import _, { debounce } from "lodash";
 import {
   ActivityIndicator,
   Button,
@@ -5,7 +6,6 @@ import {
   Surface,
   Text,
 } from "react-native-paper";
-import { styles } from "../../app/_layout";
 import {
   Dispatch,
   SetStateAction,
@@ -13,27 +13,26 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useSelector } from "react-redux";
+import { Keyboard, ScrollView } from "react-native";
+import Toast from "react-native-toast-message";
+import { useTranslation } from "react-i18next";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { runOnJS } from "react-native-reanimated";
 import {
   useGetDishCategoriesQuery,
   useGetDishesQuery,
   useGetDishTypesQuery,
-} from "../../stores/apiSlices/dishApi.slice";
-import { useSelector } from "react-redux";
-import { RootState } from "../../stores/store";
-import { Dish, DishCategory, Shop } from "../../stores/state.interface";
+} from "@stores/apiSlices/dishApi.slice";
+import { RootState } from "@stores/store";
+import { Dish, DishCategory, Shop } from "@stores/state.interface";
 import { LoaderBasic } from "./Loader";
-import { Keyboard, ScrollView } from "react-native";
-import _, { debounce } from "lodash";
-import Toast from "react-native-toast-message";
-import { useCreateOrderMutation } from "../../stores/apiSlices/orderApi.slice";
-import { convertPaymentAmount } from "../../constants/utils";
-import { useTranslation } from "react-i18next";
+import { useCreateOrderMutation } from "@stores/apiSlices/orderApi.slice";
+import { convertPaymentAmount } from "@constants/utils";
 import { ItemTypeFlatList } from "../FlatListWithScroll";
 import FlatListWithoutScroll from "../FlatListWithoutScroll";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { AppBar } from "../AppBar";
-import { AppBarSearchBox } from "../AppBarSearchBox";
-import { runOnJS } from "react-native-reanimated";
+import AppBarSearchBox from "../AppBarSearchBox";
 
 const createDismissGesture = (onDismissSearch: () => void) =>
   Gesture.Tap().onStart(() => {
@@ -115,7 +114,7 @@ export default function CreateOrder({
         currentTable?.position.dishCategoryIds,
         (dishCategoryId) => {
           return dishesByCategory[dishCategoryId] || [];
-        }
+        },
       );
       const searchValueLowerCase = _searchValue.toLowerCase();
       const filteredDishes = _.filter(tableDishes, (d) => {
@@ -135,11 +134,11 @@ export default function CreateOrder({
       setFilteredDishesByCategory(_.groupBy(filteredDishes, "category.id"));
       setApplicableCategories(
         dishCategories.filter((dc) =>
-          currentTable?.position.dishCategoryIds.includes(dc.id)
-        )
+          currentTable?.position.dishCategoryIds.includes(dc.id),
+        ),
       );
     }, 200),
-    [dishes, dishCategories, currentTable, dishesByCategory]
+    [dishes, dishCategories, currentTable, dishesByCategory],
   );
 
   useEffect(() => {
@@ -172,7 +171,7 @@ export default function CreateOrder({
         }
       />
       <GestureDetector gesture={gesture}>
-        <Surface style={styles.baseContainer}>
+        <Surface style={{ flex: 1, padding: 16 }}>
           <Surface mode="flat" style={{ height: 50 }}>
             <ScrollView
               horizontal

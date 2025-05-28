@@ -12,7 +12,7 @@ import {
   getUnitsRequest,
   updateDishCategoryRequest,
   updateDishRequest,
-} from "../../apis/dish.api.service";
+} from "@apis/dish.api.service";
 import {
   CreateDishCategoryRequest,
   CreateDishRequest,
@@ -20,8 +20,8 @@ import {
   DeleteDishRequest,
   UpdateDishCategoryRequest,
   UpdateDishRequest,
-} from "../../apis/dish.api.interface";
-import { API_BASE_URL } from "../../apis/api.service";
+} from "@apis/dish.api.interface";
+import { API_BASE_URL } from "@apis/api.service";
 import { updateDishesByCategory } from "../shop.slice";
 
 export const dishApiSlice = createApi({
@@ -90,13 +90,13 @@ export const dishApiSlice = createApi({
             { shopId: args.shopId },
             (draft) => {
               const index = draft.findIndex(
-                (dc) => dc.id === args.dishCategoryId
+                (dc) => dc.id === args.dishCategoryId,
               );
               if (index !== -1) {
                 draft[index] = { ...draft[index], ...args };
               }
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -128,8 +128,8 @@ export const dishApiSlice = createApi({
             { shopId: args.shopId },
             (draft) => {
               return draft.filter((dc) => dc.id !== args.dishCategoryId);
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -201,8 +201,8 @@ export const dishApiSlice = createApi({
               if (index !== -1) {
                 draft[index] = { ...draft[index], ...args };
               }
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -235,8 +235,8 @@ export const dishApiSlice = createApi({
             (draft) => {
               const index = draft.findIndex((d) => d.id === args.dishId);
               if (index !== -1) draft.splice(index, 1);
-            }
-          )
+            },
+          ),
         );
 
         try {

@@ -1,13 +1,14 @@
+import _ from "lodash";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { Cart, CartItem, Dish, Order } from "../state.interface";
-import { API_BASE_URL } from "../../apis/api.service";
+import { API_BASE_URL } from "@apis/api.service";
 import {
   checkoutCartRequest,
   getCartCheckoutHistoryRequest,
   getCartRequest,
   getRecommendationDishesRequest,
   updateCartRequest,
-} from "../../apis/cart.api.service";
+} from "@apis/cart.api.service";
 import { updateCurrentCart } from "../customerSlice";
 
 export const cartApiSlice = createApi({
@@ -42,8 +43,8 @@ export const cartApiSlice = createApi({
             isCustomerApp: true,
           });
 
-          const state = api.getState() as any;
-          return { data: !state?.customer?.isUpdateCartDebouncing };
+          const state = api.getState();
+          return { data: !_.get(state, "customer.isUpdateCartDebouncing") };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }

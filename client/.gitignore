@@ -40,3 +40,6 @@ app-example
 
 # gg
 scripts/credentials.json
+
+# proto
+generated/

@@ -1,7 +1,7 @@
 import { Surface, Text } from "react-native-paper";
-import { OrderSession } from "../../../stores/state.interface";
 import { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { OrderSession } from "@stores/state.interface";
 
 export default function OrderCustomerInfo({
   orderSession,

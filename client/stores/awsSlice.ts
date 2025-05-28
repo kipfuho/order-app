@@ -28,17 +28,17 @@ const awsSlice = createSlice({
         type: string;
         channel: EventsChannel;
         subscription: Subscription;
-      }>
+      }>,
     ) => {
       if (!action.payload) return;
 
       const existingConnection = state.connectionDetails.find(
-        (conn) => conn.channelType === action.payload.type
+        (conn) => conn.channelType === action.payload.type,
       );
       if (existingConnection) {
         existingConnection.connection.close();
         state.connectionDetails = state.connectionDetails.filter(
-          (conn) => conn.channelType !== action.payload.type
+          (conn) => conn.channelType !== action.payload.type,
         );
       }
 
@@ -55,7 +55,7 @@ const awsSlice = createSlice({
       if (!action.payload) return;
 
       const index = state.connectionDetails.findIndex(
-        (conn) => conn.channelType === action.payload.type
+        (conn) => conn.channelType === action.payload.type,
       );
 
       if (index === -1) return;

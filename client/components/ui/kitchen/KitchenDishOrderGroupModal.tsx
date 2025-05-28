@@ -1,18 +1,94 @@
-import React from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import React, { memo } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Button, Surface, useTheme } from "react-native-paper";
-import { KitchenDishOrder, Shop } from "../../../stores/state.interface";
-import { getMinuteForDisplay, getStatusColor } from "../../../constants/utils";
-import { CustomMD3Theme } from "../../../constants/theme";
-import { useTranslation } from "react-i18next";
-import { useUpdateUncookedDishOrdersRequestMutation } from "../../../stores/apiSlices/kitchenApi.slice";
-import { RootState } from "../../../stores/store";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
+import { LegendList } from "@legendapp/list";
+import { KitchenDishOrder, Shop } from "@stores/state.interface";
+import { getMinuteForDisplay, getStatusColor } from "@constants/utils";
+import { CustomMD3Theme } from "@constants/theme";
+import { useUpdateUncookedDishOrdersRequestMutation } from "@stores/apiSlices/kitchenApi.slice";
+import { RootState } from "@stores/store";
 import {
   deleteKitchenDishOrder,
   updateKitchenDishOrder,
-} from "../../../stores/shop.slice";
-import { LegendList } from "@legendapp/list";
+} from "@stores/shop.slice";
+
+const TableKitchenDishOrder = ({
+  item,
+  handleOnPress,
+  handleOnLongPress,
+}: {
+  item: KitchenDishOrder;
+  handleOnPress: (item: KitchenDishOrder, confirmed: boolean) => void;
+  handleOnLongPress: (item: KitchenDishOrder) => void;
+}) => {
+  const theme = useTheme<CustomMD3Theme>();
+  const minutesSinceOrderCreated = getMinuteForDisplay(
+    Date.now() - new Date(item.createdAt).getTime(),
+  );
+  const color = getStatusColor(theme, minutesSinceOrderCreated);
+  const { kitchenDishOrder } = useSelector((state: RootState) => state.shop);
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() => handleOnPress(item, kitchenDishOrder[item.id]?.confirmed)}
+      onLongPress={() => handleOnLongPress(item)}
+    >
+      <Surface
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: 8,
+          paddingHorizontal: 16,
+          marginHorizontal: 12,
+          marginTop: 10,
+          borderRadius: 8,
+          backgroundColor: kitchenDishOrder[item.id]?.confirmed
+            ? theme.colors.primaryContainer
+            : theme.colors.background,
+        }}
+      >
+        <Text style={{ fontSize: 16 }}>{item.tableName}</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <Text style={{ fontSize: 16 }}>{item.quantity}</Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-end",
+              backgroundColor: color.view,
+              padding: 1,
+              paddingHorizontal: 4,
+            }}
+          >
+            <Text style={{ fontSize: 16, color: color.onView }}>
+              {minutesSinceOrderCreated}
+            </Text>
+            <Text
+              style={{
+                fontSize: 12,
+                marginLeft: 2,
+                color: color.onView,
+              }}
+            >
+              m
+            </Text>
+          </View>
+        </View>
+      </Surface>
+    </TouchableOpacity>
+  );
+};
+
+const MemoizedTableKitchenDishOrder = memo(TableKitchenDishOrder);
 
 export default function KitchenDishOrderGroup({
   dishOrders,
@@ -25,9 +101,7 @@ export default function KitchenDishOrderGroup({
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const { currentShop, kitchenDishOrder } = useSelector(
-    (shop: RootState) => shop.shop
-  );
+  const { currentShop } = useSelector((shop: RootState) => shop.shop);
   const shop = currentShop as Shop;
 
   const [
@@ -35,11 +109,18 @@ export default function KitchenDishOrderGroup({
     { isLoading: updateUncookedDishOrderLoading },
   ] = useUpdateUncookedDishOrdersRequestMutation();
 
-  const handleOnPress = async (dishOrder: KitchenDishOrder) => {
-    if (!kitchenDishOrder[dishOrder.id]?.confirmed) {
+  const handleOnPress = async (
+    dishOrder: KitchenDishOrder,
+    confirmed: boolean,
+  ) => {
+    if (!confirmed) {
       dispatch(
-        updateKitchenDishOrder({ dishOrderId: dishOrder.id, confirmed: true })
+        updateKitchenDishOrder({ dishOrderId: dishOrder.id, confirmed: true }),
       );
+      return;
+    }
+
+    if (updateUncookedDishOrderLoading) {
       return;
     }
 
@@ -60,7 +141,7 @@ export default function KitchenDishOrderGroup({
 
   const handleOnLongPress = (dishOrder: KitchenDishOrder) => {
     dispatch(
-      updateKitchenDishOrder({ dishOrderId: dishOrder.id, confirmed: false })
+      updateKitchenDishOrder({ dishOrderId: dishOrder.id, confirmed: false }),
     );
   };
 
@@ -86,75 +167,17 @@ export default function KitchenDishOrderGroup({
       </View>
 
       <View style={{ flex: 1 }}>
-        <ScrollView>
-          <LegendList
-            data={dishOrders}
-            keyExtractor={(_, index) => index.toString()}
-            renderItem={({ item }) => {
-              const minutesSinceOrderCreated = getMinuteForDisplay(
-                Date.now() - new Date(item.createdAt).getTime()
-              );
-              const color = getStatusColor(theme, minutesSinceOrderCreated);
-
-              return (
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => handleOnPress(item)}
-                  onLongPress={() => handleOnLongPress(item)}
-                >
-                  <Surface
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: 8,
-                      paddingHorizontal: 16,
-                      marginHorizontal: 12,
-                      marginTop: 10,
-                      borderRadius: 8,
-                      backgroundColor: kitchenDishOrder[item.id]?.confirmed
-                        ? theme.colors.primaryContainer
-                        : theme.colors.background,
-                    }}
-                  >
-                    <Text style={{ fontSize: 16 }}>{item.tableName}</Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <Text style={{ fontSize: 16 }}>{item.quantity}</Text>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "flex-end",
-                          backgroundColor: color.view,
-                          padding: 1,
-                          paddingHorizontal: 4,
-                        }}
-                      >
-                        <Text style={{ fontSize: 16, color: color.onView }}>
-                          {minutesSinceOrderCreated}
-                        </Text>
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            marginLeft: 2,
-                            color: color.onView,
-                          }}
-                        >
-                          m
-                        </Text>
-                      </View>
-                    </View>
-                  </Surface>
-                </TouchableOpacity>
-              );
-            }}
-          />
-        </ScrollView>
+        <LegendList
+          data={dishOrders}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <MemoizedTableKitchenDishOrder
+              item={item}
+              handleOnPress={handleOnPress}
+              handleOnLongPress={handleOnLongPress}
+            />
+          )}
+        />
       </View>
 
       <View style={{ padding: 8 }}>

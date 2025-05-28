@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Cart, CartItem, Customer, Dish, Shop, Table } from "./state.interface";
 import { PURGE } from "redux-persist";
+import { Cart, CartItem, Customer, Dish, Shop, Table } from "./state.interface";
 
 interface CustomerState {
   shop: Shop | null;
@@ -48,7 +48,7 @@ export const customerSlice = createSlice({
 
     updateCartSingleDish: (
       state,
-      action: PayloadAction<{ id?: string; dish: Dish; quantity: number }>
+      action: PayloadAction<{ id?: string; dish: Dish; quantity: number }>,
     ) => {
       if (!_.get(action, "payload")) return;
 

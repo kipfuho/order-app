@@ -1,10 +1,5 @@
 import React, { PropsWithChildren, useRef } from "react";
-import {
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  LayoutChangeEvent,
-} from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Icon, Surface, Text } from "react-native-paper";
 import Animated, {
   useSharedValue,

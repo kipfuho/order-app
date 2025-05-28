@@ -1,24 +1,24 @@
+import _ from "lodash";
 import { useRouter } from "expo-router";
-import { goToShopHome } from "../../../../../../../apis/navigate.service";
-import { AppBar } from "../../../../../../../components/AppBar";
-import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
+import { useEffect, useState } from "react";
+import { ScrollView } from "react-native";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../../../../../stores/store";
-import { Shop, Table } from "../../../../../../../stores/state.interface";
+import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-import { useGetUnconfirmedOrderQuery } from "../../../../../../../stores/apiSlices/orderApi.slice";
-import { LoaderBasic } from "../../../../../../../components/ui/Loader";
+import Toast from "react-native-toast-message";
+import { LegendList } from "@legendapp/list";
+import { goToShopHome } from "@apis/navigate.service";
+import { AppBar } from "@components/AppBar";
+import { RootState } from "@stores/store";
+import { Shop, Table } from "@stores/state.interface";
+import { useGetUnconfirmedOrderQuery } from "@stores/apiSlices/orderApi.slice";
+import { LoaderBasic } from "@components/ui/Loader";
 import {
   useGetTablePositionsQuery,
   useGetTablesQuery,
-} from "../../../../../../../stores/apiSlices/tableApi.slice";
-import { ScrollView } from "react-native";
-import { useEffect, useState } from "react";
-import _ from "lodash";
-import { TableForApproveCard } from "../../../../../../../components/ui/orders/TableForApproveCard";
-import { UnconfirmedOrderCard } from "../../../../../../../components/ui/orders/UnconfirmedOrderCard";
-import Toast from "react-native-toast-message";
-import { LegendList } from "@legendapp/list";
+} from "@stores/apiSlices/tableApi.slice";
+import TableForApproveCard from "@/components/ui/orders/TableForApproveCard";
+import UnconfirmedOrderCard from "@/components/ui/orders/UnconfirmedOrderCard";
 
 export default function OrderManagementApprovePage() {
   const router = useRouter();
@@ -42,7 +42,7 @@ export default function OrderManagementApprovePage() {
   const unconfirmedOrderByTable = _.groupBy(unconfirmedOrders, "table");
   const availableTables = _.filter(
     tables,
-    (t) => !_.isEmpty(unconfirmedOrderByTable[t.id])
+    (t) => !_.isEmpty(unconfirmedOrderByTable[t.id]),
   );
   const tablesGroupByPosition = _.groupBy(availableTables, "position.id");
   const tablePositionById = _.keyBy(tablePositions, "id");
@@ -55,7 +55,7 @@ export default function OrderManagementApprovePage() {
   };
 
   const [filteredTables, setFilteredTables] = useState<Record<string, Table[]>>(
-    {}
+    {},
   );
   const [selectedPositionId, setSelectedPositionId] = useState("ALL");
   const [selectedTable, setSelectedTable] = useState<Table>();
@@ -200,7 +200,7 @@ export default function OrderManagementApprovePage() {
                         key={table.id}
                         table={table}
                         unconfirmedOrderCount={_.size(
-                          unconfirmedOrderByTable[table.id]
+                          unconfirmedOrderByTable[table.id],
                         )}
                         onClick={onTableClick}
                       />

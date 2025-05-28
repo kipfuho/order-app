@@ -1,129 +1,128 @@
-import _ from "lodash";
-import { TableForOrder } from "../../../stores/state.interface";
-import { Card, Icon, Surface, Text, useTheme } from "react-native-paper";
+import { memo } from "react";
 import { TouchableOpacity, View } from "react-native";
+import { Card, Icon, Surface, Text, useTheme } from "react-native-paper";
+import { TableForOrder } from "@stores/state.interface";
 import {
   convertPaymentAmount,
   getMinuteForDisplay,
   getStatusColor,
-} from "../../../constants/utils";
-import { memo } from "react";
-import { CustomMD3Theme } from "../../../constants/theme";
+} from "@constants/utils";
+import { CustomMD3Theme } from "@constants/theme";
 
-export const TableForOrderCurrentInfo = memo(
-  ({ table }: { table: TableForOrder }) => {
-    const theme = useTheme<CustomMD3Theme>();
+const TableForOrderCurrentInfo = ({ table }: { table: TableForOrder }) => {
+  const theme = useTheme<CustomMD3Theme>();
 
-    if (table.numberOfOrderSession) {
-      const now = Date.now();
-      const minutesSinceOrderCreated = getMinuteForDisplay(
-        now - (table.orderCreatedAtEpoch ?? now)
-      );
-
-      return (
-        <Surface
-          mode="flat"
-          style={{
-            flex: 1,
-            padding: 8,
-            borderRadius: 5,
-            borderTopLeftRadius: 0,
-            borderTopRightRadius: 0,
-          }}
-        >
-          {/* Row: Customers and Order ID */}
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-              {table.numberOfCustomer}
-            </Text>
-            <Text style={{ fontSize: 12, marginLeft: 2 }}>P</Text>
-            <Text
-              style={{
-                fontSize: 16,
-                color: getStatusColor(theme, minutesSinceOrderCreated).view,
-                marginLeft: 8,
-                fontWeight: "bold",
-              }}
-            >
-              {minutesSinceOrderCreated}
-            </Text>
-            <Text style={{ fontSize: 12, marginLeft: 2 }}>m</Text>
-          </View>
-
-          {/* Total payment */}
-          <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-            {convertPaymentAmount(table.totalPaymentAmount)}
-          </Text>
-
-          {/* Avg per customer */}
-          <Text style={{ fontSize: 12, color: "grey" }}>
-            {convertPaymentAmount(table.averagePaymentAmount)} / P
-          </Text>
-        </Surface>
-      );
-    }
+  if (table.numberOfOrderSession) {
+    const now = Date.now();
+    const minutesSinceOrderCreated = getMinuteForDisplay(
+      now - (table.orderCreatedAtEpoch ?? now),
+    );
 
     return (
       <Surface
         mode="flat"
         style={{
           flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
+          padding: 8,
           borderRadius: 5,
           borderTopLeftRadius: 0,
           borderTopRightRadius: 0,
         }}
       >
-        <Icon source="plus-circle-outline" size={30} />
+        {/* Row: Customers and Order ID */}
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+            {table.numberOfCustomer}
+          </Text>
+          <Text style={{ fontSize: 12, marginLeft: 2 }}>P</Text>
+          <Text
+            style={{
+              fontSize: 16,
+              color: getStatusColor(theme, minutesSinceOrderCreated).view,
+              marginLeft: 8,
+              fontWeight: "bold",
+            }}
+          >
+            {minutesSinceOrderCreated}
+          </Text>
+          <Text style={{ fontSize: 12, marginLeft: 2 }}>m</Text>
+        </View>
+
+        {/* Total payment */}
+        <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+          {convertPaymentAmount(table.totalPaymentAmount)}
+        </Text>
+
+        {/* Avg per customer */}
+        <Text style={{ fontSize: 12, color: "grey" }}>
+          {convertPaymentAmount(table.averagePaymentAmount)} / P
+        </Text>
       </Surface>
     );
   }
-);
 
-export const TableForOrderCard = memo(
-  ({
-    table,
-    onClick,
-  }: {
-    table: TableForOrder;
-    onClick: (tableId: string) => void;
-  }) => {
-    const theme = useTheme();
-    return (
-      <TouchableOpacity onPress={() => onClick(table.id)} activeOpacity={1}>
-        <Card
+  return (
+    <Surface
+      mode="flat"
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 5,
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
+      }}
+    >
+      <Icon source="plus-circle-outline" size={30} />
+    </Surface>
+  );
+};
+
+const MemoizedTableForOrderCurrentInfo = memo(TableForOrderCurrentInfo);
+
+const TableForOrderCard = ({
+  table,
+  onClick,
+}: {
+  table: TableForOrder;
+  onClick: (tableId: string) => void;
+}) => {
+  const theme = useTheme();
+  return (
+    <TouchableOpacity onPress={() => onClick(table.id)} activeOpacity={1}>
+      <Card
+        style={{
+          margin: 10,
+          width: 120,
+          height: 150,
+          borderRadius: 5,
+          marginHorizontal: 5,
+          marginVertical: 5,
+        }}
+        mode="elevated"
+        contentStyle={{ flex: 1 }}
+      >
+        {/* Table name */}
+        <Surface
+          mode="flat"
           style={{
-            margin: 10,
-            width: 120,
-            height: 150,
+            backgroundColor: theme.colors.errorContainer,
             borderRadius: 5,
-            marginHorizontal: 5,
-            marginVertical: 5,
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
           }}
-          mode="elevated"
-          contentStyle={{ flex: 1 }}
         >
-          {/* Table name */}
-          <Surface
-            mode="flat"
-            style={{
-              backgroundColor: theme.colors.errorContainer,
-              borderRadius: 5,
-              borderBottomLeftRadius: 0,
-              borderBottomRightRadius: 0,
-            }}
+          <Text
+            style={{ padding: 8, color: theme.colors.onErrorContainer }}
+            numberOfLines={1}
           >
-            <Text
-              style={{ padding: 8, color: theme.colors.onErrorContainer }}
-              numberOfLines={1}
-            >
-              {table.name}
-            </Text>
-          </Surface>
-          <TableForOrderCurrentInfo table={table} />
-        </Card>
-      </TouchableOpacity>
-    );
-  }
-);
+            {table.name}
+          </Text>
+        </Surface>
+        <MemoizedTableForOrderCurrentInfo table={table} />
+      </Card>
+    </TouchableOpacity>
+  );
+};
+
+export default memo(TableForOrderCard);

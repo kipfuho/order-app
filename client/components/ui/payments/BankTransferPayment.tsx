@@ -1,9 +1,9 @@
 import { Dispatch, SetStateAction } from "react";
-import { Text, TouchableRipple, useTheme } from "react-native-paper";
-import { getVnPayUrl } from "../../../apis/order.api.service";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
+import { Text, TouchableRipple, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
+import { getVnPayUrl } from "@apis/order.api.service";
+import { RootState } from "@stores/store";
 
 export default function BankTransferPayment({
   paymentMethod,
@@ -19,7 +19,7 @@ export default function BankTransferPayment({
   const { t } = useTranslation();
 
   const { currentShop, currentOrderSession } = useSelector(
-    (state: RootState) => state.shop
+    (state: RootState) => state.shop,
   );
 
   const handleGetVnPayUrl = async () => {

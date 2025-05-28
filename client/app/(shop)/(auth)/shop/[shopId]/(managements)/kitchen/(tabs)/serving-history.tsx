@@ -1,12 +1,10 @@
-import { Surface, Text } from "react-native-paper";
-import { SwipeablePage } from "../../../../../../../../components/SwipeablePage";
+import { SwipeablePage } from "@/components/SwipeablePage";
+import { KitchenServingHistory } from "@/components/ui/kitchen/KitchenServingHistory";
 
-export default function ServingHistory() {
+export default function ServingHistoryPage() {
   return (
     <SwipeablePage>
-      <Surface>
-        <Text>ServingHistory</Text>
-      </Surface>
+      <KitchenServingHistory />
     </SwipeablePage>
   );
 }

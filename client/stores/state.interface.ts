@@ -1,5 +1,5 @@
-import { OrderSessionStatus } from "../constants/common";
-import { PaymentMethod } from "../constants/paymentMethod";
+import { OrderSessionStatus } from "@constants/common";
+import { PaymentMethod } from "@constants/paymentMethod";
 
 interface Tokens {
   access: {

@@ -1,5 +1,5 @@
-import BankTransferPayment from "../components/ui/payments/BankTransferPayment";
-import GeneralPayment from "../components/ui/payments/GeneralPayment";
+import BankTransferPayment from "@components/ui/payments/BankTransferPayment";
+import GeneralPayment from "@components/ui/payments/GeneralPayment";
 
 export enum PaymentMethod {
   CASH = "cash",

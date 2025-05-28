@@ -13,9 +13,9 @@ import {
   updateDepartmentRequest,
   updateEmployeePositionRequest,
   updateEmployeeRequest,
-} from "../../apis/staff.api.service";
+} from "@apis/staff.api.service";
 import { Department, Employee, EmployeePosition } from "../state.interface";
-import { API_BASE_URL } from "../../apis/api.service";
+import { API_BASE_URL } from "@apis/api.service";
 import {
   CreateDepartmentRequest,
   CreateEmployeePositionRequest,
@@ -26,7 +26,7 @@ import {
   UpdateDepartmentRequest,
   UpdateEmployeePositionRequest,
   UpdateEmployeeRequest,
-} from "../../apis/staff.api.interface";
+} from "@apis/staff.api.interface";
 
 export const staffApiSlice = createApi({
   reducerPath: "staffApi",
@@ -95,8 +95,8 @@ export const staffApiSlice = createApi({
                   ...args,
                 };
               }
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -128,8 +128,8 @@ export const staffApiSlice = createApi({
             args.shopId,
             (draft) => {
               return draft.filter((e) => e.id !== args.employeeId);
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -197,13 +197,13 @@ export const staffApiSlice = createApi({
             args.shopId,
             (draft) => {
               const index = draft.findIndex(
-                (ep) => ep.id === args.employeePositionId
+                (ep) => ep.id === args.employeePositionId,
               );
               if (index !== -1) {
                 draft[index] = { ...draft[index], ...args };
               }
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -239,8 +239,8 @@ export const staffApiSlice = createApi({
             args.shopId,
             (draft) => {
               return draft.filter((ep) => ep.id !== args.employeePositionId);
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -304,8 +304,8 @@ export const staffApiSlice = createApi({
               if (index !== -1) {
                 draft[index] = { ...draft[index], ...args };
               }
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -337,8 +337,8 @@ export const staffApiSlice = createApi({
             args.shopId,
             (draft) => {
               return draft.filter((d) => d.id !== args.departmentId);
-            }
-          )
+            },
+          ),
         );
 
         try {

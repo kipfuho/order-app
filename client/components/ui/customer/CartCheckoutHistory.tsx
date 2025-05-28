@@ -1,15 +1,14 @@
 import { IconButton, Surface, Text } from "react-native-paper";
-import { useGetCheckoutCartHistoryQuery } from "../../../stores/apiSlices/cartApi.slice";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
-import { Shop, Table } from "../../../stores/state.interface";
-import { ScrollView, View } from "react-native";
-import { LoaderBasic } from "../Loader";
-import _ from "lodash";
-import { useTranslation } from "react-i18next";
 import { Dispatch, SetStateAction } from "react";
+import { useSelector } from "react-redux";
+import { ScrollView, View } from "react-native";
+import { RootState } from "@stores/store";
+import { useTranslation } from "react-i18next";
+import { Shop } from "@stores/state.interface";
+import { LoaderBasic } from "../Loader";
+import { useGetCheckoutCartHistoryQuery } from "@stores/apiSlices/cartApi.slice";
 import VerticalDivider from "../VerticalDivider";
-import { convertPaymentAmount } from "../../../constants/utils";
+import { convertPaymentAmount } from "@constants/utils";
 
 export default function CartCheckoutHistory({
   setVisible,
@@ -18,9 +17,8 @@ export default function CartCheckoutHistory({
 }) {
   const { t } = useTranslation();
 
-  const { shop, table } = useSelector((state: RootState) => state.customer) as {
+  const { shop } = useSelector((state: RootState) => state.customer) as {
     shop: Shop;
-    table: Table;
   };
   const { data: histories = [], isLoading: historyLoading } =
     useGetCheckoutCartHistoryQuery(shop.id);

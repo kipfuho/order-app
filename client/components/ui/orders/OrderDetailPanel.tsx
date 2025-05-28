@@ -1,3 +1,4 @@
+import _ from "lodash";
 import {
   Modal,
   Portal,
@@ -7,26 +8,25 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
-import { DishOrder, OrderSession, Shop } from "../../../stores/state.interface";
 import { useTranslation } from "react-i18next";
-import { ScrollView, useWindowDimensions, View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
+import { LegendList } from "@legendapp/list";
+import Toast from "react-native-toast-message";
 import OrderCustomerInfo from "./OrderCutomerInfo";
 import DishOrderCard from "./DishOrder";
-import { useState } from "react";
 import { ConfirmCancelDialog } from "../CancelDialog";
 import {
   useCancelOrderSessionMutation,
   useChangeDishQuantityMutation,
-} from "../../../stores/apiSlices/orderApi.slice";
-import { useRouter } from "expo-router";
-import { goToTablesForOrderList } from "../../../apis/navigate.service";
-import { useDispatch, useSelector } from "react-redux";
-import { resetCurrentTable } from "../../../stores/shop.slice";
-import Toast from "react-native-toast-message";
+} from "@stores/apiSlices/orderApi.slice";
+import { DishOrder, OrderSession, Shop } from "@stores/state.interface";
+import { goToTablesForOrderList } from "@apis/navigate.service";
+import { resetCurrentTable } from "@stores/shop.slice";
 import CreateOrder from "../CreateOrderView";
-import _ from "lodash";
-import { RootState } from "../../../stores/store";
-import { LegendList } from "@legendapp/list";
+import { RootState } from "@stores/store";
 
 export default function ActiveOrderSessionPage({
   activeOrderSession,
@@ -40,7 +40,7 @@ export default function ActiveOrderSessionPage({
   const { height } = useWindowDimensions();
 
   const { currentShop, currentOrderSession } = useSelector(
-    (state: RootState) => state.shop
+    (state: RootState) => state.shop,
   );
   const shop = currentShop as Shop;
   const orderSession = currentOrderSession as OrderSession;
@@ -64,7 +64,7 @@ export default function ActiveOrderSessionPage({
   const onDishQuantityClick = (
     dishOrder: DishOrder,
     orderId: string,
-    newQuantity: number
+    newQuantity: number,
   ) => {
     setChangeQuantityDishOrder(dishOrder);
     setNewQuantity(`${newQuantity}`);

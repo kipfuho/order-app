@@ -1,11 +1,4 @@
 import {
-  GestureResponderEvent,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from "react-native";
-import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
-import {
   createElement,
   ReactNode,
   useCallback,
@@ -13,9 +6,16 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  GestureResponderEvent,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  ScrollView,
+} from "react-native";
+import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
 import { LegendList, LegendListRef } from "@legendapp/list";
-import { ScrollView } from "react-native";
-import { CartItem, Dish, KitchenDishOrder } from "../stores/state.interface";
+import { CartItem, Dish, KitchenDishOrder } from "@stores/state.interface";
 import KitchenDishOrderByOrderCard from "./ui/kitchen/KitchenDishOrderByOrderCard";
 import KitchenDishOrderByDishCard from "./ui/kitchen/KitchenDishOrderByDishCard";
 import KitchenDishOrderServingCard from "./ui/kitchen/KitchenDishOrderServingCard";
@@ -375,7 +375,7 @@ const FlatListWithScroll = ({
 
       return null;
     },
-    [itemType, itemContainerWidth, openMenu, additionalDatas, numColumns]
+    [itemType, itemContainerWidth, openMenu, additionalDatas, numColumns],
   );
 
   const scrollToCategory = (categoryId: string) => {
@@ -428,9 +428,9 @@ const FlatListWithScroll = ({
               (containerUsablewidth + 12) /
                 Math.min(
                   ItemTypeFlatListProperties[itemType].MAX_WIDTH,
-                  containerUsablewidth * 0.48 + 12
-                )
-            )
+                  containerUsablewidth * 0.48 + 12,
+                ),
+            ),
           );
         }}
         contentContainerStyle={{ padding: 10 }}

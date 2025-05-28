@@ -1,3 +1,4 @@
+import _ from "lodash";
 import {
   ActivityIndicator,
   Button,
@@ -8,22 +9,20 @@ import {
   Portal,
   Surface,
   Text,
-  useTheme,
 } from "react-native-paper";
 import {
   useCheckoutCartMutation,
   useGetCartQuery,
-} from "../../../stores/apiSlices/cartApi.slice";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
-import { CartItem, Dish, Shop, Table } from "../../../stores/state.interface";
-import { ScrollView, View } from "react-native";
-import { LoaderBasic } from "../Loader";
-import _ from "lodash";
-import { convertPaymentAmount } from "../../../constants/utils";
-import { useGetDishesQuery } from "../../../stores/apiSlices/dishApi.slice";
+} from "@stores/apiSlices/cartApi.slice";
 import { Dispatch, SetStateAction, useState } from "react";
+import { ScrollView, View } from "react-native";
+import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import { RootState } from "@stores/store";
+import { CartItem, Dish, Shop, Table } from "@stores/state.interface";
+import { LoaderBasic } from "../Loader";
+import { convertPaymentAmount } from "@constants/utils";
+import { useGetDishesQuery } from "@stores/apiSlices/dishApi.slice";
 import VerticalDivider from "../VerticalDivider";
 import UpdateCartItem from "./UpdateCartItem";
 
@@ -78,7 +77,6 @@ export default function CartDetail({
   setCartDetailVisible: Dispatch<SetStateAction<boolean>>;
 }) {
   const { t } = useTranslation();
-  const theme = useTheme();
 
   const { shop, table } = useSelector((state: RootState) => state.customer) as {
     shop: Shop;

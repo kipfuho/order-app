@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { KitchenDishOrder, Kitchen, KitchenLog } from "../state.interface";
-import { API_BASE_URL } from "../../apis/api.service";
+import { API_BASE_URL } from "@apis/api.service";
 import {
   createKitchenRequest,
   deleteKitchenRequest,
@@ -15,7 +15,7 @@ import {
   updateKitchenRequest,
   updateUncookedDishOrdersRequest,
   updateUnservedDishOrdersRequest,
-} from "../../apis/kitchen.api.service";
+} from "@apis/kitchen.api.service";
 import {
   CreateKitchenRequest,
   DeleteKitchenRequest,
@@ -28,7 +28,7 @@ import {
   UpdateKitchenRequest,
   UpdateUncookedDishOrdersRequest,
   UpdateUnservedDishOrdersRequest,
-} from "../../apis/kitchen.api.interface";
+} from "@apis/kitchen.api.interface";
 
 export const kitchenApiSlice = createApi({
   reducerPath: "kitchenApi",
@@ -113,8 +113,8 @@ export const kitchenApiSlice = createApi({
                   ...args,
                 };
               }
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -147,8 +147,8 @@ export const kitchenApiSlice = createApi({
             (draft) => {
               const index = draft.findIndex((d) => d.id === args.kitchenId);
               if (index !== -1) draft.splice(index, 1);
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -212,13 +212,13 @@ export const kitchenApiSlice = createApi({
             args.shopId,
             (draft) => {
               const updatedDishOrder = new Set(
-                args.updateRequests.map((request) => request.dishOrderId)
+                args.updateRequests.map((request) => request.dishOrderId),
               );
               return draft.filter(
-                (dishOrder) => !updatedDishOrder.has(dishOrder.id)
+                (dishOrder) => !updatedDishOrder.has(dishOrder.id),
               );
-            }
-          )
+            },
+          ),
         );
 
         try {
