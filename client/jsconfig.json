@@ -1,13 +1,7 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
     "baseUrl": ".",
+    "module": "ES2020",
     "paths": {
       "@/*": [
         "./*"
@@ -31,10 +25,5 @@
         "./stores/*"
       ],
     }
-  },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "scripts/generate-protos.js"
-  ],
+  }
 }
