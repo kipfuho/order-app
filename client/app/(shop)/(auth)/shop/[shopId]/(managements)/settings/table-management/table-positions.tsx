@@ -14,6 +14,7 @@ import {
   goToUpdateTablePosition,
 } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
+import { styles } from "@/constants/styles";
 
 export default function TablePositionsManagementPage() {
   const router = useRouter();
@@ -70,11 +71,7 @@ export default function TablePositionsManagementPage() {
         <FAB
           icon="plus"
           label={t("create_table_position")}
-          style={{
-            position: "absolute",
-            right: 16,
-            bottom: 16,
-          }}
+          style={styles.baseFAB}
           onPress={() => goToCreateTablePosition({ router, shopId: shop.id })}
         />
       </Surface>

@@ -21,6 +21,7 @@ import _ from "lodash";
 import { useCreateTablePositionMutation } from "@stores/apiSlices/tableApi.slice";
 import { useTranslation } from "react-i18next";
 import DishCategorySelectionDialog from "@components/ui/settings/DishCategorySelectionDialog";
+import { styles } from "@/constants/styles";
 
 export default function CreateTablePositionPage() {
   const router = useRouter();
@@ -100,13 +101,7 @@ export default function CreateTablePositionPage() {
           flex: 1,
         }}
       >
-        <Surface
-          mode="flat"
-          style={{
-            flex: 1,
-            padding: 16,
-          }}
-        >
+        <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView>
             <TextInput
               label={t("table_position_name")}
@@ -155,7 +150,7 @@ export default function CreateTablePositionPage() {
             <Button
               mode="contained-tonal"
               onPress={handleCreateTablePosition}
-              style={{ width: 200, alignSelf: "center" }}
+              style={styles.baseButton}
             >
               {t("create_table_position")}
             </Button>

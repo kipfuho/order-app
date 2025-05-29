@@ -28,6 +28,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
 import Toast from "react-native-toast-message";
+import { styles } from "@/constants/styles";
 
 export default function CategoriesManagementPage() {
   const router = useRouter();
@@ -139,11 +140,7 @@ export default function CategoriesManagementPage() {
         <FAB
           icon="plus"
           label={t("create_dish_category")}
-          style={{
-            position: "absolute",
-            right: 16,
-            bottom: 16,
-          }}
+          style={styles.baseFAB}
           onPress={() => goToCreateDishCategory({ router, shopId: shop.id })}
         />
       </Surface>

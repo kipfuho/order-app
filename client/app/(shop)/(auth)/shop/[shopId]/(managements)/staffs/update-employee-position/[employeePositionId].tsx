@@ -21,6 +21,7 @@ import { Shop } from "@stores/state.interface";
 import { goToEmployeePositionList } from "@apis/navigate.service";
 import { LoaderBasic } from "@components/ui/Loader";
 import { AppBar } from "@components/AppBar";
+import { styles } from "@/constants/styles";
 
 export default function UpdateEmployeePositionPage() {
   const { employeePositionId } = useGlobalSearchParams() as {
@@ -82,6 +83,7 @@ export default function UpdateEmployeePositionPage() {
     if (!employeePosition) return;
 
     setName(employeePosition.name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [employeePositionId, employeePositionFetching]);
 
   if (employeePositionLoading) {
@@ -90,7 +92,7 @@ export default function UpdateEmployeePositionPage() {
 
   if (!employeePosition) {
     return (
-      <Surface style={{ flex: 1, padding: 16 }}>
+      <Surface style={styles.baseContainer}>
         <Text>{t("employee_position_not_found")}</Text>
         <Button
           onPress={() => goToEmployeePositionList({ router, shopId: shop.id })}
@@ -113,13 +115,7 @@ export default function UpdateEmployeePositionPage() {
           flex: 1,
         }}
       >
-        <Surface
-          mode="flat"
-          style={{
-            flex: 1,
-            padding: 16,
-          }}
-        >
+        <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView>
             {/* Employee position Name Input */}
             <TextInput
@@ -140,7 +136,7 @@ export default function UpdateEmployeePositionPage() {
             <Button
               mode="contained-tonal"
               onPress={handleUpdateEmployeePosition}
-              style={{ minWidth: 200, alignSelf: "center" }}
+              style={styles.baseButton}
             >
               {t("update_employee_position")}
             </Button>

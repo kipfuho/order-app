@@ -12,6 +12,7 @@ import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
 import { updateShop } from "@stores/customerSlice";
 import { closeAppSyncChannel } from "@stores/awsSlice";
+import { styles } from "@/constants/styles";
 
 export default function AppLayout() {
   const { shopId } = useGlobalSearchParams() as { shopId: string };
@@ -44,7 +45,7 @@ export default function AppLayout() {
 
   if (!shop) {
     return (
-      <Surface style={{ flex: 1, padding: 16 }}>
+      <Surface style={styles.baseContainer}>
         <Text
           variant="displayMedium"
           style={{ color: theme.colors.error, alignSelf: "center" }}

@@ -26,6 +26,7 @@ import DishCategorySelectionDialog from "@components/ui/settings/DishCategorySel
 import { useGetTablesQuery } from "@stores/apiSlices/tableApi.slice";
 import { useGetDishCategoriesQuery } from "@stores/apiSlices/dishApi.slice";
 import TableSelectionDialog from "@components/ui/settings/TableSelectionDialog";
+import { styles } from "@/constants/styles";
 
 export default function UpdateKitchenPage() {
   const { kitchenId } = useLocalSearchParams() as { kitchenId: string };
@@ -98,6 +99,7 @@ export default function UpdateKitchenPage() {
     if (!kitchen) return;
 
     setName(kitchen.name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kitchenId, kitchenFetching]);
 
   if (kitchenLoading || tableLoading || dishCategoryLoading) {
@@ -148,13 +150,7 @@ export default function UpdateKitchenPage() {
           flex: 1,
         }}
       >
-        <Surface
-          mode="flat"
-          style={{
-            flex: 1,
-            padding: 16,
-          }}
-        >
+        <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView>
             <TextInput
               label={t("kitchen_position_name")}
@@ -220,7 +216,7 @@ export default function UpdateKitchenPage() {
             <Button
               mode="contained-tonal"
               onPress={handleUpdateKitchen}
-              style={{ width: 200, alignSelf: "center" }}
+              style={styles.baseButton}
             >
               {t("update_kitchen_position")}
             </Button>

@@ -2,9 +2,9 @@ import { useSelector } from "react-redux";
 import { RootState } from "@stores/store";
 import { Surface, Text, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-import { styles } from "../../_layout";
 import { Stack } from "expo-router";
 import { CustomerAppBar } from "@components/ui/customer/CustomerAppBar";
+import { styles } from "@/constants/styles";
 
 export default function CustomerHomeLayout() {
   const { t } = useTranslation();

@@ -1,5 +1,5 @@
+import _ from "lodash";
 import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
-import { styles } from "../../_layout";
 import { Keyboard, ScrollView, useWindowDimensions, View } from "react-native";
 import {
   useGetDishesQuery,
@@ -9,7 +9,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "@stores/store";
 import { Dish, Shop, Table } from "@stores/state.interface";
 import { LoaderBasic } from "@components/ui/Loader";
-import _ from "lodash";
 import { useTranslation } from "react-i18next";
 import ImageSlider from "@components/ImageSlider";
 import CustomerOrderMenu from "@components/ui/orders/CustomerOrderMenu";
@@ -22,6 +21,7 @@ import {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import AppBarSearchBox from "@/components/AppBarSearchBox";
+import { styles } from "@/constants/styles";
 
 const getButtonSize = (width: number) => {
   return width / 2 - 30;

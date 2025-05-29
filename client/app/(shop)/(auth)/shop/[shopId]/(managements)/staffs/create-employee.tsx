@@ -27,6 +27,7 @@ import { DropdownMenu } from "@components/DropdownMenu";
 import { Collapsible } from "@components/Collapsible";
 import { checkUserByEmailRequest } from "@apis/auth.api.service";
 import PasswordInput from "@components/ui/PasswordInput";
+import { styles } from "@/constants/styles";
 
 export default function CreateEmployeePage() {
   const router = useRouter();
@@ -149,13 +150,7 @@ export default function CreateEmployeePage() {
           flex: 1,
         }}
       >
-        <Surface
-          mode="flat"
-          style={{
-            flex: 1,
-            padding: 16,
-          }}
-        >
+        <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView>
             {/* Table Name Input */}
             <TextInput
@@ -245,7 +240,7 @@ export default function CreateEmployeePage() {
             <Button
               mode="contained"
               onPress={handleCreateEmployee}
-              style={{ alignSelf: "center", width: 200 }}
+              style={styles.baseButton}
             >
               {t("create_employee")}
             </Button>

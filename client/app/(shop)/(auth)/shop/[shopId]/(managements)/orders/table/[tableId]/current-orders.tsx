@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { Button, List, Modal, Portal, Surface } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@stores/store";
@@ -9,14 +10,13 @@ import { ActiveOrderSession } from "@components/ui/orders/ActiveOrderSession";
 import { AppBar } from "@components/AppBar";
 import { goToTablesForOrderList } from "@apis/navigate.service";
 import { Redirect, useRouter } from "expo-router";
-import { styles } from "../../../../../../../../_layout";
 import { useTranslation } from "react-i18next";
 import CreateOrder from "@components/ui/CreateOrderView";
 import { useState } from "react";
 import Toast from "react-native-toast-message";
 import { CustomerInfoDialog } from "@components/ui/orders/CustomerInfoDialog";
 import { resetCurrentOrder } from "@stores/shop.slice";
-import _ from "lodash";
+import { styles } from "@/constants/styles";
 
 export default function OrderTableCurrentOrderSessionsPage() {
   const router = useRouter();
@@ -97,7 +97,7 @@ export default function OrderTableCurrentOrderSessionsPage() {
           goToTablesForOrderList({ router, shopId: shop.id });
         }}
       />
-      <Surface mode="flat" style={{ flex: 1, padding: 16 }}>
+      <Surface mode="flat" style={styles.baseContainer}>
         <ScrollView>
           {/* List of Table Positions */}
           <List.Section style={{ gap: 40 }}>

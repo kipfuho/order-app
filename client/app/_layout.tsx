@@ -7,7 +7,6 @@ import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 import { PaperProvider } from "react-native-paper";
 import store, { persistor, RootState } from "@stores/store";
-import { StyleSheet } from "react-native";
 import { Amplify } from "aws-amplify";
 import { AmplifyConfig } from "../amplify_outputs";
 import Toast from "react-native-toast-message";
@@ -56,29 +55,3 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
-
-export const styles = StyleSheet.create({
-  baseContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  baseButton: {
-    minWidth: 200,
-    maxWidth: "auto",
-    width: "auto",
-    alignSelf: "center",
-    marginTop: 10,
-  },
-  baseLoader: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  baseGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    paddingVertical: 10,
-    gap: 10,
-  },
-});

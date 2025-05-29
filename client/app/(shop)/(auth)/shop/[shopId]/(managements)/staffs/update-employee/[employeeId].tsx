@@ -1,3 +1,4 @@
+import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useGlobalSearchParams, useRouter } from "expo-router";
@@ -12,7 +13,6 @@ import {
 } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
-import _ from "lodash";
 import { RootState } from "@stores/store";
 import { Department, EmployeePosition, Shop } from "@stores/state.interface";
 import {
@@ -27,6 +27,7 @@ import { AppBar } from "@components/AppBar";
 import { goToEmployeeList } from "@apis/navigate.service";
 import { DropdownMenu } from "@components/DropdownMenu";
 import { Collapsible } from "@components/Collapsible";
+import { styles } from "@/constants/styles";
 
 export default function UpdateEmployeePage() {
   const { employeeId } = useGlobalSearchParams() as { employeeId: string };
@@ -118,6 +119,7 @@ export default function UpdateEmployeePage() {
     setPosition(_.find(employeePositions, (d) => d.id === employee.positionId));
     setDepartment(_.find(departments, (d) => d.id === employee.departmentId));
     setSelectedPermissions(employee.permissions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     employeeId,
     employeeFetching,
@@ -137,7 +139,7 @@ export default function UpdateEmployeePage() {
 
   if (!employee) {
     return (
-      <Surface style={{ flex: 1, padding: 16 }}>
+      <Surface style={styles.baseContainer}>
         <Text>{t("employee_not_found")}</Text>
         <Button onPress={() => goToEmployeeList({ router, shopId: shop.id })}>
           {t("go_back")}
@@ -158,13 +160,7 @@ export default function UpdateEmployeePage() {
           flex: 1,
         }}
       >
-        <Surface
-          mode="flat"
-          style={{
-            flex: 1,
-            padding: 16,
-          }}
-        >
+        <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView>
             {/* Employee Name Input */}
             <TextInput
@@ -234,7 +230,7 @@ export default function UpdateEmployeePage() {
             <Button
               mode="contained"
               onPress={handleUpdateEmployee}
-              style={{ alignSelf: "center", width: 200 }}
+              style={styles.baseButton}
             >
               {t("update_employee")}
             </Button>

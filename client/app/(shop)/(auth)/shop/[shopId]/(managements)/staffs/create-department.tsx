@@ -22,6 +22,7 @@ import { goToDepartmentList } from "@apis/navigate.service";
 import { AppBar } from "@components/AppBar";
 import { LoaderBasic } from "@components/ui/Loader";
 import { Collapsible } from "@components/Collapsible";
+import { styles } from "@/constants/styles";
 
 export default function CreateDepartmentPage() {
   const router = useRouter();
@@ -86,13 +87,7 @@ export default function CreateDepartmentPage() {
           flex: 1,
         }}
       >
-        <Surface
-          mode="flat"
-          style={{
-            flex: 1,
-            padding: 16,
-          }}
-        >
+        <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView>
             {/* Table Name Input */}
             <TextInput
@@ -130,7 +125,7 @@ export default function CreateDepartmentPage() {
             <Button
               mode="contained"
               onPress={handleCreateTable}
-              style={{ alignSelf: "center", width: 200 }}
+              style={styles.baseButton}
             >
               {t("create_department")}
             </Button>

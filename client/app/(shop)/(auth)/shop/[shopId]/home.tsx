@@ -17,12 +17,12 @@ import { RootState } from "@stores/store";
 import { AppBar } from "@components/AppBar";
 import { Shop } from "@stores/state.interface";
 import { goToShopList, goToUpdateShop } from "@apis/navigate.service";
-import { styles } from "../../../../_layout";
 import { useDeleteShopMutation } from "@stores/apiSlices/shopApi.slice";
 import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
 import { BLURHASH } from "@constants/common";
+import { styles } from "@/constants/styles";
 
 interface Item {
   title: string;

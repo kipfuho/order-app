@@ -1,3 +1,4 @@
+import _ from "lodash";
 import {
   Dialog,
   FAB,
@@ -26,10 +27,10 @@ import {
 import { RootState } from "@stores/store";
 import { useSelector } from "react-redux";
 import { Employee, Shop } from "@stores/state.interface";
-import _ from "lodash";
 import { useState } from "react";
 import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
 import Toast from "react-native-toast-message";
+import { styles } from "@/constants/styles";
 
 export default function StaffEmployeePage() {
   const { t } = useTranslation();
@@ -167,11 +168,7 @@ export default function StaffEmployeePage() {
         <FAB
           icon="plus"
           label={t("create_employee")}
-          style={{
-            position: "absolute",
-            right: 16,
-            bottom: 16,
-          }}
+          style={styles.baseFAB}
           onPress={() => goToCreateEmployee({ router, shopId: shop.id })}
         />
       </Surface>

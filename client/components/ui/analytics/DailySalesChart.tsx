@@ -9,7 +9,7 @@ import {
   VictoryLine,
   VictoryTheme,
 } from "victory-native";
-import { convertPaymentAmount } from "../../../constants/utils";
+import { convertPaymentAmount } from "@constants/utils";
 
 const salesData = [
   { date: "May 15", revenue: 3200000, orders: 78 },

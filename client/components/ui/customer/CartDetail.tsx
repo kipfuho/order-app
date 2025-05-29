@@ -25,6 +25,7 @@ import { convertPaymentAmount } from "@constants/utils";
 import { useGetDishesQuery } from "@stores/apiSlices/dishApi.slice";
 import VerticalDivider from "../VerticalDivider";
 import UpdateCartItem from "./UpdateCartItem";
+import { styles } from "@/constants/styles";
 
 const CartItemCard = ({
   item,
@@ -124,7 +125,7 @@ export default function CartDetail({
           />
         </Modal>
       </Portal>
-      <Surface style={{ flex: 1, padding: 16 }}>
+      <Surface style={styles.baseContainer}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Icon source="cart" size={32} />
           <Text variant="titleLarge" style={{ fontWeight: "bold" }}>

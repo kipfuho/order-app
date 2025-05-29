@@ -8,7 +8,7 @@ import {
   VictoryLegend,
   VictoryTheme,
 } from "victory-native";
-import { convertPaymentAmount } from "../../../constants/utils";
+import { convertPaymentAmount } from "@constants/utils";
 
 const dishData = [
   { name: "Grilled Salmon", quantity: 87, revenue: 1740000 },

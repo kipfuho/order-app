@@ -7,6 +7,7 @@ import { useGetTableQuery } from "@stores/apiSlices/tableApi.slice";
 import { RootState } from "@stores/store";
 import { LoaderBasic } from "@components/ui/Loader";
 import { updateTable } from "@stores/customerSlice";
+import { styles } from "@/constants/styles";
 
 export default function TableCurrentOrderLayout() {
   const { shopId, tableId } = useLocalSearchParams() as {
@@ -41,7 +42,7 @@ export default function TableCurrentOrderLayout() {
 
   if (!table) {
     return (
-      <Surface style={{ flex: 1, padding: 16 }}>
+      <Surface style={styles.baseContainer}>
         <Text
           variant="displayMedium"
           style={{ color: theme.colors.error, alignSelf: "center" }}

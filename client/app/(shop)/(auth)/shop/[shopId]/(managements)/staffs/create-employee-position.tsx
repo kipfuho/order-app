@@ -1,3 +1,4 @@
+import _ from "lodash";
 import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
@@ -9,7 +10,6 @@ import {
   Surface,
 } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import _ from "lodash";
 import { useTranslation } from "react-i18next";
 import { useCreateEmployeePositionMutation } from "@stores/apiSlices/staffApi.slice";
 import { RootState } from "@stores/store";
@@ -17,6 +17,7 @@ import { Shop } from "@stores/state.interface";
 import { LoaderBasic } from "@components/ui/Loader";
 import { AppBar } from "@components/AppBar";
 import { goToEmployeePositionList } from "@apis/navigate.service";
+import { styles } from "@/constants/styles";
 
 export default function CreateEmployeePositionPage() {
   const router = useRouter();
@@ -75,13 +76,7 @@ export default function CreateEmployeePositionPage() {
           flex: 1,
         }}
       >
-        <Surface
-          mode="flat"
-          style={{
-            flex: 1,
-            padding: 16,
-          }}
-        >
+        <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView>
             {/* Table Name Input */}
             <TextInput
@@ -102,7 +97,7 @@ export default function CreateEmployeePositionPage() {
             <Button
               mode="contained-tonal"
               onPress={handleCreateEmployeePosition}
-              style={{ width: "auto", alignSelf: "center" }}
+              style={styles.baseButton}
             >
               {t("create_employee_position")}
             </Button>

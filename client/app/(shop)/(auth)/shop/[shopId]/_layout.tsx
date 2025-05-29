@@ -2,7 +2,6 @@ import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
-import { styles } from "../../../../_layout";
 import { AppSyncChannelType, connectAppSyncForShop } from "@apis/aws.service";
 import { useGetShopsQuery } from "@stores/apiSlices/shopApi.slice";
 import { updateCurrentShop } from "@stores/shop.slice";
@@ -11,6 +10,7 @@ import { LoaderBasic } from "@components/ui/Loader";
 import { goToShopList } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { closeAppSyncChannel } from "@stores/awsSlice";
+import { styles } from "@/constants/styles";
 
 export default function AppLayout() {
   const { shopId } = useGlobalSearchParams() as { shopId: string };
@@ -32,7 +32,8 @@ export default function AppLayout() {
     return () => {
       dispatch(closeAppSyncChannel({ type: AppSyncChannelType.SHOP }));
     };
-  }, [shops, shopId, isLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, shops, shopId, isLoading]);
 
   if (isLoading) {
     return <LoaderBasic />;

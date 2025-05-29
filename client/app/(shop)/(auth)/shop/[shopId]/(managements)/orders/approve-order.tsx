@@ -19,6 +19,7 @@ import {
 } from "@stores/apiSlices/tableApi.slice";
 import TableForApproveCard from "@/components/ui/orders/TableForApproveCard";
 import UnconfirmedOrderCard from "@/components/ui/orders/UnconfirmedOrderCard";
+import { styles } from "@/constants/styles";
 
 export default function OrderManagementApprovePage() {
   const router = useRouter();
@@ -85,6 +86,7 @@ export default function OrderManagementApprovePage() {
     if (_.isEmpty(tables)) return;
 
     setFilteredTables(tablesGroupByPosition);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableFetching, unconfirmedOrderFetching]);
 
   if (unconfirmedOrderLoading || tablePositionLoading || tableLoading) {
@@ -127,7 +129,7 @@ export default function OrderManagementApprovePage() {
           goToShopHome({ router, shopId: shop.id });
         }}
       />
-      <Surface style={{ flex: 1, padding: 16 }}>
+      <Surface style={styles.baseContainer}>
         <Surface mode="flat" style={{ height: 50, marginBottom: 10 }}>
           <ScrollView
             horizontal

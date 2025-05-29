@@ -18,6 +18,7 @@ import {
 } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { LoaderBasic } from "@components/ui/Loader";
+import { styles } from "@/constants/styles";
 
 export default function TablesManagementPage() {
   const router = useRouter();
@@ -94,11 +95,7 @@ export default function TablesManagementPage() {
         <FAB
           icon="plus"
           label={t("create_table")}
-          style={{
-            position: "absolute",
-            right: 16,
-            bottom: 16,
-          }}
+          style={styles.baseFAB}
           onPress={() => goToCreateTable({ router, shopId: shop.id })}
         />
       </Surface>

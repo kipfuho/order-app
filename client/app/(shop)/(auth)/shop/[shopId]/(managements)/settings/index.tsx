@@ -5,9 +5,9 @@ import { RootState } from "@stores/store";
 import { Button, Surface, Icon, Text } from "react-native-paper";
 import { Shop } from "@stores/state.interface";
 import { AppBar } from "@components/AppBar";
-import { styles } from "../../../../../../_layout";
 import { goToShopHome } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
+import { styles } from "@/constants/styles";
 
 interface Item {
   key: string;

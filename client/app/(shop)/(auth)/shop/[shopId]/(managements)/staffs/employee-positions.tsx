@@ -28,6 +28,7 @@ import { EmployeePosition, Shop } from "@stores/state.interface";
 import { useState } from "react";
 import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
 import Toast from "react-native-toast-message";
+import { styles } from "@/constants/styles";
 
 export default function StaffEmployeePositionPage() {
   const { t } = useTranslation();
@@ -144,11 +145,7 @@ export default function StaffEmployeePositionPage() {
         <FAB
           icon="plus"
           label={t("create_employee_position")}
-          style={{
-            position: "absolute",
-            right: 16,
-            bottom: 16,
-          }}
+          style={styles.baseFAB}
           onPress={() =>
             goToCreateEmployeePosition({ router, shopId: shop.id })
           }

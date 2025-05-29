@@ -14,11 +14,11 @@ import { Shop } from "@stores/state.interface";
 import { AppBar } from "@components/AppBar";
 import { goToShopHome } from "@apis/navigate.service";
 import { ScrollView, View } from "react-native";
-import { styles } from "../../../../_layout";
 import { useUpdateShopMutation } from "@stores/apiSlices/shopApi.slice";
 import { useTranslation } from "react-i18next";
 import UploadImages from "@components/ui/UploadImage";
 import { uploadImageRequest } from "@apis/shop.api.service";
+import { styles } from "@/constants/styles";
 
 export default function UpdateShopPage() {
   const { t } = useTranslation();

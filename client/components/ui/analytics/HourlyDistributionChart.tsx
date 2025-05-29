@@ -10,7 +10,7 @@ import {
   VictoryLine,
   VictoryTheme,
 } from "victory-native";
-import { convertPaymentAmount } from "../../../constants/utils";
+import { convertPaymentAmount } from "@constants/utils";
 
 const hourlyData = [
   { hour: "1 AM", orders: 12, revenue: 540000 },

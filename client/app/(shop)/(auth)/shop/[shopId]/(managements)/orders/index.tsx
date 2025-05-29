@@ -23,6 +23,7 @@ import {
 } from "@apis/navigate.service";
 import { CustomerInfoDialog } from "@components/ui/orders/CustomerInfoDialog";
 import TableForOrderCard from "@/components/ui/orders/TableForOrderCard";
+import { styles } from "@/constants/styles";
 
 export default function OrderManagementOrderPage() {
   const router = useRouter();
@@ -94,6 +95,7 @@ export default function OrderManagementOrderPage() {
     if (_.isEmpty(tablesForOrder)) return;
 
     setFilteredTables(tablesGroupByPosition);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tablesForOrder, tableForOrderFetching]);
 
   if (tableForOrderLoading || tablePositionLoading || tableLoading) {
@@ -130,7 +132,7 @@ export default function OrderManagementOrderPage() {
         <Toast />
       </Portal>
 
-      <Surface style={{ flex: 1, padding: 16 }}>
+      <Surface style={styles.baseContainer}>
         <Surface mode="flat" style={{ height: 50, marginBottom: 10 }}>
           <ScrollView
             horizontal

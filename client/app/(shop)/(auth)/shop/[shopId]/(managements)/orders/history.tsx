@@ -22,6 +22,7 @@ import { format } from "date-fns";
 import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
 import OrderHistoryCard from "@components/ui/orders/OrderHistoryCard";
+import { styles } from "@/constants/styles";
 
 export default function OrderManagementHistoryPage() {
   const router = useRouter();
@@ -119,7 +120,7 @@ export default function OrderManagementHistoryPage() {
           </TouchableRipple>
         </View>
 
-        <Surface style={{ flex: 1, padding: 16 }}>
+        <Surface style={styles.baseContainer}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <Surface mode="flat" style={{ gap: 16 }}>
               {orderHistories?.map((orderHistory, index) => (

@@ -22,6 +22,7 @@ import { goToDishCategoryList } from "@apis/navigate.service";
 import { LoaderBasic } from "@components/ui/Loader";
 import { ScrollView, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { styles } from "@/constants/styles";
 
 export default function UpdateDishCategoryPage() {
   const { dishCategoryId } = useGlobalSearchParams();
@@ -49,6 +50,7 @@ export default function UpdateDishCategoryPage() {
 
     setName(dishCategory.name);
     setCode(dishCategory.code);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dishCategoryId, dishCategoryFetching]);
 
   const handleUpdateDishCategory = async () => {
@@ -114,7 +116,7 @@ export default function UpdateDishCategoryPage() {
         goBack={() => goToDishCategoryList({ router, shopId: shop.id })}
       />
       <Surface style={{ flex: 1 }}>
-        <Surface mode="flat" style={{ flex: 1, padding: 16 }}>
+        <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView>
             <TextInput
               mode="outlined"
@@ -140,7 +142,7 @@ export default function UpdateDishCategoryPage() {
             <>
               <Button
                 mode="contained-tonal"
-                style={{ minWidth: 200, alignSelf: "center" }}
+                style={styles.baseButton}
                 onPress={handleUpdateDishCategory}
               >
                 {t("update_dish_category")}

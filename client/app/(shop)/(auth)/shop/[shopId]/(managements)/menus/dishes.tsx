@@ -27,6 +27,7 @@ import FlatListWithScroll, {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import AppBarSearchBox from "@/components/AppBarSearchBox";
+import { styles } from "@/constants/styles";
 
 const createDismissGesture = (onDismissSearch: () => void) =>
   Gesture.Tap().onStart(() => {
@@ -104,6 +105,7 @@ export default function DishesManagementPage() {
 
   const gesture = createDismissGesture(onDismissSearch);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSearchDishes = useCallback(
     debounce((_searchValue: string) => {
       const searchValueLowerCase = _searchValue.toLowerCase();
@@ -200,11 +202,7 @@ export default function DishesManagementPage() {
           <FAB
             icon="plus"
             label={t("create_dish")}
-            style={{
-              position: "absolute",
-              right: 16,
-              bottom: 16,
-            }}
+            style={styles.baseFAB}
             onPress={() => goToCreateDish({ router, shopId: shop.id })}
           />
         </Surface>

@@ -33,6 +33,7 @@ import { ItemTypeFlatList } from "../FlatListWithScroll";
 import FlatListWithoutScroll from "../FlatListWithoutScroll";
 import { AppBar } from "../AppBar";
 import AppBarSearchBox from "../AppBarSearchBox";
+import { styles } from "@/constants/styles";
 
 const createDismissGesture = (onDismissSearch: () => void) =>
   Gesture.Tap().onStart(() => {
@@ -108,6 +109,7 @@ export default function CreateOrder({
     setCreateOrderVisible(false);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSearchDishes = useCallback(
     debounce((_selectedDishType: string, _searchValue: string) => {
       const tableDishes = _.flatMap(
@@ -171,7 +173,7 @@ export default function CreateOrder({
         }
       />
       <GestureDetector gesture={gesture}>
-        <Surface style={{ flex: 1, padding: 16 }}>
+        <Surface style={styles.baseContainer}>
           <Surface mode="flat" style={{ height: 50 }}>
             <ScrollView
               horizontal

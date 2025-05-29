@@ -28,6 +28,7 @@ import { Department, Shop } from "@stores/state.interface";
 import { useState } from "react";
 import Toast from "react-native-toast-message";
 import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
+import { styles } from "@/constants/styles";
 
 export default function StaffDepartmentPage() {
   const { t } = useTranslation();
@@ -99,12 +100,7 @@ export default function StaffDepartmentPage() {
         title={t("department")}
         goBack={() => goToShopHome({ router, shopId: shop.id })}
       />
-      <Surface
-        style={{
-          flex: 1,
-          padding: 16,
-        }}
-      >
+      <Surface style={styles.baseContainer}>
         <ScrollView>
           {/* List of Table Positions */}
           <List.Section>
@@ -143,11 +139,7 @@ export default function StaffDepartmentPage() {
         <FAB
           icon="plus"
           label={t("create_department")}
-          style={{
-            position: "absolute",
-            right: 16,
-            bottom: 16,
-          }}
+          style={styles.baseFAB}
           onPress={() => goToCreateDepartment({ router, shopId: shop.id })}
         />
       </Surface>

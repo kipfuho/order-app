@@ -12,10 +12,11 @@ import { useSelector } from "react-redux";
 import { RootState } from "@stores/store";
 import { Shop } from "@stores/state.interface";
 import { AppBar } from "@components/AppBar";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { goToDishCategoryList } from "@apis/navigate.service";
 import { useCreateDishCategoryMutation } from "@stores/apiSlices/dishApi.slice";
 import { useTranslation } from "react-i18next";
+import { styles } from "@/constants/styles";
 
 export default function CreateDishCategoryPage() {
   const router = useRouter();
@@ -80,7 +81,7 @@ export default function CreateDishCategoryPage() {
         }}
       />
       <Surface style={{ flex: 1 }}>
-        <Surface mode="flat" style={{ flex: 1, padding: 16 }}>
+        <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView style={{ flex: 1 }}>
             <TextInput
               label={t("dish_category_name")}
@@ -106,7 +107,7 @@ export default function CreateDishCategoryPage() {
             <Button
               mode="contained"
               onPress={handleCreateDishCategory}
-              style={[styles.createButton, { margin: 0 }]}
+              style={[styles.baseButton, { margin: 0 }]}
             >
               {t("create_dish_category")}
             </Button>
@@ -116,26 +117,3 @@ export default function CreateDishCategoryPage() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    justifyContent: "center",
-  },
-  input: {
-    marginBottom: 16,
-  },
-  createButton: {
-    marginTop: 16,
-    width: 200,
-    alignSelf: "center",
-  },
-  cancelButton: {
-    marginTop: 8,
-  },
-  loader: {
-    marginVertical: 16,
-  },
-});

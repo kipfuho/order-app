@@ -1,3 +1,4 @@
+import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useGlobalSearchParams, useRouter } from "expo-router";
@@ -12,7 +13,6 @@ import {
 } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
-import _ from "lodash";
 import { RootState } from "@stores/store";
 import { Shop } from "@stores/state.interface";
 import {
@@ -24,6 +24,7 @@ import { goToDepartmentList } from "@apis/navigate.service";
 import { LoaderBasic } from "@components/ui/Loader";
 import { AppBar } from "@components/AppBar";
 import { Collapsible } from "@components/Collapsible";
+import { styles } from "@/constants/styles";
 
 export default function UpdateDepartmentPage() {
   const { departmentId } = useGlobalSearchParams() as { departmentId: string };
@@ -87,6 +88,7 @@ export default function UpdateDepartmentPage() {
 
     setName(department.name);
     setSelectedPermissions(department.permissions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [departmentId, departmentFetching]);
 
   if (permissionTypeLoading || departmentLoading) {
@@ -95,7 +97,7 @@ export default function UpdateDepartmentPage() {
 
   if (!department) {
     return (
-      <Surface style={{ flex: 1, padding: 16 }}>
+      <Surface style={styles.baseContainer}>
         <Text>{t("department_not_found")}</Text>
         <Button onPress={() => goToDepartmentList({ router, shopId: shop.id })}>
           {t("go_back")}
@@ -115,13 +117,7 @@ export default function UpdateDepartmentPage() {
           flex: 1,
         }}
       >
-        <Surface
-          mode="flat"
-          style={{
-            flex: 1,
-            padding: 16,
-          }}
-        >
+        <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView>
             {/* department Name Input */}
             <TextInput
@@ -159,7 +155,7 @@ export default function UpdateDepartmentPage() {
             <Button
               mode="contained"
               onPress={handleUpdateDepartment}
-              style={{ alignSelf: "center", width: 200 }}
+              style={styles.baseButton}
             >
               {t("update_department")}
             </Button>

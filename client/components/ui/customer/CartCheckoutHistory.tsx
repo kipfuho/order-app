@@ -9,6 +9,7 @@ import { LoaderBasic } from "../Loader";
 import { useGetCheckoutCartHistoryQuery } from "@stores/apiSlices/cartApi.slice";
 import VerticalDivider from "../VerticalDivider";
 import { convertPaymentAmount } from "@constants/utils";
+import { styles } from "@/constants/styles";
 
 export default function CartCheckoutHistory({
   setVisible,
@@ -42,7 +43,7 @@ export default function CartCheckoutHistory({
             {t("order_history")}
           </Text>
         </View>
-        <View style={{ flex: 1, padding: 16 }}>
+        <View style={styles.baseContainer}>
           <ScrollView
             style={{ marginTop: 20 }}
             showsVerticalScrollIndicator={false}

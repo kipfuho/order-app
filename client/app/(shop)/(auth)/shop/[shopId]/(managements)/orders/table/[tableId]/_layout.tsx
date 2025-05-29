@@ -6,10 +6,10 @@ import { useGetTablesQuery } from "@stores/apiSlices/tableApi.slice";
 import { RootState } from "@stores/store";
 import { LoaderBasic } from "@components/ui/Loader";
 import { updateCurrentTable } from "@stores/shop.slice";
-import { styles } from "../../../../../../../../_layout";
 import { goToTablesForOrderList } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { Shop } from "@stores/state.interface";
+import { styles } from "@/constants/styles";
 
 export default function TableCurrentOrderLayout() {
   const { tableId } = useGlobalSearchParams() as {
@@ -31,7 +31,8 @@ export default function TableCurrentOrderLayout() {
     if (!table) return;
 
     dispatch(updateCurrentTable(table));
-  }, [tableId, isLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, tableId, isLoading]);
 
   if (isLoading) {
     return <LoaderBasic />;

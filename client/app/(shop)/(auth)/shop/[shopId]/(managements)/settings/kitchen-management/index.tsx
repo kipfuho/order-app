@@ -3,7 +3,7 @@ import { ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "@stores/store";
-import { Button, List, Surface } from "react-native-paper";
+import { FAB, List, Surface } from "react-native-paper";
 import { Shop } from "@stores/state.interface";
 import { AppBar } from "@components/AppBar";
 import { useGetKitchensQuery } from "@stores/apiSlices/kitchenApi.slice";
@@ -14,6 +14,7 @@ import {
 } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { LoaderBasic } from "@components/ui/Loader";
+import { styles } from "@/constants/styles";
 
 export default function KitchensManagementPage() {
   const router = useRouter();
@@ -36,12 +37,7 @@ export default function KitchensManagementPage() {
         goBack={() => goToShopSetting({ router, shopId: shop.id })}
       />
 
-      <Surface
-        style={{
-          flex: 1,
-          padding: 16,
-        }}
-      >
+      <Surface style={styles.baseContainer}>
         <ScrollView>
           {/* List of Kitchen Positions */}
           <List.Section>
@@ -64,13 +60,12 @@ export default function KitchensManagementPage() {
           </List.Section>
         </ScrollView>
 
-        <Button
-          mode="contained"
+        <FAB
+          icon="plus"
+          label={t("create_kitchen")}
+          style={styles.baseFAB}
           onPress={() => goToCreateKitchen({ router, shopId: shop.id })}
-          style={{ marginTop: 16 }}
-        >
-          {t("create_kitchen")}
-        </Button>
+        />
       </Surface>
     </>
   );

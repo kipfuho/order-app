@@ -1,6 +1,6 @@
+import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useGlobalSearchParams, useRouter } from "expo-router";
-import _ from "lodash";
 import Toast from "react-native-toast-message";
 import {
   ActivityIndicator,
@@ -24,6 +24,7 @@ import { LoaderBasic } from "@components/ui/Loader";
 import { goToTablePositionList } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import DishCategorySelectionDialog from "@components/ui/settings/DishCategorySelectionDialog";
+import { styles } from "@/constants/styles";
 
 export default function UpdateTablePositionPage() {
   const { tablePositionId } = useGlobalSearchParams();
@@ -98,6 +99,7 @@ export default function UpdateTablePositionPage() {
     setName(tablePosition.name);
     setCode(tablePosition.code || "");
     setSelectedCategories(tablePosition.dishCategoryIds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tablePositionId, tablePositionFetching]);
 
   if (tablePositionLoading || dishCategoryLoading) {
@@ -136,7 +138,7 @@ export default function UpdateTablePositionPage() {
       </Portal>
 
       <Surface style={{ flex: 1 }}>
-        <Surface mode="flat" style={{ flex: 1, padding: 16 }}>
+        <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView>
             <TextInput
               label={t("table_position_name")}
@@ -188,7 +190,7 @@ export default function UpdateTablePositionPage() {
           ) : (
             <Button
               mode="contained-tonal"
-              style={{ alignSelf: "center", width: 200 }}
+              style={styles.baseButton}
               onPress={handleCreateShop}
             >
               {t("update_table_position")}
