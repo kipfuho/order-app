@@ -15,13 +15,20 @@ import {
 } from "react-native";
 import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
 import { LegendList, LegendListRef } from "@legendapp/list";
-import { CartItem, Dish, KitchenDishOrder } from "@stores/state.interface";
+import {
+  CartItem,
+  Dish,
+  KitchenDishOrder,
+  KitchenLog,
+} from "@stores/state.interface";
 import KitchenDishOrderByOrderCard from "./ui/kitchen/KitchenDishOrderByOrderCard";
 import KitchenDishOrderByDishCard from "./ui/kitchen/KitchenDishOrderByDishCard";
 import KitchenDishOrderServingCard from "./ui/kitchen/KitchenDishOrderServingCard";
 import { MemoizedDishCard } from "./ui/menus/DishCard";
 import { MemoizedDishCardForOrder } from "./ui/menus/DishCardForOrder";
 import { MemoizedDishCardForCustomer } from "./ui/menus/DishCardForCustomer";
+import KitchenCookedHistoryCard from "./ui/kitchen/KitchenCookedHistoryCard";
+import KitchenServedHistoryCard from "./ui/kitchen/KitchenServedHistoryCard";
 
 export const UNIVERSAL_WIDTH_PIVOT = 600;
 
@@ -32,6 +39,8 @@ export enum ItemTypeFlatList {
   KITCHEN_DISHORDER_BYORDER = "kitchenDishOrderByOrder",
   KITCHEN_DISHORDER_BYDISH = "kitchenDishOrderByDish",
   KITCHEN_DISHORDER_SERVING = "kitchenDishOrderServing",
+  KITCHEN_COOKED_HISTORY = "kitchenCookedHistory",
+  KITCHEN_SERVED_HISTORY = "kitchenServedHistory",
 }
 
 // GAP = 12
@@ -65,6 +74,16 @@ export const ItemTypeFlatListProperties = {
     MAX_WIDTH: 200 + 12,
     HEADER_HEIGHT: 24,
     ROW_HEIGHT: 200,
+  },
+  [ItemTypeFlatList.KITCHEN_COOKED_HISTORY]: {
+    MAX_WIDTH: 200 + 12,
+    HEADER_HEIGHT: 24,
+    ROW_HEIGHT: 125,
+  },
+  [ItemTypeFlatList.KITCHEN_SERVED_HISTORY]: {
+    MAX_WIDTH: 200 + 12,
+    HEADER_HEIGHT: 24,
+    ROW_HEIGHT: 125,
   },
 };
 
@@ -177,6 +196,38 @@ export const ItemTypeMap = {
     return createElement(KitchenDishOrderServingCard, {
       key,
       dishOrder: item,
+      containerWidth,
+    });
+  },
+
+  [ItemTypeFlatList.KITCHEN_COOKED_HISTORY]: ({
+    key,
+    item,
+    containerWidth,
+  }: {
+    key: string;
+    item: KitchenLog;
+    containerWidth?: number;
+  }) => {
+    return createElement(KitchenCookedHistoryCard, {
+      key,
+      cookedHistory: item,
+      containerWidth,
+    });
+  },
+
+  [ItemTypeFlatList.KITCHEN_SERVED_HISTORY]: ({
+    key,
+    item,
+    containerWidth,
+  }: {
+    key: string;
+    item: KitchenLog;
+    containerWidth?: number;
+  }) => {
+    return createElement(KitchenServedHistoryCard, {
+      key,
+      servedHistory: item,
       containerWidth,
     });
   },

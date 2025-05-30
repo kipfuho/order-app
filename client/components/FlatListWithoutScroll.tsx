@@ -190,6 +190,7 @@ const FlatListWithoutScroll = ({
   const renderItem = useCallback(
     ({ item }: { item: FlatListItem }) => {
       if (item.type === "header") {
+        if (!shouldShowGroup) return;
         return (
           <Text style={flatListStyles.categoryTitle}>{item.group.name}</Text>
         );
@@ -225,7 +226,15 @@ const FlatListWithoutScroll = ({
 
       return null;
     },
-    [itemType, itemContainerWidth, openMenu, additionalDatas, numColumns],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      itemType,
+      itemContainerWidth,
+      openMenu,
+      additionalDatas,
+      numColumns,
+      shouldShowGroup,
+    ],
   );
 
   const HEADER_HEIGHT = ItemTypeFlatListProperties[itemType].HEADER_HEIGHT;

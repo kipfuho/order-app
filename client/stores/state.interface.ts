@@ -270,6 +270,7 @@ interface KitchenLog {
   dishName: string;
   dishQuantity: string;
   action: string;
+  createdAt: string;
 }
 
 export {

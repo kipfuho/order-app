@@ -2,7 +2,7 @@ const _ = require('lodash');
 const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
 const kdsService = require('../services/kds.service');
-const { convertDishOrderForKitchenResponse } = require('../converters/kds.converter');
+const { convertDishOrderForKitchenResponse, convertKitchenLogForResponse } = require('../converters/kds.converter');
 
 const getUncookedDishOrders = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
@@ -51,13 +51,17 @@ const undoServedDishOrders = catchAsync(async (req, res) => {
 const getCookedHistories = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const cookedHistories = await kdsService.getCookedHistories({ shopId, requestBody: req.body });
-  res.status(httpStatus.OK).send({ message: 'Thành công', cookedHistories });
+  res
+    .status(httpStatus.OK)
+    .send({ message: 'Thành công', cookedHistories: cookedHistories.map((item) => convertKitchenLogForResponse(item)) });
 });
 
 const getServedHistories = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const servedHistories = await kdsService.getServedHistories({ shopId, requestBody: req.body });
-  res.status(httpStatus.OK).send({ message: 'Thành công', servedHistories });
+  res
+    .status(httpStatus.OK)
+    .send({ message: 'Thành công', servedHistories: servedHistories.map((item) => convertKitchenLogForResponse(item)) });
 });
 
 module.exports = {

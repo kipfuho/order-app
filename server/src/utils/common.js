@@ -114,11 +114,13 @@ const createSearchByDateOptionWithShopTimezone = ({ from, to, filterKey = 'creat
   const timezone = getShopTimeZone();
   const options = {};
 
-  if (!from) {
-    // eslint-disable-next-line no-param-reassign
-    from = new Date();
+  if (!to) {
     // eslint-disable-next-line no-param-reassign
     to = new Date();
+  }
+  if (!from) {
+    // eslint-disable-next-line no-param-reassign
+    from = to;
   }
   if (from) {
     // start of day

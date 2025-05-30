@@ -1,3 +1,5 @@
+const { formatDateHHMMDDMMYYYY } = require('../../utils/common');
+
 /* eslint-disable no-param-reassign */
 const convertDishOrderForKitchenResponse = (dishOrder) => {
   delete dishOrder.price;
@@ -15,6 +17,16 @@ const convertDishOrderForKitchenResponse = (dishOrder) => {
 };
 /* eslint-enable no-param-reassign */
 
+const convertKitchenLogForResponse = (kitchenLog) => {
+  // eslint-disable-next-line no-param-reassign
+  kitchenLog.createdAt = formatDateHHMMDDMMYYYY(kitchenLog.createdAt);
+  // eslint-disable-next-line no-param-reassign
+  delete kitchenLog.updatedAt;
+
+  return kitchenLog;
+};
+
 module.exports = {
   convertDishOrderForKitchenResponse,
+  convertKitchenLogForResponse,
 };

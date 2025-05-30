@@ -185,6 +185,9 @@ const _getKitchenHistoriesByAction = async ({ shopId, from, to, actions }) => {
       action: { in: actions },
       ...timeOptions,
     },
+    orderBy: {
+      createdAt: 'desc',
+    },
   });
   return histories;
 };

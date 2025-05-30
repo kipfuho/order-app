@@ -189,7 +189,7 @@ const getCookedHistoriesRequest = async ({
 }: GetCookedHistoriesRequest) => {
   const accessToken = await getAccessTokenLazily();
   const result: { cookedHistories: KitchenLog[] } = await apiRequest({
-    method: "GET",
+    method: "POST",
     endpoint: `/v1/shops/${shopId}/kds/cooked-history`,
     token: accessToken,
     data: {
@@ -208,7 +208,7 @@ const getServedHistoriesRequest = async ({
 }: GetServedHistoriesRequest) => {
   const accessToken = await getAccessTokenLazily();
   const result: { servedHistories: KitchenLog[] } = await apiRequest({
-    method: "GET",
+    method: "POST",
     endpoint: `/v1/shops/${shopId}/kds/served-history`,
     token: accessToken,
     data: {

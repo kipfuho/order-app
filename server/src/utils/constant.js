@@ -118,8 +118,8 @@ const DishTypes = {
 };
 
 const KitchenAction = {
-  UPDATE_COOKED: 'update_served',
-  UPDATE_SERVED: 'update_cooked',
+  UPDATE_COOKED: 'update_cooked',
+  UPDATE_SERVED: 'update_served',
   UNDO_COOKED: 'undo_cooked',
   UNDO_SERVED: 'undo_served',
 };
