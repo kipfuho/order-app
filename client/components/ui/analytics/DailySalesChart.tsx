@@ -10,32 +10,29 @@ import {
   VictoryTheme,
 } from "victory-native";
 import { convertPaymentAmount } from "@constants/utils";
-
-const salesData = [
-  { date: "May 15", revenue: 3200000, orders: 78 },
-  { date: "May 16", revenue: 3800000, orders: 85 },
-  { date: "May 17", revenue: 4200000, orders: 92 },
-  { date: "May 18", revenue: 5100000, orders: 105 },
-  { date: "May 19", revenue: 5800000, orders: 118 },
-  { date: "May 20", revenue: 62000000, orders: 124 },
-  { date: "May 21", revenue: 4900000, orders: 98 },
-];
-
-const revenueRange = [
-  (_.minBy(salesData, "revenue")?.revenue || 0) * 0.6,
-  _.maxBy(salesData, "revenue")?.revenue || 0,
-];
-const ordersRange = [
-  (_.minBy(salesData, "orders")?.orders || 0) * 0.6,
-  _.maxBy(salesData, "orders")?.orders || 0,
-];
+import { DailySalesReportItem } from "@/stores/state.interface";
 
 const normalize = (range: number[], props: string) => (datum: any) =>
   (datum[props] - range[0]) / (range[1] - range[0]);
 
-const DailySalesChart = ({ width }: { width: number }) => {
+const DailySalesChart = ({
+  width,
+  data,
+}: {
+  width: number;
+  data: DailySalesReportItem[];
+}) => {
   const { t } = useTranslation();
   const theme = useTheme();
+
+  const revenueRange = [
+    (_.minBy(data, "revenue")?.revenue || 0) * 0.6,
+    _.maxBy(data, "revenue")?.revenue || 0,
+  ];
+  const ordersRange = [
+    (_.minBy(data, "orders")?.orders || 0) * 0.6,
+    _.maxBy(data, "orders")?.orders || 0,
+  ];
 
   return (
     <Surface
@@ -74,7 +71,7 @@ const DailySalesChart = ({ width }: { width: number }) => {
 
         {/* Revenue Line */}
         <VictoryLine
-          data={salesData}
+          data={data}
           x="date"
           y={normalize(revenueRange, "revenue")}
           labels={({ datum }) => [
@@ -103,7 +100,7 @@ const DailySalesChart = ({ width }: { width: number }) => {
 
         {/* Orders Line */}
         <VictoryLine
-          data={salesData}
+          data={data}
           x="date"
           y={normalize(ordersRange, "orders")}
           style={{

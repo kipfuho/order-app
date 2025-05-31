@@ -15,6 +15,7 @@ const paymentRoute = require('../../payment-management/routes/payment.route');
 const suggestionRoute = require('../../suggestion-system/routes/suggestion.route');
 const kitchenRoute = require('../../kitchen-management/routes/kitchen.route');
 const kdsRoute = require('../../kitchen-management/routes/kds.route');
+const reportManagementRoute = require('../../report-management/routes/reportManagement.route');
 const auth = require('../../middlewares/auth');
 const { MAX_FILE_SIZE, PermissionType } = require('../../utils/constant');
 const ApiError = require('../../utils/ApiError');
@@ -74,6 +75,10 @@ const defaultRoutes = [
   {
     path: 'kds',
     route: kdsRoute,
+  },
+  {
+    path: 'report-management',
+    route: reportManagementRoute,
   },
 ];
 

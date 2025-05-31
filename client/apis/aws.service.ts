@@ -8,6 +8,7 @@ import { staffApiSlice } from "../stores/apiSlices/staffApi.slice";
 import { orderApiSlice } from "../stores/apiSlices/orderApi.slice";
 import Toast from "react-native-toast-message";
 import { kitchenApiSlice } from "../stores/apiSlices/kitchenApi.slice";
+import { reportApiSlice } from "@/stores/apiSlices/reportApi.slice";
 
 const namespace = "default";
 const useappsync = true;
@@ -75,6 +76,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
                 "TablesForOrder",
               ]),
             );
+            store.dispatch(reportApiSlice.util.invalidateTags(["Reports"]));
             return;
           }
 

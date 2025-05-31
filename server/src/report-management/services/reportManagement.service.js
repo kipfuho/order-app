@@ -8,7 +8,7 @@ const {
   divideToNPart,
   getRoundPaymentAmount,
 } = require('../../utils/common');
-const { OrderSessionStatus, Status } = require('../../utils/constant');
+const { OrderSessionStatus, Status, ReportPeriod } = require('../../utils/constant');
 
 const _getTimeFilterForReport = ({ from, to, period }) => {
   const timezone = getShopTimeZone();
@@ -220,6 +220,10 @@ const getHourlySalesReport = async ({ orderSessions, shopId, from, to, period })
 };
 
 const getDashboard = async ({ shopId, from, to, period }) => {
+  if (!period) {
+    // eslint-disable-next-line no-param-reassign
+    period = ReportPeriod.DAY;
+  }
   const orderSessions = await _getOrderSessionForReport({
     from,
     to,

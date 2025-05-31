@@ -1,4 +1,4 @@
-import { OrderSessionStatus } from "@constants/common";
+import { OrderSessionStatus, ReportPeriod } from "@constants/common";
 import { PaymentMethod } from "@constants/paymentMethod";
 
 interface Tokens {
@@ -273,6 +273,43 @@ interface KitchenLog {
   createdAt: string;
 }
 
+interface DailySalesReportItem {
+  date: string;
+  orders: number;
+  revenue: number;
+}
+
+interface PopularDishesReportItem {
+  name: string;
+  quantity: number;
+  revenue: number;
+}
+
+interface PaymentMethodDistributionReportItem {
+  paymentMethod: string;
+  percentage: number;
+}
+
+interface HourlySalesReportItem {
+  hour: number;
+  orders: number;
+  revenue: number;
+}
+
+interface ReportDashboard {
+  from: Date;
+  to: Date;
+  period: ReportPeriod;
+  totalOrders: number;
+  totalRevenue: number;
+  averageRevenuePerOrder: number;
+  peakHour?: HourlySalesReportItem;
+  dailySalesReport: DailySalesReportItem[];
+  popularDishesReport: PopularDishesReportItem[];
+  paymentMethodDistributionReport: PaymentMethodDistributionReportItem[];
+  hourlySalesReport: HourlySalesReportItem[];
+}
+
 export {
   Shop,
   User,
@@ -300,4 +337,9 @@ export {
   KitchenDishOrder,
   Kitchen,
   KitchenLog,
+  DailySalesReportItem,
+  PopularDishesReportItem,
+  PaymentMethodDistributionReportItem,
+  HourlySalesReportItem,
+  ReportDashboard,
 };

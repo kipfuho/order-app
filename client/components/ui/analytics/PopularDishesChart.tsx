@@ -9,16 +9,15 @@ import {
   VictoryTheme,
 } from "victory-native";
 import { convertPaymentAmount } from "@constants/utils";
+import { PopularDishesReportItem } from "@/stores/state.interface";
 
-const dishData = [
-  { name: "Grilled Salmon", quantity: 87, revenue: 1740000 },
-  { name: "NY Strip Steak", quantity: 72, revenue: 2160000 },
-  { name: "Veggie Pasta", quantity: 63, revenue: 1134000 },
-  { name: "Chicken Parmesan", quantity: 58, revenue: 1160000 },
-  { name: "Lobster Risotto", quantity: 45, revenue: 1575000 },
-];
-
-const PopularDishesChart = ({ width }: { width: number }) => {
+const PopularDishesChart = ({
+  width,
+  data,
+}: {
+  width: number;
+  data: PopularDishesReportItem[];
+}) => {
   const theme = useTheme();
   const { t } = useTranslation();
 
@@ -58,7 +57,7 @@ const PopularDishesChart = ({ width }: { width: number }) => {
           }}
         />
         <VictoryBar
-          data={dishData}
+          data={data}
           x="name"
           y="quantity"
           style={{

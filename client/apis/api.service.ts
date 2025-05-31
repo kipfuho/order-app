@@ -84,6 +84,7 @@ export const apiRequest = async <T>({
     const response = await apiClient.request<T>(config);
     return response.data;
   } catch (error: any) {
+    console.error(error);
     // 401 Unauthorized
     if (error.status === 401) {
       // eslint-disable-next-line @typescript-eslint/no-require-imports

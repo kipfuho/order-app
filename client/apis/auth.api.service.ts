@@ -78,7 +78,7 @@ const refreshTokensRequest = async (
     }
 
     return tokens;
-  } catch (error) {
+  } catch {
     return null;
   } finally {
     refreshingPromise = null; // Reset the promise after resolving
@@ -99,7 +99,7 @@ const checkUserByEmailRequest = async (email: string) => {
     });
 
     return result.exist;
-  } catch (error) {
+  } catch {
     return true;
   }
 };
@@ -132,7 +132,7 @@ const loginForAnonymousCustomerRequest = async (customerId?: string) => {
       );
     }
     return response.tokens;
-  } catch (error) {
+  } catch {
     return null;
   } finally {
     loginForAnonymousCustomerRequestPromise = null; // Reset the promise after resolving
@@ -159,7 +159,7 @@ const loginForCustomerRequest = async ({
       signInForCustomer({ ...customer, tokens }),
     );
     return true;
-  } catch (error) {
+  } catch {
     return true;
   }
 };
@@ -188,7 +188,7 @@ const registerForCustomerRequest = async ({
       signInForCustomer({ ...customer, tokens }),
     );
     return true;
-  } catch (error) {
+  } catch {
     return true;
   }
 };

@@ -65,10 +65,16 @@ const getStatusColor = (theme: CustomMD3Theme, minutes: number) => {
   };
 };
 
+const convertHourForDisplay = (hour?: number = 0) => {
+  const paddedHour = hour.toString().padStart(2, "0");
+  return `${paddedHour}:00`;
+};
+
 export {
   getCountryCurrency,
   convertPaymentAmount,
   mergeCartItems,
   getMinuteForDisplay,
   getStatusColor,
+  convertHourForDisplay,
 };

@@ -11,44 +11,29 @@ import {
   VictoryTheme,
 } from "victory-native";
 import { convertPaymentAmount } from "@constants/utils";
-
-const hourlyData = [
-  { hour: "1 AM", orders: 12, revenue: 540000 },
-  { hour: "2 AM", orders: 31, revenue: 540000 },
-  { hour: "3 AM", orders: 12, revenue: 540000 },
-  { hour: "4 AM", orders: 31, revenue: 15400000 },
-  { hour: "5 AM", orders: 12, revenue: 540000 },
-  { hour: "6 AM", orders: 31, revenue: 540000 },
-  { hour: "7 AM", orders: 12, revenue: 990000 },
-  { hour: "8 AM", orders: 31, revenue: 540000 },
-  { hour: "9 AM", orders: 12, revenue: 540000 },
-  { hour: "10 AM", orders: 12, revenue: 990000 },
-  { hour: "11 AM", orders: 31, revenue: 540000 },
-  { hour: "12 PM", orders: 28, revenue: 1260000 },
-  { hour: "1 PM", orders: 31, revenue: 1395000 },
-  { hour: "2 PM", orders: 18, revenue: 810000 },
-  { hour: "5 PM", orders: 22, revenue: 990000 },
-  { hour: "6 PM", orders: 36, revenue: 1620000 },
-  { hour: "7 PM", orders: 42, revenue: 1890000 },
-  { hour: "8 PM", orders: 38, revenue: 1710000 },
-  { hour: "9 PM", orders: 25, revenue: 1126000 },
-];
-
-const revenueRange = [
-  (_.minBy(hourlyData, "revenue")?.revenue || 0) * 0.6,
-  _.maxBy(hourlyData, "revenue")?.revenue || 0,
-];
-const ordersRange = [
-  (_.minBy(hourlyData, "orders")?.orders || 0) * 0.6,
-  _.maxBy(hourlyData, "orders")?.orders || 0,
-];
+import { HourlySalesReportItem } from "@/stores/state.interface";
 
 const normalize = (range: number[], props: string) => (datum: any) =>
   (datum[props] - range[0]) / (range[1] - range[0]);
 
-const HourlyDistributionChart = ({ width }: { width: number }) => {
+const HourlyDistributionChart = ({
+  width,
+  data,
+}: {
+  width: number;
+  data: HourlySalesReportItem[];
+}) => {
   const theme = useTheme();
   const { t } = useTranslation();
+
+  const revenueRange = [
+    (_.minBy(data, "revenue")?.revenue || 0) * 0.6,
+    _.maxBy(data, "revenue")?.revenue || 0,
+  ];
+  const ordersRange = [
+    (_.minBy(data, "orders")?.orders || 0) * 0.6,
+    _.maxBy(data, "orders")?.orders || 0,
+  ];
 
   return (
     <Surface
@@ -86,7 +71,7 @@ const HourlyDistributionChart = ({ width }: { width: number }) => {
           }}
         />
         <VictoryBar
-          data={hourlyData}
+          data={data}
           x="hour"
           y={normalize(revenueRange, "revenue")}
           style={{
@@ -94,7 +79,7 @@ const HourlyDistributionChart = ({ width }: { width: number }) => {
           }}
         />
         <VictoryLine
-          data={hourlyData}
+          data={data}
           x="hour"
           y={normalize(ordersRange, "orders")}
           style={{

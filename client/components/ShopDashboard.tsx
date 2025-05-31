@@ -13,6 +13,12 @@ import PopularDishesChart from "./ui/analytics/PopularDishesChart";
 import HourlyDistributionChart from "./ui/analytics/HourlyDistributionChart";
 import PaymentMethodsChart from "./ui/analytics/PaymentMethodsChart";
 import { CustomMD3Theme } from "@constants/theme";
+import { useGetDashboardQuery } from "@/stores/apiSlices/reportApi.slice";
+import { useSelector } from "react-redux";
+import { RootState } from "@/stores/store";
+import { Shop } from "@/stores/state.interface";
+import { LoaderBasic } from "./ui/Loader";
+import { convertHourForDisplay, convertPaymentAmount } from "@/constants/utils";
 
 const { width } = Dimensions.get("window");
 
@@ -20,110 +26,23 @@ const ShopDashboard = () => {
   const theme = useTheme<CustomMD3Theme>();
   const { t } = useTranslation();
 
+  const { currentShop } = useSelector((state: RootState) => state.shop);
+  const shop = currentShop as Shop;
+  const { data: dashboard, isLoading: dashboardLoading } = useGetDashboardQuery(
+    {
+      shopId: shop.id,
+    },
+  );
+
   const [activeTab, setActiveTab] = useState("sales");
 
-  const renderDailySalesChart = () => <DailySalesChart width={width} />;
-  const renderPopularDishesChart = () => <PopularDishesChart width={width} />;
-  const renderHourlyDistributionChart = () => (
-    <HourlyDistributionChart width={width} />
-  );
-  const renderPaymentMethodsChart = () => <PaymentMethodsChart width={width} />;
+  if (dashboardLoading) {
+    return <LoaderBasic />;
+  }
 
-  const renderSummaryCards = () => (
-    <View style={styles.summaryContainer}>
-      <Surface
-        style={[
-          styles.summaryCard,
-          { backgroundColor: theme.colors.primaryContainer },
-        ]}
-      >
-        <Text style={[styles.summaryTitle, { color: theme.colors.primary }]}>
-          {t("total_revenue")}
-        </Text>
-        <Text
-          style={[
-            styles.summaryValue,
-            { color: theme.colors.onPrimaryContainer },
-          ]}
-        >
-          $29,200
-        </Text>
-        <Text style={[styles.summarySubtitle, { color: theme.colors.primary }]}>
-          {t("last_7days")}
-        </Text>
-      </Surface>
-
-      <Surface
-        style={[
-          styles.summaryCard,
-          { backgroundColor: theme.colors.secondaryContainer },
-        ]}
-      >
-        <Text style={[styles.summaryTitle, { color: theme.colors.secondary }]}>
-          {t("report_order_count")}
-        </Text>
-        <Text
-          style={[
-            styles.summaryValue,
-            { color: theme.colors.onSecondaryContainer },
-          ]}
-        >
-          700
-        </Text>
-        <Text
-          style={[styles.summarySubtitle, { color: theme.colors.secondary }]}
-        >
-          {t("last_7days")}
-        </Text>
-      </Surface>
-
-      <Surface
-        style={[
-          styles.summaryCard,
-          { backgroundColor: theme.colors.tertiaryContainer },
-        ]}
-      >
-        <Text style={[styles.summaryTitle, { color: theme.colors.tertiary }]}>
-          {t("avg_order_value")}
-        </Text>
-        <Text
-          style={[
-            styles.summaryValue,
-            { color: theme.colors.onTertiaryContainer },
-          ]}
-        >
-          $41.71
-        </Text>
-        <Text
-          style={[styles.summarySubtitle, { color: theme.colors.tertiary }]}
-        >
-          {t("last_7days")}
-        </Text>
-      </Surface>
-
-      <Surface
-        style={[
-          styles.summaryCard,
-          { backgroundColor: theme.colors.yellowContainer },
-        ]}
-      >
-        <Text style={[styles.summaryTitle, { color: theme.colors.yellow }]}>
-          {t("peak_hour")}
-        </Text>
-        <Text
-          style={[
-            styles.summaryValue,
-            { color: theme.colors.onYellowContainer },
-          ]}
-        >
-          7 PM
-        </Text>
-        <Text style={[styles.summarySubtitle, { color: theme.colors.yellow }]}>
-          42 orders, $1,890
-        </Text>
-      </Surface>
-    </View>
-  );
+  if (!dashboard) {
+    return;
+  }
 
   return (
     <Surface style={{ flex: 1, gap: 8 }}>
@@ -304,12 +223,134 @@ const ShopDashboard = () => {
           padding: 16,
         }}
       >
-        {activeTab === "sales" && renderDailySalesChart()}
-        {activeTab === "dishes" && renderPopularDishesChart()}
-        {activeTab === "hourly" && renderHourlyDistributionChart()}
-        {activeTab === "payment" && renderPaymentMethodsChart()}
+        {activeTab === "sales" && (
+          <DailySalesChart width={width} data={dashboard.dailySalesReport} />
+        )}
+        {activeTab === "dishes" && (
+          <PopularDishesChart
+            width={width}
+            data={dashboard.popularDishesReport}
+          />
+        )}
+        {activeTab === "hourly" && (
+          <HourlyDistributionChart
+            width={width}
+            data={dashboard.hourlySalesReport}
+          />
+        )}
+        {activeTab === "payment" && (
+          <PaymentMethodsChart
+            width={width}
+            data={dashboard.paymentMethodDistributionReport}
+          />
+        )}
 
-        {renderSummaryCards()}
+        <View style={styles.summaryContainer}>
+          <Surface
+            style={[
+              styles.summaryCard,
+              { backgroundColor: theme.colors.primaryContainer },
+            ]}
+          >
+            <Text
+              style={[styles.summaryTitle, { color: theme.colors.primary }]}
+            >
+              {t("total_revenue")}
+            </Text>
+            <Text
+              style={[
+                styles.summaryValue,
+                { color: theme.colors.onPrimaryContainer },
+              ]}
+            >
+              {convertPaymentAmount(dashboard.totalRevenue)}
+            </Text>
+            <Text
+              style={[styles.summarySubtitle, { color: theme.colors.primary }]}
+            >
+              {t(`last_${dashboard.period}`)}
+            </Text>
+          </Surface>
+
+          <Surface
+            style={[
+              styles.summaryCard,
+              { backgroundColor: theme.colors.secondaryContainer },
+            ]}
+          >
+            <Text
+              style={[styles.summaryTitle, { color: theme.colors.secondary }]}
+            >
+              {t("report_order_count")}
+            </Text>
+            <Text
+              style={[
+                styles.summaryValue,
+                { color: theme.colors.onSecondaryContainer },
+              ]}
+            >
+              {dashboard.totalOrders}
+            </Text>
+            <Text
+              style={[
+                styles.summarySubtitle,
+                { color: theme.colors.secondary },
+              ]}
+            >
+              {t(`last_${dashboard.period}`)}
+            </Text>
+          </Surface>
+
+          <Surface
+            style={[
+              styles.summaryCard,
+              { backgroundColor: theme.colors.tertiaryContainer },
+            ]}
+          >
+            <Text
+              style={[styles.summaryTitle, { color: theme.colors.tertiary }]}
+            >
+              {t("avg_order_value")}
+            </Text>
+            <Text
+              style={[
+                styles.summaryValue,
+                { color: theme.colors.onTertiaryContainer },
+              ]}
+            >
+              {convertPaymentAmount(dashboard.averageRevenuePerOrder)}
+            </Text>
+            <Text
+              style={[styles.summarySubtitle, { color: theme.colors.tertiary }]}
+            >
+              {t(`last_${dashboard.period}`)}
+            </Text>
+          </Surface>
+
+          <Surface
+            style={[
+              styles.summaryCard,
+              { backgroundColor: theme.colors.yellowContainer },
+            ]}
+          >
+            <Text style={[styles.summaryTitle, { color: theme.colors.yellow }]}>
+              {t("peak_hour")}
+            </Text>
+            <Text
+              style={[
+                styles.summaryValue,
+                { color: theme.colors.onYellowContainer },
+              ]}
+            >
+              {convertHourForDisplay(dashboard.peakHour?.hour)}
+            </Text>
+            <Text
+              style={[styles.summarySubtitle, { color: theme.colors.yellow }]}
+            >
+              {`${convertPaymentAmount(dashboard.peakHour?.orders)} ${t("report_order")} - ${convertPaymentAmount(dashboard.peakHour?.revenue)}`}
+            </Text>
+          </Surface>
+        </View>
       </ScrollView>
     </Surface>
   );

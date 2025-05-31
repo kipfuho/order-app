@@ -1,3 +1,4 @@
+import { PaymentMethodDistributionReportItem } from "@/stores/state.interface";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Surface, Text, useTheme } from "react-native-paper";
@@ -19,7 +20,13 @@ const generateColors = (count: number): string[] => {
   });
 };
 
-const PaymentMethodsChart = ({ width }: { width: number }) => {
+const PaymentMethodsChart = ({
+  width,
+  data,
+}: {
+  width: number;
+  data: PaymentMethodDistributionReportItem[];
+}) => {
   const theme = useTheme();
   const { t } = useTranslation();
   const chartColors = generateColors(paymentData.length);
@@ -46,7 +53,7 @@ const PaymentMethodsChart = ({ width }: { width: number }) => {
         <VictoryPie
           data={paymentData}
           x={(datum) => t(datum.paymentMethod)}
-          y="value"
+          y="percentage"
           width={width}
           height={400}
           colorScale={chartColors}

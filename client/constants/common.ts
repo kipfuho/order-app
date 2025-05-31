@@ -39,3 +39,9 @@ export enum DishOrderStatus {
   cooked = "cooked",
   served = "served",
 }
+
+export enum ReportPeriod {
+  DAY = "day",
+  WEEK = "week",
+  MONTH = "month",
+}
