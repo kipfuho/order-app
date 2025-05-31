@@ -14,11 +14,35 @@ import { I18nextProvider, useTranslation } from "react-i18next";
 import i18n from "@locales/i18n";
 import { darkTheme, lightTheme } from "@constants/theme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { enGB, registerTranslation } from "react-native-paper-dates";
 
 Amplify.configure(AmplifyConfig);
 
 // Prevent splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+// date picker
+registerTranslation("en", enGB);
+registerTranslation("vi", {
+  save: "Lưu",
+  selectSingle: "Chọn ngày",
+  selectMultiple: "Chọn nhiều ngày",
+  selectRange: "Chọn khoảng thời gian",
+  notAccordingToDateFormat: (inputFormat) =>
+    `Định dạng ngày phải là ${inputFormat}`,
+  mustBeHigherThan: (date) => `Phải sau ngày ${date}`,
+  mustBeLowerThan: (date) => `Phải trước ngày ${date}`,
+  mustBeBetween: (startDate, endDate) =>
+    `Phải nằm trong khoảng từ ${startDate} đến ${endDate}`,
+  dateIsDisabled: "Ngày này không được phép chọn",
+  previous: "Trước",
+  next: "Tiếp theo",
+  typeInDate: "Nhập ngày",
+  pickDateFromCalendar: "Chọn ngày từ lịch",
+  close: "Đóng",
+  hour: "Giờ",
+  minute: "Phút",
+});
 
 function ThemeLayout() {
   const { darkMode, locale } = useSelector((state: RootState) => state.setting);

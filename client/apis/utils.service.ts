@@ -54,29 +54,34 @@ const _getCustomerAccessToken = async (): Promise<string> => {
 export const getAccessToken = async (
   isCustomerApp: boolean = false,
 ): Promise<string> => {
-  const state = store.getState(); // Access Redux state
-  if (isCustomerApp) {
-    const token = await _getCustomerAccessToken();
-    return token;
-  }
+  try {
+    const state = store.getState(); // Access Redux state
+    if (isCustomerApp) {
+      const token = await _getCustomerAccessToken();
+      return token;
+    }
 
-  const user = state.auth.session;
-  if (!user) {
-    return "";
-  }
-  if (!user.tokens) {
-    store.dispatch(signOut());
-    return "";
-  }
-
-  if (isTokenExpired(_.get(user, "tokens.access"))) {
-    const newTokens = await refreshTokensRequest(user.tokens.refresh.token);
-    if (!newTokens) {
+    const user = state.auth.session;
+    if (!user) {
+      return "";
+    }
+    if (!user.tokens) {
       store.dispatch(signOut());
       return "";
     }
-    store.dispatch(signIn({ ...user, tokens: newTokens }));
-    return newTokens.access.token;
+
+    if (isTokenExpired(_.get(user, "tokens.access"))) {
+      const newTokens = await refreshTokensRequest(user.tokens.refresh.token);
+      if (!newTokens) {
+        store.dispatch(signOut());
+        return "";
+      }
+      store.dispatch(signIn({ ...user, tokens: newTokens }));
+      return newTokens.access.token;
+    }
+    return user.tokens.access.token;
+  } catch {
+    store.dispatch(signOut());
+    return "";
   }
-  return user.tokens.access.token;
 };

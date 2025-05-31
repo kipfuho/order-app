@@ -136,7 +136,9 @@ const getPopularDishesReport = async ({ orders, shopId, from, to, period }) => {
     });
   });
 
-  return Object.values(dishSoldById);
+  return Object.values(dishSoldById)
+    .sort((a, b) => b.quantity - a.quantity)
+    .slice(0, 5);
 };
 
 const getPaymentMethodDistributionReport = async ({ orderSessions, shopId, from, to, period }) => {
@@ -231,7 +233,7 @@ const getDashboard = async ({ shopId, from, to, period }) => {
     shopId,
     projections: { createdAt: true, revenueAmount: true, paymentDetails: true, paymentAmount: true },
   });
-  const orders = await _getOrderSessionForReport({
+  const orders = await _getOrderForReport({
     from,
     to,
     period,

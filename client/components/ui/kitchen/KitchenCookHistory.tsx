@@ -52,7 +52,7 @@ const KitchenCookHistory = () => {
     <>
       <Portal>
         <DatePickerModal
-          locale={i18n.language}
+          locale={i18n.language.split("-")[0]}
           mode="range"
           visible={open}
           startDate={range.startDate}

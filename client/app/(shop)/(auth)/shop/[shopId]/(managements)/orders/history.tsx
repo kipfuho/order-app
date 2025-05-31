@@ -56,13 +56,13 @@ export default function OrderManagementHistoryPage() {
     <>
       <Portal>
         <DatePickerModal
-          locale={i18n.language}
+          locale={i18n.language.split("-")[0]}
           mode="range"
           visible={open}
           startDate={range.startDate}
           endDate={range.endDate}
           onDismiss={() => setOpen(false)}
-          validRange={{ endDate: new Date(Date.now() - 86400000) }}
+          validRange={{ endDate: new Date(Date.now()) }}
           onConfirm={({ startDate, endDate }) => {
             setOpen(false);
             setRange({ startDate, endDate });

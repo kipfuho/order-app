@@ -33,7 +33,7 @@ export const reportApiSlice = createApi({
       DailySalesReportItem[],
       GetDailySalesReportRequest
     >({
-      queryFn: async ({ shopId, from, to, period = ReportPeriod.DAY }) => {
+      queryFn: async ({ shopId, from, to, period = ReportPeriod.MONTH }) => {
         try {
           const dailySalesReport = await getDailySalesReportRequest({
             shopId,
@@ -54,7 +54,7 @@ export const reportApiSlice = createApi({
       PopularDishesReportItem[],
       GetPopularDishesReportRequest
     >({
-      queryFn: async ({ shopId, from, to, period = ReportPeriod.DAY }) => {
+      queryFn: async ({ shopId, from, to, period = ReportPeriod.MONTH }) => {
         try {
           const getPopularDishesReport = await getPopularDishesReportRequest({
             shopId,
@@ -75,7 +75,7 @@ export const reportApiSlice = createApi({
       PaymentMethodDistributionReportItem[],
       GetPaymentMethodDistributionReportRequest
     >({
-      queryFn: async ({ shopId, from, to, period = ReportPeriod.DAY }) => {
+      queryFn: async ({ shopId, from, to, period = ReportPeriod.MONTH }) => {
         try {
           const getPaymentMethodDistributionReport =
             await getPaymentMethodDistributionReportRequest({
@@ -97,7 +97,7 @@ export const reportApiSlice = createApi({
       HourlySalesReportItem[],
       GetHourlySalesReportRequest
     >({
-      queryFn: async ({ shopId, from, to, period = ReportPeriod.DAY }) => {
+      queryFn: async ({ shopId, from, to, period = ReportPeriod.MONTH }) => {
         try {
           const getHourlySalesReport = await getHourlySalesReportRequest({
             shopId,
@@ -115,7 +115,7 @@ export const reportApiSlice = createApi({
     }),
 
     getDashboard: builder.query<ReportDashboard, GetDashboardRequest>({
-      queryFn: async ({ shopId, from, to, period = ReportPeriod.DAY }) => {
+      queryFn: async ({ shopId, from, to, period = ReportPeriod.MONTH }) => {
         try {
           const dashboard = await getDashboardRequest({
             shopId,

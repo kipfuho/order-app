@@ -127,6 +127,7 @@ export default function OrderManagementOrderPage() {
           <CreateOrder
             setCreateOrderVisible={setCreateOrderVisible}
             goBack={() => setCreateOrderVisible(false)}
+            isNewOrder={true}
           />
         </Modal>
         <Toast />

@@ -6,6 +6,7 @@ const redisClient = require('../utils/redis');
 const { getOrderSessionById } = require('../order-management/services/orderUtils.service');
 const config = require('../config/config');
 const { bulkUpdate, PostgreSQLTable } = require('../utils/prisma');
+const { OrderSessionStatus } = require('../utils/constant');
 
 const _sendJobToQueue = async (jobData, delay) => {
   if (delay) {
@@ -115,18 +116,18 @@ const processJob = async (jobPayload) => {
 
   if (type === JobTypes.PAY_ORDER) {
     const { orderSessionId } = data;
-    await updateOrderSessionStatusForOrders({ orderSessionId });
+    await updateOrderSessionStatusForOrders({ orderSessionId, status: OrderSessionStatus.paid });
     await updateFullOrderSession({ orderSessionId });
     return;
   }
   if (type === JobTypes.CANCEL_ORDER) {
     const { orderSessionId } = data;
-    await updateOrderSessionStatusForOrders({ orderSessionId });
+    await updateOrderSessionStatusForOrders({ orderSessionId, status: OrderSessionStatus.cancelled });
     return;
   }
   if (type === JobTypes.CANCEL_ORDER_PAID_STATUS) {
     const { orderSessionId } = data;
-    await updateOrderSessionStatusForOrders({ orderSessionId });
+    await updateOrderSessionStatusForOrders({ orderSessionId, status: OrderSessionStatus.unpaid });
     return;
   }
   if (type === JobTypes.UPDATE_FULL_ORDER_SESSION) {

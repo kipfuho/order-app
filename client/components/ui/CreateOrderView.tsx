@@ -34,6 +34,8 @@ import FlatListWithoutScroll from "../FlatListWithoutScroll";
 import { AppBar } from "../AppBar";
 import AppBarSearchBox from "../AppBarSearchBox";
 import { styles } from "@/constants/styles";
+import { goToTableCurrentOrderSessions } from "@/apis/navigate.service";
+import { useRouter } from "expo-router";
 
 const createDismissGesture = (onDismissSearch: () => void) =>
   Gesture.Tap().onStart(() => {
@@ -47,11 +49,14 @@ const createDismissGesture = (onDismissSearch: () => void) =>
 export default function CreateOrder({
   setCreateOrderVisible,
   goBack,
+  isNewOrder,
 }: {
   setCreateOrderVisible: Dispatch<SetStateAction<boolean>>;
   goBack: () => void;
+  isNewOrder: boolean;
 }) {
   const { t } = useTranslation();
+  const router = useRouter();
 
   const {
     currentShop,
@@ -107,6 +112,13 @@ export default function CreateOrder({
       tableId: currentTable.id,
     }).unwrap();
     setCreateOrderVisible(false);
+    if (isNewOrder) {
+      goToTableCurrentOrderSessions({
+        router,
+        shopId: shop.id,
+        tableId: currentTable.id,
+      });
+    }
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -4,13 +4,6 @@ import { View } from "react-native";
 import { Surface, Text, useTheme } from "react-native-paper";
 import { VictoryPie } from "victory-native";
 
-const paymentData = [
-  { paymentMethod: "Credit Card", percentage: 68 },
-  { paymentMethod: "Cash", percentage: 15 },
-  { paymentMethod: "Mobile Pay", percentage: 12 },
-  { paymentMethod: "Gift Card", percentage: 5 },
-];
-
 const generateColors = (count: number): string[] => {
   const saturation = 70;
   const lightness = 50;
@@ -29,7 +22,7 @@ const PaymentMethodsChart = ({
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
-  const chartColors = generateColors(paymentData.length);
+  const chartColors = generateColors(data.length);
 
   return (
     <Surface
@@ -51,7 +44,7 @@ const PaymentMethodsChart = ({
       </Text>
       <View style={{ alignItems: "center" }}>
         <VictoryPie
-          data={paymentData}
+          data={data}
           x={(datum) => t(datum.paymentMethod)}
           y="percentage"
           width={width}
@@ -68,7 +61,9 @@ const PaymentMethodsChart = ({
           }
           innerRadius={70}
           labelPlacement="perpendicular"
-          labels={({ datum }) => `${datum.name}\n${datum.value}%`}
+          labels={({ datum }) =>
+            `${t(datum.paymentMethod)}\n${datum.percentage}%`
+          }
         />
       </View>
       <Text

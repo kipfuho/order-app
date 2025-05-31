@@ -65,7 +65,10 @@ const getStatusColor = (theme: CustomMD3Theme, minutes: number) => {
   };
 };
 
-const convertHourForDisplay = (hour?: number = 0) => {
+const convertHourForDisplay = (hour?: number) => {
+  if (!hour) {
+    return "N/A";
+  }
   const paddedHour = hour.toString().padStart(2, "0");
   return `${paddedHour}:00`;
 };
