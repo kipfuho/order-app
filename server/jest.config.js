@@ -6,6 +6,6 @@ module.exports = {
   restoreMocks: true,
   coveragePathIgnorePatterns: ['node_modules', 'src/config', 'src/app.js', 'tests'],
   coverageReporters: ['text', 'lcov', 'clover', 'html'],
-  globalSetup: '<rootDir>/src/tests/globalSetup.js',
-  globalTeardown: '<rootDir>/src/tests/globalTearDown.js',
+  globalSetup: '<rootDir>/tests/globalSetup.js',
+  globalTeardown: '<rootDir>/tests/globalTearDown.js',
 };
