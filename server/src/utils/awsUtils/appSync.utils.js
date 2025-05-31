@@ -18,6 +18,7 @@ const AppSyncEvent = {
   EMPLOYEE_POSITION_CHANGED: 'EMPLOYEE_POSITION_CHANGED',
   DEPARTMENT_CHANGED: 'EMPLOYEE_DEPARTMENT_CHANGED',
   PAYMENT_COMPLETE: 'PAYMENT_COMPLETE',
+  CANCEL_PAYMENT: 'CANCEL_PAYMENT',
   ORDER_SESSION_UPDATE: 'ORDER_SESSION_UPDATE',
   NEW_ORDER: 'NEW_ORDER',
 };
@@ -326,6 +327,25 @@ const notifyUpdateOrderSession = async ({ orderSession, userId, action }) => {
   await _notifyUpdateOrderSessionForCustomer({ orderSession, action });
 };
 
+const notifyCancelPaidStatusOrderSession = async ({ orderSession, userId, action }) => {
+  if (_.isEmpty(orderSession)) {
+    return;
+  }
+
+  const channel = getShopChannel(orderSession.shopId);
+  const event = {
+    type: AppSyncEvent.CANCEL_PAYMENT,
+    data: {
+      action, // 'CANCEL'
+      orderSessionId: orderSession.id,
+      tableId: _.get(orderSession, 'tableIds.0'),
+      userId,
+    },
+  };
+  await publishSingleAppSyncEvent({ channel, event });
+  await _notifyUpdateOrderSessionForCustomer({ orderSession, action });
+};
+
 const notifyNewOrder = async ({ order, userId, action }) => {
   if (_.isEmpty(order)) {
     return;
@@ -360,4 +380,5 @@ module.exports = {
   notifyUpdateDepartment,
   notifyUpdateOrderSession,
   notifyNewOrder,
+  notifyCancelPaidStatusOrderSession,
 };

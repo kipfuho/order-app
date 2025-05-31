@@ -17,6 +17,7 @@ const {
   notifyOrderSessionPayment,
   notifyUpdateOrderSession,
   EventActionType,
+  notifyCancelPaidStatusOrderSession,
 } = require('../../utils/awsUtils/appSync.utils');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
@@ -308,6 +309,32 @@ const cancelOrder = async ({ shopId, user, requestBody }) => {
     },
   });
 
+  // return dishorders
+  const orders = await Order.findMany({
+    where: { orderSessionId },
+    select: {
+      dishOrders: true,
+    },
+  });
+  const dishOrders = orders.flatMap((order) => order.dishOrders);
+  await ReturnedDishOrder.createMany({
+    data: dishOrders.map((dishOrder) => ({
+      dishOrderNo: dishOrder.dishOrderNo,
+      dishId: dishOrder.dishId,
+      name: dishOrder.name,
+      note: dishOrder.note,
+      orderId: dishOrder.orderId,
+      quantity: dishOrder.quantity,
+    })),
+  });
+  await DishOrder.deleteMany({
+    where: {
+      id: {
+        in: dishOrders.map((dishOrder) => dishOrder.id),
+      },
+    },
+  });
+
   await notifyUpdateOrderSession({ orderSession: updatedOrderSession, userId: user.id, action: EventActionType.CANCEL });
   await registerJob({
     type: JobTypes.CANCEL_ORDER,
@@ -332,7 +359,11 @@ const cancelPaidStatus = async ({ orderSessionId, shopId, user }) => {
     },
   });
 
-  await notifyUpdateOrderSession({ orderSession: updatedOrderSession, userId: user.id, action: EventActionType.CANCEL });
+  await notifyCancelPaidStatusOrderSession({
+    orderSession: updatedOrderSession,
+    userId: user.id,
+    action: EventActionType.CANCEL,
+  });
   await registerJob({
     type: JobTypes.CANCEL_ORDER_PAID_STATUS,
     data: {

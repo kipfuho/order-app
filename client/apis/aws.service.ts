@@ -35,6 +35,7 @@ export const EventType = {
   EMPLOYEE_POSITION_CHANGED: "EMPLOYEE_POSITION_CHANGED",
   DEPARTMENT_CHANGED: "EMPLOYEE_DEPARTMENT_CHANGED",
   PAYMENT_COMPLETE: "PAYMENT_COMPLETE",
+  CANCEL_PAYMENT: "CANCEL_PAYMENT",
   ORDER_SESSION_UPDATE: "ORDER_SESSION_UPDATE",
   NEW_ORDER: "NEW_ORDER",
 };
@@ -69,6 +70,23 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
               text1: "Payment completed",
               text2: `Order session ${billNo} has been paid`,
             });
+            store.dispatch(
+              orderApiSlice.util.invalidateTags([
+                { type: "OrderSessions", id: orderSessionId },
+                { type: "ActiveOrderSessions", id: tableId },
+                "TablesForOrder",
+              ]),
+            );
+            store.dispatch(reportApiSlice.util.invalidateTags(["Reports"]));
+            return;
+          }
+
+          if (type === EventType.CANCEL_PAYMENT) {
+            const {
+              orderSessionId,
+              tableId,
+            }: { orderSessionId: string; tableId: string; billNo: string } =
+              data;
             store.dispatch(
               orderApiSlice.util.invalidateTags([
                 { type: "OrderSessions", id: orderSessionId },
