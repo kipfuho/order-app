@@ -564,6 +564,7 @@ enum PaymentMethodEnum {
   cash
   bank_transfer
   vnpay
+  credit_card
 }
 
 enum Status {
