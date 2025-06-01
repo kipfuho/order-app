@@ -41,7 +41,6 @@ const validateCustomer = (customerBody) => {
 };
 
 const createCustomer = async (createBody) => {
-  validateCustomer(createBody);
   const customer = await Customer.create({
     data: createBody,
   });
