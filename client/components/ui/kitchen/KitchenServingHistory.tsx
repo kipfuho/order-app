@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import FlatListWithoutScroll from "@/components/FlatListWithoutScroll";
 import { styles } from "@/constants/styles";
 import { ItemTypeFlatList } from "@/components/FlatListWithScroll";
+import { useInfiniteScrollingQuery } from "@/hooks/useInfiniteScrolling";
 
 const KitchenServingHistory = () => {
   const { i18n, t } = useTranslation();
@@ -36,10 +37,11 @@ const KitchenServingHistory = () => {
 
   const {
     data: servedHistories = [],
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading: getServedHistoryLoading,
-    isFetching: getServedHistoryFetching,
-  } = useGetServedHistoriesRequestQuery({
-    shopId: shop.id,
+  } = useInfiniteScrollingQuery(shop.id, useGetServedHistoriesRequestQuery, {
     from: range.startDate,
     to: range.endDate,
   });
@@ -83,7 +85,7 @@ const KitchenServingHistory = () => {
                 justifyContent: "center",
               }}
             >
-              {getServedHistoryFetching ? (
+              {isFetchingNextPage ? (
                 <ActivityIndicator />
               ) : (
                 <Text style={{ color: theme.colors.onSecondaryContainer }}>
@@ -115,6 +117,9 @@ const KitchenServingHistory = () => {
             itemByGroup={{ all: servedHistories }}
             itemType={ItemTypeFlatList.KITCHEN_SERVED_HISTORY}
             shouldShowGroup={false}
+            fetchNextPage={fetchNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            hasNextPage={hasNextPage}
           />
         </Surface>
       </Surface>

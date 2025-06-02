@@ -1,6 +1,11 @@
 import React, { memo } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { Button, Surface, useTheme } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Button,
+  Surface,
+  useTheme,
+} from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { LegendList } from "@legendapp/list";
@@ -101,7 +106,7 @@ export default function KitchenDishOrderGroup({
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const { currentShop } = useSelector((shop: RootState) => shop.shop);
+  const { currentShop } = useSelector((state: RootState) => state.shop);
   const shop = currentShop as Shop;
 
   const [
@@ -181,13 +186,17 @@ export default function KitchenDishOrderGroup({
       </View>
 
       <View style={{ padding: 8 }}>
-        <Button
-          mode="contained"
-          style={{ width: "30%", minWidth: 150, alignSelf: "flex-end" }}
-          onPress={onServeAll}
-        >
-          {t("serve_all")}
-        </Button>
+        {updateUncookedDishOrderLoading ? (
+          <ActivityIndicator />
+        ) : (
+          <Button
+            mode="contained"
+            style={{ width: "30%", minWidth: 150, alignSelf: "flex-end" }}
+            onPress={onServeAll}
+          >
+            {t("serve_all")}
+          </Button>
+        )}
       </View>
     </Surface>
   );

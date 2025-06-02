@@ -166,6 +166,8 @@ model DishOrder {
   beforeTaxTotalDiscountAmount Float?
   afterTaxTotalDiscountAmount  Float?
   paymentAmount                Float?
+  createdAt                    DateTime        @default(now())
+  updatedAt                    DateTime        @updatedAt
   status                       DishOrderStatus @default(confirmed)
   note                         String          @default("")
   orderId                      String
@@ -185,7 +187,8 @@ model ReturnedDishOrder {
   name        String
   quantity    Int
   status      DishOrderStatus @default(confirmed)
-  returnedAt  DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   note        String          @default("")
   orderId     String
   dish        Dish?           @relation(fields: [dishId], references: [id])
@@ -216,6 +219,7 @@ model Order {
   beforeTaxTotalDiscountAmount Float?
   paymentAmount                Float?
   revenueAmount                Float?
+  kitchenAllDone               Boolean             @default(false)
   dishOrders                   DishOrder[]
   KitchenLog                   KitchenLog[]
   approvedBy                   User?               @relation("ApprovedOrders", fields: [approvedById], references: [id])
@@ -229,6 +233,7 @@ model Order {
   @@index([shopId, customerId])
   @@index([orderSessionId])
   @@index([shopId, orderSessionStatus, status, createdAt])
+  @@index([kitchenAllDone])
 }
 
 model DiscountProduct {
@@ -548,6 +553,7 @@ enum OrderSessionStatus {
   unpaid
   paid
   cancelled
+  disabled
 }
 
 enum DiscountValueType {

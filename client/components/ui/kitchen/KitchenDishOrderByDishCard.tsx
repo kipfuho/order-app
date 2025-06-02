@@ -2,10 +2,17 @@ import _ from "lodash";
 import React, { memo, useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Badge, Modal, Portal, Surface, useTheme } from "react-native-paper";
-import { KitchenDishOrder } from "@stores/state.interface";
+import { KitchenDishOrder, Shop } from "@stores/state.interface";
 import { getMinuteForDisplay, getStatusColor } from "@constants/utils";
 import { CustomMD3Theme } from "@constants/theme";
 import KitchenDishOrderGroup from "./KitchenDishOrderGroupModal";
+import { RootState } from "@/stores/store";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  deleteKitchenDishOrder,
+  updateKitchenDishOrder,
+} from "@/stores/shop.slice";
+import { useUpdateUncookedDishOrdersRequestMutation } from "@/stores/apiSlices/kitchenApi.slice";
 
 interface KitchenDishOrderProps {
   dishOrders: KitchenDishOrder[];
@@ -65,8 +72,46 @@ const KitchenDishOrderByDishCard: React.FC<KitchenDishOrderProps> = ({
   containerWidth = 0,
 }) => {
   const theme = useTheme<CustomMD3Theme>();
+  const dispatch = useDispatch();
   const cardWidth = Math.min(200, containerWidth * 0.48);
   const [modalVisible, setModalVisible] = useState(false);
+
+  const { currentShop, kitchenDishOrder } = useSelector(
+    (state: RootState) => state.shop,
+  );
+  const shop = currentShop as Shop;
+  const [updateUncookedDishOrder] =
+    useUpdateUncookedDishOrdersRequestMutation();
+
+  const onServeAll = async () => {
+    const notAllConfirmed = dishOrders.reduce((prev, dishOrder) => {
+      if (!kitchenDishOrder[dishOrder.id]?.confirmed) {
+        dispatch(
+          updateKitchenDishOrder({
+            dishOrderId: dishOrder.id,
+            confirmed: true,
+          }),
+        );
+        return true;
+      }
+      return prev;
+    }, false);
+
+    if (notAllConfirmed) return;
+    const updateSuccess = await updateUncookedDishOrder({
+      shopId: shop.id,
+      updateRequests: dishOrders.map((dishOrder) => ({
+        dishOrderId: dishOrder.id,
+        orderId: dishOrder.orderId,
+      })),
+    }).unwrap();
+
+    if (updateSuccess) {
+      dishOrders.forEach((dishOrder) => {
+        dispatch(deleteKitchenDishOrder({ dishOrderId: dishOrder.id }));
+      });
+    }
+  };
 
   if (cardWidth < 1) {
     return;
@@ -88,7 +133,7 @@ const KitchenDishOrderByDishCard: React.FC<KitchenDishOrderProps> = ({
         >
           <KitchenDishOrderGroup
             dishOrders={dishOrders}
-            onServeAll={() => {}}
+            onServeAll={onServeAll}
           />
         </Modal>
       </Portal>

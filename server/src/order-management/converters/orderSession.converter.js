@@ -31,6 +31,7 @@ const convertOrderSessionForResponse = (orderSessionJson, shouldMergeDishOrders 
 /* eslint-disable no-param-reassign */
 const convertOrderSessionHistoryForResponse = (orderSession) => {
   const orderSessionJson = _.pick(orderSession, [
+    'id',
     'tableNames',
     'endedAt',
     'updatedAt',

@@ -20,6 +20,7 @@ import { LoaderBasic } from "../Loader";
 import FlatListWithoutScroll from "@/components/FlatListWithoutScroll";
 import { ItemTypeFlatList } from "@/components/FlatListWithScroll";
 import { View } from "react-native";
+import { useInfiniteScrollingQuery } from "@/hooks/useInfiniteScrolling";
 
 const KitchenCookHistory = () => {
   const { i18n, t } = useTranslation();
@@ -36,10 +37,11 @@ const KitchenCookHistory = () => {
 
   const {
     data: cookedHistories = [],
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading: getCookedHistoryLoading,
-    isFetching: getCookedHistoryFetching,
-  } = useGetCookedHistoriesRequestQuery({
-    shopId: shop.id,
+  } = useInfiniteScrollingQuery(shop.id, useGetCookedHistoriesRequestQuery, {
     from: range.startDate,
     to: range.endDate,
   });
@@ -83,7 +85,7 @@ const KitchenCookHistory = () => {
                 justifyContent: "center",
               }}
             >
-              {getCookedHistoryFetching ? (
+              {isFetchingNextPage ? (
                 <ActivityIndicator />
               ) : (
                 <Text style={{ color: theme.colors.onSecondaryContainer }}>
@@ -115,6 +117,9 @@ const KitchenCookHistory = () => {
             itemByGroup={{ all: cookedHistories }}
             itemType={ItemTypeFlatList.KITCHEN_COOKED_HISTORY}
             shouldShowGroup={false}
+            fetchNextPage={fetchNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            hasNextPage={hasNextPage}
           />
         </Surface>
       </Surface>

@@ -23,15 +23,6 @@ const _sendJobToQueue = async (jobData, delay) => {
   }
 };
 
-const updateOrderSessionStatusForOrders = async ({ orderSessionId, status }) => {
-  return Order.updateMany({
-    data: { orderSessionStatus: status },
-    where: {
-      orderSessionId,
-    },
-  });
-};
-
 const updateFullOrderSession = async ({ orderSessionId }) => {
   const key = `update_full_order_session_${orderSessionId}`;
   const canGetLock = await redisClient.getCloudLock({ key, periodInSecond: 10 });
@@ -116,18 +107,45 @@ const processJob = async (jobPayload) => {
 
   if (type === JobTypes.PAY_ORDER) {
     const { orderSessionId } = data;
-    await updateOrderSessionStatusForOrders({ orderSessionId, status: OrderSessionStatus.paid });
+    // order made by customers
+    await Order.updateMany({
+      data: { orderSessionStatus: OrderSessionStatus.paid },
+      where: {
+        orderSessionId,
+        customerId: {
+          not: null,
+        },
+      },
+    });
+    // order made by shop
+    await Order.updateMany({
+      data: { orderSessionStatus: OrderSessionStatus.paid, kitchenAllDone: true },
+      where: {
+        orderSessionId,
+        customerId: null,
+      },
+    });
     await updateFullOrderSession({ orderSessionId });
     return;
   }
   if (type === JobTypes.CANCEL_ORDER) {
     const { orderSessionId } = data;
-    await updateOrderSessionStatusForOrders({ orderSessionId, status: OrderSessionStatus.cancelled });
+    await Order.updateMany({
+      data: { orderSessionStatus: OrderSessionStatus.cancelled },
+      where: {
+        orderSessionId,
+      },
+    });
     return;
   }
   if (type === JobTypes.CANCEL_ORDER_PAID_STATUS) {
     const { orderSessionId } = data;
-    await updateOrderSessionStatusForOrders({ orderSessionId, status: OrderSessionStatus.unpaid });
+    await Order.updateMany({
+      data: { orderSessionStatus: OrderSessionStatus.unpaid },
+      where: {
+        orderSessionId,
+      },
+    });
     return;
   }
   if (type === JobTypes.UPDATE_FULL_ORDER_SESSION) {

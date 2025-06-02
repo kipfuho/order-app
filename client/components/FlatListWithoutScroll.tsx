@@ -1,8 +1,8 @@
 import {
   Dispatch,
-  memo,
   SetStateAction,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -12,17 +12,20 @@ import {
   useWindowDimensions,
   View,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
 import { LegendList, LegendListRef } from "@legendapp/list";
 import {
   FlatListItem,
-  flatListStyles,
   ItemTypeFlatList,
   ItemTypeFlatListProperties,
   ItemTypeMap,
-  UNIVERSAL_WIDTH_PIVOT,
 } from "./FlatListWithScroll";
+import {
+  UNIVERSAL_MAX_WIDTH_SIDEBAR,
+  UNIVERSAL_WIDTH_PIVOT,
+} from "@/constants/common";
 
 function GroupList({
   groups = [],
@@ -97,10 +100,10 @@ function GroupList({
   return (
     <Surface
       mode="flat"
-      style={[
-        flatListStyles.sidebar,
-        { backgroundColor: theme.colors.background },
-      ]}
+      style={{
+        width: Math.min(UNIVERSAL_MAX_WIDTH_SIDEBAR, width * 0.15),
+        backgroundColor: theme.colors.background,
+      }}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{ gap: 1 }}>
@@ -146,6 +149,11 @@ const FlatListWithoutScroll = ({
   itemType,
   additionalDatas,
   shouldShowGroup = true,
+  // New infinite scrolling props
+  hasNextPage = false,
+  isFetchingNextPage = false,
+  fetchNextPage,
+  onEndReachedThreshold = 0.5,
 }: {
   groups: any[];
   itemByGroup: Record<string, any[]>;
@@ -153,20 +161,42 @@ const FlatListWithoutScroll = ({
   additionalDatas?: any;
   openMenu?: (item: any, event: GestureResponderEvent) => void;
   shouldShowGroup?: boolean;
+  // New infinite scrolling props
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  fetchNextPage?: () => void;
+  onEndReachedThreshold?: number;
 }) => {
   const flatListRef = useRef<LegendListRef>(null);
   const { width } = useWindowDimensions();
 
   const [selectedGroup, setSelectGroup] = useState("");
-  const [itemContainerWidth, setItemContainerWidth] = useState<number>(1);
-  const [numColumns, setNumColumns] = useState<number>(0);
+  const { itemContainerWidth, numColumns } = useMemo(() => {
+    let itemContainerWidth;
+    if (width < UNIVERSAL_WIDTH_PIVOT) {
+      itemContainerWidth = width - 20; // minus padding
+    } else {
+      itemContainerWidth =
+        width - Math.min(width * 0.15, UNIVERSAL_MAX_WIDTH_SIDEBAR); // minus padding + sidebar
+    }
+
+    const numColumns = Math.floor(
+      (itemContainerWidth + 12) /
+        Math.min(
+          ItemTypeFlatListProperties[itemType].MAX_WIDTH,
+          itemContainerWidth * 0.48 + 12,
+        ),
+    );
+
+    return { itemContainerWidth, numColumns };
+  }, [width, itemType]);
 
   const flatListData = useMemo(() => {
     if (numColumns <= 0) {
       return [];
     }
 
-    return groups.flatMap((g) => {
+    const data = groups.flatMap((g) => {
       if (selectedGroup && g.id !== selectedGroup) {
         return [];
       }
@@ -185,14 +215,55 @@ const FlatListWithoutScroll = ({
 
       return [{ type: "header", id: `header-${g.id}`, group: g }, ...itemRows];
     });
-  }, [groups, itemByGroup, numColumns, selectedGroup]);
+
+    // Add loading indicator at the end if we're fetching more data
+    if (isFetchingNextPage && hasNextPage) {
+      data.push({
+        type: "loading",
+        id: "loading-indicator",
+        group: null,
+      });
+    }
+
+    return data;
+  }, [
+    groups,
+    itemByGroup,
+    numColumns,
+    selectedGroup,
+    isFetchingNextPage,
+    hasNextPage,
+  ]);
 
   const renderItem = useCallback(
     ({ item }: { item: FlatListItem }) => {
       if (item.type === "header") {
-        if (!shouldShowGroup) return;
+        if (!shouldShowGroup) return null;
         return (
-          <Text style={flatListStyles.categoryTitle}>{item.group.name}</Text>
+          <Text
+            style={{
+              marginBottom: 8,
+              height: 24,
+              fontWeight: "bold",
+              fontSize: 20,
+            }}
+          >
+            {item.group.name}
+          </Text>
+        );
+      }
+
+      if (item.type === "loading") {
+        return (
+          <View
+            style={{
+              height: 80,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <ActivityIndicator size="large" />
+          </View>
         );
       }
 
@@ -208,7 +279,7 @@ const FlatListWithoutScroll = ({
           >
             {(item.items || []).map((_item: any, idx: number) => {
               return ItemTypeMap[itemType]({
-                key: _item.id || idx,
+                key: `${itemType}-${_item.id || idx}`,
                 item: _item,
                 openMenu,
                 containerWidth: itemContainerWidth,
@@ -226,7 +297,6 @@ const FlatListWithoutScroll = ({
 
       return null;
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       itemType,
       itemContainerWidth,
@@ -239,15 +309,32 @@ const FlatListWithoutScroll = ({
 
   const HEADER_HEIGHT = ItemTypeFlatListProperties[itemType].HEADER_HEIGHT;
   const ROW_HEIGHT = ItemTypeFlatListProperties[itemType].ROW_HEIGHT;
+  const LOADING_HEIGHT = 80;
   const MARGIN_BOTTOM = 8;
+
   const getEstimatedItemSize = (index: number, item: FlatListItem) => {
     if (item.type === "header") {
       return HEADER_HEIGHT + MARGIN_BOTTOM;
     } else if (item.type === "row") {
       return ROW_HEIGHT + MARGIN_BOTTOM;
+    } else if (item.type === "loading") {
+      return LOADING_HEIGHT + MARGIN_BOTTOM;
     }
     return 0;
   };
+
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage && fetchNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // force rerender
+  useEffect(() => {
+    flatListRef.current?.scrollToOffset({
+      offset: 0,
+    });
+  }, []);
 
   return (
     <Surface
@@ -275,24 +362,12 @@ const FlatListWithoutScroll = ({
         getEstimatedItemSize={getEstimatedItemSize}
         estimatedItemSize={ROW_HEIGHT + MARGIN_BOTTOM}
         initialContainerPoolRatio={1.5}
-        onLayout={(event) => {
-          const { width } = event.nativeEvent.layout;
-          const containerUsablewidth = width - 20; // padding
-          setItemContainerWidth(containerUsablewidth);
-          setNumColumns(
-            Math.floor(
-              (containerUsablewidth + 12) /
-                Math.min(
-                  ItemTypeFlatListProperties[itemType].MAX_WIDTH,
-                  containerUsablewidth * 0.48 + 12,
-                ),
-            ),
-          );
-        }}
-        contentContainerStyle={{ padding: 10 }}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={onEndReachedThreshold}
+        contentContainerStyle={{ flex: 1, padding: 10 }}
       />
     </Surface>
   );
 };
 
-export default memo(FlatListWithoutScroll);
+export default FlatListWithoutScroll;

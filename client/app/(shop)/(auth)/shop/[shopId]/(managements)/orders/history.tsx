@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { AppBar } from "@components/AppBar";
-import { goToShopHome } from "@apis/navigate.service";
+import { goToOrderSessionDetail, goToShopHome } from "@apis/navigate.service";
 import {
   Surface,
   Text,
@@ -17,7 +17,7 @@ import { useSelector } from "react-redux";
 import { useGetOrderSessionHistoryQuery } from "@stores/apiSlices/orderApi.slice";
 import { DatePickerModal } from "react-native-paper-dates";
 import { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import { format } from "date-fns";
 import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
@@ -124,10 +124,20 @@ export default function OrderManagementHistoryPage() {
           <ScrollView showsVerticalScrollIndicator={false}>
             <Surface mode="flat" style={{ gap: 16 }}>
               {orderHistories?.map((orderHistory, index) => (
-                <View key={index}>
+                <TouchableOpacity
+                  key={index}
+                  activeOpacity={0.8}
+                  onPress={() =>
+                    goToOrderSessionDetail({
+                      router,
+                      shopId: shop.id,
+                      orderSessionId: orderHistory.id,
+                    })
+                  }
+                >
                   <OrderHistoryCard orderHistory={orderHistory} />
                   <Divider style={{ marginVertical: 8 }} />
-                </View>
+                </TouchableOpacity>
               ))}
             </Surface>
           </ScrollView>

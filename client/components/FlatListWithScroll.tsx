@@ -1,14 +1,6 @@
-import {
-  createElement,
-  ReactNode,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   GestureResponderEvent,
-  StyleSheet,
   useWindowDimensions,
   View,
   ScrollView,
@@ -29,8 +21,10 @@ import { MemoizedDishCardForOrder } from "./ui/menus/DishCardForOrder";
 import { MemoizedDishCardForCustomer } from "./ui/menus/DishCardForCustomer";
 import KitchenCookedHistoryCard from "./ui/kitchen/KitchenCookedHistoryCard";
 import KitchenServedHistoryCard from "./ui/kitchen/KitchenServedHistoryCard";
-
-export const UNIVERSAL_WIDTH_PIVOT = 600;
+import {
+  UNIVERSAL_MAX_WIDTH_SIDEBAR,
+  UNIVERSAL_WIDTH_PIVOT,
+} from "@/constants/common";
 
 export enum ItemTypeFlatList {
   DISH_CARD = "dishCard",
@@ -161,11 +155,13 @@ export const ItemTypeMap = {
     item: KitchenDishOrder;
     containerWidth?: number;
   }) => {
-    return createElement(KitchenDishOrderByOrderCard, {
-      key,
-      dishOrder: item,
-      containerWidth,
-    });
+    return (
+      <KitchenDishOrderByOrderCard
+        key={key}
+        dishOrder={item}
+        containerWidth={containerWidth}
+      />
+    );
   },
 
   [ItemTypeFlatList.KITCHEN_DISHORDER_BYDISH]: ({
@@ -177,11 +173,13 @@ export const ItemTypeMap = {
     item: KitchenDishOrder[];
     containerWidth?: number;
   }) => {
-    return createElement(KitchenDishOrderByDishCard, {
-      key,
-      dishOrders: item,
-      containerWidth,
-    });
+    return (
+      <KitchenDishOrderByDishCard
+        key={key}
+        dishOrders={item}
+        containerWidth={containerWidth}
+      />
+    );
   },
 
   [ItemTypeFlatList.KITCHEN_DISHORDER_SERVING]: ({
@@ -193,11 +191,13 @@ export const ItemTypeMap = {
     item: KitchenDishOrder;
     containerWidth?: number;
   }) => {
-    return createElement(KitchenDishOrderServingCard, {
-      key,
-      dishOrder: item,
-      containerWidth,
-    });
+    return (
+      <KitchenDishOrderServingCard
+        key={key}
+        dishOrder={item}
+        containerWidth={containerWidth}
+      />
+    );
   },
 
   [ItemTypeFlatList.KITCHEN_COOKED_HISTORY]: ({
@@ -209,11 +209,13 @@ export const ItemTypeMap = {
     item: KitchenLog;
     containerWidth?: number;
   }) => {
-    return createElement(KitchenCookedHistoryCard, {
-      key,
-      cookedHistory: item,
-      containerWidth,
-    });
+    return (
+      <KitchenCookedHistoryCard
+        key={key}
+        cookedHistory={item}
+        containerWidth={containerWidth}
+      />
+    );
   },
 
   [ItemTypeFlatList.KITCHEN_SERVED_HISTORY]: ({
@@ -225,11 +227,13 @@ export const ItemTypeMap = {
     item: KitchenLog;
     containerWidth?: number;
   }) => {
-    return createElement(KitchenServedHistoryCard, {
-      key,
-      servedHistory: item,
-      containerWidth,
-    });
+    return (
+      <KitchenServedHistoryCard
+        key={key}
+        servedHistory={item}
+        containerWidth={containerWidth}
+      />
+    );
   },
 };
 
@@ -255,8 +259,8 @@ function GroupList({
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View
             style={{
-              flexDirection: "row", // layout items in a row
-              gap: 8, // spacing between items (RN 0.71+ supports `gap`)
+              flexDirection: "row",
+              gap: 8,
               paddingVertical: 8,
             }}
           >
@@ -291,10 +295,10 @@ function GroupList({
   return (
     <Surface
       mode="flat"
-      style={[
-        flatListStyles.sidebar,
-        { backgroundColor: theme.colors.background },
-      ]}
+      style={{
+        backgroundColor: theme.colors.background,
+        width: Math.min(UNIVERSAL_MAX_WIDTH_SIDEBAR, width * 0.15),
+      }}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{ gap: 1 }}>
@@ -353,8 +357,26 @@ const FlatListWithScroll = ({
   children?: ReactNode;
 }) => {
   const { width } = useWindowDimensions();
-  const [itemContainerWidth, setItemContainerWidth] = useState<number>(1);
-  const [numColumns, setNumColumns] = useState<number>(0);
+
+  const { itemContainerWidth, numColumns } = useMemo(() => {
+    let itemContainerWidth;
+    if (width < UNIVERSAL_WIDTH_PIVOT) {
+      itemContainerWidth = width - 20; // minus padding
+    } else {
+      itemContainerWidth =
+        width - Math.min(width * 0.15, UNIVERSAL_MAX_WIDTH_SIDEBAR); // minus padding + sidebar
+    }
+
+    const numColumns = Math.floor(
+      (itemContainerWidth + 12) /
+        Math.min(
+          ItemTypeFlatListProperties[itemType].MAX_WIDTH,
+          itemContainerWidth * 0.48 + 12,
+        ),
+    );
+
+    return { itemContainerWidth, numColumns };
+  }, [width, itemType]);
 
   const flatListRef = useRef<LegendListRef | null>(null);
   const flatListData = useMemo(() => {
@@ -392,7 +414,16 @@ const FlatListWithScroll = ({
     ({ item }: { item: FlatListItem }) => {
       if (item.type === "header") {
         return (
-          <Text style={flatListStyles.categoryTitle}>{item.group.name}</Text>
+          <Text
+            style={{
+              marginBottom: 8,
+              height: 24,
+              fontWeight: "bold",
+              fontSize: 20,
+            }}
+          >
+            {item.group.name}
+          </Text>
         );
       }
 
@@ -451,6 +482,13 @@ const FlatListWithScroll = ({
     return 0;
   };
 
+  // force rerender
+  useEffect(() => {
+    flatListRef.current?.scrollToOffset({
+      offset: 0,
+    });
+  }, []);
+
   return (
     <Surface
       mode="flat"
@@ -469,38 +507,12 @@ const FlatListWithScroll = ({
         keyExtractor={(item) => item.id}
         getEstimatedItemSize={getEstimatedItemSize}
         estimatedItemSize={ROW_HEIGHT + MARGIN_BOTTOM}
-        initialContainerPoolRatio={1.5}
-        onLayout={(event) => {
-          const { width } = event.nativeEvent.layout;
-          const containerUsablewidth = width - 20; // padding
-          setItemContainerWidth(containerUsablewidth);
-          setNumColumns(
-            Math.floor(
-              (containerUsablewidth + 12) /
-                Math.min(
-                  ItemTypeFlatListProperties[itemType].MAX_WIDTH,
-                  containerUsablewidth * 0.48 + 12,
-                ),
-            ),
-          );
-        }}
-        contentContainerStyle={{ padding: 10 }}
+        initialContainerPoolRatio={2.0}
+        contentContainerStyle={{ flex: 1, padding: 10 }}
         ListFooterComponent={() => children}
       />
     </Surface>
   );
 };
-
-export const flatListStyles = StyleSheet.create({
-  sidebar: {
-    width: 120,
-  },
-  categoryTitle: {
-    marginBottom: 8,
-    height: 24,
-    fontWeight: "bold",
-    fontSize: 20,
-  },
-});
 
 export default FlatListWithScroll;

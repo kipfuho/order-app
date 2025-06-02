@@ -11,6 +11,9 @@ router
   .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_KITCHEN), kdsController.updateUncookedDishOrders)
   .patch(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_KITCHEN), kdsController.undoCookedDishOrders);
 router
+  .route('/uncooked-dishorders-by-dish')
+  .get(auth(PermissionType.SHOP_APP, PermissionType.VIEW_KITCHEN), kdsController.getUncookedDishOrdersByDishId);
+router
   .route('/unserved-dishorders')
   .get(auth(PermissionType.SHOP_APP, PermissionType.VIEW_KITCHEN), kdsController.getUnservedDishOrders)
   .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_KITCHEN), kdsController.updateUnservedDishOrders)

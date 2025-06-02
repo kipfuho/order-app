@@ -78,21 +78,7 @@ const getNextAvailableOrderNo = async ({ shopId, keyBase, lastOrderNo }) => {
   return currentOrderNo + 1;
 };
 
-const getLastActiveOrderSessionBeforeCreatedAt = async (shopId, createdAt) => {
-  return OrderSession.findFirst({
-    where: {
-      shopId,
-      createdAt: {
-        lt: createdAt,
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
-};
-
-const getLastActiveOrderSessionSortByOrderSessionNo = async (shopId) => {
+const getLastActiveRecord = async ({ model, select, shopId }) => {
   const shop = await getShopFromCache({ shopId });
 
   const startOfDay = getStartTimeOfToday({
@@ -100,41 +86,38 @@ const getLastActiveOrderSessionSortByOrderSessionNo = async (shopId) => {
     reportTime: shop.reportTime || 0,
   });
 
-  const orderSession = await OrderSession.findFirst({
+  const record = await model.findFirst({
     where: {
       shopId,
       createdAt: {
-        gte: startOfDay,
+        gt: startOfDay,
       },
-    },
-    select: {
-      createdAt: true,
-      orderSessionNo: true,
     },
     orderBy: {
       createdAt: 'desc',
     },
+    select,
   });
-
-  return orderSession;
+  return record;
 };
 
-const getOrderSessionNoForNewOrderSession = async (shopId, createdAt) => {
-  let lastActiveOrderSession;
-  if (createdAt) {
-    lastActiveOrderSession = await getLastActiveOrderSessionBeforeCreatedAt(shopId, createdAt);
-  } else {
-    lastActiveOrderSession = await getLastActiveOrderSessionSortByOrderSessionNo(shopId);
-  }
+const getOrderSessionNoForNewOrderSession = async ({ shopId }) => {
+  const lastActiveOrderSession = await getLastActiveRecord({
+    model: OrderSession,
+    select: {
+      createdAt: true,
+      orderSessionNo: true,
+    },
+    shopId,
+  });
   // not existed last active order session in this shop => default = 1
   if (_.isEmpty(lastActiveOrderSession)) {
     return 1;
   }
+
   const shop = await getShopFromCache({ shopId });
   const reportTime = shop.reportTime || 0;
-  // get orderSessionNo with default = 1
   const lastActiveOrderSessionNo = _.get(lastActiveOrderSession, 'orderSessionNo', 0);
-  // check diffrent time between lastActiveOrderSession and current
   const current = formatDateTimeToISOStringRegardingReportTime({ dateTime: new Date(), reportTime });
   const lastActiveOrderSessionCreatedAt = formatDateTimeToISOStringRegardingReportTime({
     dateTime: _.get(lastActiveOrderSession, 'createdAt', new Date()),
@@ -150,6 +133,42 @@ const getOrderSessionNoForNewOrderSession = async (shopId, createdAt) => {
   return getNextAvailableOrderNo({
     shopId,
     keyBase: 'orderSessionNo',
+    lastOrderNo: 0,
+  });
+};
+
+const getOrderNoForNewOrder = async ({ shopId }) => {
+  const lastActiveOrder = await getLastActiveRecord({
+    model: Order,
+    select: {
+      createdAt: true,
+      orderNo: true,
+    },
+    shopId,
+  });
+  // not existed last active order in this shop => default = 1
+  if (_.isEmpty(lastActiveOrder)) {
+    return 1;
+  }
+
+  const shop = await getShopFromCache({ shopId });
+  const reportTime = shop.reportTime || 0;
+  const lastActiveOrderSessionNo = _.get(lastActiveOrder, 'orderNo', 0);
+  const current = formatDateTimeToISOStringRegardingReportTime({ dateTime: new Date(), reportTime });
+  const lastActiveOrderSessionCreatedAt = formatDateTimeToISOStringRegardingReportTime({
+    dateTime: _.get(lastActiveOrder, 'createdAt', new Date()),
+    reportTime,
+  });
+  if (current.substring(0, 10) === lastActiveOrderSessionCreatedAt.substring(0, 10)) {
+    return getNextAvailableOrderNo({
+      shopId,
+      keyBase: 'orderNo',
+      lastOrderNo: lastActiveOrderSessionNo,
+    });
+  }
+  return getNextAvailableOrderNo({
+    shopId,
+    keyBase: 'orderNo',
     lastOrderNo: 0,
   });
 };
@@ -239,7 +258,7 @@ const getOrCreateOrderSession = async ({
   }
 
   const shop = await getShopFromCache({ shopId });
-  const orderSessionNo = await getOrderSessionNoForNewOrderSession(shopId);
+  const orderSessionNo = await getOrderSessionNoForNewOrderSession({ shopId });
   const customerInfo = await _getCustomerInfoForCreatingOrderSession({ customerId, numberOfCustomer });
   const orderSession = await OrderSession.create({
     data: {
@@ -347,16 +366,7 @@ const _setMetatadaForDishOrder = ({ dishOrder, dishById, unitById, orderSessionT
   };
 };
 
-const createNewOrder = async ({
-  tableId,
-  shopId,
-  userId,
-  orderSession,
-  dishOrders,
-  orderNo,
-  customerId,
-  isNewOrderSession,
-}) => {
+const createNewOrder = async ({ tableId, shopId, userId, orderSession, dishOrders, customerId, isNewOrderSession }) => {
   try {
     const shop = await getShopFromCache({ shopId });
     const dishes = await getDishesFromCache({ shopId });
@@ -378,6 +388,7 @@ const createNewOrder = async ({
         return _dishOrder;
       }
     );
+    const orderNo = await getOrderNoForNewOrder({ shopId });
     const order = await Order.create({
       data: {
         tableId,

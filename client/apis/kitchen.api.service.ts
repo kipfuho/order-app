@@ -16,6 +16,7 @@ import {
   UpdateUncookedDishOrdersRequest,
   UpdateUnservedDishOrdersRequest,
 } from "./kitchen.api.interface";
+import { getEndpointWithCursor } from "./common.service";
 
 const createKitchenRequest = async ({
   shopId,
@@ -98,15 +99,22 @@ const deleteKitchenRequest = async ({
 
 const getUncookedDishOrdersRequest = async ({
   shopId,
+  cursor,
 }: GetUncookedDishOrdersRequest) => {
   const accessToken = await getAccessTokenLazily();
-  const result: { uncookedDishOrders: KitchenDishOrder[] } = await apiRequest({
+  const result: {
+    uncookedDishOrders: KitchenDishOrder[];
+    nextCursor: string;
+  } = await apiRequest({
     method: "GET",
-    endpoint: `/v1/shops/${shopId}/kds/uncooked-dishorders`,
+    endpoint: getEndpointWithCursor({
+      endpoint: `/v1/shops/${shopId}/kds/uncooked-dishorders`,
+      cursor,
+    }),
     token: accessToken,
   });
 
-  return result.uncookedDishOrders;
+  return result;
 };
 
 const updateUncookedDishOrdersRequest = async ({
@@ -141,15 +149,22 @@ const undoCookedDishOrdersRequest = async ({
 
 const getUnservedDishOrdersRequest = async ({
   shopId,
+  cursor,
 }: GetUnservedDishOrdersRequest) => {
   const accessToken = await getAccessTokenLazily();
-  const result: { unservedDishOrders: KitchenDishOrder[] } = await apiRequest({
+  const result: {
+    unservedDishOrders: KitchenDishOrder[];
+    nextCursor: string;
+  } = await apiRequest({
     method: "GET",
-    endpoint: `/v1/shops/${shopId}/kds/unserved-dishorders`,
+    endpoint: getEndpointWithCursor({
+      endpoint: `/v1/shops/${shopId}/kds/unserved-dishorders`,
+      cursor,
+    }),
     token: accessToken,
   });
 
-  return result.unservedDishOrders;
+  return result;
 };
 
 const updateUnservedDishOrdersRequest = async ({
@@ -186,11 +201,18 @@ const getCookedHistoriesRequest = async ({
   shopId,
   from,
   to,
+  cursor,
 }: GetCookedHistoriesRequest) => {
   const accessToken = await getAccessTokenLazily();
-  const result: { cookedHistories: KitchenLog[] } = await apiRequest({
+  const result: {
+    cookedHistories: KitchenLog[];
+    nextCursor: string;
+  } = await apiRequest({
     method: "POST",
-    endpoint: `/v1/shops/${shopId}/kds/cooked-history`,
+    endpoint: getEndpointWithCursor({
+      endpoint: `/v1/shops/${shopId}/kds/cooked-history`,
+      cursor,
+    }),
     token: accessToken,
     data: {
       from,
@@ -198,18 +220,25 @@ const getCookedHistoriesRequest = async ({
     },
   });
 
-  return result.cookedHistories;
+  return result;
 };
 
 const getServedHistoriesRequest = async ({
   shopId,
   from,
   to,
+  cursor,
 }: GetServedHistoriesRequest) => {
   const accessToken = await getAccessTokenLazily();
-  const result: { servedHistories: KitchenLog[] } = await apiRequest({
+  const result: {
+    servedHistories: KitchenLog[];
+    nextCursor: string;
+  } = await apiRequest({
     method: "POST",
-    endpoint: `/v1/shops/${shopId}/kds/served-history`,
+    endpoint: getEndpointWithCursor({
+      endpoint: `/v1/shops/${shopId}/kds/served-history`,
+      cursor,
+    }),
     token: accessToken,
     data: {
       from,
@@ -217,7 +246,7 @@ const getServedHistoriesRequest = async ({
     },
   });
 
-  return result.servedHistories;
+  return result;
 };
 
 export {

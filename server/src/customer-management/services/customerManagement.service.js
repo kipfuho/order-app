@@ -40,7 +40,10 @@ const validateCustomer = (customerBody) => {
   }
 };
 
-const createCustomer = async (createBody) => {
+const createCustomer = async (createBody, shouldValidate = false) => {
+  if (shouldValidate) {
+    validateCustomer(createBody);
+  }
   const customer = await Customer.create({
     data: createBody,
   });

@@ -10,7 +10,7 @@ import { goToShopHome } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { Icon, Menu, Text, useTheme } from "react-native-paper";
 import { memo, useEffect, useMemo, useState } from "react";
-import { SwipeContext } from "@hooks/useSwipeNavigation";
+import { SwipeContext } from "@/hooks/useSwipeNavigation";
 
 interface Item {
   title: string;

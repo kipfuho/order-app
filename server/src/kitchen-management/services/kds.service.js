@@ -1,64 +1,81 @@
 const _ = require('lodash');
-const { Order, KitchenLog, OrderSession, DishOrder } = require('../../models');
+const { Order, KitchenLog, DishOrder } = require('../../models');
 const { createSearchByDateOptionWithShopTimezone } = require('../../utils/common');
-const { OrderSessionStatus, Status, DishOrderStatus, KitchenAction } = require('../../utils/constant');
+const { Status, DishOrderStatus, KitchenAction } = require('../../utils/constant');
 const { getMessageByLocale } = require('../../locale');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
+const { getTablesFromCache } = require('../../metadata/tableMetadata.service');
 
-const _getDishOrdersByStatus = async ({ shopId, status }) => {
-  // currently disable filter time filter to dev
+const _getDishOrdersByStatus = async ({ shopId, status, cursor, limit }) => {
   // const timeOptions = createSearchByDateOptionWithShopTimezone({ filterKey: 'createdAt' });
-  const orders = await Order.findMany({
+
+  const tables = await getTablesFromCache({ shopId });
+  const tableById = _.keyBy(tables, 'id');
+  const dishOrders = await DishOrder.findMany({
     where: {
-      orderSessionId: { not: null },
-      shopId,
-      orderSessionStatus: OrderSessionStatus.unpaid,
-      status: Status.enabled,
-      // ...timeOptions,
+      status,
+      order: {
+        shopId,
+        kitchenAllDone: false,
+        orderSessionId: { not: null },
+        status: Status.enabled,
+        // createdAt: {
+        //   ...timeOptions.createdAt,
+        // },
+      },
     },
+    orderBy: [
+      {
+        order: {
+          createdAt: 'asc',
+        },
+      },
+      { dishOrderNo: 'asc' },
+    ],
+    take: limit + 1,
+    ...(cursor && {
+      cursor: {
+        id: cursor,
+      },
+    }),
     select: {
       id: true,
-      orderSessionId: true,
+      name: true,
+      dishId: true,
+      quantity: true,
+      unit: true,
+      status: true,
+      orderId: true,
+      dishOrderNo: true,
       createdAt: true,
-      dishOrders: true,
+      order: {
+        select: {
+          orderNo: true,
+          tableId: true,
+        },
+      },
     },
   });
 
-  const orderSessionIds = _(orders).map('orderSessionId').uniq().value();
-  const orderSessions = await OrderSession.findMany({
-    where: {
-      id: { in: orderSessionIds },
-    },
-    select: {
-      id: true,
-      orderSessionNo: true,
-      tableNames: true,
-    },
+  const hasNextPage = dishOrders.length > limit;
+  const items = hasNextPage ? dishOrders.slice(0, -1) : dishOrders;
+  const formattedData = items.map((dishOrder) => {
+    const table = tableById[_.get(dishOrder, 'order.tableId')] || {};
+    const kitchenDishOrder = {
+      ...dishOrder,
+      orderNo: _.get(dishOrder, 'order.orderNo'),
+      tableName: table.name || 'N/A',
+      tablePositionName: table.position.name || 'N/A',
+    };
+    delete kitchenDishOrder.order;
+    return kitchenDishOrder;
   });
-  const orderSessionById = _.keyBy(orderSessions, 'id');
 
-  const dishOrders = _(orders)
-    .flatMap((order) => {
-      order.dishOrders.forEach((dishOrder) => {
-        const orderSession = orderSessionById[order.orderSessionId];
-        if (!orderSession) {
-          return;
-        }
-
-        Object.assign(dishOrder, {
-          orderId: order.id,
-          orderSessionId: order.orderSessionId,
-          orderSessionNo: orderSession.orderSessionNo,
-          tableName: orderSession.tableNames.join(', '),
-          createdAt: order.createdAt,
-        });
-      });
-      return order.dishOrders;
-    })
-    .filter((dishOrder) => dishOrder.status === status)
-    .value();
-  return dishOrders;
+  return {
+    data: formattedData,
+    nextCursor: hasNextPage ? dishOrders[dishOrders.length - 1].id : null,
+  };
 };
 
 const _updateDishOrdersByStatus = async ({ shopId, updateRequests, userId, beforeStatus, afterStatus, actionType }) => {
@@ -121,8 +138,80 @@ const _updateDishOrdersByStatus = async ({ shopId, updateRequests, userId, befor
   return errors;
 };
 
-const getUncookedDishOrders = async ({ shopId }) => {
-  return _getDishOrdersByStatus({ shopId, status: DishOrderStatus.confirmed });
+const getUncookedDishOrders = async ({ shopId, cursor, limit }) => {
+  return _getDishOrdersByStatus({ shopId, status: DishOrderStatus.confirmed, cursor, limit });
+};
+
+const getUncookedDishOrdersByDishId = async ({ shopId, dishId, cursor, limit }) => {
+  // const timeOptions = createSearchByDateOptionWithShopTimezone({ filterKey: 'createdAt' });
+
+  const tables = await getTablesFromCache({ shopId });
+  const tableById = _.keyBy(tables, 'id');
+  const dishOrders = await DishOrder.findMany({
+    where: {
+      dishId,
+      status: DishOrderStatus.confirmed,
+      order: {
+        shopId,
+        kitchenAllDone: false,
+        orderSessionId: { not: null },
+        status: Status.enabled,
+        // createdAt: {
+        //   ...timeOptions.createdAt,
+        // },
+      },
+    },
+    orderBy: [
+      {
+        order: {
+          createdAt: 'asc',
+        },
+      },
+      { dishOrderNo: 'asc' },
+    ],
+    take: limit + 1,
+    ...(cursor && {
+      cursor: {
+        id: cursor,
+      },
+    }),
+    select: {
+      id: true,
+      name: true,
+      dishId: true,
+      quantity: true,
+      unit: true,
+      status: true,
+      orderId: true,
+      dishOrderNo: true,
+      createdAt: true,
+      order: {
+        select: {
+          orderNo: true,
+          tableId: true,
+        },
+      },
+    },
+  });
+
+  const hasNextPage = dishOrders.length > limit;
+  const items = hasNextPage ? dishOrders.slice(0, -1) : dishOrders;
+  const formattedData = items.map((dishOrder) => {
+    const table = tableById[_.get(dishOrder, 'order.tableId')] || {};
+    const kitchenDishOrder = {
+      ...dishOrder,
+      orderNo: _.get(dishOrder, 'order.orderNo'),
+      tableName: table.name || 'N/A',
+      tablePositionName: table.position.name || 'N/A',
+    };
+    delete kitchenDishOrder.order;
+    return kitchenDishOrder;
+  });
+
+  return {
+    data: formattedData,
+    nextCursor: hasNextPage ? dishOrders[dishOrders.length - 1].id : null,
+  };
 };
 
 const updateUncookedDishOrders = async ({ shopId, requestBody, userId }) => {
@@ -149,8 +238,8 @@ const undoCookedDishOrders = async ({ shopId, requestBody, userId }) => {
   });
 };
 
-const getUnservedDishOrders = async ({ shopId }) => {
-  return _getDishOrdersByStatus({ shopId, status: DishOrderStatus.cooked });
+const getUnservedDishOrders = async ({ shopId, cursor, limit }) => {
+  return _getDishOrdersByStatus({ shopId, status: DishOrderStatus.cooked, cursor, limit });
 };
 
 const updateUnservedDishOrders = async ({ shopId, requestBody, userId }) => {
@@ -177,7 +266,7 @@ const undoServedDishOrders = async ({ shopId, requestBody, userId }) => {
   });
 };
 
-const _getKitchenHistoriesByAction = async ({ shopId, from, to, actions }) => {
+const _getKitchenHistoriesByAction = async ({ shopId, from, to, actions, cursor, limit = 20 }) => {
   const timeOptions = createSearchByDateOptionWithShopTimezone({ from, to, filterKey: 'createdAt' });
   const histories = await KitchenLog.findMany({
     where: {
@@ -185,35 +274,51 @@ const _getKitchenHistoriesByAction = async ({ shopId, from, to, actions }) => {
       action: { in: actions },
       ...timeOptions,
     },
-    orderBy: {
-      createdAt: 'desc',
-    },
+    orderBy: [{ createdAt: 'desc' }],
+    take: limit + 1,
+    ...(cursor && {
+      cursor: {
+        id: cursor,
+      },
+    }),
   });
-  return histories;
+
+  const hasNextPage = histories.length > limit;
+  const items = hasNextPage ? histories.slice(0, -1) : histories;
+
+  return {
+    data: items,
+    nextCursor: hasNextPage ? histories[histories.length - 1].id : null,
+  };
 };
 
-const getCookedHistories = async ({ shopId, requestBody }) => {
+const getCookedHistories = async ({ shopId, requestBody, cursor, limit }) => {
   const { from, to } = requestBody;
   return _getKitchenHistoriesByAction({
     shopId,
     from,
     to,
     actions: [KitchenAction.UPDATE_COOKED, KitchenAction.UNDO_COOKED],
+    cursor,
+    limit,
   });
 };
 
-const getServedHistories = async ({ shopId, requestBody }) => {
+const getServedHistories = async ({ shopId, requestBody, cursor, limit }) => {
   const { from, to } = requestBody;
   return _getKitchenHistoriesByAction({
     shopId,
     from,
     to,
     actions: [KitchenAction.UPDATE_SERVED, KitchenAction.UNDO_SERVED],
+    cursor,
+    limit,
   });
 };
 
 module.exports = {
   getUncookedDishOrders,
+  getUncookedDishOrdersByDishId,
   updateUncookedDishOrders,
   undoCookedDishOrders,
   getUnservedDishOrders,

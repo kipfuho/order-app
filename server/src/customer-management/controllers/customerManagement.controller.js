@@ -11,7 +11,7 @@ const getCustomer = catchAsync(async (req, res) => {
 
 const createCustomer = catchAsync(async (req, res) => {
   const createBody = req.body;
-  const customer = await customerManagementService.createCustomer(createBody);
+  const customer = await customerManagementService.createCustomer(createBody, true);
   res.status(httpStatus.CREATED).send({ customer });
 });
 

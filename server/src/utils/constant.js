@@ -44,6 +44,7 @@ const DishOrderStatus = {
 };
 
 const OrderSessionStatus = {
+  disabled: 'disabled',
   unpaid: 'unpaid',
   paid: 'paid',
   cancelled: 'cancelled',

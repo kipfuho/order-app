@@ -246,6 +246,21 @@ const goToOrderSessionPayment = ({
   });
 };
 
+const goToOrderSessionDetail = ({
+  router,
+  shopId,
+  orderSessionId,
+}: {
+  router: Router;
+  shopId: string;
+  orderSessionId: string;
+}) => {
+  router.navigate({
+    pathname: "/shop/[shopId]/orders/bill/[orderSessionId]",
+    params: { shopId, orderSessionId },
+  });
+};
+
 const goToEmployeeList = ({
   router,
   shopId,
@@ -433,6 +448,7 @@ export {
   goToTablesForOrderList,
   goToTableCurrentOrderSessions,
   goToOrderSessionPayment,
+  goToOrderSessionDetail,
   goToEmployeeList,
   goToEmployeePositionList,
   goToDepartmentList,

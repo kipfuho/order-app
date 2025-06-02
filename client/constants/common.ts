@@ -45,3 +45,6 @@ export enum ReportPeriod {
   WEEK = "week",
   MONTH = "month",
 }
+
+export const UNIVERSAL_WIDTH_PIVOT = 600;
+export const UNIVERSAL_MAX_WIDTH_SIDEBAR = 200;

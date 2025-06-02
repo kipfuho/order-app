@@ -3,9 +3,6 @@ const { formatDateHHMMDDMMYYYY } = require('../../utils/common');
 
 /* eslint-disable no-param-reassign */
 const convertDishOrderForResponse = (dishOrder) => {
-  if (dishOrder.returnedAt) {
-    dishOrder.returnedAt = formatDateHHMMDDMMYYYY(dishOrder.returnedAt);
-  }
   // Neu la mon thuong
   if (_.get(dishOrder, 'dish.id')) {
     dishOrder.dishId = dishOrder.dish.id;

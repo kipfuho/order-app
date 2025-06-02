@@ -50,7 +50,12 @@ export default function PaymentOrderSessionLayout() {
 
       return () => clearTimeout(timeout);
     }
-  }, [orderSessionId, activeOrderSessionFetching]);
+  }, [
+    orderSessionId,
+    activeOrderSessionFetching,
+    dispatch,
+    activeOrderSession,
+  ]);
 
   if (activeOrderSessionLoading) {
     return <LoaderBasic />;

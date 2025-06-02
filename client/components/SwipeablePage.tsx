@@ -1,7 +1,7 @@
 import { FC, ReactNode, useEffect, useRef, useState, useCallback } from "react";
 import { View, PanResponder, Dimensions, Animated } from "react-native";
 import { useTheme } from "react-native-paper";
-import { useSwipeNavigation } from "@hooks/useSwipeNavigation";
+import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 
 interface SwipeablePageProps {
   children: ReactNode;

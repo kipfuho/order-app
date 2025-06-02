@@ -243,15 +243,15 @@ interface DishOrder {
 
 interface KitchenDishOrder {
   id: string;
-  dish: string; // dishId
+  dishId: string; // dishId
   name: string;
   unit: string;
   quantity: string;
   status: string;
   orderId: string;
-  orderSessionId: string;
-  orderSessionNo: number;
+  orderNo: number;
   tableName: string;
+  tablePositionName: string;
   createdAt: string;
   dishOrderNo: number;
 }

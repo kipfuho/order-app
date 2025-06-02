@@ -4,10 +4,11 @@ import { ScrollView } from "react-native";
 import { Surface } from "react-native-paper";
 import { RootState } from "@stores/store";
 import { Shop } from "@stores/state.interface";
-import { useGetUnservedDishOrdersRequestQuery } from "@stores/apiSlices/kitchenApi.slice";
 import { LoaderBasic } from "../Loader";
 import FlatListWithoutScroll from "@/components/FlatListWithoutScroll";
 import { ItemTypeFlatList } from "@/components/FlatListWithScroll";
+import { useInfiniteScrollingQuery } from "@/hooks/useInfiniteScrolling";
+import { useGetUnservedDishOrdersRequestQuery } from "@/stores/apiSlices/kitchenApi.slice";
 
 const KitchenServing = () => {
   const { currentShop } = useSelector((state: RootState) => state.shop);
@@ -15,8 +16,11 @@ const KitchenServing = () => {
 
   const {
     data: unservedDishOrders = [],
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading: unservedDishOrdersLoading,
-  } = useGetUnservedDishOrdersRequestQuery(shop.id);
+  } = useInfiniteScrollingQuery(shop.id, useGetUnservedDishOrdersRequestQuery);
 
   if (unservedDishOrdersLoading) {
     return <LoaderBasic />;
@@ -30,6 +34,9 @@ const KitchenServing = () => {
           itemByGroup={{ all: unservedDishOrders }}
           itemType={ItemTypeFlatList.KITCHEN_DISHORDER_SERVING}
           shouldShowGroup={false}
+          fetchNextPage={fetchNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          hasNextPage={hasNextPage}
         />
       </ScrollView>
     </Surface>

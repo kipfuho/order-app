@@ -29,6 +29,7 @@ interface DeleteKitchenRequest {
 
 interface GetUncookedDishOrdersRequest {
   shopId: string;
+  cursor?: string;
 }
 
 interface UpdateUncookedDishOrdersRequest {
@@ -43,6 +44,7 @@ interface UndoCookedDishOrdersRequest {
 
 interface GetUnservedDishOrdersRequest {
   shopId: string;
+  cursor?: string;
 }
 
 interface UpdateUnservedDishOrdersRequest {
@@ -59,12 +61,14 @@ interface GetCookedHistoriesRequest {
   shopId: string;
   from?: Date;
   to?: Date;
+  cursor?: string;
 }
 
 interface GetServedHistoriesRequest {
   shopId: string;
   from?: Date;
   to?: Date;
+  cursor?: string;
 }
 
 export {

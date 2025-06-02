@@ -23,6 +23,8 @@ import {
   GetKitchenRequest,
   GetKitchensRequest,
   GetServedHistoriesRequest,
+  GetUncookedDishOrdersRequest,
+  GetUnservedDishOrdersRequest,
   UndoCookedDishOrdersRequest,
   UndoServedDishOrdersRequest,
   UpdateKitchenRequest,
@@ -160,21 +162,53 @@ export const kitchenApiSlice = createApi({
     }),
 
     // uncooked region
-    getUncookedDishOrders: builder.query<KitchenDishOrder[], string>({
-      queryFn: async (shopId) => {
+    getUncookedDishOrders: builder.query<
+      {
+        items: KitchenDishOrder[];
+        nextCursor: string;
+      },
+      GetUncookedDishOrdersRequest
+    >({
+      queryFn: async ({ shopId, cursor }) => {
         try {
-          const uncookedDishOrders = await getUncookedDishOrdersRequest({
-            shopId,
-          });
+          const { uncookedDishOrders, nextCursor } =
+            await getUncookedDishOrdersRequest({
+              shopId,
+              cursor,
+            });
 
           return {
-            data: uncookedDishOrders,
+            data: {
+              items: uncookedDishOrders,
+              nextCursor,
+            },
           };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-
+      // This ensures that different cursors for the same shopId are treated as the same query
+      serializeQueryArgs: ({ queryArgs, endpointName }) => {
+        return `${endpointName}-${queryArgs.shopId}`;
+      },
+      // Merge function to combine paginated results
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.cursor) {
+          // If we have a cursor, we're loading more data - append it
+          return {
+            ...newItems,
+            items: [...currentCache.items, ...newItems.items],
+          };
+        } else {
+          // If no cursor, this is a fresh load - replace the data
+          return newItems;
+        }
+      },
+      // Force refetch when the cursor changes
+      forceRefetch({ currentArg, previousArg }) {
+        if (!currentArg?.cursor) return false;
+        return currentArg?.cursor !== previousArg?.cursor;
+      },
       providesTags: ["UncookedDishOrders"],
     }),
 
@@ -197,26 +231,29 @@ export const kitchenApiSlice = createApi({
         }
       },
 
-      invalidatesTags: [
-        "UncookedDishOrders",
-        "UnservedDishOrders",
-        "CookedHistories",
-        "ServedHistories",
-      ],
+      invalidatesTags: (result, error, args) =>
+        error
+          ? ["UncookedDishOrders", "UnservedDishOrders", "CookedHistories"]
+          : ["UnservedDishOrders", "CookedHistories"],
 
       // ✅ Optimistic Update Implementation
       onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
         const patchResult = dispatch(
           kitchenApiSlice.util.updateQueryData(
             "getUncookedDishOrders",
-            args.shopId,
+            {
+              shopId: args.shopId,
+            },
             (draft) => {
               const updatedDishOrder = new Set(
                 args.updateRequests.map((request) => request.dishOrderId),
               );
-              return draft.filter(
-                (dishOrder) => !updatedDishOrder.has(dishOrder.id),
-              );
+              return {
+                items: draft.items.filter(
+                  (dishOrder) => !updatedDishOrder.has(dishOrder.id),
+                ),
+                nextCursor: draft.nextCursor,
+              };
             },
           ),
         );
@@ -257,21 +294,53 @@ export const kitchenApiSlice = createApi({
     }),
 
     // unserved region
-    getUnservedDishOrdersRequest: builder.query<KitchenDishOrder[], string>({
-      queryFn: async (shopId) => {
+    getUnservedDishOrdersRequest: builder.query<
+      {
+        items: KitchenDishOrder[];
+        nextCursor: string;
+      },
+      GetUnservedDishOrdersRequest
+    >({
+      queryFn: async ({ shopId, cursor }) => {
         try {
-          const unservedDishOrders = await getUnservedDishOrdersRequest({
-            shopId,
-          });
+          const { unservedDishOrders, nextCursor } =
+            await getUnservedDishOrdersRequest({
+              shopId,
+              cursor,
+            });
 
           return {
-            data: unservedDishOrders,
+            data: {
+              items: unservedDishOrders,
+              nextCursor,
+            },
           };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-
+      // This ensures that different cursors for the same shopId are treated as the same query
+      serializeQueryArgs: ({ queryArgs, endpointName }) => {
+        return `${endpointName}-${queryArgs.shopId}`;
+      },
+      // Merge function to combine paginated results
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.cursor) {
+          // If we have a cursor, we're loading more data - append it
+          return {
+            ...newItems,
+            items: [...currentCache.items, ...newItems.items],
+          };
+        } else {
+          // If no cursor, this is a fresh load - replace the data
+          return newItems;
+        }
+      },
+      // Force refetch when the cursor changes
+      forceRefetch({ currentArg, previousArg }) {
+        if (!currentArg?.cursor) return false;
+        return currentArg?.cursor !== previousArg?.cursor;
+      },
       providesTags: ["UnservedDishOrders"],
     }),
 
@@ -294,7 +363,37 @@ export const kitchenApiSlice = createApi({
         }
       },
 
-      invalidatesTags: ["UnservedDishOrders", "ServedHistories"],
+      invalidatesTags: (result, error, args) =>
+        error ? ["UnservedDishOrders", "ServedHistories"] : ["ServedHistories"],
+
+      // ✅ Optimistic Update Implementation
+      onQueryStarted: async (args, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          kitchenApiSlice.util.updateQueryData(
+            "getUnservedDishOrdersRequest",
+            {
+              shopId: args.shopId,
+            },
+            (draft) => {
+              const updatedDishOrder = new Set(
+                args.updateRequests.map((request) => request.dishOrderId),
+              );
+              return {
+                items: draft.items.filter(
+                  (dishOrder) => !updatedDishOrder.has(dishOrder.id),
+                ),
+                nextCursor: draft.nextCursor,
+              };
+            },
+          ),
+        );
+
+        try {
+          await queryFulfilled; // Wait for actual API request to complete
+        } catch {
+          patchResult.undo(); // Rollback if API call fails
+        }
+      },
     }),
 
     undoServedDishOrdersRequest: builder.mutation<
@@ -320,48 +419,102 @@ export const kitchenApiSlice = createApi({
     }),
 
     getCookedHistoriesRequest: builder.query<
-      KitchenLog[],
+      {
+        items: KitchenLog[];
+        nextCursor: string;
+      },
       GetCookedHistoriesRequest
     >({
-      queryFn: async ({ shopId, from, to }) => {
+      queryFn: async ({ shopId, from, to, cursor }) => {
         try {
-          const histories = await getCookedHistoriesRequest({
-            shopId,
-            from,
-            to,
-          });
+          const { cookedHistories, nextCursor } =
+            await getCookedHistoriesRequest({
+              shopId,
+              from,
+              to,
+              cursor,
+            });
 
           return {
-            data: histories,
+            data: {
+              items: cookedHistories,
+              nextCursor,
+            },
           };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-
+      // This ensures that different cursors for the same shopId are treated as the same query
+      serializeQueryArgs: ({ queryArgs, endpointName }) => {
+        return `${endpointName}-${queryArgs.shopId}-${queryArgs.from}-${queryArgs.to}`;
+      },
+      // Merge function to combine paginated results
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.cursor) {
+          // If we have a cursor, we're loading more data - append it
+          return {
+            ...newItems,
+            items: [...currentCache.items, ...newItems.items],
+          };
+        } else {
+          // If no cursor, this is a fresh load - replace the data
+          return newItems;
+        }
+      },
+      // Force refetch when the cursor changes
+      forceRefetch({ currentArg, previousArg }) {
+        if (!currentArg?.cursor) return false;
+        return currentArg?.cursor !== previousArg?.cursor;
+      },
       providesTags: ["CookedHistories"],
     }),
 
     getServedHistoriesRequest: builder.query<
-      KitchenLog[],
+      {
+        items: KitchenLog[];
+        nextCursor: string;
+      },
       GetServedHistoriesRequest
     >({
       queryFn: async ({ shopId, from, to }) => {
         try {
-          const histories = await getServedHistoriesRequest({
-            shopId,
-            from,
-            to,
-          });
+          const { servedHistories, nextCursor } =
+            await getServedHistoriesRequest({
+              shopId,
+              from,
+              to,
+            });
 
           return {
-            data: histories,
+            data: { items: servedHistories, nextCursor },
           };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-
+      // This ensures that different cursors for the same shopId are treated as the same query
+      serializeQueryArgs: ({ queryArgs, endpointName }) => {
+        return `${endpointName}-${queryArgs.shopId}-${queryArgs.from}-${queryArgs.to}`;
+      },
+      // Merge function to combine paginated results
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.cursor) {
+          // If we have a cursor, we're loading more data - append it
+          return {
+            ...newItems,
+            items: [...currentCache.items, ...newItems.items],
+          };
+        } else {
+          // If no cursor, this is a fresh load - replace the data
+          return newItems;
+        }
+      },
+      // Force refetch when the cursor changes
+      forceRefetch({ currentArg, previousArg }) {
+        if (!currentArg?.cursor) return false;
+        return currentArg?.cursor !== previousArg?.cursor;
+      },
       providesTags: ["ServedHistories"],
     }),
   }),

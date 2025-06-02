@@ -79,7 +79,7 @@ const KitchenDishOrderByOrderCard: React.FC<KitchenDishOrderProps> = ({
   const cardWidth = Math.min(200, containerWidth * 0.48);
 
   const { currentShop, kitchenDishOrder } = useSelector(
-    (shop: RootState) => shop.shop,
+    (state: RootState) => state.shop,
   );
   const shop = currentShop as Shop;
 
@@ -152,7 +152,7 @@ const KitchenDishOrderByOrderCard: React.FC<KitchenDishOrderProps> = ({
             }}
           >
             <Text style={{ fontSize: 24, color: theme.colors.onBackground }}>
-              {dishOrder.orderSessionNo}-{dishOrder.dishOrderNo}
+              {dishOrder.orderNo}-{dishOrder.dishOrderNo}
             </Text>
             <Badge
               style={{
