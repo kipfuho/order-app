@@ -6,6 +6,7 @@ const { notifyUpdateDishCategory, EventActionType } = require('../../utils/awsUt
 const { getMessageByLocale } = require('../../locale');
 const { Status } = require('../../utils/constant');
 const { bulkUpdate, PostgreSQLTable } = require('../../utils/prisma');
+const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const getDishCategory = async ({ shopId, dishCategoryId }) => {
   const dishCategory = await getDishCategoryFromCache({ shopId, dishCategoryId });
@@ -19,7 +20,7 @@ const getDishCategories = async ({ shopId }) => {
   return dishCategories;
 };
 
-const createDishCategory = async ({ shopId, createBody, userId }) => {
+const createDishCategory = async ({ shopId, createBody }) => {
   const dishCategories = await getDishCategoriesFromCache({ shopId });
   throwBadRequest(
     _.find(dishCategories, (dishCategory) => dishCategory.name === createBody.name),
@@ -32,15 +33,16 @@ const createDishCategory = async ({ shopId, createBody, userId }) => {
       shopId,
     }),
   });
+  const operator = getOperatorFromSession();
   await notifyUpdateDishCategory({
     action: EventActionType.CREATE,
     dishCategory,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return dishCategory;
 };
 
-const updateDishCategory = async ({ shopId, dishCategoryId, updateBody, userId }) => {
+const updateDishCategory = async ({ shopId, dishCategoryId, updateBody }) => {
   const dishCategories = await getDishCategoriesFromCache({ shopId });
   throwBadRequest(
     _.find(dishCategories, (dishCategory) => dishCategory.name === updateBody.name && dishCategory.id !== dishCategoryId),
@@ -56,25 +58,27 @@ const updateDishCategory = async ({ shopId, dishCategoryId, updateBody, userId }
   });
   throwBadRequest(!dishCategory, getMessageByLocale({ key: 'dishCategory.notFound' }));
 
+  const operator = getOperatorFromSession();
   await notifyUpdateDishCategory({
     action: EventActionType.UPDATE,
     dishCategory,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return dishCategory;
 };
 
-const deleteDishCategory = async ({ shopId, dishCategoryId, userId }) => {
+const deleteDishCategory = async ({ shopId, dishCategoryId }) => {
   const dishCategory = await DishCategory.update({
     data: { status: Status.disabled },
     where: { id: dishCategoryId, shopId },
   });
   throwBadRequest(!dishCategory, getMessageByLocale({ key: 'dishCategory.notFound' }));
 
+  const operator = getOperatorFromSession();
   await notifyUpdateDishCategory({
     action: EventActionType.DELETE,
     dishCategory,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return dishCategory;
 };

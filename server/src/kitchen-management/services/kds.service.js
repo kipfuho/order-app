@@ -6,6 +6,7 @@ const { getMessageByLocale } = require('../../locale');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
 const { getTablesFromCache } = require('../../metadata/tableMetadata.service');
+const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const _getDishOrdersByStatus = async ({ shopId, status, cursor, limit }) => {
   // const timeOptions = createSearchByDateOptionWithShopTimezone({ filterKey: 'createdAt' });
@@ -214,25 +215,27 @@ const getUncookedDishOrdersByDishId = async ({ shopId, dishId, cursor, limit }) 
   };
 };
 
-const updateUncookedDishOrders = async ({ shopId, requestBody, userId }) => {
+const updateUncookedDishOrders = async ({ shopId, requestBody }) => {
   const { updateRequests } = requestBody;
+  const operator = getOperatorFromSession();
   return _updateDishOrdersByStatus({
     shopId,
     updateRequests,
     actionType: KitchenAction.UPDATE_COOKED,
-    userId,
+    userId: _.get(operator, 'user.id'),
     beforeStatus: DishOrderStatus.confirmed,
     afterStatus: DishOrderStatus.cooked,
   });
 };
 
-const undoCookedDishOrders = async ({ shopId, requestBody, userId }) => {
+const undoCookedDishOrders = async ({ shopId, requestBody }) => {
   const { updateRequests } = requestBody;
+  const operator = getOperatorFromSession();
   return _updateDishOrdersByStatus({
     shopId,
     updateRequests,
     actionType: KitchenAction.UNDO_COOKED,
-    userId,
+    userId: _.get(operator, 'user.id'),
     beforeStatus: DishOrderStatus.cooked,
     afterStatus: DishOrderStatus.confirmed,
   });
@@ -242,25 +245,27 @@ const getUnservedDishOrders = async ({ shopId, cursor, limit }) => {
   return _getDishOrdersByStatus({ shopId, status: DishOrderStatus.cooked, cursor, limit });
 };
 
-const updateUnservedDishOrders = async ({ shopId, requestBody, userId }) => {
+const updateUnservedDishOrders = async ({ shopId, requestBody }) => {
   const { updateRequests } = requestBody;
+  const operator = getOperatorFromSession();
   return _updateDishOrdersByStatus({
     shopId,
     updateRequests,
     actionType: KitchenAction.UPDATE_SERVED,
-    userId,
+    userId: _.get(operator, 'user.id'),
     beforeStatus: DishOrderStatus.cooked,
     afterStatus: DishOrderStatus.served,
   });
 };
 
-const undoServedDishOrders = async ({ shopId, requestBody, userId }) => {
+const undoServedDishOrders = async ({ shopId, requestBody }) => {
   const { updateRequests } = requestBody;
+  const operator = getOperatorFromSession();
   return _updateDishOrdersByStatus({
     shopId,
     updateRequests,
     actionType: KitchenAction.UNDO_SERVED,
-    userId,
+    userId: _.get(operator, 'user.id'),
     beforeStatus: DishOrderStatus.served,
     afterStatus: DishOrderStatus.cooked,
   });

@@ -1,9 +1,10 @@
 const _ = require('lodash');
 const redisClient = require('../utils/redis');
-const { getSession, setSession, setEmployeePermissions } = require('../middlewares/clsHooked');
+const { getSession, setSession, setOperatorToSession } = require('../middlewares/clsHooked');
 const { Employee, EmployeePosition } = require('../models');
 const { getEmployeeKey, getEmployeePositionKey, getEmployeeByUserIdKey } = require('./common');
 const constant = require('../utils/constant');
+const { getUserFromCache } = require('./userMetadata.service');
 
 const _getEmployeesFromClsHook = ({ key }) => {
   const employees = getSession({ key });
@@ -123,14 +124,23 @@ const getEmployeeWithPermissionByUserId = async ({ userId, shopId }) => {
       shopId,
     },
     include: {
-      user: true,
-      position: true,
-      department: true,
+      department: {
+        select: {
+          permissions: true,
+        },
+      },
     },
   });
   if (employee) {
-    const permissions = (employee.permissions || []).concat(_.get(employee, 'departmentId.permissions') || []);
-    setEmployeePermissions(permissions);
+    const user = await getUserFromCache({ userId });
+    const permissions = (employee.permissions || []).concat(_.get(employee, 'department.permissions') || []);
+    delete employee.department;
+    delete employee.permissions;
+    setOperatorToSession({
+      user,
+      employee,
+      permissions,
+    });
     if (redisClient.isRedisConnected()) {
       await redisClient.putJson({ key, jsonVal: { employee, permissions } });
     }

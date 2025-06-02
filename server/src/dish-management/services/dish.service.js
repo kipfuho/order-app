@@ -16,6 +16,7 @@ const { getMessageByLocale } = require('../../locale');
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
 const logger = require('../../config/logger');
 const { bulkUpdate, PostgreSQLTable } = require('../../utils/prisma');
+const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -28,7 +29,7 @@ const getDishes = async ({ shopId }) => {
   return dishes;
 };
 
-const createDish = async ({ shopId, createBody, userId }) => {
+const createDish = async ({ shopId, createBody }) => {
   const dish = await Dish.create({
     data: _.pickBy({
       name: createBody.name,
@@ -61,15 +62,16 @@ const createDish = async ({ shopId, createBody, userId }) => {
       keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
+  const operator = getOperatorFromSession();
   await notifyUpdateDish({
     action: EventActionType.CREATE,
     dish,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return dish;
 };
 
-const updateDish = async ({ shopId, dishId, updateBody, userId }) => {
+const updateDish = async ({ shopId, dishId, updateBody }) => {
   const dish = await Dish.update({
     data: _.pickBy({
       name: updateBody.name,
@@ -104,15 +106,16 @@ const updateDish = async ({ shopId, dishId, updateBody, userId }) => {
       keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
+  const operator = getOperatorFromSession();
   await notifyUpdateDish({
     action: EventActionType.UPDATE,
     dish,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return dish;
 };
 
-const deleteDish = async ({ shopId, dishId, userId }) => {
+const deleteDish = async ({ shopId, dishId }) => {
   const dish = await Dish.update({
     data: { status: Status.disabled },
     where: {
@@ -129,10 +132,11 @@ const deleteDish = async ({ shopId, dishId, userId }) => {
       keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
+  const operator = getOperatorFromSession();
   await notifyUpdateDish({
     action: EventActionType.DELETE,
     dish,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return dish;
 };

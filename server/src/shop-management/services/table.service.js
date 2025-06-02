@@ -10,6 +10,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { notifyUpdateTable, EventActionType, notifyUpdateTablePosition } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
 const { Status } = require('../../utils/constant');
+const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const getTable = async ({ shopId, tableId }) => {
   const table = await getTableFromCache({
@@ -28,7 +29,7 @@ const getTables = async ({ shopId }) => {
   return tables;
 };
 
-const createTable = async ({ shopId, createBody, userId }) => {
+const createTable = async ({ shopId, createBody }) => {
   const tables = await getTablesFromCache({
     shopId,
   });
@@ -54,11 +55,12 @@ const createTable = async ({ shopId, createBody, userId }) => {
     },
   });
 
-  await notifyUpdateTable({ table, action: EventActionType.CREATE, userId });
+  const operator = getOperatorFromSession();
+  await notifyUpdateTable({ table, action: EventActionType.CREATE, userId: _.get(operator, 'user.id') });
   return table;
 };
 
-const updateTable = async ({ shopId, tableId, updateBody, userId }) => {
+const updateTable = async ({ shopId, tableId, updateBody }) => {
   const tables = await getTablesFromCache({
     shopId,
   });
@@ -89,11 +91,12 @@ const updateTable = async ({ shopId, tableId, updateBody, userId }) => {
   });
   throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
 
-  await notifyUpdateTable({ table, action: EventActionType.UPDATE, userId });
+  const operator = getOperatorFromSession();
+  await notifyUpdateTable({ table, action: EventActionType.UPDATE, userId: _.get(operator, 'user.id') });
   return table;
 };
 
-const deleteTable = async ({ shopId, tableId, userId }) => {
+const deleteTable = async ({ shopId, tableId }) => {
   const table = await Table.update({
     data: { status: Status.disabled },
     where: { id: tableId, shopId },
@@ -101,10 +104,11 @@ const deleteTable = async ({ shopId, tableId, userId }) => {
   });
   throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
 
+  const operator = getOperatorFromSession();
   await notifyUpdateTable({
     table,
     action: EventActionType.DELETE,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return table;
 };
@@ -121,7 +125,7 @@ const getTablePositions = async ({ shopId }) => {
   return tablePositions;
 };
 
-const createTablePosition = async ({ shopId, createBody, userId }) => {
+const createTablePosition = async ({ shopId, createBody }) => {
   const tablePostions = await getTablePositionsFromCache({ shopId });
   throwBadRequest(
     _.find(tablePostions, (tablePosition) => _.toLower(tablePosition.name) === _.toLower(createBody.name)),
@@ -139,11 +143,12 @@ const createTablePosition = async ({ shopId, createBody, userId }) => {
     }),
   });
 
-  await notifyUpdateTablePosition({ tablePosition, action: EventActionType.CREATE, userId });
+  const operator = getOperatorFromSession();
+  await notifyUpdateTablePosition({ tablePosition, action: EventActionType.CREATE, userId: _.get(operator, 'user.id') });
   return tablePosition;
 };
 
-const updateTablePosition = async ({ shopId, tablePositionId, updateBody, userId }) => {
+const updateTablePosition = async ({ shopId, tablePositionId, updateBody }) => {
   const tablePostions = await getTablePositionsFromCache({ shopId });
   throwBadRequest(
     _.find(
@@ -171,20 +176,22 @@ const updateTablePosition = async ({ shopId, tablePositionId, updateBody, userId
   });
   throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));
 
-  await notifyUpdateTablePosition({ tablePosition, action: EventActionType.UPDATE, userId });
+  const operator = getOperatorFromSession();
+  await notifyUpdateTablePosition({ tablePosition, action: EventActionType.UPDATE, userId: _.get(operator, 'user.id') });
   return tablePosition;
 };
 
-const deleteTablePosition = async ({ shopId, tablePositionId, userId }) => {
+const deleteTablePosition = async ({ shopId, tablePositionId }) => {
   const tablePosition = await TablePosition.update({
     data: { status: Status.disabled },
     where: { id: tablePositionId, shopId },
   });
   throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));
 
+  const operator = getOperatorFromSession();
   await notifyUpdateTablePosition({
     tablePosition,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return tablePosition;
 };

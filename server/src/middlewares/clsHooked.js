@@ -47,12 +47,12 @@ const setSession = ({ key, value }) => {
   }
 };
 
-const setEmployeePermissions = (permissions) => {
-  setSession({ key: 'permissions', value: permissions });
+const setOperatorToSession = ({ user, employee, permissions }) => {
+  setSession({ key: 'operator', value: _.pickBy({ user, employee, permissions }) });
 };
 
-const getEmployeePermissions = () => {
-  return getSession({ key: 'permissions' }) || [];
+const getOperatorFromSession = () => {
+  return getSession({ key: 'operator' }) || {};
 };
 
 const setShopToSession = (shopJson) => {
@@ -129,8 +129,8 @@ module.exports = {
   getShopTimeZone,
   getShopCountry,
   getShopLang,
-  setEmployeePermissions,
-  getEmployeePermissions,
+  setOperatorToSession,
+  getOperatorFromSession,
   getClientLanguageWithHook,
   runInAsyncContext,
   getCurrentStore,

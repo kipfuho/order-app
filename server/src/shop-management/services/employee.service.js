@@ -9,7 +9,7 @@ const {
   getEmployeesFromCache,
 } = require('../../metadata/employeeMetadata.service');
 const { getUserFromDatabase } = require('../../metadata/userMetadata.service');
-const { getEmployeePermissions } = require('../../middlewares/clsHooked');
+const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 const { EmployeePosition, Employee, Department } = require('../../models');
 const {
   notifyUpdateEmployee,
@@ -33,13 +33,13 @@ const getEmployees = async ({ shopId }) => {
 };
 
 const validatePermissionsUpdate = ({ permissions = [] }) => {
-  const operatorPermissions = getEmployeePermissions();
+  const { permissions: operatorPermissions } = getOperatorFromSession();
   const operatorPermissionSet = new Set(operatorPermissions);
   const operatorHasEnoughPermission = permissions.every((p) => operatorPermissionSet.has(p));
   throwBadRequest(!operatorHasEnoughPermission, getMessageByLocale({ key: 'permission.missing' }));
 };
 
-const createEmployee = async ({ shopId, createBody, userId }) => {
+const createEmployee = async ({ shopId, createBody }) => {
   const { name, email, password, positionId, departmentId, permissions } = createBody;
   // xem operator có đủ quyền để thêm cho nhân viên không
   validatePermissionsUpdate({ permissions });
@@ -50,6 +50,7 @@ const createEmployee = async ({ shopId, createBody, userId }) => {
   }
   throwBadRequest(user.role === roles.admin, getMessageByLocale({ key: 'email.invalid' }));
 
+  const operator = await getOperatorFromSession();
   const employee = await Employee.create({
     data: _.pickBy({
       name,
@@ -57,7 +58,7 @@ const createEmployee = async ({ shopId, createBody, userId }) => {
       positionId,
       departmentId,
       shopId,
-      userId: user.id,
+      userId: _.get(operator, 'user.id'),
     }),
     include: {
       user: true,
@@ -69,12 +70,12 @@ const createEmployee = async ({ shopId, createBody, userId }) => {
   await notifyUpdateEmployee({
     employee,
     action: EventActionType.CREATE,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return employee;
 };
 
-const updateEmployee = async ({ shopId, employeeId, updateBody, userId }) => {
+const updateEmployee = async ({ shopId, employeeId, updateBody }) => {
   // xem operator có đủ quyền để thêm cho nhân viên không
   validatePermissionsUpdate(updateBody);
   const employee = await Employee.update({
@@ -91,15 +92,16 @@ const updateEmployee = async ({ shopId, employeeId, updateBody, userId }) => {
   });
   throwBadRequest(!employee, getMessageByLocale({ key: 'employee.notFound' }));
 
+  const operator = await getOperatorFromSession();
   await notifyUpdateEmployee({
     employee,
     action: EventActionType.UPDATE,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return employee;
 };
 
-const deleteEmployee = async ({ shopId, employeeId, userId }) => {
+const deleteEmployee = async ({ shopId, employeeId }) => {
   const employee = await Employee.update({
     data: { status: Status.disabled },
     where: { id: employeeId, shopId },
@@ -107,10 +109,11 @@ const deleteEmployee = async ({ shopId, employeeId, userId }) => {
   });
   throwBadRequest(!employee, getMessageByLocale({ key: 'employee.notFound' }));
 
+  const operator = await getOperatorFromSession();
   await notifyUpdateEmployee({
     employee,
     action: EventActionType.DELETE,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return employee;
 };
@@ -126,7 +129,7 @@ const getEmployeePositions = async ({ shopId }) => {
   return employeePositions;
 };
 
-const createEmployeePosition = async ({ shopId, createBody, userId }) => {
+const createEmployeePosition = async ({ shopId, createBody }) => {
   const employeePosition = await EmployeePosition.create({
     data: _.pickBy({
       ...createBody,
@@ -134,30 +137,32 @@ const createEmployeePosition = async ({ shopId, createBody, userId }) => {
     }),
   });
 
+  const operator = await getOperatorFromSession();
   await notifyUpdateEmployeePosition({
     employeePosition,
     action: EventActionType.CREATE,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return employeePosition;
 };
 
-const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody, userId }) => {
+const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody }) => {
   const employeePosition = await EmployeePosition.update({
     data: _.pickBy({ ...updateBody, shopId }),
     where: { id: employeePositionId, shopId },
   });
   throwBadRequest(!employeePosition, getMessageByLocale({ key: 'employeePosition.notFound' }));
 
+  const operator = await getOperatorFromSession();
   await notifyUpdateEmployeePosition({
     employeePosition,
     action: EventActionType.UPDATE,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return employeePosition;
 };
 
-const deleteEmployeePosition = async ({ shopId, employeePositionId, userId }) => {
+const deleteEmployeePosition = async ({ shopId, employeePositionId }) => {
   const employeePosition = await EmployeePosition.update({
     data: { status: Status.disabled },
     where: {
@@ -166,10 +171,11 @@ const deleteEmployeePosition = async ({ shopId, employeePositionId, userId }) =>
     },
   });
 
+  const operator = await getOperatorFromSession();
   await notifyUpdateEmployeePosition({
     employeePosition,
     action: EventActionType.DELETE,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return employeePosition;
 };
@@ -190,7 +196,7 @@ const getDepartments = async ({ shopId }) => {
   return departments;
 };
 
-const createDepartment = async ({ shopId, createBody, userId }) => {
+const createDepartment = async ({ shopId, createBody }) => {
   validatePermissionsUpdate(createBody);
   const department = await Department.create({
     data: _.pickBy({
@@ -199,15 +205,16 @@ const createDepartment = async ({ shopId, createBody, userId }) => {
     }),
   });
 
+  const operator = await getOperatorFromSession();
   await notifyUpdateDepartment({
     department,
     action: EventActionType.CREATE,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return department;
 };
 
-const updateDepartment = async ({ shopId, departmentId, updateBody, userId }) => {
+const updateDepartment = async ({ shopId, departmentId, updateBody }) => {
   validatePermissionsUpdate(updateBody);
   const department = await Department.update({
     data: _.pickBy({
@@ -218,15 +225,16 @@ const updateDepartment = async ({ shopId, departmentId, updateBody, userId }) =>
   });
   throwBadRequest(!department, getMessageByLocale({ key: 'department.notFound' }));
 
+  const operator = await getOperatorFromSession();
   await notifyUpdateDepartment({
     department,
     action: EventActionType.UPDATE,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return department;
 };
 
-const deleteDepartment = async ({ shopId, departmentId, userId }) => {
+const deleteDepartment = async ({ shopId, departmentId }) => {
   const department = await Department.update({
     data: { status: Status.disabled },
     where: {
@@ -235,10 +243,11 @@ const deleteDepartment = async ({ shopId, departmentId, userId }) => {
     },
   });
 
+  const operator = await getOperatorFromSession();
   await notifyUpdateDepartment({
     department,
     action: EventActionType.DELETE,
-    userId,
+    userId: _.get(operator, 'user.id'),
   });
   return department;
 };

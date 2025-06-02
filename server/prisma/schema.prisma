@@ -308,10 +308,10 @@ model OrderSession {
   status                       OrderSessionStatus @default(unpaid)
   pretaxPaymentAmount          Float?
   paymentAmount                Float?
-  paidByEmployeeId             String?
-  paidByEmployeeName           String?
-  cancelledByEmployeeId        String?
-  cancelledByEmployeeName      String?
+  paidByUserId                 String?
+  paidByUserName               String?
+  cancelledByUserId            String?
+  cancelledByUserName          String?
   cancellationReason           String?
   customerId                   String?
   customerName                 String?

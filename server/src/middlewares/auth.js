@@ -6,7 +6,7 @@ const { roleRights, ROLES, allRoleRights } = require('../config/roles');
 const { getShopFromCache } = require('../metadata/shopMetadata.service');
 const { getEmployeeWithPermissionByUserId } = require('../metadata/employeeMetadata.service');
 const { PermissionType } = require('../utils/constant');
-const { setEmployeePermissions, setShopToSession } = require('./clsHooked');
+const { setOperatorToSession, setShopToSession } = require('./clsHooked');
 const { getMessageByLocale } = require('../locale');
 const logger = require('../config/logger');
 const config = require('../config/config');
@@ -71,7 +71,10 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
       }
     } else {
       const permissions = Object.values(PermissionType);
-      setEmployeePermissions(permissions);
+      setOperatorToSession({
+        user,
+        permissions,
+      });
     }
 
     resolve();
@@ -102,7 +105,9 @@ const _resolveFromInternalReq = async (req, resolve) => {
     req.shop = shop;
     setShopToSession(shop);
     const permissions = Object.values(PermissionType);
-    setEmployeePermissions(permissions);
+    setOperatorToSession({
+      permissions,
+    });
   } catch (err) {
     logger.error(`error from internal . ${err.stack}`);
   } finally {

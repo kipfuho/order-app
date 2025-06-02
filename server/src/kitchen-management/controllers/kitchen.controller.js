@@ -18,26 +18,23 @@ const getKitchens = catchAsync(async (req, res) => {
 
 const createKitchen = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
   const createBody = req.body;
-  const kitchen = await kitchenService.createKitchen({ shopId, createBody, userId });
+  const kitchen = await kitchenService.createKitchen({ shopId, createBody });
   res.status(httpStatus.CREATED).send({ kitchen });
 });
 
 const updateKitchen = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const kitchenId = _.get(req, 'params.kitchenId');
-  const userId = _.get(req, 'user.id');
   const updateBody = req.body;
-  await kitchenService.updateKitchen({ shopId, kitchenId, updateBody, userId });
+  await kitchenService.updateKitchen({ shopId, kitchenId, updateBody });
   res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteKitchen = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const kitchenId = _.get(req, 'params.kitchenId');
-  const userId = _.get(req, 'user.id');
-  await kitchenService.deleteKitchen({ shopId, kitchenId, userId });
+  await kitchenService.deleteKitchen({ shopId, kitchenId });
   res.status(httpStatus.OK).send({ message: 'Thành công' });
 });
 

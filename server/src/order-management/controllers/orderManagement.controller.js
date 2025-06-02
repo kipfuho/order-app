@@ -11,9 +11,8 @@ const { convertCartForResponse } = require('../converters/cart.converter');
 
 const createOrder = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
   const requestBody = req.body;
-  const orderSessionJson = await orderManagementService.createOrder({ shopId, userId, requestBody });
+  const orderSessionJson = await orderManagementService.createOrder({ shopId, requestBody });
   const orderSessionResponse = convertOrderSessionForResponse(orderSessionJson);
   res.status(httpStatus.OK).send({ message: 'OK', orderSession: orderSessionResponse });
 });
@@ -59,22 +58,21 @@ const getOrderSessionDetail = catchAsync(async (req, res) => {
 const payOrderSession = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const requestBody = req.body;
-  await orderManagementService.payOrderSession({ shopId, requestBody, user: req.user });
+  await orderManagementService.payOrderSession({ shopId, requestBody });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
 const cancelOrderSession = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const requestBody = req.body;
-  await orderManagementService.cancelOrder({ shopId, user: req.user, requestBody });
+  await orderManagementService.cancelOrder({ shopId, requestBody });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
 const cancelOrderSessionPaidStatus = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const user = _.get(req, 'user');
   const { orderSessionId } = req.body;
-  await orderManagementService.cancelPaidStatus({ shopId, orderSessionId, user });
+  await orderManagementService.cancelPaidStatus({ shopId, orderSessionId });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
@@ -166,21 +164,17 @@ const updateUnconfirmedOrder = catchAsync(async (req, res) => {
 
 const cancelUnconfirmedOrder = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
   await orderManagementService.cancelUnconfirmedOrder({
     ...req.body,
     shopId,
-    userId,
   });
   res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
 const approveUnconfirmedOrder = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
   await orderManagementService.approveUnconfirmedOrder({
     ...req.body,
-    userId,
     shopId,
   });
   res.status(httpStatus.OK).send({ message: 'OK' });

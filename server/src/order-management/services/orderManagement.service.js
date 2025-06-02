@@ -22,13 +22,15 @@ const {
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
 const { prisma, bulkUpdate, PostgreSQLTable } = require('../../utils/prisma');
+const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const _validateBeforeCreateOrder = (orderSession) => {
   throwBadRequest(orderSession.status === OrderSessionStatus.paid, getMessageByLocale({ key: 'orderSession.alreadyPaid' }));
 };
 
-const createOrder = async ({ shopId, userId, requestBody }) => {
+const createOrder = async ({ shopId, requestBody }) => {
   const { tableId, orderSessionId, dishOrders } = requestBody;
+  const operator = getOperatorFromSession();
   const { orderSession, isNewOrderSession } = await orderUtilService.getOrCreateOrderSession({
     orderSessionId,
     tableId,
@@ -38,7 +40,7 @@ const createOrder = async ({ shopId, userId, requestBody }) => {
   const newOrder = await orderUtilService.createNewOrder({
     tableId,
     shopId,
-    userId,
+    userId: _.get(operator, 'user.id'),
     orderSession,
     dishOrders,
     isNewOrderSession,
@@ -241,8 +243,9 @@ const _validateBeforePayment = (orderSession, paymentDetails) => {
   );
 };
 
-const payOrderSession = async ({ shopId, requestBody, user }) => {
+const payOrderSession = async ({ shopId, requestBody }) => {
   const { orderSessionId, paymentDetails, customerPaidAmount } = requestBody;
+  const operator = getOperatorFromSession();
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSessionId, shopId);
   _validateBeforePayment(orderSessionJson, paymentDetails);
 
@@ -256,8 +259,8 @@ const payOrderSession = async ({ shopId, requestBody, user }) => {
     shopId: orderSessionJson.shopId,
     updateBody: _.pickBy({
       status: OrderSessionStatus.paid,
-      paidByEmployeeId: _.get(user, 'id'),
-      paidByEmployeeName: _.get(user, 'name') || _.get(user, 'email'),
+      paidByUserId: _.get(operator, 'user.id'),
+      paidByUserName: _.get(operator, 'employee.name') || _.get(operator, 'user.name'),
       customerPaidAmount,
       customerReturnAmount: Math.max(0, customerPaidAmount - orderSessionJson.paymentAmount),
       endedAt: Date.now(),
@@ -273,7 +276,7 @@ const payOrderSession = async ({ shopId, requestBody, user }) => {
     }),
   });
 
-  await notifyOrderSessionPayment({ orderSession: updatedOrderSession, userId: _.get(user, 'id') });
+  await notifyOrderSessionPayment({ orderSession: updatedOrderSession, userId: _.get(operator, 'user.id') });
   await registerJob({
     type: JobTypes.PAY_ORDER,
     data: {
@@ -284,7 +287,7 @@ const payOrderSession = async ({ shopId, requestBody, user }) => {
   return updatedOrderSession;
 };
 
-const cancelOrder = async ({ shopId, user, requestBody }) => {
+const cancelOrder = async ({ shopId, requestBody }) => {
   const { orderSessionId, reason } = requestBody;
   throwBadRequest(!reason, getMessageByLocale({ key: 'reason.empty' }));
   const orderSession = await OrderSession.findFirst({
@@ -299,13 +302,14 @@ const cancelOrder = async ({ shopId, user, requestBody }) => {
     getMessageByLocale({ key: 'orderSession.canOnlyCancelUnpaid' })
   );
 
+  const operator = await getOperatorFromSession();
   const updatedOrderSession = await orderUtilService.updateOrderSession({
     orderSessionId,
     shopId,
     updateBody: {
       status: OrderSessionStatus.cancelled,
-      cancelledByEmployeeId: user.id,
-      cancelledByEmployeeName: user.name || user.email,
+      cancelledByUserId: _.get(operator, 'user.id'),
+      cancelledByUserName: _.get(operator, 'employee.name') || _.get(operator, 'user.name'),
       cancellationReason: reason,
     },
   });
@@ -336,7 +340,11 @@ const cancelOrder = async ({ shopId, user, requestBody }) => {
     },
   });
 
-  await notifyUpdateOrderSession({ orderSession: updatedOrderSession, userId: user.id, action: EventActionType.CANCEL });
+  await notifyUpdateOrderSession({
+    orderSession: updatedOrderSession,
+    userId: _.get(operator, 'user.id'),
+    action: EventActionType.CANCEL,
+  });
   await registerJob({
     type: JobTypes.CANCEL_ORDER,
     data: {
@@ -346,14 +354,15 @@ const cancelOrder = async ({ shopId, user, requestBody }) => {
   return updatedOrderSession;
 };
 
-const cancelPaidStatus = async ({ orderSessionId, shopId, user }) => {
+const cancelPaidStatus = async ({ orderSessionId, shopId }) => {
+  const operator = getOperatorFromSession();
   const updatedOrderSession = await orderUtilService.updateOrderSession({
     orderSessionId,
     shopId,
     updateBody: {
       status: OrderSessionStatus.unpaid,
-      paidByEmployeeId: null,
-      paidByEmployeeName: null,
+      paidByUserId: null,
+      paidByUserName: null,
       paymentDetails: {
         deleteMany: {},
       },
@@ -362,7 +371,7 @@ const cancelPaidStatus = async ({ orderSessionId, shopId, user }) => {
 
   await notifyCancelPaidStatusOrderSession({
     orderSession: updatedOrderSession,
-    userId: user.id,
+    userId: _.get(operator, 'user.id'),
     action: EventActionType.CANCEL,
   });
   await registerJob({
@@ -748,9 +757,10 @@ const updateUnconfirmedOrder = async ({ shopId, orderId, updateDishOrders }) => 
   return order;
 };
 
-const cancelUnconfirmedOrder = async ({ userId, shopId, orderId }) => {
+const cancelUnconfirmedOrder = async ({ shopId, orderId }) => {
+  const operator = getOperatorFromSession();
   const order = await Order.update({
-    data: { status: Status.disabled, cancelledById: userId },
+    data: { status: Status.disabled, cancelledById: _.get(operator, 'user.id') },
     where: {
       id: orderId,
       shopId,
@@ -760,7 +770,7 @@ const cancelUnconfirmedOrder = async ({ userId, shopId, orderId }) => {
   return order;
 };
 
-const approveUnconfirmedOrder = async ({ userId, shopId, orderId, orderSessionId }) => {
+const approveUnconfirmedOrder = async ({ shopId, orderId, orderSessionId }) => {
   const order = await Order.findFirst({
     where: {
       id: orderId,
@@ -770,6 +780,7 @@ const approveUnconfirmedOrder = async ({ userId, shopId, orderId, orderSessionId
   throwBadRequest(!order, getMessageByLocale({ key: 'order.notFound' }));
   throwBadRequest(order.status === Status.disabled, getMessageByLocale({ key: 'order.disabled' }));
 
+  const operator = getOperatorFromSession();
   const { orderSession } = await orderUtilService.getOrCreateOrderSession({
     customerId: order.customerId,
     tableId: order.tableId,
@@ -779,7 +790,7 @@ const approveUnconfirmedOrder = async ({ userId, shopId, orderId, orderSessionId
   });
   await Order.update({
     data: {
-      approvedById: userId,
+      approvedById: _.get(operator, 'user.id'),
       orderSessionId: orderSession.id,
     },
     where: { id: orderId },

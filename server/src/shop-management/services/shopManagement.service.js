@@ -10,6 +10,7 @@ const { refineFileNameForUploading } = require('../../utils/common');
 const aws = require('../../utils/aws');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
+const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const getShop = async (shopId) => {
   const shop = await getShopFromCache({ shopId });
@@ -64,53 +65,42 @@ const queryShop = async (query) => {
   return shops;
 };
 
-const createShop = async ({ createBody, userId }) => {
+const createShop = async ({ createBody }) => {
+  const operator = getOperatorFromSession();
   const shop = await Shop.create({
     data: {
       ...createBody,
-      ownerId: userId,
+      ownerId: _.get(operator, 'user.id'),
     },
   });
 
   const shopId = shop.id;
   try {
     // create department
-    await Department.create({
-      data: {
-        shopId,
-        name: getMessageByLocale({ key: 'department.table' }),
-        permissions: TableDepartmentPermissions,
-      },
-    });
-    await Department.create({
-      data: {
-        shopId,
-        name: getMessageByLocale({ key: 'department.cashier' }),
-        permissions: CashierDepartmentPermissions,
-      },
-    });
-    const ownerDepartment = await Department.create({
-      data: {
-        shopId,
-        name: getMessageByLocale({ key: 'department.owner' }),
-        permissions: Object.values(PermissionType),
-      },
+    await Department.createMany({
+      data: [
+        {
+          shopId,
+          name: getMessageByLocale({ key: 'department.table' }),
+          permissions: TableDepartmentPermissions,
+        },
+        {
+          shopId,
+          name: getMessageByLocale({ key: 'department.cashier' }),
+          permissions: CashierDepartmentPermissions,
+        },
+
+        {
+          shopId,
+          name: getMessageByLocale({ key: 'department.owner' }),
+          permissions: Object.values(PermissionType),
+        },
+      ],
     });
 
     // create units
     await Unit.createDefaultUnits(shopId);
-
-    // create owner
-    await Employee.create({
-      data: {
-        shopId,
-        departmentId: ownerDepartment.id,
-        userId,
-        name: getMessageByLocale({ key: 'shop.owner' }),
-      },
-    });
   } catch (err) {
-    await Employee.deleteMany({ where: { shopId, userId } });
     await Department.deleteMany({ where: { shopId } });
     await Unit.deleteMany({ where: { shopId } });
     await Shop.delete({
@@ -128,11 +118,11 @@ const createShop = async ({ createBody, userId }) => {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  await notifyUpdateShop({ shop, action: EventActionType.CREATE, userId });
+  await notifyUpdateShop({ shop, action: EventActionType.CREATE, userId: _.get(operator, 'user.id') });
   return shop;
 };
 
-const updateShop = async ({ shopId, updateBody, userId }) => {
+const updateShop = async ({ shopId, updateBody }) => {
   const shop = await Shop.update({ data: updateBody, where: { id: shopId } });
   throwBadRequest(!shop, getMessageByLocale({ key: 'shop.notFound' }));
 
@@ -143,11 +133,12 @@ const updateShop = async ({ shopId, updateBody, userId }) => {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  await notifyUpdateShop({ shop, action: EventActionType.UPDATE, userId });
+  const operator = getOperatorFromSession();
+  await notifyUpdateShop({ shop, action: EventActionType.UPDATE, userId: _.get(operator, 'user.id') });
   return shop;
 };
 
-const deleteShop = async ({ shopId, userId }) => {
+const deleteShop = async ({ shopId }) => {
   const shop = await Shop.update({ data: { status: Status.disabled }, where: { id: shopId } });
 
   // job to update s3 logs -> inUse = true
@@ -157,7 +148,8 @@ const deleteShop = async ({ shopId, userId }) => {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  await notifyUpdateShop({ shop, action: EventActionType.CREATE, userId });
+  const operator = getOperatorFromSession();
+  await notifyUpdateShop({ shop, action: EventActionType.CREATE, userId: _.get(operator, 'user.id') });
   return shop;
 };
 

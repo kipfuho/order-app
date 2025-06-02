@@ -30,15 +30,13 @@ const getUncookedDishOrdersByDishId = catchAsync(async (req, res) => {
 
 const updateUncookedDishOrders = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
-  await kdsService.updateUncookedDishOrders({ shopId, requestBody: req.body, userId });
+  await kdsService.updateUncookedDishOrders({ shopId, requestBody: req.body });
   res.status(httpStatus.OK).send({ message: 'Thành công' });
 });
 
 const undoCookedDishOrders = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
-  await kdsService.undoCookedDishOrders({ shopId, requestBody: req.body, userId });
+  await kdsService.undoCookedDishOrders({ shopId, requestBody: req.body });
   res.status(httpStatus.OK).send({ message: 'Thành công' });
 });
 
@@ -56,15 +54,13 @@ const getUnservedDishOrders = catchAsync(async (req, res) => {
 
 const updateUnservedDishOrders = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
-  await kdsService.updateUnservedDishOrders({ shopId, requestBody: req.body, userId });
+  await kdsService.updateUnservedDishOrders({ shopId, requestBody: req.body });
   res.status(httpStatus.OK).send({ message: 'Thành công' });
 });
 
 const undoServedDishOrders = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
-  await kdsService.undoServedDishOrders({ shopId, requestBody: req.body, userId });
+  await kdsService.undoServedDishOrders({ shopId, requestBody: req.body });
   res.status(httpStatus.OK).send({ message: 'Thành công' });
 });
 

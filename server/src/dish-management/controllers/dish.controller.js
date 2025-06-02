@@ -18,26 +18,23 @@ const getDishes = catchAsync(async (req, res) => {
 
 const createDish = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const userId = _.get(req, 'user.id');
   const createBody = req.body;
-  const dish = await dishService.createDish({ shopId, createBody, userId });
+  const dish = await dishService.createDish({ shopId, createBody });
   res.status(httpStatus.CREATED).send({ dish });
 });
 
 const updateDish = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const dishId = _.get(req, 'params.dishId');
-  const userId = _.get(req, 'user.id');
   const updateBody = req.body;
-  await dishService.updateDish({ shopId, dishId, updateBody, userId });
+  await dishService.updateDish({ shopId, dishId, updateBody });
   res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteDish = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const dishId = _.get(req, 'params.dishId');
-  const userId = _.get(req, 'user.id');
-  await dishService.deleteDish({ shopId, dishId, userId });
+  await dishService.deleteDish({ shopId, dishId });
   res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
 });
 
