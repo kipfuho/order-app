@@ -46,26 +46,30 @@ const PopularDishesChart = ({
         height={400}
       >
         <VictoryAxis
-          tickFormat={(t) => {
-            const words = t.split(" ");
-            if (words.length <= 1) return t;
+          tickFormat={(tick) => {
+            try {
+              const words = tick.split(" ");
+              if (words.length <= 1) return tick;
 
-            // Group words into lines of ~15 characters
-            const lines: string[] = [];
-            let currentLine = "";
+              // Group words into lines of ~15 characters
+              const lines: string[] = [];
+              let currentLine = "";
 
-            words.forEach((word: string) => {
-              if ((currentLine + " " + word).trim().length > 15) {
-                lines.push(currentLine.trim());
-                currentLine = word;
-              } else {
-                currentLine += " " + word;
-              }
-            });
+              words.forEach((word: string) => {
+                if ((currentLine + " " + word).trim().length > 15) {
+                  lines.push(currentLine.trim());
+                  currentLine = word;
+                } else {
+                  currentLine += " " + word;
+                }
+              });
 
-            if (currentLine) lines.push(currentLine.trim());
+              if (currentLine) lines.push(currentLine.trim());
 
-            return lines.join("\n");
+              return lines.join("\n");
+            } catch {
+              return tick;
+            }
           }}
           style={{
             tickLabels: {

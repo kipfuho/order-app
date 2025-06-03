@@ -1,7 +1,10 @@
-import { goToOrderHistory } from "@/apis/navigate.service";
+import {
+  goToOrderHistory,
+  goToTablesForOrderList,
+} from "@/apis/navigate.service";
 import { AppBar } from "@/components/AppBar";
+import { ConfirmCancelDialog } from "@/components/ui/CancelDialog";
 import { OrderSessionStatus } from "@/constants/common";
-import { styles } from "@/constants/styles";
 import { convertPaymentAmount } from "@/constants/utils";
 import {
   useCancelOrderSessionPaidStatusMutation,
@@ -10,23 +13,25 @@ import {
 import { Shop } from "@/stores/state.interface";
 import { RootState } from "@/stores/store";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View, ScrollView } from "react-native";
 import {
   Text,
   Button,
   DataTable,
-  Card,
   Surface,
   Divider,
+  Portal,
 } from "react-native-paper";
+import Toast from "react-native-toast-message";
 import { useSelector } from "react-redux";
 
 const InvoiceDetailPage = () => {
-  const { orderSessionId, shopId } = useLocalSearchParams() as {
+  const { orderSessionId, shopId, ak } = useLocalSearchParams() as {
     orderSessionId: string;
     shopId: string;
+    ak: string;
   };
   const router = useRouter();
   const { t } = useTranslation();
@@ -41,18 +46,67 @@ const InvoiceDetailPage = () => {
     { isLoading: cancelOrderSessionPaidStatusLoading },
   ] = useCancelOrderSessionPaidStatusMutation();
 
+  const [cancelPaidStatusDialogVisible, setCancelPaidStatusDialogVisible] =
+    useState(false);
+
+  const handleCancelOrderSessionPaidStatus = async () => {
+    try {
+      await cancelOrderSessionPaidStatus({
+        shopId,
+        orderSessionId,
+      }).unwrap();
+
+      if (ak === "47") {
+        goToOrderHistory({ router, shopId });
+      } else {
+        goToTablesForOrderList({ router, shopId });
+      }
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: t("error"),
+        text2: error.data?.message,
+      });
+      return;
+    }
+  };
+
   return (
     <>
+      <Portal>
+        <ConfirmCancelDialog
+          title={`${t("confirm")} ${t("cancel_paid_status")}`}
+          isLoading={cancelOrderSessionPaidStatusLoading}
+          dialogVisible={cancelPaidStatusDialogVisible}
+          setDialogVisible={setCancelPaidStatusDialogVisible}
+          onCancelClick={() => {
+            setCancelPaidStatusDialogVisible(false);
+          }}
+          onConfirmClick={handleCancelOrderSessionPaidStatus}
+        />
+        <Toast />
+      </Portal>
       <AppBar
         title={t("invoice")}
-        goBack={() => goToOrderHistory({ router, shopId })}
+        goBack={() => {
+          if (ak === "47") {
+            goToOrderHistory({ router, shopId });
+          } else {
+            goToTablesForOrderList({ router, shopId });
+          }
+        }}
       />
       <Surface style={{ flex: 1, padding: 16 }}>
         <ScrollView>
           <View>
             {orderSessionDetail?.status === OrderSessionStatus.paid && (
               <View style={{ alignItems: "flex-end", marginBottom: 8 }}>
-                <Button mode="contained">{t("cancel_paid_status")}</Button>
+                <Button
+                  mode="contained"
+                  onPress={() => setCancelPaidStatusDialogVisible(true)}
+                >
+                  {t("cancel_paid_status")}
+                </Button>
               </View>
             )}
             <View>
@@ -177,6 +231,7 @@ const InvoiceDetailPage = () => {
                 if (taxDetail.taxAmount <= 0) return null;
                 return (
                   <View
+                    key={taxDetail.taxRate}
                     style={{
                       flexDirection: "row",
                       justifyContent: "space-between",
@@ -210,7 +265,9 @@ const InvoiceDetailPage = () => {
             </Text>
           </View>
           {(orderSessionDetail?.paymentDetails || []).map((paymentDetail) => (
-            <Text>{`${t("payment_method")}: ${t(paymentDetail.paymentMethod)}`}</Text>
+            <Text
+              key={paymentDetail.paymentMethod}
+            >{`${t("payment_method")}: ${t(paymentDetail.paymentMethod)}`}</Text>
           ))}
 
           {/* <View

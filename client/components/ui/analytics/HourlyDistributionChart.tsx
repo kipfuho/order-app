@@ -13,8 +13,9 @@ import {
 import { convertPaymentAmount } from "@constants/utils";
 import { HourlySalesReportItem } from "@/stores/state.interface";
 
-const normalize = (range: number[], props: string) => (datum: any) =>
-  (datum[props] - range[0]) / (range[1] - range[0]);
+const normalize = (range: number[], props: string) => (datum: any) => {
+  return (datum[props] - range[0]) / (range[1] - range[0]) || 0;
+};
 
 const HourlyDistributionChart = ({
   width,

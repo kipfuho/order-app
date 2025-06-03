@@ -75,7 +75,7 @@ const DailySalesChart = ({
           x="date"
           y={normalize(revenueRange, "revenue")}
           labels={({ datum }) => [
-            datum.orders,
+            `${datum.orders} ${t("report_order")}`,
             convertPaymentAmount(datum.revenue),
           ]}
           labelComponent={

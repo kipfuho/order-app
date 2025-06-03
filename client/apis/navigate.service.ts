@@ -263,14 +263,16 @@ const goToOrderSessionDetail = ({
   router,
   shopId,
   orderSessionId,
+  ak = "",
 }: {
   router: Router;
   shopId: string;
   orderSessionId: string;
+  ak?: string;
 }) => {
   router.navigate({
     pathname: "/shop/[shopId]/orders/invoice/[orderSessionId]",
-    params: { shopId, orderSessionId },
+    params: { shopId, orderSessionId, ak },
   });
 };
 

@@ -41,21 +41,18 @@ export default function OrderManagementOrderPage() {
     shop.id,
   );
 
-  const tablesGroupByPosition = useMemo(
-    () => _.groupBy(tablesForOrder, "position"),
-    [tablesForOrder],
-  );
-  const tablePositionById = useMemo(() => {
-    const _tablePositionById = _.keyBy(tablePositions, "id");
-    _tablePositionById["ALL"] = {
+  const { tablesGroupByPosition, tablePositionById } = useMemo(() => {
+    const tablesGroupByPosition = _.groupBy(tablesForOrder, "position");
+    const tablePositionById = _.keyBy(tablePositions, "id");
+    tablePositionById["ALL"] = {
       id: "ALL",
       name: t("all"),
       code: "all",
       shopId: "",
       dishCategoryIds: [],
     };
-    return _tablePositionById;
-  }, [tablePositions, t]);
+    return { tablesGroupByPosition, tablePositionById };
+  }, [t, tablePositions, tablesForOrder]);
 
   const [filteredTables, setFilteredTables] = useState<
     Record<string, TableForOrder[]>

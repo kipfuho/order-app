@@ -364,7 +364,10 @@ const FlatListWithScroll = ({
       itemContainerWidth = width - 20; // minus padding
     } else {
       itemContainerWidth =
-        width - Math.min(width * 0.15, UNIVERSAL_MAX_WIDTH_SIDEBAR); // minus padding + sidebar
+        width -
+        (shouldShowGroup
+          ? Math.min(width * 0.15, UNIVERSAL_MAX_WIDTH_SIDEBAR)
+          : 0);
     }
 
     const numColumns = Math.floor(
@@ -376,13 +379,17 @@ const FlatListWithScroll = ({
     );
 
     return { itemContainerWidth, numColumns };
-  }, [width, itemType]);
+  }, [width, itemType, shouldShowGroup]);
 
   const flatListRef = useRef<LegendListRef | null>(null);
-  const flatListData = useMemo(() => {
-    if (numColumns <= 0) return [];
+  const { flatListData, indexMap } = useMemo(() => {
+    if (numColumns <= 0)
+      return {
+        flatListData: [],
+        indexMap: {},
+      };
 
-    return groups.flatMap((g) => {
+    const flatListData = groups.flatMap((g) => {
       const items = itemByGroup[g.id] || [];
       const itemRows = [];
 
@@ -398,17 +405,16 @@ const FlatListWithScroll = ({
 
       return [{ type: "header", id: `header-${g.id}`, group: g }, ...itemRows];
     });
-  }, [groups, itemByGroup, numColumns]);
 
-  const indexMap = useMemo(() => {
-    const map: Record<string, number> = {};
+    const indexMap: Record<string, number> = {};
     flatListData.forEach((item, index) => {
       if (item.type === "header") {
-        map[item.group.id] = index;
+        indexMap[item.group.id] = index;
       }
     });
-    return map;
-  }, [flatListData]);
+
+    return { flatListData, indexMap };
+  }, [groups, itemByGroup, numColumns]);
 
   const renderItem = useCallback(
     ({ item }: { item: FlatListItem }) => {

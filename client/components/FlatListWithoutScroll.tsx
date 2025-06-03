@@ -177,7 +177,10 @@ const FlatListWithoutScroll = ({
       itemContainerWidth = width - 20; // minus padding
     } else {
       itemContainerWidth =
-        width - Math.min(width * 0.15, UNIVERSAL_MAX_WIDTH_SIDEBAR); // minus padding + sidebar
+        width -
+        (shouldShowGroup
+          ? Math.min(width * 0.15, UNIVERSAL_MAX_WIDTH_SIDEBAR)
+          : 0); // minus padding + sidebar
     }
 
     const numColumns = Math.floor(
@@ -189,7 +192,7 @@ const FlatListWithoutScroll = ({
     );
 
     return { itemContainerWidth, numColumns };
-  }, [width, itemType]);
+  }, [width, itemType, shouldShowGroup]);
 
   const flatListData = useMemo(() => {
     if (numColumns <= 0) {

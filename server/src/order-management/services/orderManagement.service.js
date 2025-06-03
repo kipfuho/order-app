@@ -265,7 +265,7 @@ const payOrderSession = async ({ shopId, requestBody }) => {
       paidByUserName: _.get(operator, 'employee.name') || _.get(operator, 'user.name'),
       customerPaidAmount,
       customerReturnAmount: Math.max(0, customerPaidAmount - orderSessionJson.paymentAmount),
-      endedAt: Date.now(),
+      endedAt: new Date(),
       paymentDetails: {
         deleteMany: {},
         createMany: {

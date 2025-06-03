@@ -50,21 +50,22 @@ export default function UpdateEmployeePage() {
     useGetDepartmentsQuery(shop.id);
   const [updateEmployee, { isLoading: updateEmployeeLoading }] =
     useUpdateEmployeeMutation();
-  const employee = useMemo(
-    () => _.find(employees, (e) => e.id === employeeId),
-    [employees, employeeId],
-  );
-  const _employeePosition = useMemo(
-    () => _.find(employeePositions, (d) => d.id === employee?.positionId),
-    [employeePositions, employee],
-  );
-  const _department = useMemo(
-    () => _.find(departments, (d) => d.id === employee?.departmentId),
-    [departments, employee],
-  );
+  const { employee, employeePosition, department } = useMemo(() => {
+    const employee = _.find(employees, (e) => e.id === employeeId);
+    const employeePosition = _.find(
+      employeePositions,
+      (d) => d.id === employee?.positionId,
+    );
+    const department = _.find(
+      departments,
+      (d) => d.id === employee?.departmentId,
+    );
+
+    return { employee, employeePosition, department };
+  }, [employees, employeePositions, departments, employeeId]);
   const [name, setName] = useState("");
-  const [position, setPosition] = useState<EmployeePosition>();
-  const [department, setDepartment] = useState<Department>();
+  const [selectedPosition, setSelectedPosition] = useState<EmployeePosition>();
+  const [selectedDepartment, setSelectedDepartment] = useState<Department>();
   // const [email, setEmail] = useState("");
   // const [password, setPassword] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
@@ -78,8 +79,8 @@ export default function UpdateEmployeePage() {
   const handleUpdateEmployee = async () => {
     if (
       !name.trim() ||
-      _.isEmpty(position) ||
-      _.isEmpty(department)
+      _.isEmpty(selectedPosition) ||
+      _.isEmpty(selectedDepartment)
       // || !email.trim()
       // || !password.trim()
     ) {
@@ -89,8 +90,8 @@ export default function UpdateEmployeePage() {
         text2: `${t("required")} ${_.join(
           _.compact([
             !name.trim() && t("employee_name"),
-            _.isEmpty(position) && t("employee_position"),
-            _.isEmpty(department) && t("department"),
+            _.isEmpty(selectedPosition) && t("employee_position"),
+            _.isEmpty(selectedDepartment) && t("department"),
             // !email.trim() && t("email"),
             // !password.trim() && t("password"),
           ]),
@@ -105,8 +106,8 @@ export default function UpdateEmployeePage() {
         employeeId,
         shopId: shop.id,
         name,
-        positionId: position.id,
-        departmentId: department.id,
+        positionId: selectedPosition.id,
+        departmentId: selectedDepartment.id,
         // email,
         // password,
         permissions: selectedPermissions,
@@ -126,14 +127,14 @@ export default function UpdateEmployeePage() {
     if (!employee) return;
 
     setName(employee.name);
-    setPosition(_employeePosition);
-    setDepartment(_department);
+    setSelectedPosition(employeePosition);
+    setSelectedDepartment(department);
     setSelectedPermissions(employee.permissions);
   }, [
     employeeId,
     employee,
-    _employeePosition,
-    _department,
+    employeePosition,
+    department,
     employeeFetching,
     permissionTypeLoading,
     employeePositionLoading,
@@ -200,18 +201,18 @@ export default function UpdateEmployeePage() {
             /> */}
 
             <DropdownMenu
-              item={position}
+              item={selectedPosition}
               items={employeePositions}
               label={t("employee_position")}
-              setItem={setPosition}
+              setItem={setSelectedPosition}
               getItemValue={(item: EmployeePosition) => item?.name}
             />
 
             <DropdownMenu
-              item={department}
+              item={selectedDepartment}
               items={departments}
               label={t("department")}
-              setItem={setDepartment}
+              setItem={setSelectedDepartment}
               getItemValue={(item: Department) => item?.name}
             />
 

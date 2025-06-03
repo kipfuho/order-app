@@ -35,26 +35,30 @@ export default function OrderManagementApprovePage() {
     shop.id,
   );
 
-  const unconfirmedOrderByTable = useMemo(
-    () => _.groupBy(unconfirmedOrders, "table"),
-    [unconfirmedOrders],
-  );
-  const availableTables = useMemo(
-    () => _.filter(tables, (t) => !_.isEmpty(unconfirmedOrderByTable[t.id])),
-    [unconfirmedOrderByTable, tables],
-  );
-  const tablesGroupByPosition = useMemo(
-    () => _.groupBy(availableTables, "position.id"),
-    [availableTables],
-  );
-  const tablePositionById = _.keyBy(tablePositions, "id");
-  tablePositionById["ALL"] = {
-    id: "ALL",
-    name: t("all"),
-    code: "all",
-    shopId: "",
-    dishCategoryIds: [],
-  };
+  const { unconfirmedOrderByTable, tablesGroupByPosition, tablePositionById } =
+    useMemo(() => {
+      const unconfirmedOrderByTable = _.groupBy(unconfirmedOrders, "table");
+      const availableTables = _.filter(
+        tables,
+        (t) => !_.isEmpty(unconfirmedOrderByTable[t.id]),
+      );
+      const tablesGroupByPosition = _.groupBy(availableTables, "position.id");
+
+      const tablePositionById = _.keyBy(tablePositions, "id");
+      tablePositionById["ALL"] = {
+        id: "ALL",
+        name: t("all"),
+        code: "all",
+        shopId: "",
+        dishCategoryIds: [],
+      };
+
+      return {
+        unconfirmedOrderByTable,
+        tablesGroupByPosition,
+        tablePositionById,
+      };
+    }, [t, unconfirmedOrders, tables, tablePositions]);
 
   const [filteredTables, setFilteredTables] = useState<Record<string, Table[]>>(
     {},
