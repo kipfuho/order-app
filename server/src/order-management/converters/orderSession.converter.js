@@ -53,7 +53,7 @@ const convertOrderSessionHistoryForResponse = (orderSession) => {
     paymentAmount: paymentDetail.paymentAmount,
   }));
   orderSessionJson.taxDetails = (orderSessionJson.taxDetails || []).map((taxDetail) => ({
-    taxAmount: taxDetail.taxAmount - _.get(orderSessionJson, `discountDetailByTax.${taxDetail.taxRate}`, 0),
+    taxAmount: taxDetail.taxAmount - (taxDetail.afterTaxTotalDiscountAmount - taxDetail.beforeTaxTotalDiscountAmount),
     taxRate: taxDetail.taxRate,
   }));
 
@@ -65,7 +65,6 @@ const convertOrderSessionHistoryForResponse = (orderSession) => {
   delete orderSessionJson.customerId;
   delete orderSessionJson.auditedAt;
   delete orderSessionJson.totalTaxAmount;
-  delete orderSessionJson.discountDetailByTax;
   return orderSessionJson;
 };
 /* eslint-enable no-param-reassign */

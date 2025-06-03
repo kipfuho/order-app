@@ -74,6 +74,7 @@ const changeDishQuantity = async ({ shopId, requestBody }) => {
         dishOrderNo: targetDishOrder.dishOrderNo,
         dishId: targetDishOrder.dishId,
         name: targetDishOrder.name,
+        unit: targetDishOrder.unit,
         note: targetDishOrder.note,
         orderId: targetDishOrder.orderId,
         quantity: targetDishOrder.quantity - newQuantity,
@@ -125,6 +126,7 @@ const updateOrder = async ({ shopId, requestBody }) => {
             dishOrderNo: dishOrder.dishOrderNo,
             dishId: dishOrder.dishId,
             name: dishOrder.name,
+            unit: dishOrder.unit,
             note: dishOrder.note,
             orderId: dishOrder.orderId,
             quantity: dishOrder.quantity - newQuantity,
@@ -327,6 +329,7 @@ const cancelOrder = async ({ shopId, requestBody }) => {
       dishOrderNo: dishOrder.dishOrderNo,
       dishId: dishOrder.dishId,
       name: dishOrder.name,
+      unit: dishOrder.unit,
       note: dishOrder.note,
       orderId: dishOrder.orderId,
       quantity: dishOrder.quantity,
@@ -760,7 +763,11 @@ const updateUnconfirmedOrder = async ({ shopId, orderId, updateDishOrders }) => 
 const cancelUnconfirmedOrder = async ({ shopId, orderId }) => {
   const operator = getOperatorFromSession();
   const order = await Order.update({
-    data: { status: Status.disabled, cancelledById: _.get(operator, 'user.id') },
+    data: {
+      status: Status.disabled,
+      cancelledById: _.get(operator, 'user.id'),
+      cancelledByName: _.get(operator, 'employee.name') || _.get(operator, 'user.name'),
+    },
     where: {
       id: orderId,
       shopId,
@@ -791,6 +798,7 @@ const approveUnconfirmedOrder = async ({ shopId, orderId, orderSessionId }) => {
   await Order.update({
     data: {
       approvedById: _.get(operator, 'user.id'),
+      approvedByName: _.get(operator, 'employee.name') || _.get(operator, 'user.name'),
       orderSessionId: orderSession.id,
     },
     where: { id: orderId },

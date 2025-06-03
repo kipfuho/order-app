@@ -166,12 +166,12 @@ model DishOrder {
   beforeTaxTotalDiscountAmount Float?
   afterTaxTotalDiscountAmount  Float?
   paymentAmount                Float?
-  createdAt                    DateTime        @default(now())
-  updatedAt                    DateTime        @updatedAt
   status                       DishOrderStatus @default(confirmed)
   note                         String          @default("")
   orderId                      String
   revenueAmount                Float?
+  createdAt                    DateTime        @default(now())
+  updatedAt                    DateTime        @updatedAt
   dish                         Dish?           @relation(fields: [dishId], references: [id])
   order                        Order           @relation(fields: [orderId], references: [id])
   kitchenLog                   KitchenLog[]
@@ -185,12 +185,13 @@ model ReturnedDishOrder {
   dishOrderNo Int
   dishId      String?
   name        String
+  unit        String
   quantity    Int
   status      DishOrderStatus @default(confirmed)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
   note        String          @default("")
   orderId     String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   dish        Dish?           @relation(fields: [dishId], references: [id])
   order       Order           @relation(fields: [orderId], references: [id])
 
@@ -220,6 +221,8 @@ model Order {
   paymentAmount                Float?
   revenueAmount                Float?
   kitchenAllDone               Boolean             @default(false)
+  approvedByName               String?
+  cancelledByName              String?
   dishOrders                   DishOrder[]
   KitchenLog                   KitchenLog[]
   approvedBy                   User?               @relation("ApprovedOrders", fields: [approvedById], references: [id])
@@ -279,9 +282,9 @@ model TaxDetail {
   id                           String       @id @default(uuid())
   taxAmount                    Float        @default(0)
   taxRate                      Float        @default(0)
-  beforeTaxTotalDiscountAmount Float        @default(0)
-  afterTaxTotalDiscountAmount  Float        @default(0)
   orderSessionId               String
+  afterTaxTotalDiscountAmount  Float        @default(0)
+  beforeTaxTotalDiscountAmount Float        @default(0)
   orderSession                 OrderSession @relation(fields: [orderSessionId], references: [id])
 
   @@index([orderSessionId])
@@ -310,12 +313,6 @@ model OrderSession {
   status                       OrderSessionStatus @default(unpaid)
   pretaxPaymentAmount          Float?
   paymentAmount                Float?
-  startedByUserId              String?
-  startedByUserName            String?
-  paidByUserId                 String?
-  paidByUserName               String?
-  cancelledByUserId            String?
-  cancelledByUserName          String?
   cancellationReason           String?
   customerId                   String?
   customerName                 String?
@@ -330,6 +327,12 @@ model OrderSession {
   customerPaidAmount           Float?
   customerReturnAmount         Float?
   shouldRecalculateTax         Boolean?
+  cancelledByUserId            String?
+  cancelledByUserName          String?
+  paidByUserId                 String?
+  paidByUserName               String?
+  startedByUserId              String?
+  startedByUserName            String?
   discounts                    Discount[]
   orders                       Order[]
   shop                         Shop               @relation(fields: [shopId], references: [id])

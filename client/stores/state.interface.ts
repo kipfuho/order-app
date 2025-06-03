@@ -206,16 +206,20 @@ interface PaymentDetail {
 
 interface Order {
   id: string;
-  table: string;
   orderNo: number;
   dishOrders: DishOrder[];
-  returnedDishOrders: DishOrder[];
+  returnedDishOrders: ReturnedDishOrder[];
   createdAt: string;
   updatedAt: string;
-  customerId: string;
+  approvedByName?: string;
+  cancelledByName?: string;
   totalQuantity: number;
   totalBeforeTaxAmount: number;
   totalAfterTaxAmount: number;
+  beforeTaxTotalDiscountAmount?: number;
+  afterTaxTotalDiscountAmount?: number;
+  paymentAmount?: number;
+  revenueAmount?: number;
   approvedBy: string;
   cancelledBy: string;
 }
@@ -228,6 +232,7 @@ interface UnconfirmedOrder extends Order {
 interface DishOrder {
   id: string;
   dishId?: string; // for create order
+  dishOrderNo: number;
   name: string;
   unit: string;
   price: number;
@@ -237,11 +242,23 @@ interface DishOrder {
   beforeTaxTotalPrice: number;
   afterTaxTotalPrice: number;
   taxRate: number;
-  taxAmount: number;
+  beforeTaxTotalDiscountAmount: number;
+  afterTaxTotalDiscountAmount: number;
+  paymentAmount: number;
+  revenueAmount: number;
   status: string;
-  returnedAt?: string;
-  note?: string;
+  note: string;
+}
+
+interface ReturnedDishOrder {
+  id: string;
+  dishId?: string; // for create order
   dishOrderNo: number;
+  name: string;
+  unit: string;
+  quantity: number;
+  status: string;
+  note: string;
 }
 
 interface KitchenDishOrder {

@@ -3,16 +3,10 @@ const { formatDateHHMMDDMMYYYY } = require('../../utils/common');
 
 /* eslint-disable no-param-reassign */
 const convertDishOrderForResponse = (dishOrder) => {
-  // Neu la mon thuong
-  if (_.get(dishOrder, 'dish.id')) {
-    dishOrder.dishId = dishOrder.dish.id;
-    dishOrder.name = dishOrder.dish.name;
-    dishOrder.images = dishOrder.dish.images;
-  } else {
-    // Neu la mon khac
-    dishOrder.name = _.get(dishOrder, 'name');
-  }
+  dishOrder.createdAt = formatDateHHMMDDMMYYYY(dishOrder.createdAt);
+  dishOrder.updatedAt = formatDateHHMMDDMMYYYY(dishOrder.updatedAt);
 
+  delete dishOrder.orderId;
   delete dishOrder.dish;
   delete dishOrder.createdAt;
   delete dishOrder.updatedAt;
@@ -26,8 +20,15 @@ const convertOrderForResponse = (order) => {
   order.updatedAt = formatDateHHMMDDMMYYYY(order.updatedAt);
   order.dishOrders = _.map(order.dishOrders, (dishOrder) => convertDishOrderForResponse(dishOrder));
   order.returnedDishOrders = _.map(order.returnedDishOrders, (dishOrder) => convertDishOrderForResponse(dishOrder));
+
   delete order.orderSessionId;
-  delete order.shop;
+  delete order.shopId;
+  delete order.tableId;
+  delete order.customerId;
+  delete order.approvedById;
+  delete order.cancelledById;
+  delete order.orderSessionStatus;
+  delete order.kitchenAllDone;
   return order;
 };
 /* eslint-enable no-param-reassign */
