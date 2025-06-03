@@ -6,6 +6,7 @@ import KitchenServing from "@/components/ui/kitchen/KitchenServing";
 export default function CookByDishPage() {
   return (
     <SwipeablePage
+      index={1}
       previewContent={{
         previous: <KitchenCookByOrder />,
         next: <KitchenServing />,

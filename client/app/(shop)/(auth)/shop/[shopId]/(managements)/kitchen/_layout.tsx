@@ -9,7 +9,7 @@ import { TouchableOpacity, View } from "react-native";
 import { goToShopHome } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { Icon, Menu, Text, useTheme } from "react-native-paper";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { SwipeContext } from "@/hooks/useSwipeNavigation";
 
 interface Item {
@@ -43,7 +43,7 @@ const KitchenButton = ({ title, route }: Item) => {
 
   useEffect(() => {
     setSelected(pathName.endsWith(`/kitchen/${route}`));
-  }, [pathName]);
+  }, [pathName, route]);
 
   return (
     <TouchableOpacity
@@ -82,50 +82,46 @@ export default function TabLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };
   const router = useRouter();
   const { t } = useTranslation();
-  const pathName = usePathname();
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [visibleCount, setVisibleCount] = useState(0);
   const allVisibleRoutes = allRoutes.slice(0, visibleCount);
   const allAdditionalRoutes = allRoutes.slice(visibleCount);
 
-  // Find current route index
-  const currentRouteIndex = useMemo(() => {
-    const currentIndex = allRoutes.findIndex((route) =>
-      pathName.endsWith(`/kitchen/${route.route}`),
-    );
-    return currentIndex !== -1 ? currentIndex : 0;
-  }, [pathName]);
-
   // Navigation functions
-  const navigateToNext = () => {
-    if (currentRouteIndex < allRoutes.length - 1) {
-      const nextRoute = allRoutes[currentRouteIndex + 1];
-      router.replace({
-        pathname: `/shop/[shopId]/kitchen/${nextRoute.route}`,
-        params: { shopId },
-      });
-    }
-  };
+  const navigateToNext = useCallback(
+    (_currentIndex: number) => {
+      if (_currentIndex < allRoutes.length - 1) {
+        const nextRoute = allRoutes[_currentIndex + 1];
+        router.replace({
+          pathname: `/shop/[shopId]/kitchen/${nextRoute.route}`,
+          params: { shopId },
+        });
+      }
+    },
+    [router, shopId],
+  );
 
-  const navigateToPrevious = () => {
-    if (currentRouteIndex > 0) {
-      const prevRoute = allRoutes[currentRouteIndex - 1];
-      router.replace({
-        pathname: `/shop/[shopId]/kitchen/${prevRoute.route}`,
-        params: { shopId },
-      });
-    }
-  };
+  const navigateToPrevious = useCallback(
+    (_currentIndex: number) => {
+      if (_currentIndex > 0) {
+        const prevRoute = allRoutes[_currentIndex - 1];
+        router.replace({
+          pathname: `/shop/[shopId]/kitchen/${prevRoute.route}`,
+          params: { shopId },
+        });
+      }
+    },
+    [router, shopId],
+  );
 
   const swipeContextValue = useMemo(
     () => ({
       navigateToNext,
       navigateToPrevious,
-      currentIndex: currentRouteIndex,
       totalPages: allRoutes.length,
     }),
-    [currentRouteIndex],
+    [navigateToNext, navigateToPrevious],
   );
 
   return (

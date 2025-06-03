@@ -1,9 +1,10 @@
-import { FC, ReactNode, useEffect, useRef, useState, useCallback } from "react";
+import { FC, ReactNode, useEffect, useRef, useState, useMemo } from "react";
 import { View, PanResponder, Dimensions, Animated } from "react-native";
 import { useTheme } from "react-native-paper";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 
 interface SwipeablePageProps {
+  index: number;
   children: ReactNode;
   previewContent?: {
     previous?: React.ReactNode;
@@ -16,10 +17,11 @@ const SWIPE_THRESHOLD = SCREEN_WIDTH / 3; // Distance needed to complete navigat
 const PREVIEW_THRESHOLD = 20; // Distance to start showing preview
 
 export const SwipeablePage: FC<SwipeablePageProps> = ({
+  index,
   children,
   previewContent,
 }) => {
-  const { navigateToNext, navigateToPrevious, currentIndex, totalPages } =
+  const { navigateToNext, navigateToPrevious, totalPages } =
     useSwipeNavigation();
   const theme = useTheme();
 
@@ -36,7 +38,7 @@ export const SwipeablePage: FC<SwipeablePageProps> = ({
     return () => translateX.removeListener(listener);
   }, [translateX]);
 
-  const createPanResponder = useCallback(() => {
+  const panResponder = useMemo(() => {
     return PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
         return (
@@ -53,9 +55,9 @@ export const SwipeablePage: FC<SwipeablePageProps> = ({
         const { dx } = gestureState;
 
         if (Math.abs(dx) > PREVIEW_THRESHOLD) {
-          if (dx > 0 && currentIndex > 0) {
+          if (dx > 0 && index > 0) {
             setSwipeDirection("right");
-          } else if (dx < 0 && currentIndex < totalPages - 1) {
+          } else if (dx < 0 && index < totalPages - 1) {
             setSwipeDirection("left");
           } else {
             setSwipeDirection(null);
@@ -63,9 +65,9 @@ export const SwipeablePage: FC<SwipeablePageProps> = ({
         }
 
         let translation = dx;
-        if (dx > 0 && currentIndex === 0) {
+        if (dx > 0 && index === 0) {
           translation = dx * 0.2;
-        } else if (dx < 0 && currentIndex === totalPages - 1) {
+        } else if (dx < 0 && index === totalPages - 1) {
           translation = dx * 0.2;
         }
 
@@ -82,7 +84,7 @@ export const SwipeablePage: FC<SwipeablePageProps> = ({
           Math.abs(dx) > SWIPE_THRESHOLD || Math.abs(vx) > 0.5;
 
         if (shouldNavigate) {
-          if (dx > 0 && currentIndex > 0) {
+          if (dx > 0 && index > 0) {
             // Animate to show previous page
             Animated.timing(translateX, {
               toValue: SCREEN_WIDTH,
@@ -90,10 +92,10 @@ export const SwipeablePage: FC<SwipeablePageProps> = ({
               useNativeDriver: true,
             }).start(() => {
               translateX.setValue(0);
-              navigateToPrevious();
+              navigateToPrevious(index);
             });
             return;
-          } else if (dx < 0 && currentIndex < totalPages - 1) {
+          } else if (dx < 0 && index < totalPages - 1) {
             // Animate to show next page
             Animated.timing(translateX, {
               toValue: -SCREEN_WIDTH,
@@ -101,7 +103,7 @@ export const SwipeablePage: FC<SwipeablePageProps> = ({
               useNativeDriver: true,
             }).start(() => {
               translateX.setValue(0);
-              navigateToNext();
+              navigateToNext(index);
             });
             return;
           }
@@ -116,29 +118,10 @@ export const SwipeablePage: FC<SwipeablePageProps> = ({
         }).start();
       },
     });
-  }, [
-    currentIndex,
-    totalPages,
-    navigateToNext,
-    navigateToPrevious,
-    translateX,
-  ]);
+  }, [index, totalPages, navigateToNext, navigateToPrevious, translateX]);
 
-  // Store the panResponder in a ref but recreate it when dependencies change
-  const panResponderRef = useRef(createPanResponder());
-
-  useEffect(() => {
-    panResponderRef.current = createPanResponder();
-  }, [createPanResponder]);
-
-  const renderPreview = (direction: "left" | "right") => {
-    const targetIndex =
-      direction === "left" ? currentIndex + 1 : currentIndex - 1;
-    if (targetIndex < 0 || targetIndex >= totalPages) return null;
-
-    const preview =
-      direction === "left" ? previewContent?.next : previewContent?.previous;
-    const leftPosition = direction === "left" ? SCREEN_WIDTH : -SCREEN_WIDTH;
+  const renderPreviewLeft = useMemo(() => {
+    if (index + 1 >= totalPages) return null;
 
     return (
       <Animated.View
@@ -147,7 +130,7 @@ export const SwipeablePage: FC<SwipeablePageProps> = ({
           top: 0,
           bottom: 0,
           width: SCREEN_WIDTH,
-          left: leftPosition,
+          left: SCREEN_WIDTH,
           backgroundColor: theme.colors.surface,
           justifyContent: "center",
           alignItems: "center",
@@ -160,13 +143,43 @@ export const SwipeablePage: FC<SwipeablePageProps> = ({
           ],
         }}
       >
-        <View style={{ flex: 1, width: "100%" }}>{preview}</View>
+        <View style={{ flex: 1, width: "100%" }}>{previewContent?.next}</View>
       </Animated.View>
     );
-  };
+  }, [index, previewContent, theme, totalPages, translateX]);
+
+  const renderPreviewRight = useMemo(() => {
+    if (index - 1 < 0) return null;
+
+    return (
+      <Animated.View
+        style={{
+          position: "absolute",
+          top: 0,
+          bottom: 0,
+          width: SCREEN_WIDTH,
+          left: -SCREEN_WIDTH,
+          backgroundColor: theme.colors.surface,
+          justifyContent: "center",
+          alignItems: "center",
+          opacity: 0.9,
+          zIndex: 1000,
+          transform: [
+            {
+              translateX: translateX,
+            },
+          ],
+        }}
+      >
+        <View style={{ flex: 1, width: "100%" }}>
+          {previewContent?.previous}
+        </View>
+      </Animated.View>
+    );
+  }, [index, previewContent, theme, translateX]);
 
   return (
-    <View style={{ flex: 1 }} {...panResponderRef.current.panHandlers}>
+    <View style={{ flex: 1 }} {...panResponder.panHandlers}>
       {/* Main content */}
       <Animated.View
         style={{
@@ -178,8 +191,8 @@ export const SwipeablePage: FC<SwipeablePageProps> = ({
       </Animated.View>
 
       {/* Preview panels */}
-      {swipeDirection === "left" && renderPreview("left")}
-      {swipeDirection === "right" && renderPreview("right")}
+      {swipeDirection === "left" && renderPreviewLeft}
+      {swipeDirection === "right" && renderPreviewRight}
     </View>
   );
 };

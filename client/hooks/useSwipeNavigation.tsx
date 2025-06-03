@@ -1,9 +1,8 @@
 import { createContext, useContext } from "react";
 
 interface SwipeContextType {
-  navigateToNext: () => void;
-  navigateToPrevious: () => void;
-  currentIndex: number;
+  navigateToNext: (_currentIndex: number) => void;
+  navigateToPrevious: (_currentIndex: number) => void;
   totalPages: number;
 }
 
