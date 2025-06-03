@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useGlobalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import {
@@ -41,9 +41,9 @@ export default function UpdateTablePositionPage() {
   } = useGetTablePositionsQuery(shop.id);
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
     useGetDishCategoriesQuery({ shopId: shop.id });
-  const tablePosition = _.find(
-    tablePositions,
-    (tp) => tp.id === tablePositionId,
+  const tablePosition = useMemo(
+    () => _.find(tablePositions, (tp) => tp.id === tablePositionId),
+    [tablePositions, tablePositionId],
   );
   const [updateTablePosition, { isLoading: updateTablePositionLoading }] =
     useUpdateTablePositionMutation();
@@ -99,8 +99,7 @@ export default function UpdateTablePositionPage() {
     setName(tablePosition.name);
     setCode(tablePosition.code || "");
     setSelectedCategories(tablePosition.dishCategoryIds);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tablePositionId, tablePositionFetching]);
+  }, [tablePositionId, tablePosition, tablePositionFetching]);
 
   if (tablePositionLoading || dishCategoryLoading) {
     return <LoaderBasic />;

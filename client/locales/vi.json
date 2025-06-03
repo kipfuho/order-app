@@ -6,6 +6,7 @@
   "times": "Số lần",
   "cancel": "Huỷ",
   "bill_no": "Mã hoá đơn",
+  "invoice": "Hoá đơn",
   "customer_number": "Số người",
   "table_name": "Tên bàn",
   "check_in": "Giờ vào",
@@ -208,5 +209,12 @@
   "customer_return_amount": "Số tiền trả khách",
   "upload_image": "Tải ảnh lên (< 5MB)",
   "enter_information": "Nhập thông tin",
-  "customer_name": "Tên khách"
+  "customer_name": "Tên khách",
+  "cashier": "Thu ngân",
+  "payment_method": "Hình thức thanh toán",
+  "cancel_paid_status": "Huỷ thanh toán",
+  "print_product_name": "Tên sản phẩm",
+  "print_product_quantity": "SL",
+  "print_product_price": "Đ.Giá",
+  "print_product_total_price": "T.Tiền"
 }

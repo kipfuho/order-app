@@ -8,7 +8,7 @@ const convertOrderSessionForResponse = (orderSessionJson, shouldMergeDishOrders 
   orderSessionJson.tableIds = _.map(orderSessionJson.tables, 'id');
   orderSessionJson.tableName = _.join(orderSessionJson.tableNames, ',');
   orderSessionJson.billNo = formatOrderSessionNo(orderSessionJson);
-  orderSessionJson.endedAt = formatDateHHMMDDMMYYYY(orderSessionJson.endedAt);
+  orderSessionJson.endedAt = orderSessionJson.endedAt ? formatDateHHMMDDMMYYYY(orderSessionJson.endedAt) : 'N/A';
   orderSessionJson.updatedAt = formatDateHHMMDDMMYYYY(orderSessionJson.updatedAt);
   orderSessionJson.createdAt = formatDateHHMMDDMMYYYY(orderSessionJson.createdAt);
   if (!_.isEmpty(orderSessionJson.orders)) {
@@ -43,7 +43,7 @@ const convertOrderSessionHistoryForResponse = (orderSession) => {
   ]);
   orderSessionJson.tableName = _.join(orderSessionJson.tableNames, ',');
   orderSessionJson.billNo = formatOrderSessionNo(orderSessionJson);
-  orderSessionJson.endedAt = formatDateHHMMDDMMYYYY(orderSessionJson.endedAt);
+  orderSessionJson.endedAt = orderSessionJson.endedAt ? formatDateHHMMDDMMYYYY(orderSessionJson.endedAt) : 'N/A';
   orderSessionJson.updatedAt = formatDateHHMMDDMMYYYY(orderSessionJson.updatedAt);
   orderSessionJson.createdAt = formatDateHHMMDDMMYYYY(orderSessionJson.createdAt);
   orderSessionJson.totalTaxAmount -=

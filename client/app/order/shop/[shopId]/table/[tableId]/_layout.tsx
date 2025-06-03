@@ -33,8 +33,7 @@ export default function TableCurrentOrderLayout() {
     if (!table) return;
 
     dispatch(updateTable(table));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFetching, dispatch]);
+  }, [isFetching, table, dispatch]);
 
   if (isLoading) {
     return <LoaderBasic />;

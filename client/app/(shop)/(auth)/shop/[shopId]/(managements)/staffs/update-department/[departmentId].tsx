@@ -1,7 +1,7 @@
 import _ from "lodash";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { useGlobalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import {
   ActivityIndicator,
@@ -27,7 +27,7 @@ import { Collapsible } from "@components/Collapsible";
 import { styles } from "@/constants/styles";
 
 export default function UpdateDepartmentPage() {
-  const { departmentId } = useGlobalSearchParams() as { departmentId: string };
+  const { departmentId } = useLocalSearchParams() as { departmentId: string };
   const router = useRouter();
   const { t } = useTranslation();
 
@@ -39,7 +39,10 @@ export default function UpdateDepartmentPage() {
     isLoading: departmentLoading,
     isFetching: departmentFetching,
   } = useGetDepartmentsQuery(shop.id);
-  const department = _.find(departments, (d) => d.id === departmentId);
+  const department = useMemo(
+    () => _.find(departments, (d) => d.id === departmentId),
+    [departments, departmentId],
+  );
 
   const { data: permissionTypes = [], isLoading: permissionTypeLoading } =
     useGetAllPermissionTypesQuery(shop.id);
@@ -88,8 +91,7 @@ export default function UpdateDepartmentPage() {
 
     setName(department.name);
     setSelectedPermissions(department.permissions);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [departmentId, departmentFetching]);
+  }, [departmentId, department, departmentFetching]);
 
   if (permissionTypeLoading || departmentLoading) {
     return <LoaderBasic />;

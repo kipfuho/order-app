@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ScrollView } from "react-native";
 import { useSelector } from "react-redux";
 import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
@@ -27,25 +27,26 @@ export default function OrderManagementApprovePage() {
   const { currentShop } = useSelector((state: RootState) => state.shop);
   const shop = currentShop as Shop;
 
-  const {
-    data: unconfirmedOrders = [],
-    isLoading: unconfirmedOrderLoading,
-    isFetching: unconfirmedOrderFetching,
-  } = useGetUnconfirmedOrderQuery({ shopId: shop.id });
+  const { data: unconfirmedOrders = [], isLoading: unconfirmedOrderLoading } =
+    useGetUnconfirmedOrderQuery({ shopId: shop.id });
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
     useGetTablePositionsQuery(shop.id);
-  const {
-    data: tables = [],
-    isLoading: tableLoading,
-    isFetching: tableFetching,
-  } = useGetTablesQuery(shop.id);
-
-  const unconfirmedOrderByTable = _.groupBy(unconfirmedOrders, "table");
-  const availableTables = _.filter(
-    tables,
-    (t) => !_.isEmpty(unconfirmedOrderByTable[t.id]),
+  const { data: tables = [], isLoading: tableLoading } = useGetTablesQuery(
+    shop.id,
   );
-  const tablesGroupByPosition = _.groupBy(availableTables, "position.id");
+
+  const unconfirmedOrderByTable = useMemo(
+    () => _.groupBy(unconfirmedOrders, "table"),
+    [unconfirmedOrders],
+  );
+  const availableTables = useMemo(
+    () => _.filter(tables, (t) => !_.isEmpty(unconfirmedOrderByTable[t.id])),
+    [unconfirmedOrderByTable, tables],
+  );
+  const tablesGroupByPosition = useMemo(
+    () => _.groupBy(availableTables, "position.id"),
+    [availableTables],
+  );
   const tablePositionById = _.keyBy(tablePositions, "id");
   tablePositionById["ALL"] = {
     id: "ALL",
@@ -86,8 +87,7 @@ export default function OrderManagementApprovePage() {
     if (_.isEmpty(tables)) return;
 
     setFilteredTables(tablesGroupByPosition);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tableFetching, unconfirmedOrderFetching]);
+  }, [tables, tablesGroupByPosition]);
 
   if (unconfirmedOrderLoading || tablePositionLoading || tableLoading) {
     return <LoaderBasic />;

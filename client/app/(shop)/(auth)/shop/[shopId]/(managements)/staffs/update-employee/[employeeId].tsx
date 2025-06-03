@@ -1,7 +1,7 @@
 import _ from "lodash";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { useGlobalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import {
   ActivityIndicator,
@@ -30,7 +30,7 @@ import { Collapsible } from "@components/Collapsible";
 import { styles } from "@/constants/styles";
 
 export default function UpdateEmployeePage() {
-  const { employeeId } = useGlobalSearchParams() as { employeeId: string };
+  const { employeeId } = useLocalSearchParams() as { employeeId: string };
   const router = useRouter();
   const { t } = useTranslation();
 
@@ -42,7 +42,6 @@ export default function UpdateEmployeePage() {
     isLoading: employeeLoading,
     isFetching: employeeFetching,
   } = useGetEmployeesQuery(shop.id);
-  const employee = _.find(employees, (e) => e.id === employeeId);
   const { data: permissionTypes = [], isLoading: permissionTypeLoading } =
     useGetAllPermissionTypesQuery(shop.id);
   const { data: employeePositions = [], isLoading: employeePositionLoading } =
@@ -51,7 +50,18 @@ export default function UpdateEmployeePage() {
     useGetDepartmentsQuery(shop.id);
   const [updateEmployee, { isLoading: updateEmployeeLoading }] =
     useUpdateEmployeeMutation();
-
+  const employee = useMemo(
+    () => _.find(employees, (e) => e.id === employeeId),
+    [employees, employeeId],
+  );
+  const _employeePosition = useMemo(
+    () => _.find(employeePositions, (d) => d.id === employee?.positionId),
+    [employeePositions, employee],
+  );
+  const _department = useMemo(
+    () => _.find(departments, (d) => d.id === employee?.departmentId),
+    [departments, employee],
+  );
   const [name, setName] = useState("");
   const [position, setPosition] = useState<EmployeePosition>();
   const [department, setDepartment] = useState<Department>();
@@ -116,12 +126,14 @@ export default function UpdateEmployeePage() {
     if (!employee) return;
 
     setName(employee.name);
-    setPosition(_.find(employeePositions, (d) => d.id === employee.positionId));
-    setDepartment(_.find(departments, (d) => d.id === employee.departmentId));
+    setPosition(_employeePosition);
+    setDepartment(_department);
     setSelectedPermissions(employee.permissions);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     employeeId,
+    employee,
+    _employeePosition,
+    _department,
     employeeFetching,
     permissionTypeLoading,
     employeePositionLoading,

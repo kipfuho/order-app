@@ -53,7 +53,7 @@ export default function CreateOrder({
 }: {
   setCreateOrderVisible: Dispatch<SetStateAction<boolean>>;
   goBack: () => void;
-  isNewOrder: boolean;
+  isNewOrder?: boolean;
 }) {
   const { t } = useTranslation();
   const router = useRouter();

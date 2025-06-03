@@ -1,5 +1,5 @@
 import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
 import { AppSyncChannelType, connectAppSyncForShop } from "@apis/aws.service";
@@ -21,7 +21,10 @@ export default function AppLayout() {
   const { t } = useTranslation();
 
   const { data: shops = [], isLoading } = useGetShopsQuery({});
-  const shop = shops.find((s) => s.id.toString() === shopId);
+  const shop = useMemo(
+    () => shops.find((s) => s.id.toString() === shopId),
+    [shops, shopId],
+  );
   const currentShop = useSelector((state: RootState) => state.shop.currentShop);
 
   useEffect(() => {
@@ -34,8 +37,7 @@ export default function AppLayout() {
     return () => {
       dispatch(closeAppSyncChannel({ type: AppSyncChannelType.SHOP }));
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, shops, shopId, isLoading]);
+  }, [dispatch, shops, shopId, shop, isLoading]);
 
   if (isLoading) {
     return <LoaderBasic />;

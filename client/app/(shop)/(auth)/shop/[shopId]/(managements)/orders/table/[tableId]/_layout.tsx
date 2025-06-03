@@ -1,5 +1,5 @@
 import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Surface, Text, useTheme } from "react-native-paper";
 import { useGetTablesQuery } from "@stores/apiSlices/tableApi.slice";
@@ -25,14 +25,16 @@ export default function TableCurrentOrderLayout() {
   );
   const shop = currentShop as Shop;
   const { data: tables = [], isLoading } = useGetTablesQuery(shop.id);
-  const table = tables.find((t) => t.id.toString() === tableId);
+  const table = useMemo(
+    () => tables.find((t) => t.id.toString() === tableId),
+    [tables, tableId],
+  );
 
   useEffect(() => {
     if (!table) return;
 
     dispatch(updateCurrentTable(table));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, tableId, isLoading]);
+  }, [dispatch, tableId, table, isLoading]);
 
   if (isLoading) {
     return <LoaderBasic />;

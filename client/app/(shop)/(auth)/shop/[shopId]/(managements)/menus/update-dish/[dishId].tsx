@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useGlobalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
 import {
@@ -31,7 +31,7 @@ import { useTranslation } from "react-i18next";
 import { uploadDishImageRequest } from "@apis/dish.api.service";
 
 export default function UpdateDishPage() {
-  const { dishId } = useGlobalSearchParams();
+  const { dishId } = useLocalSearchParams();
   const router = useRouter();
   const { t } = useTranslation();
 
@@ -50,7 +50,10 @@ export default function UpdateDishPage() {
   const { data: units = [], isLoading: unitLoading } = useGetUnitsQuery(
     shop.id,
   );
-  const dish = _.find(dishes, (d) => d.id === dishId);
+  const dish = useMemo(
+    () => _.find(dishes, (d) => d.id === dishId),
+    [dishes, dishId],
+  );
   const [updateDish, { isLoading: updateDishLoading }] =
     useUpdateDishMutation();
 
@@ -151,7 +154,7 @@ export default function UpdateDishPage() {
     setUnit(dish.unit);
     setTaxRate(_.toString(dish.taxRate));
     setImages(_.map(dish.imageUrls, (url) => ({ uri: url, loading: false })));
-  }, [dishId, dishFetching]);
+  }, [dishId, dish, dishFetching]);
 
   if (dishLoading || dishCategoryLoading || dishTypeLoading || unitLoading) {
     return <LoaderBasic />;

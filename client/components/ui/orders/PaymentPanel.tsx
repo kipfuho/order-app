@@ -12,7 +12,7 @@ import { RootState } from "@stores/store";
 import { OrderSession, Shop } from "@stores/state.interface";
 import { ConfirmCancelDialog } from "../CancelDialog";
 import { resetCurrentTable } from "@stores/shop.slice";
-import { goToTablesForOrderList } from "@apis/navigate.service";
+import { goToOrderSessionDetail } from "@apis/navigate.service";
 import { PaymentComponentMap, PaymentMethod } from "@constants/paymentMethod";
 import { convertPaymentAmount } from "@constants/utils";
 
@@ -54,9 +54,10 @@ export default function PaymentMethodPage() {
 
       setPaymentDialogVisible(false);
       dispatch(resetCurrentTable());
-      goToTablesForOrderList({
+      goToOrderSessionDetail({
         router,
         shopId: shop.id,
+        orderSessionId: orderSession.id,
       });
     } catch (error: any) {
       Toast.show({

@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ScrollView } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
@@ -33,26 +33,29 @@ export default function OrderManagementOrderPage() {
   const { currentShop } = useSelector((state: RootState) => state.shop);
   const shop = currentShop as Shop;
 
-  const {
-    data: tablesForOrder = [],
-    isLoading: tableForOrderLoading,
-    isFetching: tableForOrderFetching,
-  } = useGetTablesForOrderQuery(shop.id);
+  const { data: tablesForOrder = [], isLoading: tableForOrderLoading } =
+    useGetTablesForOrderQuery(shop.id);
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
     useGetTablePositionsQuery(shop.id);
   const { data: tables = [], isLoading: tableLoading } = useGetTablesQuery(
     shop.id,
   );
 
-  const tablesGroupByPosition = _.groupBy(tablesForOrder, "position");
-  const tablePositionById = _.keyBy(tablePositions, "id");
-  tablePositionById["ALL"] = {
-    id: "ALL",
-    name: t("all"),
-    code: "all",
-    shopId: "",
-    dishCategoryIds: [],
-  };
+  const tablesGroupByPosition = useMemo(
+    () => _.groupBy(tablesForOrder, "position"),
+    [tablesForOrder],
+  );
+  const tablePositionById = useMemo(() => {
+    const _tablePositionById = _.keyBy(tablePositions, "id");
+    _tablePositionById["ALL"] = {
+      id: "ALL",
+      name: t("all"),
+      code: "all",
+      shopId: "",
+      dishCategoryIds: [],
+    };
+    return _tablePositionById;
+  }, [tablePositions, t]);
 
   const [filteredTables, setFilteredTables] = useState<
     Record<string, TableForOrder[]>
@@ -95,8 +98,7 @@ export default function OrderManagementOrderPage() {
     if (_.isEmpty(tablesForOrder)) return;
 
     setFilteredTables(tablesGroupByPosition);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tablesForOrder, tableForOrderFetching]);
+  }, [tablesForOrder, tablesGroupByPosition]);
 
   if (tableForOrderLoading || tablePositionLoading || tableLoading) {
     return <LoaderBasic />;

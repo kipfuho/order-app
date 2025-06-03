@@ -1,4 +1,4 @@
-import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "@stores/store";
 import { LoaderBasic } from "@components/ui/Loader";
@@ -9,8 +9,8 @@ import { styles } from "@/constants/styles";
 import { useTranslation } from "react-i18next";
 import { goToTablesForOrderList } from "@/apis/navigate.service";
 
-export default function PaymentOrderSessionLayout() {
-  const { orderSessionId } = useGlobalSearchParams() as {
+export default function OrderSessionDetailLayout() {
+  const { orderSessionId } = useLocalSearchParams() as {
     orderSessionId: string;
   };
   const router = useRouter();

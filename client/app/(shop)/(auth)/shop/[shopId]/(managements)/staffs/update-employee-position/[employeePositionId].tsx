@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { useGlobalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import {
   ActivityIndicator,
@@ -24,7 +24,7 @@ import { AppBar } from "@components/AppBar";
 import { styles } from "@/constants/styles";
 
 export default function UpdateEmployeePositionPage() {
-  const { employeePositionId } = useGlobalSearchParams() as {
+  const { employeePositionId } = useLocalSearchParams() as {
     employeePositionId: string;
   };
   const router = useRouter();
@@ -38,9 +38,9 @@ export default function UpdateEmployeePositionPage() {
     isLoading: employeePositionLoading,
     isFetching: employeePositionFetching,
   } = useGetEmployeePositionsQuery(shop.id);
-  const employeePosition = _.find(
-    employeePositions,
-    (ep) => ep.id === employeePositionId,
+  const employeePosition = useMemo(
+    () => _.find(employeePositions, (ep) => ep.id === employeePositionId),
+    [employeePositions, employeePositionId],
   );
 
   const [updateEmployeePosition, { isLoading: updateEmployeePositionLoading }] =
@@ -83,8 +83,7 @@ export default function UpdateEmployeePositionPage() {
     if (!employeePosition) return;
 
     setName(employeePosition.name);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [employeePositionId, employeePositionFetching]);
+  }, [employeePositionId, employeePosition, employeePositionFetching]);
 
   if (employeePositionLoading) {
     return <LoaderBasic />;

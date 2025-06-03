@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useGlobalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
 import {
@@ -25,7 +25,7 @@ import { useTranslation } from "react-i18next";
 import { styles } from "@/constants/styles";
 
 export default function UpdateDishCategoryPage() {
-  const { dishCategoryId } = useGlobalSearchParams();
+  const { dishCategoryId } = useLocalSearchParams();
   const router = useRouter();
   const { t } = useTranslation();
 
@@ -37,7 +37,10 @@ export default function UpdateDishCategoryPage() {
     isLoading: dishCategoryLoading,
     isFetching: dishCategoryFetching,
   } = useGetDishCategoriesQuery({ shopId: shop.id });
-  const dishCategory = _.find(dishCategories, (dc) => dc.id === dishCategoryId);
+  const dishCategory = useMemo(
+    () => _.find(dishCategories, (dc) => dc.id === dishCategoryId),
+    [dishCategories, dishCategoryId],
+  );
   const [updateDishCategory, { isLoading: updateDishCategoryLoading }] =
     useUpdateDishCategoryMutation();
 
@@ -50,8 +53,7 @@ export default function UpdateDishCategoryPage() {
 
     setName(dishCategory.name);
     setCode(dishCategory.code);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dishCategoryId, dishCategoryFetching]);
+  }, [dishCategoryId, dishCategory, dishCategoryFetching]);
 
   const handleUpdateDishCategory = async () => {
     if (!dishCategory) {

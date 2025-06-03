@@ -242,6 +242,7 @@ export default function OrderSessionDetailPage({
 
         {(orderSessionDetail.taxDetails || []).map((taxDetail) => (
           <View
+            key={taxDetail.taxRate}
             style={{
               flexDirection: "row",
               justifyContent: "space-between",

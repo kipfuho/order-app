@@ -2,7 +2,7 @@ const _ = require('lodash');
 const moment = require('moment-timezone');
 const redisClient = require('../../utils/redis');
 const { getShopFromCache } = require('../../metadata/shopMetadata.service');
-const { getShopTimeZone } = require('../../middlewares/clsHooked');
+const { getShopTimeZone, getOperatorFromSession } = require('../../middlewares/clsHooked');
 const { Order, OrderSession, Cart } = require('../../models');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const { OrderSessionDiscountType, DiscountValueType, OrderSessionStatus } = require('../../utils/constant');
@@ -266,14 +266,17 @@ const getOrCreateOrderSession = async ({
   const shop = await getShopFromCache({ shopId });
   const orderSessionNo = await getOrderSessionNoForNewOrderSession({ shopId });
   const customerInfo = await _getCustomerInfoForCreatingOrderSession({ customerId, numberOfCustomer });
+  const operator = getOperatorFromSession();
   const orderSession = await OrderSession.create({
     data: {
+      ...customerInfo,
       tableIds: [tableId],
       tableNames: [table.name],
       shopId,
       orderSessionNo,
       taxRate: _.get(shop, 'taxRate', 0),
-      ...customerInfo,
+      startedByUserId: _.get(operator, 'user.id'),
+      startedByUserName: _.get(operator, 'employee.name') || _.get(operator, 'user.name'),
     },
   });
 

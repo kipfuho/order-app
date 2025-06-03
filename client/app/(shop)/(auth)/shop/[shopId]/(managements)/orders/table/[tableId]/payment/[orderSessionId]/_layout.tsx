@@ -1,5 +1,5 @@
-import { Redirect, Stack, useGlobalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { Redirect, Stack, useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@stores/store";
 import { LoaderBasic } from "@components/ui/Loader";
@@ -9,12 +9,12 @@ import { Shop, Table } from "@stores/state.interface";
 import { OrderSessionStatus } from "@constants/common";
 
 export default function PaymentOrderSessionLayout() {
-  const { orderSessionId } = useGlobalSearchParams() as {
+  const { orderSessionId } = useLocalSearchParams() as {
     orderSessionId: string;
   };
   const dispatch = useDispatch();
 
-  const { currentShop, currentTable } = useSelector(
+  const { currentShop, currentTable, currentOrderSession } = useSelector(
     (state: RootState) => state.shop,
   );
   const shop = currentShop as Shop;
@@ -29,8 +29,12 @@ export default function PaymentOrderSessionLayout() {
     tableId: table.id,
   });
 
-  const activeOrderSession = activeOrderSessions.find(
-    (orderSession) => orderSession.id === orderSessionId,
+  const activeOrderSession = useMemo(
+    () =>
+      activeOrderSessions.find(
+        (orderSession) => orderSession.id === orderSessionId,
+      ),
+    [activeOrderSessions, orderSessionId],
   );
 
   const [shouldRedirect, setShouldRedirect] = useState(false);
@@ -57,7 +61,7 @@ export default function PaymentOrderSessionLayout() {
     activeOrderSession,
   ]);
 
-  if (activeOrderSessionLoading) {
+  if (activeOrderSessionLoading || !currentOrderSession) {
     return <LoaderBasic />;
   }
 

@@ -6,6 +6,7 @@
   "times": "Times",
   "cancel": "Cancel",
   "bill_no": "Bill no",
+  "invoice": "Invoice",
   "customer_number": "Number of customer",
   "table_name": "Table name",
   "check_in": "Check in",
@@ -208,5 +209,12 @@
   "customer_return_amount": "Customer return amount",
   "upload_image": "Upload Images (< 5MB)",
   "enter_information": "Enter information",
-  "customer_name": "Customer Name"
+  "customer_name": "Customer Name",
+  "cashier": "Cashier",
+  "payment_method": "Payment method",
+  "cancel_paid_status": "Cancel paid status",
+  "print_product_name": "Product name",
+  "print_product_quantity": "QTY",
+  "print_product_price": "Price",
+  "print_product_total_price": "Total"
 }

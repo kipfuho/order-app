@@ -49,7 +49,7 @@ export default function TabLayout() {
         initialParams={{ shopId }}
       />
 
-      {["table/[tableId]"].map((name) => (
+      {["table/[tableId]", "invoice"].map((name) => (
         <Tabs.Screen
           key={name}
           name={name}

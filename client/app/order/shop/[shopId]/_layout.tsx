@@ -36,8 +36,7 @@ export default function AppLayout() {
     return () => {
       dispatch(closeAppSyncChannel({ type: AppSyncChannelType.CUSTOMER }));
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shopId, isFetching, dispatch]);
+  }, [shopId, shop, isFetching, dispatch]);
 
   if (isLoading) {
     return <LoaderBasic />;

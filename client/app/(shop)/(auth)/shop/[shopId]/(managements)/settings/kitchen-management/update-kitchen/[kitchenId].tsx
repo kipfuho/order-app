@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
@@ -48,7 +48,10 @@ export default function UpdateKitchenPage() {
     useGetDishCategoriesQuery({ shopId: shop.id });
   const [updateKitchen, { isLoading: updateKitchenLoading }] =
     useUpdateKitchenMutation();
-  const kitchen = _.find(kitchens, (kc) => kc.id === kitchenId);
+  const kitchen = useMemo(
+    () => _.find(kitchens, (kc) => kc.id === kitchenId),
+    [kitchens, kitchenId],
+  );
 
   const [name, setName] = useState("");
   const [selectedTables, setSelectedTables] = useState<string[]>([]);
@@ -99,8 +102,7 @@ export default function UpdateKitchenPage() {
     if (!kitchen) return;
 
     setName(kitchen.name);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kitchenId, kitchenFetching]);
+  }, [kitchenId, kitchen, kitchenFetching]);
 
   if (kitchenLoading || tableLoading || dishCategoryLoading) {
     return <LoaderBasic />;
