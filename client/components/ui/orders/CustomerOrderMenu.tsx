@@ -1,5 +1,5 @@
 import { Surface } from "react-native-paper";
-import { useCallback, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import _, { debounce } from "lodash";
 import { LoaderBasic } from "@components/ui/Loader";
@@ -62,22 +62,20 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
   const [updateCart, { isLoading: updateCartLoading }] =
     useUpdateCartMutation();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedUpdateCart = useCallback(
-    debounce(
-      ({ shopId, cartItems }: { shopId: string; cartItems: CartItem[] }) => {
-        dispatch(updateIsUpdateCartDebouncing(false));
-        if (!updateCartLoading) {
+  const debouncedUpdateCart = useMemo(
+    () =>
+      debounce(
+        ({ shopId, cartItems }: { shopId: string; cartItems: CartItem[] }) => {
+          dispatch(updateIsUpdateCartDebouncing(false));
           updateCart({ cartItems, shopId });
-        }
-      },
-      1000,
-    ),
-    [updateCart],
+        },
+        1000,
+      ),
+    [dispatch, updateCart],
   );
 
   useEffect(() => {
-    if (cartFetching) {
+    if (cartFetching || updateCartLoading) {
       return;
     }
 
@@ -91,8 +89,16 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
         cartItems: mergeCartItems(currentCartItem),
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentCartItem, cartFetching, debouncedUpdateCart]);
+  }, [
+    currentCartItem,
+    cartFetching,
+    updateCartLoading,
+    cart,
+    currentCartAmount,
+    debouncedUpdateCart,
+    dispatch,
+    shop,
+  ]);
 
   if (dishCategoryLoading || cartLoading) {
     return <LoaderBasic />;

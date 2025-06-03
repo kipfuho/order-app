@@ -38,7 +38,6 @@ async function importLocales() {
   data.forEach((row) => {
     const key = row[0]; // Get the key from index 0
     if (row.length < lang.length) {
-      // eslint-disable-next-line
       row = _.concat(row, _.fill(Array(lang.length - row.length), ""));
     }
     row.forEach((value, index) => {
@@ -59,7 +58,6 @@ async function importLocales() {
     const jsonString = JSON.stringify(objectData, null, 2);
 
     // Write the JSON string to the corresponding JSON file
-    // eslint-disable-next-line
     fs.writeFile(filePath, jsonString, (err) => {
       if (err) {
         console.error(`Error writing JSON file for ${country}: ${err}`);

@@ -1,5 +1,5 @@
 import { debounce } from "lodash";
-import { memo, useCallback, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { View } from "react-native";
 import { Card, IconButton, Switch, Text, Tooltip } from "react-native-paper";
 import { Image } from "expo-image";
@@ -28,23 +28,21 @@ const DishCard = ({
 
   const onToggleSwitch = () => {
     setOnSale((prev) => !prev);
+    if (updateDishLoading) return;
+
     updateDishStatus(!onSale);
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const updateDishStatus = useCallback(
-    debounce(async (activated) => {
-      if (updateDishLoading) {
-        return;
-      }
-
-      await updateDish({
-        dishId: dish.id,
-        shopId: dish.shopId,
-        status: activated ? DishStatus.activated : DishStatus.deactivated,
-      }).unwrap();
-    }, 500),
-    [],
+  const updateDishStatus = useMemo(
+    () =>
+      debounce(async (activated) => {
+        await updateDish({
+          dishId: dish.id,
+          shopId: dish.shopId,
+          status: activated ? DishStatus.activated : DishStatus.deactivated,
+        }).unwrap();
+      }, 500),
+    [dish, updateDish],
   );
 
   if (cardWidth < 1) {

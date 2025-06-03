@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { Button, Searchbar, Surface, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
@@ -22,21 +22,22 @@ export default function ShopsPage() {
   const [filteredShops, setFilteredShops] = useState<Shop[]>([]);
   const [searchValue, setSearchValue] = useState("");
 
-  const handleSearch = useCallback(
-    debounce((_searchValue: string) => {
-      const searchValueLowerCase = _searchValue.toLowerCase();
-      const matchedShops = _.filter(shops, (shop) =>
-        _.includes((shop.name || "").toLowerCase(), searchValueLowerCase),
-      );
+  const handleSearch = useMemo(
+    () =>
+      debounce((_searchValue: string) => {
+        const searchValueLowerCase = _searchValue.toLowerCase();
+        const matchedShops = _.filter(shops, (shop) =>
+          _.includes((shop.name || "").toLowerCase(), searchValueLowerCase),
+        );
 
-      setFilteredShops(matchedShops);
-    }, 200),
+        setFilteredShops(matchedShops);
+      }, 200),
     [shops],
   );
 
   useEffect(() => {
     handleSearch(searchValue);
-  }, [searchValue, isFetching]);
+  }, [searchValue, isFetching, handleSearch]);
 
   if (isLoading) {
     return <LoaderBasic />;

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
@@ -11,7 +11,7 @@ import {
 } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
-import _ from "lodash";
+import _, { debounce } from "lodash";
 import { RootState } from "@stores/store";
 import { Department, EmployeePosition, Shop } from "@stores/state.interface";
 import {
@@ -60,34 +60,36 @@ export default function CreateEmployeePage() {
     );
   };
 
-  const debouncedCheckEmail = useRef(
-    _.debounce(async (emailToCheck: string) => {
-      if (!emailToCheck.trim()) return;
+  const debouncedCheckEmail = useMemo(
+    () =>
+      debounce(async (emailToCheck: string) => {
+        if (!emailToCheck.trim()) return;
 
-      setCheckingEmail(true);
-      try {
-        // Replace this with your actual API call
-        const exists = await checkUserByEmailRequest(emailToCheck);
-        setEmailExists(exists);
+        setCheckingEmail(true);
+        try {
+          // Replace this with your actual API call
+          const exists = await checkUserByEmailRequest(emailToCheck);
+          setEmailExists(exists);
 
-        if (exists) {
+          if (exists) {
+            Toast.show({
+              type: "info",
+              text1: t("email_exists"),
+              text2: t("email_exist_cannot_enter_password"),
+            });
+          }
+        } catch {
           Toast.show({
-            type: "info",
-            text1: t("email_exists"),
-            text2: t("email_exist_cannot_enter_password"),
+            type: "error",
+            text1: t("create_failed"),
+            text2: t("error_any"),
           });
+        } finally {
+          setCheckingEmail(false);
         }
-      } catch {
-        Toast.show({
-          type: "error",
-          text1: t("create_failed"),
-          text2: t("error_any"),
-        });
-      } finally {
-        setCheckingEmail(false);
-      }
-    }, 800),
-  ).current;
+      }, 800),
+    [t],
+  );
 
   const handleCreateEmployee = async () => {
     if (

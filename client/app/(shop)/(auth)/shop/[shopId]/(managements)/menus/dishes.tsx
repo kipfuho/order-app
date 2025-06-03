@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "@stores/store";
@@ -105,19 +105,19 @@ export default function DishesManagementPage() {
 
   const gesture = createDismissGesture(onDismissSearch);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSearchDishes = useCallback(
-    debounce((_searchValue: string) => {
-      const searchValueLowerCase = _searchValue.toLowerCase();
-      const matchedDishes = _.filter(
-        dishes,
-        (dish) =>
-          _.includes((dish.name || "").toLowerCase(), searchValueLowerCase) ||
-          _.includes((dish.code || "").toLowerCase(), searchValueLowerCase),
-      );
+  const debouncedSearchDishes = useMemo(
+    () =>
+      debounce((_searchValue: string) => {
+        const searchValueLowerCase = _searchValue.toLowerCase();
+        const matchedDishes = _.filter(
+          dishes,
+          (dish) =>
+            _.includes((dish.name || "").toLowerCase(), searchValueLowerCase) ||
+            _.includes((dish.code || "").toLowerCase(), searchValueLowerCase),
+        );
 
-      setFilteredDishGroupById(_.groupBy(matchedDishes, "category.id"));
-    }, 200),
+        setFilteredDishGroupById(_.groupBy(matchedDishes, "category.id"));
+      }, 200),
     [dishes],
   );
 

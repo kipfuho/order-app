@@ -6,13 +6,7 @@ import {
   Surface,
   Text,
 } from "react-native-paper";
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Keyboard, ScrollView } from "react-native";
 import Toast from "react-native-toast-message";
@@ -68,7 +62,7 @@ export default function CreateOrder({
   } = useSelector((state: RootState) => state.shop);
   const shop = currentShop as Shop;
 
-  const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery({
+  const { isLoading: dishLoading } = useGetDishesQuery({
     shopId: shop.id,
   });
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
@@ -121,38 +115,38 @@ export default function CreateOrder({
     }
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSearchDishes = useCallback(
-    debounce((_selectedDishType: string, _searchValue: string) => {
-      const tableDishes = _.flatMap(
-        currentTable?.position.dishCategoryIds,
-        (dishCategoryId) => {
-          return dishesByCategory[dishCategoryId] || [];
-        },
-      );
-      const searchValueLowerCase = _searchValue.toLowerCase();
-      const filteredDishes = _.filter(tableDishes, (d) => {
-        if (_selectedDishType !== "ALL") {
-          return (
-            d.type === _selectedDishType &&
-            (_.includes((d.name || "").toLowerCase(), searchValueLowerCase) ||
-              _.includes((d.code || "").toLowerCase(), searchValueLowerCase))
-          );
-        }
-        return (
-          _.includes((d.name || "").toLowerCase(), searchValueLowerCase) ||
-          _.includes((d.code || "").toLowerCase(), searchValueLowerCase)
+  const debouncedSearchDishes = useMemo(
+    () =>
+      debounce((_selectedDishType: string, _searchValue: string) => {
+        const tableDishes = _.flatMap(
+          currentTable?.position.dishCategoryIds,
+          (dishCategoryId) => {
+            return dishesByCategory[dishCategoryId] || [];
+          },
         );
-      });
+        const searchValueLowerCase = _searchValue.toLowerCase();
+        const filteredDishes = _.filter(tableDishes, (d) => {
+          if (_selectedDishType !== "ALL") {
+            return (
+              d.type === _selectedDishType &&
+              (_.includes((d.name || "").toLowerCase(), searchValueLowerCase) ||
+                _.includes((d.code || "").toLowerCase(), searchValueLowerCase))
+            );
+          }
+          return (
+            _.includes((d.name || "").toLowerCase(), searchValueLowerCase) ||
+            _.includes((d.code || "").toLowerCase(), searchValueLowerCase)
+          );
+        });
 
-      setFilteredDishesByCategory(_.groupBy(filteredDishes, "category.id"));
-      setApplicableCategories(
-        dishCategories.filter((dc) =>
-          currentTable?.position.dishCategoryIds.includes(dc.id),
-        ),
-      );
-    }, 200),
-    [dishes, dishCategories, currentTable, dishesByCategory],
+        setFilteredDishesByCategory(_.groupBy(filteredDishes, "category.id"));
+        setApplicableCategories(
+          dishCategories.filter((dc) =>
+            currentTable?.position.dishCategoryIds.includes(dc.id),
+          ),
+        );
+      }, 200),
+    [dishCategories, currentTable, dishesByCategory],
   );
 
   useEffect(() => {

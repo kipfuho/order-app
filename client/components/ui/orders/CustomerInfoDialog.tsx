@@ -4,6 +4,7 @@ import {
   SetStateAction,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { Button, Dialog, Text, TextInput } from "react-native-paper";
@@ -28,28 +29,28 @@ export function CustomerInfoDialog({
   const [customerPhone, setCustomerPhone] = useState("");
   const [numberOfCustomer, setNumberOfCustomer] = useState("1");
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedUpdateCustomerInfo = useCallback(
-    debounce(
-      ({
-        customerName,
-        customerPhone,
-        numberOfCustomer,
-      }: {
-        customerName: string;
-        customerPhone: string;
-        numberOfCustomer: string;
-      }) => {
-        dispatch(
-          updateCurrentCustomerInfo({
-            customerName,
-            customerPhone,
-            numberOfCustomer: _.toNumber(numberOfCustomer),
-          }),
-        );
-      },
-      300,
-    ), // 300ms delay
+  const debouncedUpdateCustomerInfo = useMemo(
+    () =>
+      debounce(
+        ({
+          customerName,
+          customerPhone,
+          numberOfCustomer,
+        }: {
+          customerName: string;
+          customerPhone: string;
+          numberOfCustomer: string;
+        }) => {
+          dispatch(
+            updateCurrentCustomerInfo({
+              customerName,
+              customerPhone,
+              numberOfCustomer: _.toNumber(numberOfCustomer),
+            }),
+          );
+        },
+        300,
+      ),
     [dispatch],
   );
 

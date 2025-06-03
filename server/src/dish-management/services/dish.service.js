@@ -80,6 +80,7 @@ const updateDish = async ({ shopId, dishId, updateBody }) => {
       type: updateBody.type,
       categoryId: updateBody.categoryId,
       unitId: updateBody.unitId,
+      status: updateBody.status,
       shopId,
       imageUrls: updateBody.imageUrls || [],
       description: updateBody.description,
