@@ -73,6 +73,15 @@ const convertHourForDisplay = (hour?: number) => {
   return `${paddedHour}:00`;
 };
 
+const oneSecondBeforeTodayUTC = () => {
+  const now = new Date();
+  const startOfTodayUTC = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  );
+
+  return new Date(startOfTodayUTC.getTime() - 1000);
+};
+
 export {
   getCountryCurrency,
   convertPaymentAmount,
@@ -80,4 +89,5 @@ export {
   getMinuteForDisplay,
   getStatusColor,
   convertHourForDisplay,
+  oneSecondBeforeTodayUTC,
 };

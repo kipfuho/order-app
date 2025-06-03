@@ -21,6 +21,7 @@ import FlatListWithoutScroll from "@/components/FlatListWithoutScroll";
 import { styles } from "@/constants/styles";
 import { ItemTypeFlatList } from "@/components/FlatListWithScroll";
 import { useInfiniteScrollingQuery } from "@/hooks/useInfiniteScrolling";
+import { oneSecondBeforeTodayUTC } from "@/constants/utils";
 
 const KitchenServingHistory = () => {
   const { i18n, t } = useTranslation();
@@ -60,7 +61,7 @@ const KitchenServingHistory = () => {
           startDate={range.startDate}
           endDate={range.endDate}
           onDismiss={() => setOpen(false)}
-          validRange={{ endDate: new Date(Date.now() - 86400000) }}
+          validRange={{ endDate: oneSecondBeforeTodayUTC() }}
           onConfirm={({ startDate, endDate }) => {
             setOpen(false);
             setRange({ startDate, endDate });

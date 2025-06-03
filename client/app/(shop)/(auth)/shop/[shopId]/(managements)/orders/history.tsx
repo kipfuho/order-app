@@ -23,6 +23,7 @@ import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
 import OrderHistoryCard from "@components/ui/orders/OrderHistoryCard";
 import { styles } from "@/constants/styles";
+import { oneSecondBeforeTodayUTC } from "@/constants/utils";
 
 export default function OrderManagementHistoryPage() {
   const router = useRouter();
@@ -62,7 +63,7 @@ export default function OrderManagementHistoryPage() {
           startDate={range.startDate}
           endDate={range.endDate}
           onDismiss={() => setOpen(false)}
-          validRange={{ endDate: new Date(Date.now()) }}
+          validRange={{ endDate: oneSecondBeforeTodayUTC() }}
           onConfirm={({ startDate, endDate }) => {
             setOpen(false);
             setRange({ startDate, endDate });
