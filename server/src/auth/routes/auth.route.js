@@ -27,5 +27,6 @@ router.post('/check-user-by-email', auth(), authController.checkUserExistByEmail
 router.post('/login-for-anonymous-customer', authController.loginForAnonymousCustomer);
 router.post('/login-for-customer', authController.loginForCustomer);
 router.post('/register-for-customer', authController.registerForCustomer);
+router.post('/permissions', auth(), authController.getPermissions);
 
 module.exports = router;

@@ -11,6 +11,7 @@ import { goToShopList } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { closeAppSyncChannel } from "@stores/awsSlice";
 import { styles } from "@/constants/styles";
+import { getPermissionsRequest } from "@/apis/auth.api.service";
 
 export default function AppLayout() {
   const { shopId } = useGlobalSearchParams() as { shopId: string };
@@ -28,6 +29,7 @@ export default function AppLayout() {
 
     dispatch(updateCurrentShop(shop));
     connectAppSyncForShop({ shopId: shop.id });
+    getPermissionsRequest({ shopId: shop.id });
 
     return () => {
       dispatch(closeAppSyncChannel({ type: AppSyncChannelType.SHOP }));

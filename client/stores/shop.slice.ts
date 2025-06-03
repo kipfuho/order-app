@@ -10,6 +10,7 @@ type CustomerInfo = {
 };
 
 interface ShopState {
+  userPermission: Set<string>;
   currentShop: Shop | null;
   currentOrder: Record<string, Partial<DishOrder>>;
   currentOrderTotalAmount: number;
@@ -22,6 +23,7 @@ interface ShopState {
 
 // Initial state
 const initialState: ShopState = {
+  userPermission: new Set(),
   currentShop: null,
   currentOrder: {},
   currentOrderTotalAmount: 0,
@@ -41,6 +43,15 @@ export const shopSlice = createSlice({
   name: "shop",
   initialState,
   reducers: {
+    updatePermissions: (
+      state,
+      action: PayloadAction<{ permissions: string[] }>,
+    ) => {
+      if (!action.payload) return;
+
+      state.userPermission = new Set(action.payload.permissions);
+    },
+
     updateCurrentShop: (state, action: PayloadAction<Shop>) => {
       if (!action.payload) return;
 
@@ -152,6 +163,7 @@ export const shopSlice = createSlice({
 
 // Action creators
 export const {
+  updatePermissions,
   updateCurrentShop,
   resetCurrentOrder,
   resetCurrentTable,

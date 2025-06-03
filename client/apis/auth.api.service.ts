@@ -1,3 +1,4 @@
+import { updatePermissions } from "@/stores/shop.slice";
 import { signIn, signInForCustomer } from "../stores/authSlice";
 import { Customer, Tokens, User } from "../stores/state.interface";
 import { apiRequest } from "./api.service";
@@ -193,6 +194,22 @@ const registerForCustomerRequest = async ({
   }
 };
 
+const getPermissionsRequest = async ({ shopId }: { shopId: string }) => {
+  const accessToken = await getAccessTokenLazily();
+
+  const result: { permissions: string[] } = await apiRequest({
+    method: "POST",
+    endpoint: "v1/auth/permissions",
+    token: accessToken,
+    data: { shopId },
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require("@stores/store").default.dispatch(
+    updatePermissions({ permissions: result.permissions }),
+  );
+};
+
 export {
   loginRequest,
   refreshTokensRequest,
@@ -200,4 +217,5 @@ export {
   loginForAnonymousCustomerRequest,
   loginForCustomerRequest,
   registerForCustomerRequest,
+  getPermissionsRequest,
 };

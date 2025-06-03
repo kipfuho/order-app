@@ -3,6 +3,7 @@ const catchAsync = require('../../utils/catchAsync');
 const { authService, userService, tokenService, emailService } = require('../services');
 const authConverter = require('../converters/auth.converter');
 const customerService = require('../../customer-management/services/customerManagement.service');
+const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const register = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
@@ -89,6 +90,11 @@ const checkUserExistByEmail = catchAsync(async (req, res) => {
   res.send({ exist });
 });
 
+const getPermissions = catchAsync(async (req, res) => {
+  const { permissions } = getOperatorFromSession();
+  res.send({ permissions: permissions || [] });
+});
+
 module.exports = {
   register,
   loginWithProtobuf,
@@ -103,4 +109,5 @@ module.exports = {
   verifyEmail,
   checkUserExistByEmail,
   registerForCustomer,
+  getPermissions,
 };
