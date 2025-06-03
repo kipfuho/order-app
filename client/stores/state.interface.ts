@@ -185,20 +185,23 @@ interface OrderSession {
   endedAt: string;
   paymentDetails: PaymentDetail[];
   pretaxPaymentAmount: number;
+  revenueAmount: number;
   paymentAmount: number;
   numberOfCustomer: number;
   customerName: string;
   customerPhone: string;
-  customerId: string;
   customerAddress: string;
   beforeTaxTotalDiscountAmount: number;
   afterTaxTotalDiscountAmount: number;
-  employeeName?: string;
+  startedByUserName?: string;
+  paidByUserName?: string;
+  cancelledByUserName?: string;
+  cancellationReason?: string;
 }
 
 interface PaymentDetail {
   paymentMethod: PaymentMethod;
-  paymentAmount?: number;
+  paymentAmount: number;
 }
 
 interface Order {

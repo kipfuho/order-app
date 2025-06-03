@@ -46,9 +46,26 @@ const convertOrderSessionHistoryForResponse = (orderSession) => {
   orderSessionJson.endedAt = formatDateHHMMDDMMYYYY(orderSessionJson.endedAt);
   orderSessionJson.updatedAt = formatDateHHMMDDMMYYYY(orderSessionJson.updatedAt);
   orderSessionJson.createdAt = formatDateHHMMDDMMYYYY(orderSessionJson.createdAt);
+  orderSessionJson.totalTaxAmount -=
+    orderSessionJson.afterTaxTotalDiscountAmount - orderSessionJson.beforeTaxTotalDiscountAmount;
+  orderSessionJson.paymentDetails = (orderSessionJson.paymentDetails || []).map((paymentDetail) => ({
+    paymentMethod: paymentDetail.paymentMethod,
+    paymentAmount: paymentDetail.paymentAmount,
+  }));
+  orderSessionJson.taxDetails = (orderSessionJson.taxDetails || []).map((taxDetail) => ({
+    taxAmount: taxDetail.taxAmount - _.get(orderSessionJson, `discountDetailByTax.${taxDetail.taxRate}`, 0),
+    taxRate: taxDetail.taxRate,
+  }));
 
   delete orderSessionJson.orderSessionNo;
   delete orderSessionJson.tableNames;
+  delete orderSessionJson.startedByUserId;
+  delete orderSessionJson.paidByUserId;
+  delete orderSessionJson.cancelledByUserId;
+  delete orderSessionJson.customerId;
+  delete orderSessionJson.auditedAt;
+  delete orderSessionJson.totalTaxAmount;
+  delete orderSessionJson.discountDetailByTax;
   return orderSessionJson;
 };
 /* eslint-enable no-param-reassign */

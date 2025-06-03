@@ -1,8 +1,26 @@
+import {
+  useCancelOrderSessionPaidStatusMutation,
+  useGetOrderSessionDetailQuery,
+} from "@/stores/apiSlices/orderApi.slice";
+import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import { View, ScrollView } from "react-native";
 import { Text, Button, DataTable, Card, Surface } from "react-native-paper";
 
-const InvoicePage = () => {
+const InvoiceDetailPage = () => {
+  const { orderSessionId, shopId } = useLocalSearchParams() as {
+    orderSessionId: string;
+    shopId: string;
+  };
+  const { data: orderSessionDetail } = useGetOrderSessionDetailQuery({
+    orderSessionId,
+    shopId,
+  });
+  const [
+    cancelOrderSessionPaidStatus,
+    { isLoading: cancelOrderSessionPaidStatusLoading },
+  ] = useCancelOrderSessionPaidStatusMutation();
+
   return (
     <Surface>
       <ScrollView style={{ padding: 16, backgroundColor: "#fff" }}>
@@ -75,4 +93,4 @@ const InvoicePage = () => {
   );
 };
 
-export default InvoicePage;
+export default InvoiceDetailPage;

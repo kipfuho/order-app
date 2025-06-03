@@ -10,7 +10,13 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { getTableFromCache, getTablesFromCache } = require('../../metadata/tableMetadata.service');
 const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
-const { getRoundTaxAmount, getRoundDishPrice, getStartTimeOfToday, getRoundDiscountAmount } = require('../../utils/common');
+const {
+  getRoundTaxAmount,
+  getRoundDishPrice,
+  getStartTimeOfToday,
+  getRoundDiscountAmount,
+  divideToNPart,
+} = require('../../utils/common');
 const { getCustomerFromCache } = require('../../metadata/customerMetadata.service');
 const { notifyNewOrder, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 
@@ -589,7 +595,46 @@ const calculateTax = async ({ orderSessionJson, dishOrders, calculateTaxDirectly
   };
 };
 
-const _calculateDiscountOnInvoice = ({ discount, pretaxPaymentAmount, totalTaxAmount }) => {
+/**
+ * @param {Object} params
+ * @param {{beforeTaxTotalDiscountAmount: number, afterTaxTotalDiscountAmount: number}} params.discount
+ * @param {{taxAmount: number, taxRate: number}[]} params.taxDetails
+ * @param {{[taxRate]: {beforeTaxTotalDiscountAmount: number, afterTaxTotalDiscountAmount: number}}} params.discountDetailByTax
+ */
+const _calculateDiscountAmountByTaxRate = ({ discount, taxDetails, discountDetailByTax }) => {
+  if (_.sumBy(taxDetails, 'taxAmount') === 0) {
+    // eslint-disable-next-line no-param-reassign
+    discountDetailByTax[0] = {
+      beforeTaxTotalDiscountAmount:
+        _.get(discountDetailByTax[0], 'beforeTaxTotalDiscountAmount', 0) + discount.beforeTaxTotalDiscountAmount,
+      afterTaxTotalDiscountAmount:
+        _.get(discountDetailByTax[0], 'afterTaxTotalDiscountAmount', 0) + discount.afterTaxTotalDiscountAmount,
+    };
+    return;
+  }
+
+  const beforeTaxParts = taxDetails.map(({ taxAmount, taxRate }) => (100 * taxAmount || 0) / (taxRate || 1));
+  const afterTaxParts = taxDetails.map(({ taxAmount, taxRate }) => ((100 + taxRate) * (taxAmount || 0)) / (taxRate || 1));
+  const beforeTaxDiscountBreakdown = divideToNPart({
+    initialSum: discount.beforeTaxTotalDiscountAmount,
+    parts: beforeTaxParts,
+  });
+  const afterTaxDiscountBreakdown = divideToNPart({
+    initialSum: discount.afterTaxTotalDiscountAmount,
+    parts: afterTaxParts,
+  });
+  taxDetails.forEach(({ taxRate }, index) => {
+    // eslint-disable-next-line no-param-reassign
+    discountDetailByTax[taxRate] = {
+      beforeTaxTotalDiscountAmount:
+        _.get(discountDetailByTax[taxRate], 'beforeTaxTotalDiscountAmount', 0) + beforeTaxDiscountBreakdown[index],
+      afterTaxTotalDiscountAmount:
+        _.get(discountDetailByTax[taxRate], 'afterTaxTotalDiscountAmount', 0) + afterTaxDiscountBreakdown[index],
+    };
+  });
+};
+
+const _calculateDiscountOnInvoice = ({ discount, pretaxPaymentAmount, totalTaxAmount, taxDetails, discountDetailByTax }) => {
   const { discountValue, discountValueType } = discount;
 
   let beforeTaxTotalDiscountAmount;
@@ -612,11 +657,18 @@ const _calculateDiscountOnInvoice = ({ discount, pretaxPaymentAmount, totalTaxAm
   discount.afterTaxTotalDiscountAmount = afterTaxTotalDiscountAmount;
   // eslint-disable-next-line no-param-reassign
   discount.taxTotalDiscountAmount = taxTotalDiscountAmount;
+  _calculateDiscountAmountByTaxRate({ discount, taxDetails, discountDetailByTax });
 
   return { beforeTaxAmount: beforeTaxTotalDiscountAmount, afterTaxAmount: afterTaxTotalDiscountAmount };
 };
 
-const _calculateDiscountOnProduct = ({ discount, dishOrderById }) => {
+const _calculateDiscountOnProduct = ({
+  discount,
+  dishOrderById,
+  orderSessionTaxRate,
+  calculateTaxDirectly,
+  discountDetailByTax,
+}) => {
   let beforeTaxTotalDiscountAmount = 0;
   let afterTaxTotalDiscountAmount = 0;
   let taxTotalDiscountAmount = 0;
@@ -625,10 +677,36 @@ const _calculateDiscountOnProduct = ({ discount, dishOrderById }) => {
     const dishOrder = dishOrderById[discountProduct.dishOrderId];
     if (!dishOrder) return;
 
+    const taxRate = dishOrder.taxRate || orderSessionTaxRate;
     const dishQuantity = dishOrder.quantity;
-    beforeTaxTotalDiscountAmount += discountProduct.beforeTaxDiscountPrice * dishQuantity;
-    afterTaxTotalDiscountAmount += discountProduct.afterTaxDiscountPrice * dishQuantity;
-    taxTotalDiscountAmount += discountProduct.taxDiscountPrice * dishQuantity;
+    let dishOrderBeforeTaxTotalDiscountAmount;
+    let dishOrderAfterTaxTotalDiscountAmount;
+    let dishOrderTaxTotalDiscountAmount;
+
+    if (calculateTaxDirectly) {
+      dishOrderAfterTaxTotalDiscountAmount = getRoundDiscountAmount(
+        (dishOrder.afterTaxTotalPrice * discountProduct.discountRate) / 100
+      );
+      dishOrderTaxTotalDiscountAmount = getRoundDiscountAmount(
+        ((dishOrder.afterTaxTotalPrice - dishOrder.beforeTaxTotalPrice) * discountProduct.discountRate) / 100
+      );
+      dishOrderBeforeTaxTotalDiscountAmount = dishOrderAfterTaxTotalDiscountAmount - dishOrderTaxTotalDiscountAmount;
+    } else {
+      dishOrderBeforeTaxTotalDiscountAmount += discountProduct.beforeTaxDiscountPrice * dishQuantity;
+      dishOrderAfterTaxTotalDiscountAmount += discountProduct.afterTaxDiscountPrice * dishQuantity;
+      dishOrderTaxTotalDiscountAmount += discountProduct.taxDiscountPrice * dishQuantity;
+    }
+
+    beforeTaxTotalDiscountAmount += dishOrderBeforeTaxTotalDiscountAmount;
+    afterTaxTotalDiscountAmount += dishOrderAfterTaxTotalDiscountAmount;
+    taxTotalDiscountAmount += dishOrderTaxTotalDiscountAmount;
+    // eslint-disable-next-line no-param-reassign
+    discountDetailByTax[taxRate] = {
+      beforeTaxTotalDiscountAmount:
+        _.get(discountDetailByTax[taxRate], 'beforeTaxTotalDiscountAmount', 0) + dishOrderBeforeTaxTotalDiscountAmount,
+      afterTaxTotalDiscountAmount:
+        _.get(discountDetailByTax[taxRate], 'afterTaxTotalDiscountAmount', 0) + dishOrderAfterTaxTotalDiscountAmount,
+    };
   });
 
   // eslint-disable-next-line no-param-reassign
@@ -646,13 +724,18 @@ const _calculateDiscountByDiscountType = {
   [OrderSessionDiscountType.PRODUCT]: _calculateDiscountOnProduct,
 };
 
-const calculateDiscount = async ({ orderSessionJson, pretaxPaymentAmount, totalTaxAmount }) => {
+const calculateDiscount = async ({ orderSessionJson, pretaxPaymentAmount, totalTaxAmount, calculateTaxDirectly }) => {
   const discounts = _.get(orderSessionJson, 'discounts', []);
 
-  if (_.isEmpty(discounts)) {
-    return { beforeTaxTotalDiscountAmount: 0, afterTaxTotalDiscountAmount: 0 };
+  if (_.isEmpty(discounts) || orderSessionJson.endedAt || orderSessionJson.auditedAt) {
+    return {
+      beforeTaxTotalDiscountAmount: orderSessionJson.beforeTaxTotalDiscountAmount || 0,
+      afterTaxTotalDiscountAmount: orderSessionJson.afterTaxTotalDiscountAmount || 0,
+      taxDetailsWithDiscountInfo: orderSessionJson.taxDetails,
+    };
   }
 
+  const discountDetailByTax = {};
   let beforeTaxTotalDiscountAmount = 0;
   let afterTaxTotalDiscountAmount = 0;
   _.forEach(discounts, (discount) => {
@@ -660,16 +743,65 @@ const calculateDiscount = async ({ orderSessionJson, pretaxPaymentAmount, totalT
       discount,
       pretaxPaymentAmount,
       totalTaxAmount,
+      taxDetails: orderSessionJson.taxDetails || [],
+      orderSessionTaxRate: orderSessionJson.taxRate || 0,
+      calculateTaxDirectly,
+      discountDetailByTax,
     });
     beforeTaxTotalDiscountAmount += beforeTaxAmount;
     afterTaxTotalDiscountAmount += afterTaxAmount;
   });
-  return { beforeTaxTotalDiscountAmount, afterTaxTotalDiscountAmount };
+  const taxDetailsWithDiscountInfo = orderSessionJson.taxDetails || [];
+  if (taxDetailsWithDiscountInfo.length === 0) {
+    taxDetailsWithDiscountInfo.push({ taxRate: 0, taxAmount: 0 });
+  }
+  taxDetailsWithDiscountInfo.forEach((taxDetail) => {
+    // eslint-disable-next-line no-param-reassign
+    taxDetail.beforeTaxTotalDiscountAmount = discountDetailByTax[taxDetail.taxRate].beforeTaxTotalDiscountAmount;
+    // eslint-disable-next-line no-param-reassign
+    taxDetail.afterTaxTotalDiscountAmount = discountDetailByTax[taxDetail.taxRate].afterTaxTotalDiscountAmount;
+  });
+  return { beforeTaxTotalDiscountAmount, afterTaxTotalDiscountAmount, taxDetailsWithDiscountInfo };
+};
+
+/**
+ * Normalize discount amount for taxDetailsWithDiscountInfo in case discount amount is larger than payment amount
+ * @param {Object} params
+ * @param {number} params.beforeTaxTotalDiscountAmount
+ * @param {number} params.afterTaxTotalDiscountAmount
+ * @param {Object} params.orderSessionJson
+ */
+const normalizeDiscountAmount = ({ orderSessionJson, beforeTaxTotalDiscountAmount, afterTaxTotalDiscountAmount }) => {
+  const { pretaxPaymentAmount, totalTaxAmount } = orderSessionJson;
+  if (
+    beforeTaxTotalDiscountAmount === 0 ||
+    (beforeTaxTotalDiscountAmount <= pretaxPaymentAmount &&
+      afterTaxTotalDiscountAmount <= pretaxPaymentAmount + totalTaxAmount)
+  ) {
+    return;
+  }
+
+  const taxDetailsWithDiscountInfo = orderSessionJson.taxDetails;
+  const normalizedBeforeTax = divideToNPart({
+    initialSum: pretaxPaymentAmount,
+    parts: taxDetailsWithDiscountInfo.map((taxDetail) => taxDetail.beforeTaxTotalDiscountAmount),
+  });
+  const normalizedAfterTax = divideToNPart({
+    initialSum: pretaxPaymentAmount + totalTaxAmount,
+    parts: taxDetailsWithDiscountInfo.map((taxDetail) => taxDetail.afterTaxTotalDiscountAmount),
+  });
+  taxDetailsWithDiscountInfo.forEach((taxDetail, index) => {
+    // eslint-disable-next-line no-param-reassign
+    taxDetail.beforeTaxTotalDiscountAmount = normalizedBeforeTax[index];
+    // eslint-disable-next-line no-param-reassign
+    taxDetail.afterTaxTotalDiscountAmount = normalizedAfterTax[index];
+  });
 };
 
 const getOrderSessionById = async (orderSessionId, shopId) => {
   const { orderSession, orderSessionJson } = await _getOrderSessionJson({ orderSessionId, shopId });
   const { shop } = orderSessionJson;
+  const { calculateTaxDirectly } = shop;
   const dishOrders = _.flatMap(orderSessionJson.orders, 'dishOrders');
 
   const pretaxPaymentAmount = _.sumBy(dishOrders, (dishOrder) => dishOrder.price * dishOrder.quantity) || 0;
@@ -677,21 +809,24 @@ const getOrderSessionById = async (orderSessionId, shopId) => {
   const { totalTaxAmount, taxDetails } = await calculateTax({
     orderSessionJson,
     dishOrders,
-    calculateTaxDirectly: shop.calculateTaxDirectly,
+    calculateTaxDirectly,
   });
   orderSessionJson.totalTaxAmount = totalTaxAmount;
   orderSessionJson.taxDetails = taxDetails;
 
-  const { beforeTaxTotalDiscountAmount, afterTaxTotalDiscountAmount } = await calculateDiscount({
+  const { beforeTaxTotalDiscountAmount, afterTaxTotalDiscountAmount, taxDetailsWithDiscountInfo } = await calculateDiscount({
     orderSessionJson,
     pretaxPaymentAmount,
     totalTaxAmount,
+    calculateTaxDirectly,
   });
 
+  orderSessionJson.taxDetails = taxDetailsWithDiscountInfo;
   orderSessionJson.beforeTaxTotalDiscountAmount = Math.min(beforeTaxTotalDiscountAmount, pretaxPaymentAmount);
   orderSessionJson.afterTaxTotalDiscountAmount = Math.min(afterTaxTotalDiscountAmount, pretaxPaymentAmount + totalTaxAmount);
   orderSessionJson.revenueAmount = pretaxPaymentAmount - orderSessionJson.beforeTaxTotalDiscountAmount;
   orderSessionJson.paymentAmount = pretaxPaymentAmount + totalTaxAmount - orderSessionJson.afterTaxTotalDiscountAmount;
+  normalizeDiscountAmount({ orderSessionJson, beforeTaxTotalDiscountAmount, pretaxPaymentAmount });
 
   // update order if not audited
   if (

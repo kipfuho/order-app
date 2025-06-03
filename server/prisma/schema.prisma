@@ -276,11 +276,13 @@ model Discount {
 }
 
 model TaxDetail {
-  id             String       @id @default(uuid())
-  taxAmount      Float
-  taxRate        Float
-  orderSessionId String
-  orderSession   OrderSession @relation(fields: [orderSessionId], references: [id])
+  id                           String       @id @default(uuid())
+  taxAmount                    Float        @default(0)
+  taxRate                      Float        @default(0)
+  beforeTaxTotalDiscountAmount Float        @default(0)
+  afterTaxTotalDiscountAmount  Float        @default(0)
+  orderSessionId               String
+  orderSession                 OrderSession @relation(fields: [orderSessionId], references: [id])
 
   @@index([orderSessionId])
 }
@@ -308,6 +310,8 @@ model OrderSession {
   status                       OrderSessionStatus @default(unpaid)
   pretaxPaymentAmount          Float?
   paymentAmount                Float?
+  startedByUserId              String?
+  startedByUserName            String?
   paidByUserId                 String?
   paidByUserName               String?
   cancelledByUserId            String?

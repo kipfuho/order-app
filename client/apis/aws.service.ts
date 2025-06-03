@@ -9,6 +9,7 @@ import { orderApiSlice } from "../stores/apiSlices/orderApi.slice";
 import Toast from "react-native-toast-message";
 import { kitchenApiSlice } from "../stores/apiSlices/kitchenApi.slice";
 import { reportApiSlice } from "@/stores/apiSlices/reportApi.slice";
+import { getPermissionsRequest } from "./auth.api.service";
 
 const namespace = "default";
 const useappsync = true;
@@ -56,6 +57,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           console.log("Received event for shop:", event);
           const { type, data } = event;
           const { userId } = data;
+          const currentSessionUserId = store.getState().auth.session?.id;
 
           // unskippable events
           if (type === EventType.PAYMENT_COMPLETE) {
@@ -105,15 +107,11 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
             return;
           }
 
-          // skippable events
-          // if (store.getState().auth.session?.id === userId) {
-          //   console.log("Skipped event for shop:", event);
-          //   return;
-          // }
-
           if (type === EventType.SHOP_CHANGED) {
             const { action, shop } = data;
-            store.dispatch(shopApiSlice.util.invalidateTags(["Shops"]));
+            if (currentSessionUserId !== userId) {
+              store.dispatch(shopApiSlice.util.invalidateTags(["Shops"]));
+            }
             return;
           }
 
@@ -122,49 +120,67 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
             store.dispatch(
               orderApiSlice.util.invalidateTags(["TablesForOrder"]),
             );
-            store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
+            if (currentSessionUserId !== userId) {
+              store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
+            }
             return;
           }
 
           if (type === EventType.TABLE_POSITION_CHANGED) {
             const { action, tablePosition } = data;
-            store.dispatch(
-              tableApiSlice.util.invalidateTags(["TablePositions"]),
-            );
+            if (currentSessionUserId !== userId) {
+              store.dispatch(
+                tableApiSlice.util.invalidateTags(["TablePositions"]),
+              );
+            }
             return;
           }
 
           if (type === EventType.DISH_CHANGED) {
             const { action, dish } = data;
-            store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
+            if (currentSessionUserId !== userId) {
+              store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
+            }
             return;
           }
 
           if (type === EventType.DISH_CATEGORY_CHANGED) {
             const { action, dishCategory } = data;
-            store.dispatch(
-              dishApiSlice.util.invalidateTags(["DishCategories"]),
-            );
+            if (currentSessionUserId !== userId) {
+              store.dispatch(
+                dishApiSlice.util.invalidateTags(["DishCategories"]),
+              );
+            }
             return;
           }
 
           if (type === EventType.EMPLOYEE_CHANGED) {
             const { action, employee } = data;
-            store.dispatch(staffApiSlice.util.invalidateTags(["Employees"]));
+            if (currentSessionUserId !== userId) {
+              store.dispatch(staffApiSlice.util.invalidateTags(["Employees"]));
+            }
+            getPermissionsRequest({ shopId });
             return;
           }
 
           if (type === EventType.EMPLOYEE_POSITION_CHANGED) {
             const { action, employeePosition } = data;
-            store.dispatch(
-              staffApiSlice.util.invalidateTags(["EmployeePositions"]),
-            );
+            if (currentSessionUserId !== userId) {
+              store.dispatch(
+                staffApiSlice.util.invalidateTags(["EmployeePositions"]),
+              );
+            }
             return;
           }
 
           if (type === EventType.DEPARTMENT_CHANGED) {
             const { action, department } = data;
-            store.dispatch(staffApiSlice.util.invalidateTags(["Departments"]));
+            if (currentSessionUserId !== userId) {
+              store.dispatch(
+                staffApiSlice.util.invalidateTags(["Departments"]),
+              );
+            }
+            getPermissionsRequest({ shopId });
             return;
           }
 
@@ -173,12 +189,14 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
               orderSessionId,
               tableId,
             }: { orderSessionId: string; tableId: string } = data;
-            store.dispatch(
-              orderApiSlice.util.invalidateTags([
-                { type: "OrderSessions", id: orderSessionId },
-                { type: "ActiveOrderSessions", id: tableId },
-              ]),
-            );
+            if (currentSessionUserId !== userId) {
+              store.dispatch(
+                orderApiSlice.util.invalidateTags([
+                  { type: "OrderSessions", id: orderSessionId },
+                  { type: "ActiveOrderSessions", id: tableId },
+                ]),
+              );
+            }
             return;
           }
 
