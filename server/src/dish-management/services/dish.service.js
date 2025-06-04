@@ -6,14 +6,19 @@ const mime = require('mime');
 const aws = require('../../utils/aws');
 const { Dish } = require('../../models');
 const { throwBadRequest } = require('../../utils/errorHandling');
-const { getDishFromCache, getDishesFromCache, getDishCategoriesFromCache } = require('../../metadata/dishMetadata.service');
+const {
+  getDishFromCache,
+  getDishesFromCache,
+  getDishCategoriesFromCache,
+  getDishCategoryFromCache,
+} = require('../../metadata/dishMetadata.service');
 const { DishTypes, Status } = require('../../utils/constant');
 const { refineFileNameForUploading } = require('../../utils/common');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
 const { notifyUpdateDish, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
-const { getUnitsFromCache } = require('../../metadata/unitMetadata.service');
+const { getUnitsFromCache, getUnitFromCache } = require('../../metadata/unitMetadata.service');
 const logger = require('../../config/logger');
 const { bulkUpdate, PostgreSQLTable } = require('../../utils/prisma');
 const { getOperatorFromSession } = require('../../middlewares/clsHooked');
@@ -65,78 +70,110 @@ const createDish = async ({ shopId, createBody }) => {
   const operator = getOperatorFromSession();
   await notifyUpdateDish({
     action: EventActionType.CREATE,
+    shopId,
     dish,
     userId: _.get(operator, 'user.id'),
   });
-  return dish;
 };
 
 const updateDish = async ({ shopId, dishId, updateBody }) => {
-  const dish = await Dish.update({
-    data: _.pickBy({
-      name: updateBody.name,
-      code: updateBody.code,
-      price: updateBody.price,
-      type: updateBody.type,
-      categoryId: updateBody.categoryId,
-      unitId: updateBody.unitId,
-      status: updateBody.status,
-      shopId,
-      imageUrls: updateBody.imageUrls || [],
-      description: updateBody.description,
-      hideForCustomers: updateBody.hideForCustomers,
-      hideForEmployees: updateBody.hideForEmployees,
-      taxRate: updateBody.taxRate,
-      isBestSeller: updateBody.isBestSeller,
-      isNewlyCreated: updateBody.isNewlyCreated,
-      isTaxIncludedPrice: updateBody.isTaxIncludedPrice,
-      outOfStockNotification: updateBody.outOfStockNotification,
-    }),
+  const dish = await getDishFromCache({ shopId, dishId });
+  throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
+
+  const compactUpdateBody = _.pickBy({
+    id: dishId,
+    name: updateBody.name,
+    code: updateBody.code,
+    price: updateBody.price,
+    type: updateBody.type,
+    categoryId: updateBody.categoryId,
+    unitId: updateBody.unitId,
+    status: updateBody.status,
+    shopId,
+    imageUrls: updateBody.imageUrls || [],
+    description: updateBody.description,
+    hideForCustomers: updateBody.hideForCustomers,
+    hideForEmployees: updateBody.hideForEmployees,
+    taxRate: updateBody.taxRate,
+    isBestSeller: updateBody.isBestSeller,
+    isNewlyCreated: updateBody.isNewlyCreated,
+    isTaxIncludedPrice: updateBody.isTaxIncludedPrice,
+    outOfStockNotification: updateBody.outOfStockNotification,
+  });
+  const updatedDish = await Dish.update({
+    data: compactUpdateBody,
     where: { id: dishId, shopId },
-    include: {
-      category: true,
-      unit: true,
+    select: {
+      id: true,
+      imageUrls: true,
     },
   });
-  throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
+
+  const modifiedFields = { id: dishId };
+  Object.entries(compactUpdateBody).forEach(([key, value]) => {
+    if (!_.isEqual(value, dish[key])) {
+      modifiedFields[key] = value;
+    }
+  });
+
+  if (!_.isEmpty(modifiedFields.categoryId)) {
+    const newCategory = await getDishCategoryFromCache({ shopId, dishCategoryId: modifiedFields.categoryId });
+    modifiedFields.category = newCategory;
+    delete modifiedFields.categoryId;
+  }
+
+  if (!_.isEmpty(modifiedFields.unitId)) {
+    const newUnit = await getUnitFromCache({ shopId, unitId: modifiedFields.unitId });
+    modifiedFields.unit = newUnit;
+    delete modifiedFields.unitId;
+  }
 
   // job to update s3 logs -> inUse = true
   await registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
     data: {
-      keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
+      keys: _.map(updatedDish.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
   const operator = getOperatorFromSession();
   await notifyUpdateDish({
     action: EventActionType.UPDATE,
-    dish,
+    shopId,
+    dish: modifiedFields,
     userId: _.get(operator, 'user.id'),
   });
-  return dish;
 };
 
 const deleteDish = async ({ shopId, dishId }) => {
-  const dish = await Dish.update({
+  const dish = await getDishFromCache({ shopId, dishId });
+  throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
+
+  const updatedDish = await Dish.update({
     data: { status: Status.disabled },
     where: {
       id: dishId,
       shopId,
     },
+    select: {
+      id: true,
+      imageUrls: true,
+    },
   });
-  throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
 
   // job to update s3 logs -> inUse = true
   await registerJob({
     type: JobTypes.REMOVE_S3_OBJECT_USAGE,
     data: {
-      keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
+      keys: _.map(updatedDish.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
   const operator = getOperatorFromSession();
   await notifyUpdateDish({
     action: EventActionType.DELETE,
-    dish,
+    shopId,
+    dish: {
+      id: dish.id,
+    },
     userId: _.get(operator, 'user.id'),
   });
   return dish;
@@ -295,9 +332,7 @@ const importDishes = async ({ dishes, shopId }) => {
   });
   await notifyUpdateDish({
     action: EventActionType.UPDATE,
-    dish: {
-      shopId,
-    },
+    shopId,
   });
   return errorDishes;
 };

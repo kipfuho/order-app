@@ -140,14 +140,14 @@ const updateShopRequest = async ({
     body.imageUrls = imageUrls;
   }
 
-  const response: { shop: Shop } = await apiRequest({
+  await apiRequest({
     method: "PATCH",
     endpoint: `/v1/shops/${shopId}`,
     token: accessToken,
     data: body,
   });
 
-  return response.shop;
+  return true;
 };
 
 const deleteShopRequest = async ({ shopId }: DeleteShopRequest) => {

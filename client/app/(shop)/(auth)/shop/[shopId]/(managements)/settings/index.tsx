@@ -23,12 +23,12 @@ const BUTTONS: Item[] = [
     route: "table-management",
     icon: "table-furniture",
   },
-  {
-    key: "kitchen",
-    title: "kitchen_management",
-    route: "kitchen-management",
-    icon: "silverware-fork-knife",
-  },
+  // {
+  //   key: "kitchen",
+  //   title: "kitchen_management",
+  //   route: "kitchen-management",
+  //   icon: "silverware-fork-knife",
+  // },
 ];
 
 const getButtonSize = (width: number) => {

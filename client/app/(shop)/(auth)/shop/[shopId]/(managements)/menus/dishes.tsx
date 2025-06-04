@@ -28,6 +28,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import AppBarSearchBox from "@/components/AppBarSearchBox";
 import { styles } from "@/constants/styles";
+import { PermissionType } from "@/constants/common";
 
 const createDismissGesture = (onDismissSearch: () => void) =>
   Gesture.Tap().onStart(() => {
@@ -38,9 +39,10 @@ export default function DishesManagementPage() {
   const router = useRouter();
   const { t } = useTranslation();
 
-  const shop = useSelector(
-    (state: RootState) => state.shop.currentShop,
-  ) as Shop;
+  const { currentShop, userPermission } = useSelector(
+    (state: RootState) => state.shop,
+  );
+  const shop = currentShop as Shop;
   const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery({
     shopId: shop.id,
   });
@@ -197,14 +199,18 @@ export default function DishesManagementPage() {
             openMenu={openMenu}
             itemType={ItemTypeFlatList.DISH_CARD}
           >
-            <View style={{ height: 60 }} />
+            {userPermission.has(PermissionType.CREATE_MENU) && (
+              <View style={{ height: 60 }} />
+            )}
           </FlatListWithScroll>
-          <FAB
-            icon="plus"
-            label={t("create_dish")}
-            style={styles.baseFAB}
-            onPress={() => goToCreateDish({ router, shopId: shop.id })}
-          />
+          {userPermission.has(PermissionType.CREATE_MENU) && (
+            <FAB
+              icon="plus"
+              label={t("create_dish")}
+              style={styles.baseFAB}
+              onPress={() => goToCreateDish({ router, shopId: shop.id })}
+            />
+          )}
         </Surface>
       </GestureDetector>
     </>

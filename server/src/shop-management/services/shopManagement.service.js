@@ -118,28 +118,40 @@ const createShop = async ({ createBody }) => {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  await notifyUpdateShop({ shop, action: EventActionType.CREATE, userId: _.get(operator, 'user.id') });
-  return shop;
+  await notifyUpdateShop({ action: EventActionType.CREATE, shop, userId: _.get(operator, 'user.id') });
 };
 
 const updateShop = async ({ shopId, updateBody }) => {
-  const shop = await Shop.update({ data: updateBody, where: { id: shopId } });
+  const shop = await getShopFromCache({ shopId });
   throwBadRequest(!shop, getMessageByLocale({ key: 'shop.notFound' }));
+
+  const compactUpdateBody = _.pickBy(updateBody);
+  const updatedShop = await Shop.update({ data: updateBody, where: { id: shopId }, select: { id: true, imageUrls: true } });
+
+  const modifiedFields = { id: shopId };
+  Object.entries(compactUpdateBody).forEach(([key, value]) => {
+    if (!_.isEqual(value, shop[key])) {
+      modifiedFields[key] = value;
+    }
+  });
 
   // job to update s3 logs -> inUse = true
   await registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
     data: {
-      keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
+      keys: _.map(updatedShop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
+
   const operator = getOperatorFromSession();
-  await notifyUpdateShop({ shop, action: EventActionType.UPDATE, userId: _.get(operator, 'user.id') });
-  return shop;
+  await notifyUpdateShop({ action: EventActionType.UPDATE, shop: modifiedFields, userId: _.get(operator, 'user.id') });
 };
 
 const deleteShop = async ({ shopId }) => {
-  const shop = await Shop.update({ data: { status: Status.disabled }, where: { id: shopId } });
+  const shop = await getShopFromCache({ shopId });
+  throwBadRequest(!shop, getMessageByLocale({ key: 'shop.notFound' }));
+
+  await Shop.update({ data: { status: Status.disabled }, where: { id: shopId }, select: { id: true } });
 
   // job to update s3 logs -> inUse = true
   await registerJob({
@@ -148,9 +160,9 @@ const deleteShop = async ({ shopId }) => {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
+
   const operator = getOperatorFromSession();
-  await notifyUpdateShop({ shop, action: EventActionType.CREATE, userId: _.get(operator, 'user.id') });
-  return shop;
+  await notifyUpdateShop({ action: EventActionType.CREATE, shop: { id: shopId }, userId: _.get(operator, 'user.id') });
 };
 
 const uploadImage = async ({ image }) => {

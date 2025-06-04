@@ -15,14 +15,16 @@ import {
 } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
 import { styles } from "@/constants/styles";
+import { PermissionType } from "@/constants/common";
 
 export default function TablePositionsManagementPage() {
   const router = useRouter();
   const { t } = useTranslation();
 
-  const shop = useSelector(
-    (state: RootState) => state.shop.currentShop,
-  ) as Shop;
+  const { currentShop, userPermission } = useSelector(
+    (state: RootState) => state.shop,
+  );
+  const shop = currentShop as Shop;
 
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
     useGetTablePositionsQuery(shop.id);
@@ -65,15 +67,19 @@ export default function TablePositionsManagementPage() {
               />
             ))}
           </List.Section>
-          <View style={{ height: 60 }} />
+          {userPermission.has(PermissionType.UPDATE_SHOP) && (
+            <View style={{ height: 60 }} />
+          )}
         </ScrollView>
 
-        <FAB
-          icon="plus"
-          label={t("create_table_position")}
-          style={styles.baseFAB}
-          onPress={() => goToCreateTablePosition({ router, shopId: shop.id })}
-        />
+        {userPermission.has(PermissionType.UPDATE_SHOP) && (
+          <FAB
+            icon="plus"
+            label={t("create_table_position")}
+            style={styles.baseFAB}
+            onPress={() => goToCreateTablePosition({ router, shopId: shop.id })}
+          />
+        )}
       </Surface>
     </>
   );

@@ -43,25 +43,39 @@ const createDishCategory = async ({ shopId, createBody }) => {
 };
 
 const updateDishCategory = async ({ shopId, dishCategoryId, updateBody }) => {
+  const dishCategory = await getDishCategoryFromCache({ dishCategoryId, shopId });
+  throwBadRequest(!dishCategory, getMessageByLocale({ key: 'dishCategory.notFound' }));
   const dishCategories = await getDishCategoriesFromCache({ shopId });
   throwBadRequest(
-    _.find(dishCategories, (dishCategory) => dishCategory.name === updateBody.name && dishCategory.id !== dishCategoryId),
+    _.find(dishCategories, (dc) => dc.name === updateBody.name && dc.id !== dishCategoryId),
     getMessageByLocale({ key: 'dishCategory.alreadyExist' })
   );
-  const dishCategory = await DishCategory.update({
-    data: _.pickBy({
-      name: updateBody.name,
-      code: updateBody.code,
-      shopId,
-    }),
-    where: { id: dishCategoryId, shopId },
+
+  const compactUpdateBody = _.pickBy({
+    name: updateBody.name,
+    code: updateBody.code,
+    shopId,
   });
-  throwBadRequest(!dishCategory, getMessageByLocale({ key: 'dishCategory.notFound' }));
+  await DishCategory.update({
+    data: compactUpdateBody,
+    where: { id: dishCategoryId, shopId },
+    select: {
+      id: true,
+    },
+  });
+
+  const modifiedFields = { id: dishCategoryId };
+  Object.entries(compactUpdateBody).forEach(([key, value]) => {
+    if (!_.isEqual(value, dishCategory[key])) {
+      modifiedFields[key] = value;
+    }
+  });
 
   const operator = getOperatorFromSession();
   await notifyUpdateDishCategory({
     action: EventActionType.UPDATE,
-    dishCategory,
+    shopId,
+    dishCategory: modifiedFields,
     userId: _.get(operator, 'user.id'),
   });
   return dishCategory;
@@ -71,13 +85,16 @@ const deleteDishCategory = async ({ shopId, dishCategoryId }) => {
   const dishCategory = await DishCategory.update({
     data: { status: Status.disabled },
     where: { id: dishCategoryId, shopId },
+    select: {
+      id: true,
+    },
   });
   throwBadRequest(!dishCategory, getMessageByLocale({ key: 'dishCategory.notFound' }));
 
   const operator = getOperatorFromSession();
   await notifyUpdateDishCategory({
     action: EventActionType.DELETE,
-    dishCategory,
+    dishCategory: { id: dishCategory.id, shopId },
     userId: _.get(operator, 'user.id'),
   });
   return dishCategory;

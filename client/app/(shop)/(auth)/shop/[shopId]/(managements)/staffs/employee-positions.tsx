@@ -29,15 +29,17 @@ import { useState } from "react";
 import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
 import Toast from "react-native-toast-message";
 import { styles } from "@/constants/styles";
+import { PermissionType } from "@/constants/common";
 
 export default function StaffEmployeePositionPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const theme = useTheme();
 
-  const shop = useSelector(
-    (state: RootState) => state.shop.currentShop,
-  ) as Shop;
+  const { currentShop, userPermission } = useSelector(
+    (state: RootState) => state.shop,
+  );
+  const shop = currentShop as Shop;
   const { data: employeePositions = [], isLoading: employeePositionLoading } =
     useGetEmployeePositionsQuery(shop.id);
   const [deleteEmployeePosition, { isLoading: deleteEmployeePositionLoading }] =
@@ -139,17 +141,21 @@ export default function StaffEmployeePositionPage() {
               />
             ))}
           </List.Section>
-          <View style={{ height: 60 }} />
+          {userPermission.has(PermissionType.CREATE_EMPLOYEE) && (
+            <View style={{ height: 60 }} />
+          )}
         </ScrollView>
 
-        <FAB
-          icon="plus"
-          label={t("create_employee_position")}
-          style={styles.baseFAB}
-          onPress={() =>
-            goToCreateEmployeePosition({ router, shopId: shop.id })
-          }
-        />
+        {userPermission.has(PermissionType.CREATE_EMPLOYEE) && (
+          <FAB
+            icon="plus"
+            label={t("create_employee_position")}
+            style={styles.baseFAB}
+            onPress={() =>
+              goToCreateEmployeePosition({ router, shopId: shop.id })
+            }
+          />
+        )}
       </Surface>
     </>
   );

@@ -19,14 +19,16 @@ import {
 import { useTranslation } from "react-i18next";
 import { LoaderBasic } from "@components/ui/Loader";
 import { styles } from "@/constants/styles";
+import { PermissionType } from "@/constants/common";
 
 export default function TablesManagementPage() {
   const router = useRouter();
   const { t } = useTranslation();
 
-  const shop = useSelector(
-    (state: RootState) => state.shop.currentShop,
-  ) as Shop;
+  const { currentShop, userPermission } = useSelector(
+    (state: RootState) => state.shop,
+  );
+  const shop = currentShop as Shop;
   const { data: tables = [], isLoading: tableLoading } = useGetTablesQuery(
     shop.id,
   );
@@ -89,15 +91,19 @@ export default function TablesManagementPage() {
               );
             })}
           </List.Section>
-          <View style={{ height: 60 }} />
+          {userPermission.has(PermissionType.UPDATE_SHOP) && (
+            <View style={{ height: 60 }} />
+          )}
         </ScrollView>
 
-        <FAB
-          icon="plus"
-          label={t("create_table")}
-          style={styles.baseFAB}
-          onPress={() => goToCreateTable({ router, shopId: shop.id })}
-        />
+        {userPermission.has(PermissionType.UPDATE_SHOP) && (
+          <FAB
+            icon="plus"
+            label={t("create_table")}
+            style={styles.baseFAB}
+            onPress={() => goToCreateTable({ router, shopId: shop.id })}
+          />
+        )}
       </Surface>
     </>
   );

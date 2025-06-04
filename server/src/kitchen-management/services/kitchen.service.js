@@ -29,6 +29,7 @@ const createKitchen = async ({ shopId, createBody }) => {
   const operator = getOperatorFromSession();
   await notifyUpdateKitchen({
     action: EventActionType.CREATE,
+    shopId,
     kitchen,
     userId: _.get(operator, 'user.id'),
   });
@@ -36,26 +37,42 @@ const createKitchen = async ({ shopId, createBody }) => {
 };
 
 const updateKitchen = async ({ shopId, kitchenId, updateBody }) => {
-  const kitchen = await Kitchen.update({
+  const kitchen = await getKitchenFromCache({ shopId, kitchenId });
+  throwBadRequest(!kitchen, getMessageByLocale({ key: 'kitchen.notFound' }));
+
+  const compactUpdateBody = _.pickBy({ ...updateBody, shopId });
+  await Kitchen.update({
     where: {
       id: kitchenId,
       shopId,
     },
-    data: { ...updateBody, shopId },
+    data: compactUpdateBody,
+    select: {
+      id: true,
+    },
   });
-  throwBadRequest(!kitchen, getMessageByLocale({ key: 'kitchen.notFound' }));
+
+  const modifiedFields = { id: kitchenId };
+  Object.entries(compactUpdateBody).forEach(([key, value]) => {
+    if (!_.isEqual(value, kitchen[key])) {
+      modifiedFields[key] = value;
+    }
+  });
 
   const operator = getOperatorFromSession();
   await notifyUpdateKitchen({
     action: EventActionType.UPDATE,
-    kitchen,
+    shopId,
+    kitchen: modifiedFields,
     userId: _.get(operator, 'user.id'),
   });
   return kitchen;
 };
 
 const deleteKitchen = async ({ shopId, kitchenId }) => {
-  const kitchen = await Kitchen.update({
+  const kitchen = await getKitchenFromCache({ kitchenId, shopId });
+  throwBadRequest(!kitchen, getMessageByLocale({ key: 'kitchen.notFound' }));
+  await Kitchen.update({
     data: {
       status: Status.disabled,
     },
@@ -63,13 +80,14 @@ const deleteKitchen = async ({ shopId, kitchenId }) => {
       id: kitchenId,
       shopId,
     },
+    select: { id: true },
   });
-  throwBadRequest(!kitchen, getMessageByLocale({ key: 'kitchen.notFound' }));
 
   const operator = getOperatorFromSession();
   await notifyUpdateKitchen({
     action: EventActionType.DELETE,
-    kitchen,
+    shopId,
+    kitchen: { id: kitchenId },
     userId: _.get(operator, 'user.id'),
   });
   return kitchen;

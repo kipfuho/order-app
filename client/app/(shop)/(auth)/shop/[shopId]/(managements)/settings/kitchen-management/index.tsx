@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "@stores/store";
@@ -15,14 +15,16 @@ import {
 import { useTranslation } from "react-i18next";
 import { LoaderBasic } from "@components/ui/Loader";
 import { styles } from "@/constants/styles";
+import { PermissionType } from "@/constants/common";
 
 export default function KitchensManagementPage() {
   const router = useRouter();
   const { t } = useTranslation();
 
-  const shop = useSelector(
-    (state: RootState) => state.shop.currentShop,
-  ) as Shop;
+  const { currentShop, userPermission } = useSelector(
+    (state: RootState) => state.shop,
+  );
+  const shop = currentShop as Shop;
   const { data: kitchens = [], isLoading: kitchenLoading } =
     useGetKitchensQuery({ shopId: shop.id });
 
@@ -58,14 +60,18 @@ export default function KitchensManagementPage() {
               );
             })}
           </List.Section>
+          {userPermission.has(PermissionType.UPDATE_SHOP) && (
+            <View style={{ height: 60 }} />
+          )}
         </ScrollView>
-
-        <FAB
-          icon="plus"
-          label={t("create_kitchen")}
-          style={styles.baseFAB}
-          onPress={() => goToCreateKitchen({ router, shopId: shop.id })}
-        />
+        {userPermission.has(PermissionType.UPDATE_KITCHEN) && (
+          <FAB
+            icon="plus"
+            label={t("create_kitchen")}
+            style={styles.baseFAB}
+            onPress={() => goToCreateKitchen({ router, shopId: shop.id })}
+          />
+        )}
       </Surface>
     </>
   );

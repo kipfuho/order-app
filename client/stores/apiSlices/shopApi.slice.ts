@@ -76,14 +76,14 @@ export const shopApiSlice = createApi({
       invalidatesTags: ["Shops"],
     }),
 
-    updateShop: builder.mutation<Shop, UpdateShopRequest>({
+    updateShop: builder.mutation<boolean, UpdateShopRequest>({
       queryFn: async (args) => {
         try {
-          const shop = await updateShopRequest({
+          await updateShopRequest({
             ...args,
           });
 
-          return { data: shop };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }

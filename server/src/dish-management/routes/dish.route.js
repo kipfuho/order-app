@@ -36,6 +36,6 @@ router
 router
   .route('/')
   .get(auth(PermissionType.VIEW_MENU), dishController.getDishes)
-  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishController.createDish);
+  .post(auth(PermissionType.SHOP_APP, PermissionType.CREATE_MENU), dishController.createDish);
 
 module.exports = router;

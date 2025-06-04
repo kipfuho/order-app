@@ -95,6 +95,7 @@ const deleteObjectFromS3 = async (key) => {
 
 const publishAppSyncEvents = async ({ channel, events }) => {
   try {
+    logger.debug(`publish event to channel: ${channel}. events=${JSON.stringify(events)}`);
     await axios.post(
       `${config.aws.appsyncHttp}/event`,
       {

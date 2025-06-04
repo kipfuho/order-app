@@ -29,15 +29,17 @@ import { useTranslation } from "react-i18next";
 import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
 import Toast from "react-native-toast-message";
 import { styles } from "@/constants/styles";
+import { PermissionType } from "@/constants/common";
 
 export default function CategoriesManagementPage() {
   const router = useRouter();
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const shop = useSelector(
-    (state: RootState) => state.shop.currentShop,
-  ) as Shop;
+  const { currentShop, userPermission } = useSelector(
+    (state: RootState) => state.shop,
+  );
+  const shop = currentShop as Shop;
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
     useGetDishCategoriesQuery({ shopId: shop.id });
   const [deleteDishCategory, { isLoading: deleteDishCategoryLoading }] =
@@ -134,15 +136,19 @@ export default function CategoriesManagementPage() {
               />
             ))}
           </List.Section>
-          <View style={{ height: 60 }} />
+          {userPermission.has(PermissionType.CREATE_MENU) && (
+            <View style={{ height: 60 }} />
+          )}
         </ScrollView>
 
-        <FAB
-          icon="plus"
-          label={t("create_dish_category")}
-          style={styles.baseFAB}
-          onPress={() => goToCreateDishCategory({ router, shopId: shop.id })}
-        />
+        {userPermission.has(PermissionType.CREATE_MENU) && (
+          <FAB
+            icon="plus"
+            label={t("create_dish_category")}
+            style={styles.baseFAB}
+            onPress={() => goToCreateDishCategory({ router, shopId: shop.id })}
+          />
+        )}
       </Surface>
     </>
   );

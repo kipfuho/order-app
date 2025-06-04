@@ -45,14 +45,14 @@ const createTablePositionRequest = async ({
     body.dishCategories = categories;
   }
 
-  const result: { tablePosition: TablePosition } = await apiRequest({
+  await apiRequest({
     method: "POST",
     endpoint: `/v1/shops/${shopId}/tablePositions`,
     token: accessToken,
     data: body,
   });
 
-  return result.tablePosition;
+  return true;
 };
 
 const updateTablePositionRequest = async ({
@@ -79,14 +79,14 @@ const updateTablePositionRequest = async ({
     body.dishCategories = categories;
   }
 
-  const result: { tablePosition: TablePosition } = await apiRequest({
+  await apiRequest({
     method: "PATCH",
     endpoint: `/v1/shops/${shopId}/tablePositions/${tablePositionId}`,
     token: accessToken,
     data: body,
   });
 
-  return result.tablePosition;
+  return true;
 };
 
 const deleteTablePositionRequest = async ({
@@ -95,13 +95,13 @@ const deleteTablePositionRequest = async ({
 }: DeleteTablePositionRequest) => {
   const accessToken = await getAccessTokenLazily();
 
-  const result: { tablePosition: TablePosition } = await apiRequest({
+  await apiRequest({
     method: "DELETE",
     endpoint: `/v1/shops/${shopId}/tablePositions/${tablePositionId}`,
     token: accessToken,
   });
 
-  return result.tablePosition;
+  return true;
 };
 
 const getTableRequest = async ({
@@ -164,14 +164,14 @@ const createTableRequest = async ({
     needApprovalWhenCustomerOrder,
   };
 
-  const result: { table: Table } = await apiRequest({
+  await apiRequest({
     method: "POST",
     endpoint: `/v1/shops/${shopId}/tables`,
     token: accessToken,
     data: body,
   });
 
-  return result.table;
+  return true;
 };
 
 const updateTableRequest = async ({
@@ -207,26 +207,26 @@ const updateTableRequest = async ({
     body.needApprovalWhenCustomerOrder = needApprovalWhenCustomerOrder;
   }
 
-  const result: { table: Table } = await apiRequest({
+  await apiRequest({
     method: "PATCH",
     endpoint: `/v1/shops/${shopId}/tables/${tableId}`,
     token: accessToken,
     data: body,
   });
 
-  return result.table;
+  return true;
 };
 
 const deleteTableRequest = async ({ tableId, shopId }: DeleteTableRequest) => {
   const accessToken = await getAccessTokenLazily();
 
-  const result: { table: Table } = await apiRequest({
+  await apiRequest({
     method: "DELETE",
     endpoint: `/v1/shops/${shopId}/tables/${tableId}`,
     token: accessToken,
   });
 
-  return result.table;
+  return true;
 };
 
 export {

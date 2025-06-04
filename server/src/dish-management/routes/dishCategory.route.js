@@ -20,6 +20,6 @@ router
 router
   .route('/')
   .get(auth(PermissionType.VIEW_MENU), dishCategoryController.getDishCategories)
-  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_MENU), dishCategoryController.createDishCategory);
+  .post(auth(PermissionType.SHOP_APP, PermissionType.CREATE_MENU), dishCategoryController.createDishCategory);
 
 module.exports = router;

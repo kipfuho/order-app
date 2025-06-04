@@ -10,6 +10,7 @@ import Toast from "react-native-toast-message";
 import { kitchenApiSlice } from "../stores/apiSlices/kitchenApi.slice";
 import { reportApiSlice } from "@/stores/apiSlices/reportApi.slice";
 import { getPermissionsRequest } from "./auth.api.service";
+import _ from "lodash";
 
 const namespace = "default";
 const useappsync = true;
@@ -39,6 +40,14 @@ export const EventType = {
   CANCEL_PAYMENT: "CANCEL_PAYMENT",
   ORDER_SESSION_UPDATE: "ORDER_SESSION_UPDATE",
   NEW_ORDER: "NEW_ORDER",
+};
+
+// general action action for events
+export const EventActionType = {
+  CREATE: "CREATE",
+  UPDATE: "UPDATE",
+  DELETE: "DELETE",
+  CANCEL: "CANCEL",
 };
 
 /**
@@ -165,10 +174,58 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
 
           if (type === EventType.EMPLOYEE_POSITION_CHANGED) {
             const { action, employeePosition } = data;
+
             if (currentSessionUserId !== userId) {
-              store.dispatch(
-                staffApiSlice.util.invalidateTags(["EmployeePositions"]),
-              );
+              if (_.isEmpty(employeePosition)) {
+                store.dispatch(
+                  staffApiSlice.util.invalidateTags(["EmployeePositions"]),
+                );
+                return;
+              }
+              // update cache instead of refetch
+              if (action === EventActionType.CREATE) {
+                store.dispatch(
+                  staffApiSlice.util.updateQueryData(
+                    "getEmployeePositions",
+                    employeePosition.shopId,
+                    (draft) => {
+                      draft.push(employeePosition);
+                    },
+                  ),
+                );
+                return;
+              }
+              if (action === EventActionType.UPDATE) {
+                store.dispatch(
+                  staffApiSlice.util.updateQueryData(
+                    "getEmployeePositions",
+                    employeePosition.shopId,
+                    (draft) => {
+                      const index = draft.findIndex(
+                        (ep) => ep.id === employeePosition.id,
+                      );
+                      if (index !== -1) {
+                        draft[index] = { ...draft[index], ...employeePosition };
+                      }
+                    },
+                  ),
+                );
+                return;
+              }
+              if (action === EventActionType.DELETE) {
+                store.dispatch(
+                  staffApiSlice.util.updateQueryData(
+                    "getEmployeePositions",
+                    employeePosition.shopId,
+                    (draft) => {
+                      return draft.filter(
+                        (ep) => ep.id !== employeePosition.id,
+                      );
+                    },
+                  ),
+                );
+                return;
+              }
             }
             return;
           }

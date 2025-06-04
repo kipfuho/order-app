@@ -14,6 +14,6 @@ router
 router
   .route('/')
   .get(auth(PermissionType.VIEW_EMPLOYEE), shopManagementController.getEmployees)
-  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_EMPLOYEE), shopManagementController.createEmployee);
+  .post(auth(PermissionType.SHOP_APP, PermissionType.CREATE_EMPLOYEE), shopManagementController.createEmployee);
 
 module.exports = router;

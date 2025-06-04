@@ -13,6 +13,6 @@ router
 router
   .route('/')
   .get(auth(PermissionType.VIEW_SHOP), shopManagementController.getDepartments)
-  .post(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_SHOP), shopManagementController.createDepartment);
+  .post(auth(PermissionType.SHOP_APP, PermissionType.CREATE_EMPLOYEE), shopManagementController.createDepartment);
 
 module.exports = router;

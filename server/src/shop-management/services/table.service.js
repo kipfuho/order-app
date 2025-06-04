@@ -56,61 +56,73 @@ const createTable = async ({ shopId, createBody }) => {
   });
 
   const operator = getOperatorFromSession();
-  await notifyUpdateTable({ table, action: EventActionType.CREATE, userId: _.get(operator, 'user.id') });
+  await notifyUpdateTable({ action: EventActionType.CREATE, shopId, table, userId: _.get(operator, 'user.id') });
   return table;
 };
 
 const updateTable = async ({ shopId, tableId, updateBody }) => {
+  const table = await getTableFromCache({ shopId, tableId });
+  throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
   const tables = await getTablesFromCache({
     shopId,
   });
   throwBadRequest(
     _.find(
       tables,
-      (table) =>
-        _.toLower(table.name) === _.toLower(updateBody.name) &&
-        table.positionId === updateBody.position &&
-        table.id !== tableId
+      (t) => _.toLower(t.name) === _.toLower(updateBody.name) && t.positionId === updateBody.position && t.id !== tableId
     ),
     getMessageByLocale({ key: 'table.alreadyExist' })
   );
 
-  if (updateBody.position) {
-    // eslint-disable-next-line no-param-reassign
-    updateBody.positionId = updateBody.position;
-    // eslint-disable-next-line no-param-reassign
-    delete updateBody.position;
-  }
-  const table = await Table.update({
-    data: updateBody,
+  const compactUpdateBody = _.pickBy({ ...updateBody, position: null, positionId: updateBody.position });
+  await Table.update({
+    data: compactUpdateBody,
     where: {
       id: tableId,
       shopId,
     },
-    include: { position: true },
+    select: { id: true },
   });
-  throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
 
-  const operator = getOperatorFromSession();
-  await notifyUpdateTable({ table, action: EventActionType.UPDATE, userId: _.get(operator, 'user.id') });
-  return table;
-};
-
-const deleteTable = async ({ shopId, tableId }) => {
-  const table = await Table.update({
-    data: { status: Status.disabled },
-    where: { id: tableId, shopId },
-    include: { position: true },
+  const modifiedFields = { id: tableId };
+  Object.entries(compactUpdateBody).forEach(([key, value]) => {
+    if (!_.isEqual(value, table[key])) {
+      modifiedFields[key] = value;
+    }
   });
-  throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
+
+  if (!_.isEmpty(modifiedFields.positionId)) {
+    const newPosition = await getTablePositionFromCache({ shopId, tablePositionId: modifiedFields.positionId });
+    modifiedFields.position = newPosition;
+    delete modifiedFields.positionId;
+  }
 
   const operator = getOperatorFromSession();
   await notifyUpdateTable({
-    table,
-    action: EventActionType.DELETE,
+    action: EventActionType.UPDATE,
+    shopId,
+    table: modifiedFields,
     userId: _.get(operator, 'user.id'),
   });
-  return table;
+};
+
+const deleteTable = async ({ shopId, tableId }) => {
+  const table = await getTableFromCache({ shopId, tableId });
+  throwBadRequest(!table, getMessageByLocale({ key: 'table.notFound' }));
+
+  await Table.update({
+    data: { status: Status.disabled },
+    where: { id: tableId, shopId },
+    select: { id: true },
+  });
+
+  const operator = getOperatorFromSession();
+  await notifyUpdateTable({
+    action: EventActionType.DELETE,
+    shopId,
+    table: { id: tableId },
+    userId: _.get(operator, 'user.id'),
+  });
 };
 
 const getTablePosition = async ({ shopId, tablePositionId }) => {
@@ -144,53 +156,70 @@ const createTablePosition = async ({ shopId, createBody }) => {
   });
 
   const operator = getOperatorFromSession();
-  await notifyUpdateTablePosition({ tablePosition, action: EventActionType.CREATE, userId: _.get(operator, 'user.id') });
+  await notifyUpdateTablePosition({
+    action: EventActionType.CREATE,
+    shopId,
+    tablePosition,
+    userId: _.get(operator, 'user.id'),
+  });
   return tablePosition;
 };
 
 const updateTablePosition = async ({ shopId, tablePositionId, updateBody }) => {
+  const tablePosition = await getTablePositionFromCache({ shopId, tablePositionId });
+  throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));
   const tablePostions = await getTablePositionsFromCache({ shopId });
   throwBadRequest(
-    _.find(
-      tablePostions,
-      (tablePosition) => _.toLower(tablePosition.name) === _.toLower(updateBody.name) && tablePosition.id !== tablePositionId
-    ),
+    _.find(tablePostions, (tp) => _.toLower(tp.name) === _.toLower(updateBody.name) && tp.id !== tablePositionId),
     getMessageByLocale({ key: 'tablePosition.alreadyExist' })
   );
-  if (updateBody.dishCategories) {
-    const dishCategoryIds = updateBody.dishCategories;
-    // eslint-disable-next-line no-param-reassign
-    delete updateBody.dishCategories;
-    // eslint-disable-next-line no-param-reassign
-    updateBody.dishCategoryIds = dishCategoryIds;
-  }
-  const tablePosition = await TablePosition.update({
-    data: _.pickBy({
-      ...updateBody,
-      shopId,
-    }),
+
+  const compactUpdateBody = _.pickBy({
+    ...updateBody,
+    shopId,
+    dishCategories: null,
+    dishCategoryIds: updateBody.dishCategories,
+  });
+  await TablePosition.update({
+    data: compactUpdateBody,
     where: {
       id: tablePositionId,
       shopId,
     },
+    select: { id: true },
   });
-  throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));
 
-  const operator = getOperatorFromSession();
-  await notifyUpdateTablePosition({ tablePosition, action: EventActionType.UPDATE, userId: _.get(operator, 'user.id') });
-  return tablePosition;
-};
-
-const deleteTablePosition = async ({ shopId, tablePositionId }) => {
-  const tablePosition = await TablePosition.update({
-    data: { status: Status.disabled },
-    where: { id: tablePositionId, shopId },
+  const modifiedFields = { id: tablePositionId };
+  Object.entries(compactUpdateBody).forEach(([key, value]) => {
+    if (!_.isEqual(value, tablePosition[key])) {
+      modifiedFields[key] = value;
+    }
   });
-  throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));
 
   const operator = getOperatorFromSession();
   await notifyUpdateTablePosition({
-    tablePosition,
+    action: EventActionType.UPDATE,
+    shopId,
+    tablePosition: modifiedFields,
+    userId: _.get(operator, 'user.id'),
+  });
+};
+
+const deleteTablePosition = async ({ shopId, tablePositionId }) => {
+  const tablePosition = await getTablePositionFromCache({ shopId, tablePositionId });
+  throwBadRequest(!tablePosition, getMessageByLocale({ key: 'tablePosition.notFound' }));
+
+  await TablePosition.update({
+    data: { status: Status.disabled },
+    where: { id: tablePositionId, shopId },
+    select: { id: true },
+  });
+
+  const operator = getOperatorFromSession();
+  await notifyUpdateTablePosition({
+    action: EventActionType.DELETE,
+    shopId,
+    tablePosition: { id: tablePositionId },
     userId: _.get(operator, 'user.id'),
   });
   return tablePosition;

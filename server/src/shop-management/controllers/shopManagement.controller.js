@@ -36,21 +36,21 @@ const queryShop = catchAsync(async (req, res) => {
 
 const createShop = catchAsync(async (req, res) => {
   const createBody = req.body;
-  const shop = await shopManagementService.createShop({ createBody });
-  res.status(httpStatus.CREATED).send({ shop });
+  await shopManagementService.createShop({ createBody });
+  res.status(httpStatus.CREATED).send({ message: 'Tạo thành công' });
 });
 
 const updateShop = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const updateBody = req.body;
-  const shop = await shopManagementService.updateShop({ shopId, updateBody });
-  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công', shop });
+  await shopManagementService.updateShop({ shopId, updateBody });
+  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteShop = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const shop = await shopManagementService.deleteShop({ shopId });
-  res.status(httpStatus.OK).send({ message: 'Xoá thành công', shop });
+  await shopManagementService.deleteShop({ shopId });
+  res.status(httpStatus.OK).send({ message: 'Xoá thành công' });
 });
 
 const getTable = catchAsync(async (req, res) => {
@@ -72,16 +72,16 @@ const getTables = catchAsync(async (req, res) => {
 const createTable = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const createBody = req.body;
-  const table = await tableService.createTable({ shopId, createBody });
-  res.status(httpStatus.CREATED).send({ table });
+  await tableService.createTable({ shopId, createBody });
+  res.status(httpStatus.CREATED).send({ message: 'Tạo thành công' });
 });
 
 const updateTable = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const tableId = _.get(req, 'params.tableId');
   const updateBody = req.body;
-  const table = await tableService.updateTable({ shopId, tableId, updateBody });
-  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công', table });
+  await tableService.updateTable({ shopId, tableId, updateBody });
+  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteTable = catchAsync(async (req, res) => {
@@ -107,16 +107,16 @@ const getTablePositions = catchAsync(async (req, res) => {
 const createTablePosition = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const createBody = req.body;
-  const tablePosition = await tableService.createTablePosition({ shopId, createBody });
-  res.status(httpStatus.CREATED).send({ tablePosition });
+  await tableService.createTablePosition({ shopId, createBody });
+  res.status(httpStatus.CREATED).send({ message: 'Tạo thành công' });
 });
 
 const updateTablePosition = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const tablePositionId = _.get(req, 'params.tablePositionId');
   const updateBody = req.body;
-  const tablePosition = await tableService.updateTablePosition({ shopId, tablePositionId, updateBody });
-  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công', tablePosition });
+  await tableService.updateTablePosition({ shopId, tablePositionId, updateBody });
+  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteTablePosition = catchAsync(async (req, res) => {
@@ -143,16 +143,16 @@ const getEmployees = catchAsync(async (req, res) => {
 const createEmployee = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const createBody = req.body;
-  const employee = await employeeService.createEmployee({ shopId, createBody });
-  res.status(httpStatus.CREATED).send({ employee: convertEmployeeForResponse(employee) });
+  await employeeService.createEmployee({ shopId, createBody });
+  res.status(httpStatus.CREATED).send({ message: 'Tạo thành công' });
 });
 
 const updateEmployee = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const employeeId = _.get(req, 'params.employeeId');
   const updateBody = req.body;
-  const employee = await employeeService.updateEmployee({ shopId, employeeId, updateBody });
-  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công', employee: convertEmployeeForResponse(employee) });
+  await employeeService.updateEmployee({ shopId, employeeId, updateBody });
+  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteEmployee = catchAsync(async (req, res) => {
@@ -178,16 +178,16 @@ const getEmployeePositions = catchAsync(async (req, res) => {
 const createEmployeePosition = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const createBody = req.body;
-  const employeePosition = await employeeService.createEmployeePosition({ shopId, createBody });
-  res.status(httpStatus.CREATED).send({ employeePosition });
+  await employeeService.createEmployeePosition({ shopId, createBody });
+  res.status(httpStatus.CREATED).send({ message: 'Tạo thành công' });
 });
 
 const updateEmployeePosition = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const employeePositionId = _.get(req, 'params.employeePositionId');
   const updateBody = req.body;
-  const employeePosition = await employeeService.updateEmployeePosition({ shopId, employeePositionId, updateBody });
-  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công', employeePosition });
+  await employeeService.updateEmployeePosition({ shopId, employeePositionId, updateBody });
+  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteEmployeePosition = catchAsync(async (req, res) => {
@@ -213,16 +213,16 @@ const getDepartments = catchAsync(async (req, res) => {
 const createDepartment = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const createBody = req.body;
-  const department = await employeeService.createDepartment({ shopId, createBody });
-  res.status(httpStatus.CREATED).send({ department });
+  await employeeService.createDepartment({ shopId, createBody });
+  res.status(httpStatus.CREATED).send({ message: 'Tạo thành công' });
 });
 
 const updateDepartment = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const departmentId = _.get(req, 'params.departmentId');
   const updateBody = req.body;
-  const department = await employeeService.updateDepartment({ shopId, departmentId, updateBody });
-  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công', department });
+  await employeeService.updateDepartment({ shopId, departmentId, updateBody });
+  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const deleteDepartment = catchAsync(async (req, res) => {

@@ -43,15 +43,12 @@ export const tableApiSlice = createApi({
       providesTags: ["TablePositions"], // Enables cache invalidation
     }),
 
-    createTablePosition: builder.mutation<
-      TablePosition,
-      CreateTablePositionRequest
-    >({
+    createTablePosition: builder.mutation<boolean, CreateTablePositionRequest>({
       queryFn: async (args) => {
         try {
-          const tablePosition = await createTablePositionRequest(args);
+          await createTablePositionRequest(args);
 
-          return { data: tablePosition };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
@@ -59,15 +56,12 @@ export const tableApiSlice = createApi({
       invalidatesTags: ["TablePositions"],
     }),
 
-    updateTablePosition: builder.mutation<
-      TablePosition,
-      UpdateTablePositionRequest
-    >({
+    updateTablePosition: builder.mutation<boolean, UpdateTablePositionRequest>({
       queryFn: async (args) => {
         try {
-          const tablePosition = await updateTablePositionRequest(args);
+          await updateTablePositionRequest(args);
 
-          return { data: tablePosition };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
@@ -177,12 +171,12 @@ export const tableApiSlice = createApi({
       providesTags: ["TablePositions", "Tables"], // Enables cache invalidation
     }),
 
-    createTable: builder.mutation<Table, CreateTableRequest>({
+    createTable: builder.mutation<boolean, CreateTableRequest>({
       queryFn: async (args) => {
         try {
-          const table = await createTableRequest(args);
+          await createTableRequest(args);
 
-          return { data: table };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
@@ -190,12 +184,12 @@ export const tableApiSlice = createApi({
       invalidatesTags: ["Tables"],
     }),
 
-    updateTable: builder.mutation<Table, UpdateTableRequest>({
+    updateTable: builder.mutation<boolean, UpdateTableRequest>({
       queryFn: async (args) => {
         try {
-          const table = await updateTableRequest(args);
+          await updateTableRequest(args);
 
-          return { data: table };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
