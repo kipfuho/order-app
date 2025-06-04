@@ -119,7 +119,60 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           if (type === EventType.SHOP_CHANGED) {
             const { action, shop } = data;
             if (currentSessionUserId !== userId) {
-              store.dispatch(shopApiSlice.util.invalidateTags(["Shops"]));
+              (() => {
+                if (_.isEmpty(shop)) {
+                  store.dispatch(shopApiSlice.util.invalidateTags(["Shops"]));
+                }
+
+                try {
+                  // update cache instead of refetch
+                  if (action === EventActionType.CREATE) {
+                    store.dispatch(
+                      shopApiSlice.util.updateQueryData(
+                        "getShops",
+                        {},
+                        (draft) => {
+                          draft.push(shop);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.UPDATE) {
+                    store.dispatch(
+                      shopApiSlice.util.updateQueryData(
+                        "getShops",
+                        {},
+                        (draft) => {
+                          const index = draft.findIndex(
+                            (s) => s.id === shop.id,
+                          );
+                          if (index !== -1) {
+                            draft[index] = { ...draft[index], ...shop };
+                          }
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.DELETE) {
+                    store.dispatch(
+                      shopApiSlice.util.updateQueryData(
+                        "getShops",
+                        {},
+                        (draft) => {
+                          return draft.filter((s) => s.id !== shop.id);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                } catch {
+                  store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
+                  return;
+                }
+                store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
+              })();
             }
             return;
           }
@@ -130,7 +183,60 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
               orderApiSlice.util.invalidateTags(["TablesForOrder"]),
             );
             if (currentSessionUserId !== userId) {
-              store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
+              (() => {
+                if (_.isEmpty(table)) {
+                  store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
+                }
+
+                try {
+                  // update cache instead of refetch
+                  if (action === EventActionType.CREATE) {
+                    store.dispatch(
+                      tableApiSlice.util.updateQueryData(
+                        "getTables",
+                        shopId,
+                        (draft) => {
+                          draft.push(table);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.UPDATE) {
+                    store.dispatch(
+                      tableApiSlice.util.updateQueryData(
+                        "getTables",
+                        shopId,
+                        (draft) => {
+                          const index = draft.findIndex(
+                            (t) => t.id === table.id,
+                          );
+                          if (index !== -1) {
+                            draft[index] = { ...draft[index], ...table };
+                          }
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.DELETE) {
+                    store.dispatch(
+                      tableApiSlice.util.updateQueryData(
+                        "getTables",
+                        shopId,
+                        (draft) => {
+                          return draft.filter((t) => t.id !== table.id);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                } catch {
+                  store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
+                  return;
+                }
+                store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
+              })();
             }
             return;
           }
@@ -138,27 +244,207 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           if (type === EventType.TABLE_POSITION_CHANGED) {
             const { action, tablePosition } = data;
             if (currentSessionUserId !== userId) {
-              store.dispatch(
-                tableApiSlice.util.invalidateTags(["TablePositions"]),
-              );
+              (() => {
+                if (_.isEmpty(tablePosition)) {
+                  store.dispatch(
+                    tableApiSlice.util.invalidateTags(["TablePositions"]),
+                  );
+                  return;
+                }
+
+                try {
+                  // update cache instead of refetch
+                  if (action === EventActionType.CREATE) {
+                    store.dispatch(
+                      tableApiSlice.util.updateQueryData(
+                        "getTablePositions",
+                        shopId,
+                        (draft) => {
+                          draft.push(tablePosition);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.UPDATE) {
+                    store.dispatch(
+                      tableApiSlice.util.updateQueryData(
+                        "getTablePositions",
+                        shopId,
+                        (draft) => {
+                          const index = draft.findIndex(
+                            (tp) => tp.id === tablePosition.id,
+                          );
+                          if (index !== -1) {
+                            draft[index] = {
+                              ...draft[index],
+                              ...tablePosition,
+                            };
+                          }
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.DELETE) {
+                    store.dispatch(
+                      tableApiSlice.util.updateQueryData(
+                        "getTablePositions",
+                        shopId,
+                        (draft) => {
+                          return draft.filter(
+                            (tp) => tp.id !== tablePosition.id,
+                          );
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                } catch {
+                  store.dispatch(
+                    tableApiSlice.util.invalidateTags(["TablePositions"]),
+                  );
+                  return;
+                }
+                store.dispatch(
+                  tableApiSlice.util.invalidateTags(["TablePositions"]),
+                );
+              })();
             }
+
             return;
           }
 
           if (type === EventType.DISH_CHANGED) {
             const { action, dish } = data;
             if (currentSessionUserId !== userId) {
-              store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
+              (() => {
+                if (_.isEmpty(dish)) {
+                  store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
+                  return;
+                }
+
+                try {
+                  // update cache instead of refetch
+                  if (action === EventActionType.CREATE) {
+                    store.dispatch(
+                      dishApiSlice.util.updateQueryData(
+                        "getDishes",
+                        { shopId },
+                        (draft) => {
+                          draft.push(dish);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.UPDATE) {
+                    store.dispatch(
+                      dishApiSlice.util.updateQueryData(
+                        "getDishes",
+                        { shopId },
+                        (draft) => {
+                          const index = draft.findIndex(
+                            (d) => d.id === dish.id,
+                          );
+                          if (index !== -1) {
+                            draft[index] = { ...draft[index], ...dish };
+                          }
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.DELETE) {
+                    store.dispatch(
+                      dishApiSlice.util.updateQueryData(
+                        "getDishes",
+                        { shopId },
+                        (draft) => {
+                          return draft.filter((d) => d.id !== dish.id);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                } catch {
+                  store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
+                  return;
+                }
+                store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
+              })();
             }
+
             return;
           }
 
           if (type === EventType.DISH_CATEGORY_CHANGED) {
             const { action, dishCategory } = data;
             if (currentSessionUserId !== userId) {
-              store.dispatch(
-                dishApiSlice.util.invalidateTags(["DishCategories"]),
-              );
+              (() => {
+                if (_.isEmpty(dishCategory)) {
+                  store.dispatch(
+                    dishApiSlice.util.invalidateTags(["DishCategories"]),
+                  );
+                  return;
+                }
+
+                try {
+                  // update cache instead of refetch
+                  if (action === EventActionType.CREATE) {
+                    store.dispatch(
+                      dishApiSlice.util.updateQueryData(
+                        "getDishCategories",
+                        { shopId },
+                        (draft) => {
+                          draft.push(dishCategory);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.UPDATE) {
+                    store.dispatch(
+                      dishApiSlice.util.updateQueryData(
+                        "getDishCategories",
+                        { shopId },
+                        (draft) => {
+                          const index = draft.findIndex(
+                            (dc) => dc.id === dishCategory.id,
+                          );
+                          if (index !== -1) {
+                            draft[index] = { ...draft[index], ...dishCategory };
+                          }
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.DELETE) {
+                    store.dispatch(
+                      dishApiSlice.util.updateQueryData(
+                        "getDishCategories",
+                        { shopId },
+                        (draft) => {
+                          return draft.filter(
+                            (dc) => dc.id !== dishCategory.id,
+                          );
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                } catch {
+                  store.dispatch(
+                    dishApiSlice.util.invalidateTags(["DishCategories"]),
+                  );
+                  return;
+                }
+
+                store.dispatch(
+                  dishApiSlice.util.invalidateTags(["DishCategories"]),
+                );
+              })();
             }
             return;
           }
@@ -166,7 +452,68 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           if (type === EventType.EMPLOYEE_CHANGED) {
             const { action, employee } = data;
             if (currentSessionUserId !== userId) {
-              store.dispatch(staffApiSlice.util.invalidateTags(["Employees"]));
+              (() => {
+                if (_.isEmpty(employee)) {
+                  store.dispatch(
+                    staffApiSlice.util.invalidateTags(["Employees"]),
+                  );
+                  return;
+                }
+
+                try {
+                  // update cache instead of refetch
+                  if (action === EventActionType.CREATE) {
+                    store.dispatch(
+                      staffApiSlice.util.updateQueryData(
+                        "getEmployees",
+                        shopId,
+                        (draft) => {
+                          draft.push(employee);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.UPDATE) {
+                    store.dispatch(
+                      staffApiSlice.util.updateQueryData(
+                        "getEmployees",
+                        shopId,
+                        (draft) => {
+                          const index = draft.findIndex(
+                            (e) => e.id === employee.id,
+                          );
+                          if (index !== -1) {
+                            draft[index] = { ...draft[index], ...employee };
+                          }
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.DELETE) {
+                    store.dispatch(
+                      staffApiSlice.util.updateQueryData(
+                        "getEmployees",
+                        shopId,
+                        (draft) => {
+                          return draft.filter((e) => e.id !== employee.id);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                } catch {
+                  store.dispatch(
+                    staffApiSlice.util.invalidateTags(["Employees"]),
+                  );
+                  return;
+                }
+
+                store.dispatch(
+                  staffApiSlice.util.invalidateTags(["Employees"]),
+                );
+              })();
             }
             getPermissionsRequest({ shopId });
             return;
@@ -176,67 +523,143 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
             const { action, employeePosition } = data;
 
             if (currentSessionUserId !== userId) {
-              if (_.isEmpty(employeePosition)) {
+              (() => {
+                if (_.isEmpty(employeePosition)) {
+                  store.dispatch(
+                    staffApiSlice.util.invalidateTags(["EmployeePositions"]),
+                  );
+                  return;
+                }
+
+                try {
+                  // update cache instead of refetch
+                  if (action === EventActionType.CREATE) {
+                    store.dispatch(
+                      staffApiSlice.util.updateQueryData(
+                        "getEmployeePositions",
+                        shopId,
+                        (draft) => {
+                          draft.push(employeePosition);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.UPDATE) {
+                    store.dispatch(
+                      staffApiSlice.util.updateQueryData(
+                        "getEmployeePositions",
+                        shopId,
+                        (draft) => {
+                          const index = draft.findIndex(
+                            (ep) => ep.id === employeePosition.id,
+                          );
+                          if (index !== -1) {
+                            draft[index] = {
+                              ...draft[index],
+                              ...employeePosition,
+                            };
+                          }
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.DELETE) {
+                    store.dispatch(
+                      staffApiSlice.util.updateQueryData(
+                        "getEmployeePositions",
+                        shopId,
+                        (draft) => {
+                          return draft.filter(
+                            (ep) => ep.id !== employeePosition.id,
+                          );
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                } catch {
+                  store.dispatch(
+                    staffApiSlice.util.invalidateTags(["EmployeePositions"]),
+                  );
+                  return;
+                }
                 store.dispatch(
                   staffApiSlice.util.invalidateTags(["EmployeePositions"]),
                 );
-                return;
-              }
-              // update cache instead of refetch
-              if (action === EventActionType.CREATE) {
-                store.dispatch(
-                  staffApiSlice.util.updateQueryData(
-                    "getEmployeePositions",
-                    employeePosition.shopId,
-                    (draft) => {
-                      draft.push(employeePosition);
-                    },
-                  ),
-                );
-                return;
-              }
-              if (action === EventActionType.UPDATE) {
-                store.dispatch(
-                  staffApiSlice.util.updateQueryData(
-                    "getEmployeePositions",
-                    employeePosition.shopId,
-                    (draft) => {
-                      const index = draft.findIndex(
-                        (ep) => ep.id === employeePosition.id,
-                      );
-                      if (index !== -1) {
-                        draft[index] = { ...draft[index], ...employeePosition };
-                      }
-                    },
-                  ),
-                );
-                return;
-              }
-              if (action === EventActionType.DELETE) {
-                store.dispatch(
-                  staffApiSlice.util.updateQueryData(
-                    "getEmployeePositions",
-                    employeePosition.shopId,
-                    (draft) => {
-                      return draft.filter(
-                        (ep) => ep.id !== employeePosition.id,
-                      );
-                    },
-                  ),
-                );
-                return;
-              }
+              })();
             }
             return;
           }
 
           if (type === EventType.DEPARTMENT_CHANGED) {
             const { action, department } = data;
+
             if (currentSessionUserId !== userId) {
-              store.dispatch(
-                staffApiSlice.util.invalidateTags(["Departments"]),
-              );
+              (() => {
+                if (_.isEmpty(department)) {
+                  store.dispatch(
+                    staffApiSlice.util.invalidateTags(["Departments"]),
+                  );
+                  return;
+                }
+
+                try {
+                  // update cache instead of refetch
+                  if (action === EventActionType.CREATE) {
+                    store.dispatch(
+                      staffApiSlice.util.updateQueryData(
+                        "getDepartments",
+                        shopId,
+                        (draft) => {
+                          draft.push(department);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.UPDATE) {
+                    store.dispatch(
+                      staffApiSlice.util.updateQueryData(
+                        "getDepartments",
+                        shopId,
+                        (draft) => {
+                          const index = draft.findIndex(
+                            (d) => d.id === department.id,
+                          );
+                          if (index !== -1) {
+                            draft[index] = { ...draft[index], ...department };
+                          }
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  if (action === EventActionType.DELETE) {
+                    store.dispatch(
+                      staffApiSlice.util.updateQueryData(
+                        "getDepartments",
+                        shopId,
+                        (draft) => {
+                          return draft.filter((d) => d.id !== department.id);
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                } catch {
+                  store.dispatch(
+                    staffApiSlice.util.invalidateTags(["Departments"]),
+                  );
+                  return;
+                }
+                store.dispatch(
+                  staffApiSlice.util.invalidateTags(["Departments"]),
+                );
+              })();
             }
+
             getPermissionsRequest({ shopId });
             return;
           }
@@ -299,45 +722,224 @@ const connectAppSyncForShopForCustomer = async ({
 
           if (type === EventType.SHOP_CHANGED) {
             const { action, shop } = data;
-            store.dispatch(
-              shopApiSlice.util.invalidateTags([
-                { type: "Shops", id: shop?.id },
-              ]),
-            );
+
+            (() => {
+              if (_.isEmpty(shop)) {
+                store.dispatch(
+                  shopApiSlice.util.invalidateTags([
+                    { type: "Shops", id: shop?.id },
+                  ]),
+                );
+                return;
+              }
+
+              try {
+                // update cache instead of refetch
+                if (action === EventActionType.UPDATE) {
+                  store.dispatch(
+                    shopApiSlice.util.updateQueryData(
+                      "getShop",
+                      { shopId, isCustomerApp: true },
+                      (draft) => {
+                        return { ...draft, ...shop };
+                      },
+                    ),
+                  );
+                  return;
+                }
+              } catch {
+                store.dispatch(
+                  shopApiSlice.util.invalidateTags([
+                    { type: "Shops", id: shop?.id },
+                  ]),
+                );
+                return;
+              }
+              store.dispatch(
+                shopApiSlice.util.invalidateTags([
+                  { type: "Shops", id: shop?.id },
+                ]),
+              );
+            })();
             return;
           }
 
           if (type === EventType.TABLE_CHANGED) {
             const { action, table } = data;
-            store.dispatch(
-              tableApiSlice.util.invalidateTags([
-                { type: "Tables", id: table?.id },
-              ]),
-            );
+
+            (() => {
+              if (_.isEmpty(table)) {
+                store.dispatch(
+                  tableApiSlice.util.invalidateTags([
+                    { type: "Tables", id: table?.id },
+                  ]),
+                );
+                return;
+              }
+
+              try {
+                // update cache instead of refetch
+                if (action === EventActionType.UPDATE) {
+                  store.dispatch(
+                    tableApiSlice.util.updateQueryData(
+                      "getTable",
+                      { shopId, tableId: table?.id, isCustomerApp: true },
+                      (draft) => {
+                        return { ...draft, ...table };
+                      },
+                    ),
+                  );
+                  return;
+                }
+              } catch {
+                store.dispatch(
+                  tableApiSlice.util.invalidateTags([
+                    { type: "Tables", id: table?.id },
+                  ]),
+                );
+                return;
+              }
+              store.dispatch(
+                tableApiSlice.util.invalidateTags([
+                  { type: "Tables", id: table?.id },
+                ]),
+              );
+            })();
             return;
           }
 
           if (type === EventType.TABLE_POSITION_CHANGED) {
-            const { action, tablePosition } = data;
-            store.dispatch(
-              tableApiSlice.util.invalidateTags([
-                { type: "TablePositions", id: tablePosition?.id },
-              ]),
-            );
+            store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
             return;
           }
 
           if (type === EventType.DISH_CHANGED) {
             const { action, dish } = data;
-            store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
+
+            (() => {
+              if (_.isEmpty(dish)) {
+                store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
+                return;
+              }
+
+              try {
+                // update cache instead of refetch
+                if (action === EventActionType.CREATE) {
+                  store.dispatch(
+                    dishApiSlice.util.updateQueryData(
+                      "getDishes",
+                      { shopId, isCustomerApp: true },
+                      (draft) => {
+                        draft.push(dish);
+                      },
+                    ),
+                  );
+                  return;
+                }
+
+                if (action === EventActionType.UPDATE) {
+                  store.dispatch(
+                    dishApiSlice.util.updateQueryData(
+                      "getDishes",
+                      { shopId, isCustomerApp: true },
+                      (draft) => {
+                        const index = draft.findIndex((d) => d.id === dish.id);
+                        if (index !== -1) {
+                          draft[index] = { ...draft[index], ...dish };
+                        }
+                      },
+                    ),
+                  );
+                  return;
+                }
+
+                if (action === EventActionType.DELETE) {
+                  store.dispatch(
+                    dishApiSlice.util.updateQueryData(
+                      "getDishes",
+                      { shopId, isCustomerApp: true },
+                      (draft) => {
+                        return draft.filter((d) => d.id !== dish.id);
+                      },
+                    ),
+                  );
+                  return;
+                }
+              } catch {
+                store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
+                return;
+              }
+              store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
+            })();
             return;
           }
 
           if (type === EventType.DISH_CATEGORY_CHANGED) {
             const { action, dishCategory } = data;
-            store.dispatch(
-              dishApiSlice.util.invalidateTags(["DishCategories"]),
-            );
+
+            (() => {
+              if (_.isEmpty(dishCategory)) {
+                store.dispatch(
+                  dishApiSlice.util.invalidateTags(["DishCategories"]),
+                );
+                return;
+              }
+
+              try {
+                // update cache instead of refetch
+                if (action === EventActionType.CREATE) {
+                  store.dispatch(
+                    dishApiSlice.util.updateQueryData(
+                      "getDishCategories",
+                      { shopId, isCustomerApp: true },
+                      (draft) => {
+                        draft.push(dishCategory);
+                      },
+                    ),
+                  );
+                  return;
+                }
+
+                if (action === EventActionType.UPDATE) {
+                  store.dispatch(
+                    dishApiSlice.util.updateQueryData(
+                      "getDishCategories",
+                      { shopId, isCustomerApp: true },
+                      (draft) => {
+                        const index = draft.findIndex(
+                          (dc) => dc.id === dishCategory.id,
+                        );
+                        if (index !== -1) {
+                          draft[index] = { ...draft[index], ...dishCategory };
+                        }
+                      },
+                    ),
+                  );
+                  return;
+                }
+
+                if (action === EventActionType.DELETE) {
+                  store.dispatch(
+                    dishApiSlice.util.updateQueryData(
+                      "getDishCategories",
+                      { shopId, isCustomerApp: true },
+                      (draft) => {
+                        return draft.filter((dc) => dc.id !== dishCategory.id);
+                      },
+                    ),
+                  );
+                  return;
+                }
+              } catch {
+                store.dispatch(
+                  dishApiSlice.util.invalidateTags(["DishCategories"]),
+                );
+                return;
+              }
+              store.dispatch(
+                dishApiSlice.util.invalidateTags(["DishCategories"]),
+              );
+            })();
             return;
           }
 

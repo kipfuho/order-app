@@ -5,6 +5,7 @@ import {
   createTableRequest,
   deleteTablePositionRequest,
   deleteTableRequest,
+  getTablePositionRequest,
   getTablePositionsRequest,
   getTableRequest,
   getTablesRequest,
@@ -28,6 +29,27 @@ export const tableApiSlice = createApi({
   // keepUnusedDataFor: 600,
   endpoints: (builder) => ({
     /** Table Positions */
+    getTablePosition: builder.query<
+      TablePosition,
+      { tablePositionId: string; shopId: string; isCustomerApp: boolean }
+    >({
+      queryFn: async ({ shopId, tablePositionId, isCustomerApp = false }) => {
+        try {
+          const tablePosition = await getTablePositionRequest({
+            shopId,
+            tablePositionId,
+            isCustomerApp,
+          });
+
+          return { data: tablePosition };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      providesTags: (tablePosition) =>
+        tablePosition ? [{ type: "TablePositions", id: tablePosition.id }] : [], // Enables cache invalidation
+    }),
+
     getTablePositions: builder.query<TablePosition[], string>({
       queryFn: async (shopId) => {
         try {
@@ -256,6 +278,7 @@ export const tableApiSlice = createApi({
 });
 
 export const {
+  useGetTablePositionQuery,
   useGetTablePositionsQuery,
   useCreateTablePositionMutation,
   useUpdateTablePositionMutation,

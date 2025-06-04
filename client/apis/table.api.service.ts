@@ -12,6 +12,28 @@ import {
 } from "./table.api.interface";
 import { getAccessTokenLazily } from "./auth.api.service";
 
+const getTablePositionRequest = async ({
+  shopId,
+  tablePositionId,
+  isCustomerApp = false,
+}: {
+  tablePositionId: string;
+  shopId: string;
+  isCustomerApp: boolean;
+}) => {
+  const accessToken = await getAccessTokenLazily(isCustomerApp);
+
+  const result: {
+    tablePosition: TablePosition;
+  } = await apiRequest({
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/tablePositions/${tablePositionId}`,
+    token: accessToken,
+  });
+
+  return result.tablePosition;
+};
+
 const getTablePositionsRequest = async ({
   shopId,
 }: GetTablePositionsRequest) => {
@@ -230,6 +252,7 @@ const deleteTableRequest = async ({ tableId, shopId }: DeleteTableRequest) => {
 };
 
 export {
+  getTablePositionRequest,
   getTablePositionsRequest,
   createTablePositionRequest,
   updateTablePositionRequest,
