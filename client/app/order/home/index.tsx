@@ -10,7 +10,6 @@ import { RootState } from "@stores/store";
 import { Dish, Shop, Table } from "@stores/state.interface";
 import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
-import ImageSlider from "@components/ImageSlider";
 import CustomerOrderMenu from "@components/ui/orders/CustomerOrderMenu";
 import { useState } from "react";
 import { CustomerAppBar } from "@components/ui/customer/CustomerAppBar";
@@ -22,6 +21,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import AppBarSearchBox from "@/components/AppBarSearchBox";
 import { styles } from "@/constants/styles";
+import RecommendDishImageSlider from "@/components/RecommendDishSlider";
 
 const getButtonSize = (width: number) => {
   return width / 2 - 30;
@@ -72,9 +72,10 @@ export default function CustomerHomePage() {
       shopId: shop.id,
       isCustomerApp: true,
     });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: recommendationDishes, isLoading: recommendationDishLoading } =
-    useGetRecommendationDishesQuery(shop.id);
+  const {
+    data: recommendationDishes = [],
+    isLoading: recommendationDishLoading,
+  } = useGetRecommendationDishesQuery(shop.id);
   const { isLoading: cartLoading } = useGetCartQuery(shop.id);
 
   const { availableDishTypes, dishGroupByDishType } = getDishGroupByDishType(
@@ -95,6 +96,12 @@ export default function CustomerHomePage() {
 
   const gesture = createDismissGesture(onDismissSearch);
 
+  const handleClickRecommendDish = (dish: Dish) => {
+    setSearchValue(dish.name);
+    setSearchVisible(true);
+    setMenuVisible(true);
+  };
+
   if (dishLoading || dishTypeLoading || cartLoading) {
     return <LoaderBasic />;
   }
@@ -109,16 +116,16 @@ export default function CustomerHomePage() {
             flex: 1,
           }}
         >
-          <GestureDetector gesture={gesture}>
-            <View style={{ flex: 1 }}>
-              <CustomerAppBar goBack={() => setMenuVisible(false)}>
-                <AppBarSearchBox
-                  searchValue={searchValue}
-                  searchVisible={searchVisible}
-                  setSearchValue={setSearchValue}
-                  setSearchVisible={setSearchVisible}
-                />
-              </CustomerAppBar>
+          <View style={{ flex: 1 }}>
+            <CustomerAppBar goBack={() => setMenuVisible(false)}>
+              <AppBarSearchBox
+                searchValue={searchValue}
+                searchVisible={searchVisible}
+                setSearchValue={setSearchValue}
+                setSearchVisible={setSearchVisible}
+              />
+            </CustomerAppBar>
+            <GestureDetector gesture={gesture}>
               <CustomerOrderMenu
                 dishes={
                   searchValue
@@ -128,20 +135,16 @@ export default function CustomerHomePage() {
                     : dishGroupByDishType[selectedDishType]
                 }
               />
-            </View>
-          </GestureDetector>
+            </GestureDetector>
+          </View>
         </Modal>
       </Portal>
       <Surface style={styles.baseContainer}>
         <ScrollView>
-          <ImageSlider
-            images={[
-              "https://picsum.photos/700",
-              "https://picsum.photos/700",
-              "https://picsum.photos/700",
-              "https://picsum.photos/700",
-              "https://picsum.photos/700",
-            ]}
+          <RecommendDishImageSlider
+            dishes={recommendationDishes}
+            isLoading={recommendationDishLoading}
+            onDishPress={handleClickRecommendDish}
           />
           <Surface mode="flat" style={styles.baseGrid}>
             {availableDishTypes.map((dishType) => (

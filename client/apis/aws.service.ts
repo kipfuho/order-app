@@ -11,6 +11,9 @@ import { kitchenApiSlice } from "../stores/apiSlices/kitchenApi.slice";
 import { reportApiSlice } from "@/stores/apiSlices/reportApi.slice";
 import { getPermissionsRequest } from "./auth.api.service";
 import _ from "lodash";
+import { getShopRequest } from "./shop.api.service";
+import { updateShop, updateTable } from "@/stores/customerSlice";
+import { getTableRequest } from "./table.api.service";
 
 const namespace = "default";
 const useappsync = true;
@@ -723,13 +726,10 @@ const connectAppSyncForShopForCustomer = async ({
           if (type === EventType.SHOP_CHANGED) {
             const { action, shop } = data;
 
-            (() => {
-              if (_.isEmpty(shop)) {
-                store.dispatch(
-                  shopApiSlice.util.invalidateTags([
-                    { type: "Shops", id: shop?.id },
-                  ]),
-                );
+            await (async () => {
+              if (!_.isEmpty(shop)) {
+                const _shop = await getShopRequest(shopId, true);
+                store.dispatch(updateShop(_shop));
                 return;
               }
 
@@ -737,29 +737,20 @@ const connectAppSyncForShopForCustomer = async ({
                 // update cache instead of refetch
                 if (action === EventActionType.UPDATE) {
                   store.dispatch(
-                    shopApiSlice.util.updateQueryData(
-                      "getShop",
-                      { shopId, isCustomerApp: true },
-                      (draft) => {
-                        return { ...draft, ...shop };
-                      },
-                    ),
+                    updateShop({
+                      ...store.getState().customer.shop,
+                      ...shop,
+                    }),
                   );
                   return;
                 }
               } catch {
-                store.dispatch(
-                  shopApiSlice.util.invalidateTags([
-                    { type: "Shops", id: shop?.id },
-                  ]),
-                );
+                const _shop = await getShopRequest(shopId, true);
+                store.dispatch(updateShop(_shop));
                 return;
               }
-              store.dispatch(
-                shopApiSlice.util.invalidateTags([
-                  { type: "Shops", id: shop?.id },
-                ]),
-              );
+              const _shop = await getShopRequest(shopId, true);
+              store.dispatch(updateShop(_shop));
             })();
             return;
           }
@@ -767,13 +758,17 @@ const connectAppSyncForShopForCustomer = async ({
           if (type === EventType.TABLE_CHANGED) {
             const { action, table } = data;
 
-            (() => {
+            await (async () => {
+              const currentTable = store.getState().customer.table;
+              if (!currentTable) return;
+
               if (_.isEmpty(table)) {
-                store.dispatch(
-                  tableApiSlice.util.invalidateTags([
-                    { type: "Tables", id: table?.id },
-                  ]),
-                );
+                const _table = await getTableRequest({
+                  shopId,
+                  tableId: currentTable.id,
+                  isCustomerApp: true,
+                });
+                store.dispatch(updateTable(_table));
                 return;
               }
 
@@ -781,35 +776,43 @@ const connectAppSyncForShopForCustomer = async ({
                 // update cache instead of refetch
                 if (action === EventActionType.UPDATE) {
                   store.dispatch(
-                    tableApiSlice.util.updateQueryData(
-                      "getTable",
-                      { shopId, tableId: table?.id, isCustomerApp: true },
-                      (draft) => {
-                        return { ...draft, ...table };
-                      },
-                    ),
+                    updateTable({
+                      ...store.getState().customer.table,
+                      ...table,
+                    }),
                   );
                   return;
                 }
               } catch {
-                store.dispatch(
-                  tableApiSlice.util.invalidateTags([
-                    { type: "Tables", id: table?.id },
-                  ]),
-                );
+                const _table = await getTableRequest({
+                  shopId,
+                  tableId: currentTable.id,
+                  isCustomerApp: true,
+                });
+                store.dispatch(updateTable(_table));
                 return;
               }
-              store.dispatch(
-                tableApiSlice.util.invalidateTags([
-                  { type: "Tables", id: table?.id },
-                ]),
-              );
+
+              const _table = await getTableRequest({
+                shopId,
+                tableId: currentTable.id,
+                isCustomerApp: true,
+              });
+              store.dispatch(updateTable(_table));
             })();
             return;
           }
 
           if (type === EventType.TABLE_POSITION_CHANGED) {
-            store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
+            const currentTable = store.getState().customer.table;
+            if (!currentTable) return;
+
+            const _table = await getTableRequest({
+              shopId,
+              tableId: currentTable.id,
+              isCustomerApp: true,
+            });
+            store.dispatch(updateTable(_table));
             return;
           }
 

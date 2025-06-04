@@ -2,16 +2,11 @@ import { Stack, useGlobalSearchParams } from "expo-router";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Surface, Text, useTheme } from "react-native-paper";
-import {
-  AppSyncChannelType,
-  connectAppSyncForShopForCustomer,
-} from "@apis/aws.service";
 import { useGetShopQuery } from "@stores/apiSlices/shopApi.slice";
 import { RootState } from "@stores/store";
 import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
 import { updateShop } from "@stores/customerSlice";
-import { closeAppSyncChannel } from "@stores/awsSlice";
 import { styles } from "@/constants/styles";
 
 export default function AppLayout() {
@@ -31,11 +26,6 @@ export default function AppLayout() {
     if (!shop) return;
 
     dispatch(updateShop(shop));
-    connectAppSyncForShopForCustomer({ shopId: shop.id });
-
-    return () => {
-      dispatch(closeAppSyncChannel({ type: AppSyncChannelType.CUSTOMER }));
-    };
   }, [shopId, shop, isFetching, dispatch]);
 
   if (isLoading) {

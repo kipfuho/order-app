@@ -12,6 +12,7 @@ import {
   Portal,
   Dialog,
   useTheme,
+  Modal,
 } from "react-native-paper";
 import _ from "lodash";
 import { Shop, Table } from "@stores/state.interface";
@@ -32,6 +33,7 @@ import { styles } from "@/constants/styles";
 import { PermissionType } from "@/constants/common";
 import Toast from "react-native-toast-message";
 import { ConfirmCancelDialog } from "@/components/ui/CancelDialog";
+import QRCode from "react-native-qrcode-svg";
 
 export default function TablesManagementPage() {
   const router = useRouter();
@@ -51,6 +53,7 @@ export default function TablesManagementPage() {
   const [deleteTable, { isLoading: deleteTableLoading }] =
     useDeleteTableMutation();
 
+  const [tableQrVisible, setTableQrVisible] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [selectedTable, setSelectedTable] = useState<Table>();
 
@@ -102,6 +105,34 @@ export default function TablesManagementPage() {
             </Text>
           </Dialog.Content>
         </ConfirmCancelDialog>
+
+        <Modal
+          visible={tableQrVisible}
+          onDismiss={() => setTableQrVisible(false)}
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          contentContainerStyle={{
+            boxShadow: "none",
+          }}
+        >
+          <Surface
+            style={{
+              padding: 24,
+              borderRadius: 15,
+              alignItems: "center",
+              backgroundColor: "#fff",
+              elevation: 4,
+            }}
+          >
+            <QRCode
+              value={`${process.env.EXPO_PUBLIC_WEB_URL}/order/shop/${shop.id}/table/${selectedTable?.id}`}
+              size={200}
+            />
+          </Surface>
+        </Modal>
+
         <Toast />
       </Portal>
 
@@ -147,21 +178,27 @@ export default function TablesManagementPage() {
                       left={(props) => (
                         <List.Icon {...props} icon="table-furniture" />
                       )}
-                      right={() => {
-                        if (!userPermission.has(PermissionType.UPDATE_SHOP))
-                          return;
-
-                        return (
+                      right={() => (
+                        <>
                           <IconButton
-                            icon="delete"
-                            iconColor={theme.colors.error}
+                            icon="qrcode"
                             onPress={() => {
-                              setSelectedTable(item); // Set selected item for deletion
-                              setDialogVisible(true); // Show delete confirmation dialog
+                              setSelectedTable(item);
+                              setTableQrVisible(true);
                             }}
                           />
-                        );
-                      }}
+                          {userPermission.has(PermissionType.UPDATE_SHOP) && (
+                            <IconButton
+                              icon="delete"
+                              iconColor={theme.colors.error}
+                              onPress={() => {
+                                setSelectedTable(item); // Set selected item for deletion
+                                setDialogVisible(true); // Show delete confirmation dialog
+                              }}
+                            />
+                          )}
+                        </>
+                      )}
                       onPress={() =>
                         goToUpdateTable({
                           router,

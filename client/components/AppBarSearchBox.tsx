@@ -36,6 +36,9 @@ const AppBarSearchBox = ({
           onPress={() => {
             setSearchVisible(true);
           }}
+          onLongPress={() => {
+            setSearchVisible(false);
+          }}
         >
           <Searchbar
             placeholder={t("search_dish")}

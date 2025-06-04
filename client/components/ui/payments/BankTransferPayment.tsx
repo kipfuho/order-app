@@ -25,13 +25,14 @@ export default function BankTransferPayment({
   const handleGetVnPayUrl = async () => {
     if (!currentShop || !currentOrderSession) return;
 
+    setPaymentUrl("");
+    setWaitingVisible(true);
     const url = await getVnPayUrl({
       shopId: currentShop.id,
       orderSessionId: currentOrderSession.id,
     });
 
     setPaymentUrl(url);
-    setWaitingVisible(true);
   };
 
   return (

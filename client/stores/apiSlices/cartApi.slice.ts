@@ -9,7 +9,10 @@ import {
   getRecommendationDishesRequest,
   updateCartRequest,
 } from "@apis/cart.api.service";
-import { updateCurrentCart } from "../customerSlice";
+import {
+  updateCurrentCart,
+  updateIsUpdateCartDebouncing,
+} from "../customerSlice";
 
 export const cartApiSlice = createApi({
   reducerPath: "cartApi",
@@ -37,14 +40,19 @@ export const cartApiSlice = createApi({
     >({
       queryFn: async ({ cartItems, shopId }, api) => {
         try {
+          const state = api.getState();
+          if (!_.get(state, "customer.isUpdateCartDebouncing")) {
+            return { data: false };
+          }
+
           await updateCartRequest({
             shopId,
             cartItems,
             isCustomerApp: true,
           });
+          api.dispatch(updateIsUpdateCartDebouncing(false));
 
-          const state = api.getState();
-          return { data: !_.get(state, "customer.isUpdateCartDebouncing") };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }

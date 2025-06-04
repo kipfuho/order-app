@@ -73,8 +73,10 @@ const CartItemCard = ({
 };
 
 export default function CartDetail({
+  isLoading,
   setCartDetailVisible,
 }: {
+  isLoading: boolean;
   setCartDetailVisible: Dispatch<SetStateAction<boolean>>;
 }) {
   const { t } = useTranslation();
@@ -144,6 +146,7 @@ export default function CartDetail({
               handleEditItemClick={handleEditItemClick}
             />
           ))}
+          {isLoading && <ActivityIndicator />}
         </ScrollView>
         <View style={{ gap: 8, marginTop: 8 }}>
           <View

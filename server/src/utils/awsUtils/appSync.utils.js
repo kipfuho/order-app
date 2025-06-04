@@ -5,7 +5,7 @@ const { formatOrderSessionNo } = require('../common');
 const namespace = 'default';
 
 const getShopChannel = (shopId) => `${namespace}/shop/${shopId}`;
-const getCustomerChannel = (shopId) => `${namespace}/${shopId}/customer`;
+const getCustomerChannel = (shopId) => `${namespace}/shop/${shopId}/customer`;
 const getOnlinePaymentChannel = (customerId) => `${namespace}/payment/${customerId}`;
 
 const AppSyncEvent = {

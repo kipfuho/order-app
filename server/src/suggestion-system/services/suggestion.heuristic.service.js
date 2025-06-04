@@ -69,8 +69,7 @@ const getCustomerPreferences = ({ orderSessions, customerId }) => {
           preferredDishes[dishOrder.dishId] = (preferredDishes[dishOrder.dishId] || 0) + dishOrder.quantity;
         });
       });
-    })
-    .value();
+    });
 
   return preferredDishes;
 };
@@ -92,8 +91,7 @@ const getCustomerOrderPatterns = ({ orderSessions, customerId }) => {
           orderPatterns[orderDay][dishOrder.dishId] = (orderPatterns[orderDay][dishOrder.dishId] || 0) + dishOrder.quantity;
         });
       });
-    })
-    .value();
+    });
 
   return orderPatterns;
 };

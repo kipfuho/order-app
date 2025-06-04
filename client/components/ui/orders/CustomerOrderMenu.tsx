@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import _, { debounce } from "lodash";
 import { LoaderBasic } from "@components/ui/Loader";
 import { RootState } from "@stores/store";
-import { CartItem, Dish, DishCategory, Shop } from "@stores/state.interface";
+import { CartItem, Dish, Shop } from "@stores/state.interface";
 import { useGetDishCategoriesQuery } from "@stores/apiSlices/dishApi.slice";
 import {
   useGetCartQuery,
@@ -15,20 +15,6 @@ import { ItemTypeFlatList } from "@/components/FlatListWithScroll";
 import { updateIsUpdateCartDebouncing } from "@stores/customerSlice";
 import FlatListWithoutScroll from "@/components/FlatListWithoutScroll";
 import { useTranslation } from "react-i18next";
-
-const getDishByCategory = (
-  dishes: Dish[],
-  categories: DishCategory[],
-  t: any,
-) => {
-  const dishesByCategory = _.groupBy(dishes, "category.id");
-  dishesByCategory["all"] = dishes;
-  const availableDishCategories = _.concat(
-    [{ id: "all", code: "all", name: t("all") }],
-    _.filter(categories, (c) => !_.isEmpty(dishesByCategory[c.id])),
-  );
-  return { availableDishCategories, dishesByCategory };
-};
 
 export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
   const dispatch = useDispatch();
@@ -48,11 +34,17 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
       shopId: shop.id,
       isCustomerApp: true,
     });
-  const { availableDishCategories, dishesByCategory } = getDishByCategory(
-    dishes,
-    dishCategories,
-    t,
-  );
+  const { availableDishCategories, dishesByCategory } = useMemo(() => {
+    const dishesByCategory = _.groupBy(dishes, "category.id");
+    dishesByCategory["all"] = dishes;
+    const availableDishCategories = _.concat(
+      [{ id: "all", code: "all", name: t("all") }],
+      _.filter(dishCategories, (c) => !_.isEmpty(dishesByCategory[c.id])),
+    );
+
+    return { availableDishCategories, dishesByCategory };
+  }, [dishCategories, dishes, t]);
+
   const {
     data: cart,
     isLoading: cartLoading,
@@ -66,12 +58,11 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
     () =>
       debounce(
         ({ shopId, cartItems }: { shopId: string; cartItems: CartItem[] }) => {
-          dispatch(updateIsUpdateCartDebouncing(false));
           updateCart({ cartItems, shopId });
         },
         1000,
       ),
-    [dispatch, updateCart],
+    [updateCart],
   );
 
   useEffect(() => {

@@ -1,5 +1,12 @@
 import _ from "lodash";
-import { Modal, Portal, Surface, Text, TextInput } from "react-native-paper";
+import {
+  Modal,
+  Portal,
+  Surface,
+  Text,
+  TextInput,
+  useTheme,
+} from "react-native-paper";
 import { ScrollView, View } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
@@ -15,11 +22,13 @@ import { resetCurrentTable } from "@stores/shop.slice";
 import { goToOrderSessionDetail } from "@apis/navigate.service";
 import { PaymentComponentMap, PaymentMethod } from "@constants/paymentMethod";
 import { convertPaymentAmount } from "@constants/utils";
+import VNPay from "@assets/svg/VNPAY.svg";
 
 export default function PaymentMethodPage() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const router = useRouter();
+  const theme = useTheme();
 
   const { currentOrderSession, currentShop } = useSelector(
     (state: RootState) => state.shop,
@@ -124,18 +133,35 @@ export default function PaymentMethodPage() {
           }}
         >
           <Surface
-            style={{ padding: 32, borderRadius: 15, alignItems: "center" }}
+            style={{
+              padding: 24,
+              borderRadius: 15,
+              alignItems: "center",
+              backgroundColor: "#fff",
+              elevation: 4,
+            }}
           >
             <Text
               style={{ marginBottom: 16, fontSize: 18, textAlign: "center" }}
             >
               {t("please_scan_qr_to_pay")}
             </Text>
-            {paymentUrl ? (
-              <QRCode value={paymentUrl} size={200} />
-            ) : (
-              <Text>{t("creating_qr_code")}</Text>
-            )}
+            <VNPay scale={0.4} />
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: theme.colors.onBackground,
+                padding: 8,
+                borderRadius: 10,
+                marginBottom: 8,
+              }}
+            >
+              {paymentUrl ? (
+                <QRCode value={paymentUrl} size={200} />
+              ) : (
+                <Text>{t("creating_qr_code")}</Text>
+              )}
+            </View>
           </Surface>
         </Modal>
         <Toast />

@@ -20,6 +20,8 @@ import { RootState } from "@stores/store";
 import { setLocale, toggleDarkMode } from "@stores/appSetting.slice";
 import CartDetail from "./CartDetail";
 import CartCheckoutHistory from "./CartCheckoutHistory";
+import { useUpdateCartMutation } from "@/stores/apiSlices/cartApi.slice";
+import { mergeCartItems } from "@/constants/utils";
 
 export function CustomerAppBar({
   children,
@@ -32,10 +34,13 @@ export function CustomerAppBar({
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const { shop, table, currentCartItem } = useSelector(
+  const { shop, table, currentCartItem, isUpdateCartDebouncing } = useSelector(
     (state: RootState) => state.customer,
   );
   const { darkMode, locale } = useSelector((state: RootState) => state.setting);
+  const [updateCart, { isLoading: updateCartLoading }] =
+    useUpdateCartMutation();
+
   const [menuVisible, setMenuVisible] = useState(false);
   const [cartDetailVisible, setCartDetailVisible] = useState(false);
   const [checkoutHistoryVisible, setCheckoutHistoryVisible] = useState(false);
@@ -65,7 +70,10 @@ export function CustomerAppBar({
             flex: 1,
           }}
         >
-          <CartDetail setCartDetailVisible={setCartDetailVisible} />
+          <CartDetail
+            setCartDetailVisible={setCartDetailVisible}
+            isLoading={updateCartLoading}
+          />
           <Toast />
         </Modal>
         <Modal
@@ -143,6 +151,12 @@ export function CustomerAppBar({
             padding: 10,
           }}
           onPress={() => {
+            if (isUpdateCartDebouncing) {
+              updateCart({
+                shopId: shop!.id,
+                cartItems: mergeCartItems(currentCartItem),
+              });
+            }
             setCheckoutHistoryVisible(false);
             setCartDetailVisible(true);
           }}
