@@ -196,7 +196,11 @@ export default function DishesManagementPage() {
           <FlatListWithScroll
             groups={dishCategories}
             itemByGroup={filteredDishGroupById}
-            openMenu={openMenu}
+            openMenu={
+              userPermission.has(PermissionType.UPDATE_MENU)
+                ? openMenu
+                : undefined
+            }
             itemType={ItemTypeFlatList.DISH_CARD}
           >
             {userPermission.has(PermissionType.CREATE_MENU) && (

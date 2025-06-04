@@ -111,8 +111,10 @@ export default function StaffDepartmentPage() {
                 key={item.id}
                 title={item.name}
                 style={{
+                  height: 80,
                   borderRadius: 8,
                   marginBottom: 8,
+                  justifyContent: "center",
                 }}
                 left={(props) => <List.Icon {...props} icon="chair-rolling" />}
                 onPress={() => {
@@ -122,16 +124,21 @@ export default function StaffDepartmentPage() {
                     departmentId: item.id,
                   });
                 }}
-                right={() => (
-                  <IconButton
-                    icon="delete"
-                    iconColor={theme.colors.error}
-                    onPress={() => {
-                      setSelectedDepartment(item); // Set selected item for deletion
-                      setDialogVisible(true); // Show delete confirmation dialog
-                    }}
-                  />
-                )}
+                right={() => {
+                  if (!userPermission.has(PermissionType.UPDATE_EMPLOYEE))
+                    return;
+
+                  return (
+                    <IconButton
+                      icon="delete"
+                      iconColor={theme.colors.error}
+                      onPress={() => {
+                        setSelectedDepartment(item); // Set selected item for deletion
+                        setDialogVisible(true); // Show delete confirmation dialog
+                      }}
+                    />
+                  );
+                }}
               />
             ))}
           </List.Section>

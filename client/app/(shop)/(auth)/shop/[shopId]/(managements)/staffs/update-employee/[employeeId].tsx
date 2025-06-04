@@ -79,8 +79,8 @@ export default function UpdateEmployeePage() {
   const handleUpdateEmployee = async () => {
     if (
       !name.trim() ||
-      _.isEmpty(selectedPosition) ||
       _.isEmpty(selectedDepartment)
+      // || _.isEmpty(selectedPosition)
       // || !email.trim()
       // || !password.trim()
     ) {
@@ -90,8 +90,8 @@ export default function UpdateEmployeePage() {
         text2: `${t("required")} ${_.join(
           _.compact([
             !name.trim() && t("employee_name"),
-            _.isEmpty(selectedPosition) && t("employee_position"),
             _.isEmpty(selectedDepartment) && t("department"),
+            // _.isEmpty(selectedPosition) && t("employee_position"),
             // !email.trim() && t("email"),
             // !password.trim() && t("password"),
           ]),
@@ -106,7 +106,7 @@ export default function UpdateEmployeePage() {
         employeeId,
         shopId: shop.id,
         name,
-        positionId: selectedPosition.id,
+        positionId: selectedPosition?.id,
         departmentId: selectedDepartment.id,
         // email,
         // password,
@@ -222,6 +222,7 @@ export default function UpdateEmployeePage() {
                   <Checkbox.Item
                     key={perm}
                     label={t(perm)}
+                    disabled={selectedDepartment?.permissions.includes(perm)}
                     status={
                       selectedPermissions.includes(perm)
                         ? "checked"

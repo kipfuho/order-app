@@ -1,13 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "@stores/store";
-import { List, Surface, Text, FAB } from "react-native-paper";
+import {
+  List,
+  Surface,
+  Text,
+  FAB,
+  IconButton,
+  Portal,
+  Dialog,
+  useTheme,
+} from "react-native-paper";
 import _ from "lodash";
-import { Shop } from "@stores/state.interface";
+import { Shop, Table } from "@stores/state.interface";
 import { AppBar } from "@components/AppBar";
 import {
+  useDeleteTableMutation,
   useGetTablePositionsQuery,
   useGetTablesQuery,
 } from "@stores/apiSlices/tableApi.slice";
@@ -20,9 +30,12 @@ import { useTranslation } from "react-i18next";
 import { LoaderBasic } from "@components/ui/Loader";
 import { styles } from "@/constants/styles";
 import { PermissionType } from "@/constants/common";
+import Toast from "react-native-toast-message";
+import { ConfirmCancelDialog } from "@/components/ui/CancelDialog";
 
 export default function TablesManagementPage() {
   const router = useRouter();
+  const theme = useTheme();
   const { t } = useTranslation();
 
   const { currentShop, userPermission } = useSelector(
@@ -35,6 +48,36 @@ export default function TablesManagementPage() {
   const { data: tablePositions = [], isLoading: tablePositionLoading } =
     useGetTablePositionsQuery(shop.id);
   const tableByPostion = _.groupBy(tables, "position.id");
+  const [deleteTable, { isLoading: deleteTableLoading }] =
+    useDeleteTableMutation();
+
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [selectedTable, setSelectedTable] = useState<Table>();
+
+  const confirmDelete = async () => {
+    try {
+      if (!selectedTable) {
+        Toast.show({
+          type: "error",
+          text1: "Delete Failed",
+          text2: "Cannot find table",
+        });
+        return;
+      }
+      await deleteTable({
+        shopId: shop.id,
+        tableId: selectedTable.id,
+      }).unwrap();
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: t("delete_failed"),
+        text2: t("error_any"),
+      });
+    } finally {
+      setDialogVisible(false);
+    }
+  };
 
   if (tableLoading || tablePositionLoading) {
     return <LoaderBasic />;
@@ -42,6 +85,26 @@ export default function TablesManagementPage() {
 
   return (
     <>
+      <Portal>
+        <ConfirmCancelDialog
+          title={t("delete_confirm")}
+          isLoading={deleteTableLoading}
+          dialogVisible={dialogVisible}
+          setDialogVisible={setDialogVisible}
+          onCancelClick={() => {
+            setDialogVisible(false);
+          }}
+          onConfirmClick={confirmDelete}
+        >
+          <Dialog.Content>
+            <Text>
+              {t("delete_confirm_detail")} {selectedTable?.name}?
+            </Text>
+          </Dialog.Content>
+        </ConfirmCancelDialog>
+        <Toast />
+      </Portal>
+
       <AppBar
         title={t("table")}
         goBack={() => goToShopSetting({ router, shopId: shop.id })}
@@ -75,9 +138,30 @@ export default function TablesManagementPage() {
                     <List.Item
                       key={item.id}
                       title={item.name}
+                      style={{
+                        height: 80,
+                        borderRadius: 8,
+                        marginBottom: 8,
+                        justifyContent: "center",
+                      }}
                       left={(props) => (
                         <List.Icon {...props} icon="table-furniture" />
                       )}
+                      right={() => {
+                        if (!userPermission.has(PermissionType.UPDATE_SHOP))
+                          return;
+
+                        return (
+                          <IconButton
+                            icon="delete"
+                            iconColor={theme.colors.error}
+                            onPress={() => {
+                              setSelectedTable(item); // Set selected item for deletion
+                              setDialogVisible(true); // Show delete confirmation dialog
+                            }}
+                          />
+                        );
+                      }}
                       onPress={() =>
                         goToUpdateTable({
                           router,

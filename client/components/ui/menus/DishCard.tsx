@@ -15,7 +15,7 @@ const DishCard = ({
   containerWidth = 0,
 }: {
   dish: Dish;
-  openMenu: (dish: Dish, event: any) => void;
+  openMenu?: (dish: Dish, event: any) => void;
   containerWidth?: number;
 }) => {
   const { t } = useTranslation();
@@ -80,13 +80,17 @@ const DishCard = ({
             </Text>
           </Tooltip>
         }
-        right={(props) => (
-          <IconButton
-            {...props}
-            icon="dots-vertical"
-            onPress={(event) => openMenu(dish, event)}
-          />
-        )}
+        right={(props) => {
+          if (!openMenu) return;
+
+          return (
+            <IconButton
+              {...props}
+              icon="dots-vertical"
+              onPress={(event) => openMenu(dish, event)}
+            />
+          );
+        }}
         style={{ paddingLeft: 8 }}
       />
       <Card.Actions>

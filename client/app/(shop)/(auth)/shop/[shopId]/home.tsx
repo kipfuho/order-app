@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { View, ScrollView, useWindowDimensions } from "react-native";
 import {
   Button,
@@ -21,7 +21,7 @@ import { useDeleteShopMutation } from "@stores/apiSlices/shopApi.slice";
 import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
-import { BLURHASH } from "@constants/common";
+import { BLURHASH, PermissionType } from "@constants/common";
 import { styles } from "@/constants/styles";
 
 interface Item {
@@ -30,38 +30,38 @@ interface Item {
   icon?: string;
 }
 
-const BUTTONS: Item[] = [
+const buttonDefinitions: { permission: string; item: Item }[] = [
   {
-    title: "orders",
-    route: "orders",
-    icon: "food",
+    permission: PermissionType.VIEW_ORDER,
+    item: { title: "orders", route: "orders", icon: "food" },
   },
   {
-    title: "menus",
-    route: "menus",
-    icon: "menu",
+    permission: PermissionType.VIEW_MENU,
+    item: { title: "menus", route: "menus", icon: "menu" },
   },
   {
-    title: "kitchen",
-    route: "kitchen",
-    icon: "silverware-fork-knife",
+    permission: PermissionType.VIEW_KITCHEN,
+    item: { title: "kitchen", route: "kitchen", icon: "silverware-fork-knife" },
   },
   {
-    title: "settings",
-    route: "settings",
-    icon: "cog",
+    permission: PermissionType.VIEW_SHOP,
+    item: { title: "settings", route: "settings", icon: "cog" },
   },
   {
-    title: "analytics",
-    route: "analytics",
-    icon: "google-analytics",
+    permission: PermissionType.VIEW_REPORT,
+    item: { title: "analytics", route: "analytics", icon: "google-analytics" },
   },
   {
-    title: "staffs",
-    route: "staffs",
-    icon: "account-group",
+    permission: PermissionType.VIEW_EMPLOYEE,
+    item: { title: "staffs", route: "staffs", icon: "account-group" },
   },
 ];
+
+const getAvailableButtons = (permissions: Set<string>): Item[] => {
+  return buttonDefinitions
+    .filter(({ permission }) => permissions.has(permission))
+    .map(({ item }) => item);
+};
 
 const getButtonSize = (width: number) => {
   if (width > 600) return width / 3 - 30;
@@ -74,9 +74,10 @@ export default function ShopPage() {
   const theme = useTheme();
   const { t } = useTranslation();
 
-  const shop = useSelector(
-    (state: RootState) => state.shop.currentShop,
-  ) as Shop;
+  const { currentShop, userPermission } = useSelector(
+    (state: RootState) => state.shop,
+  );
+  const shop = currentShop as Shop;
   const [deleteShop, { isLoading: deleteShopLoading }] =
     useDeleteShopMutation();
 
@@ -85,6 +86,9 @@ export default function ShopPage() {
 
   const { width } = useWindowDimensions();
   const buttonSize = getButtonSize(width);
+  const availableButtons = useMemo(() => {
+    return getAvailableButtons(userPermission);
+  }, [userPermission]);
 
   const handleUpdate = () => {
     setModalVisible(false);
@@ -105,10 +109,12 @@ export default function ShopPage() {
   return (
     <>
       <AppBar title={shop.name} goBack={() => goToShopList({ router })}>
-        <Appbar.Action
-          icon="dots-vertical"
-          onPress={() => setModalVisible(true)}
-        />
+        {userPermission.has(PermissionType.UPDATE_SHOP) && (
+          <Appbar.Action
+            icon="dots-vertical"
+            onPress={() => setModalVisible(true)}
+          />
+        )}
       </AppBar>
       <Surface style={styles.baseContainer}>
         <ScrollView>
@@ -168,7 +174,7 @@ export default function ShopPage() {
           </View>
 
           <Surface mode="flat" style={styles.baseGrid}>
-            {BUTTONS.map((item) => (
+            {availableButtons.map((item) => (
               <Button
                 key={item.route}
                 mode="contained-tonal"

@@ -94,7 +94,7 @@ export default function CreateEmployeePage() {
   const handleCreateEmployee = async () => {
     if (
       !name.trim() ||
-      _.isEmpty(position) ||
+      // _.isEmpty(position) ||
       _.isEmpty(department) ||
       !email.trim() ||
       (!password.trim() && !emailExists)
@@ -105,10 +105,10 @@ export default function CreateEmployeePage() {
         text2: `${t("required")} ${_.join(
           _.compact([
             !name.trim() && t("employee_name"),
-            _.isEmpty(position) && t("employee_position"),
             _.isEmpty(department) && t("department"),
             !email.trim() && t("email"),
             !password.trim() && !emailExists && t("password"),
+            // _.isEmpty(position) && t("employee_position"),
           ]),
           ",",
         )}`,
@@ -120,7 +120,7 @@ export default function CreateEmployeePage() {
       await createEmployee({
         shopId: shop.id,
         name,
-        positionId: position.id,
+        positionId: position?.id,
         departmentId: department.id,
         email,
         password,
@@ -221,8 +221,10 @@ export default function CreateEmployeePage() {
                   <Checkbox.Item
                     key={perm}
                     label={t(perm)}
+                    disabled={department?.permissions.includes(perm)}
                     status={
-                      selectedPermissions.includes(perm)
+                      selectedPermissions.includes(perm) ||
+                      department?.permissions.includes(perm)
                         ? "checked"
                         : "unchecked"
                     }

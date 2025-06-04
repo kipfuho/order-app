@@ -93,8 +93,6 @@ export const ItemTypeMap = {
     openMenu?: (dish: Dish, event: any) => void;
     containerWidth?: number;
   }) => {
-    if (!openMenu) return;
-
     return (
       <MemoizedDishCard
         key={key}
@@ -350,7 +348,7 @@ const FlatListWithScroll = ({
 }: {
   groups: any[];
   itemByGroup: Record<string, any[]>;
-  openMenu: (item: any, event: GestureResponderEvent) => void;
+  openMenu?: (item: any, event: GestureResponderEvent) => void;
   additionalDatas?: any;
   itemType: ItemTypeFlatList;
   shouldShowGroup?: boolean;

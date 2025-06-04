@@ -39,7 +39,7 @@ interface CreateEmployeeRequest {
   name: string;
   email: string;
   password: string;
-  positionId: string;
+  positionId?: string;
   departmentId: string;
   permissions: string[];
 }
@@ -48,7 +48,7 @@ interface UpdateEmployeeRequest {
   shopId: string;
   employeeId: string;
   name: string;
-  positionId: string;
+  positionId?: string;
   departmentId: string;
   permissions: string[];
 }
