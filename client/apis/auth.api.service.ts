@@ -1,5 +1,5 @@
 import { updatePermissions } from "@/stores/shop.slice";
-import { signIn, signInForCustomer } from "../stores/authSlice";
+import { signIn } from "../stores/auth.slice";
 import { Customer, Tokens, User } from "../stores/state.interface";
 import { apiRequest } from "./api.service";
 import {
@@ -7,6 +7,7 @@ import {
   LoginRequest,
   RegisterForCustomerRequest,
 } from "./auth.api.interface";
+import { signInForCustomer } from "@/stores/auth.customer.slice";
 
 export const getAccessTokenLazily = async (isCustomerApp: boolean = false) => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports

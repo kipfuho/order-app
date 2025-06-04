@@ -1,12 +1,12 @@
 import { Redirect, Stack } from "expo-router";
 import { persistor } from "@stores/store";
 import { useEffect } from "react";
-import { useSession } from "@hooks/useSession";
 import { loginForAnonymousCustomerRequest } from "@apis/auth.api.service";
 import { Platform } from "react-native";
+import { useCustomerSession } from "@/hooks/useCustomerSession";
 
 export default function CustomerAppLayout() {
-  const { customerSession } = useSession();
+  const { session } = useCustomerSession();
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
@@ -23,7 +23,7 @@ export default function CustomerAppLayout() {
     };
   }, []);
 
-  if (!customerSession) {
+  if (!session) {
     loginForAnonymousCustomerRequest();
     return <Redirect href="/order/home" />;
   }

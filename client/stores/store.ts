@@ -3,7 +3,8 @@ import { configureStore } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { listenerMiddleware } from "./listenerMiddleware";
-import authReducer from "./authSlice";
+import authReducer from "./auth.slice";
+import authCustomerReducer from "./auth.customer.slice";
 import settingReducer from "./appSetting.slice";
 import shopReducer from "./shop.slice";
 import customerReducer from "./customerSlice";
@@ -25,6 +26,13 @@ const persistedAuthReducer = persistReducer(
   },
   authReducer,
 );
+const persistedAuthCustomerReducer = persistReducer(
+  {
+    key: "persist:authCustomer",
+    storage: AsyncStorage,
+  },
+  authCustomerReducer,
+);
 const persistedCustomerReducer = persistReducer(
   {
     key: "persist:customer",
@@ -43,6 +51,7 @@ const persistedSettingReducer = persistReducer(
 // Combine reducers
 const rootReducer = combineReducers({
   auth: persistedAuthReducer, // Persistent
+  authCustomer: persistedAuthCustomerReducer, // Persistent
   setting: persistedSettingReducer, // Persistent
   shop: shopReducer, // Non-persistent
   customer: persistedCustomerReducer, // Persistent

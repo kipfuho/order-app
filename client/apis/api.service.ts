@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { signOut, signOutForCustomer } from "../stores/authSlice";
+import { signOut, signOutForCustomer } from "../stores/auth.slice";
 import _ from "lodash";
 import { Platform } from "react-native";
 

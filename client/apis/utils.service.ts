@@ -1,15 +1,14 @@
 import _ from "lodash";
 import store from "@stores/store";
-import {
-  signIn,
-  signInForCustomer,
-  signOut,
-  signOutForCustomer,
-} from "@stores/authSlice";
+import { signIn, signOut } from "@/stores/auth.slice";
 import {
   loginForAnonymousCustomerRequest,
   refreshTokensRequest,
 } from "./auth.api.service";
+import {
+  signInForCustomer,
+  signOutForCustomer,
+} from "@/stores/auth.customer.slice";
 
 const isTokenExpired = (
   token:
@@ -24,10 +23,11 @@ const isTokenExpired = (
 
 const _getCustomerAccessToken = async (): Promise<string> => {
   const state = store.getState(); // Access Redux state
-  const customer = state.auth.customerSession;
+  const customer = state.authCustomer.session;
   if (!customer) {
     return "";
   }
+
   if (!customer.tokens) {
     store.dispatch(signOutForCustomer());
     return "";

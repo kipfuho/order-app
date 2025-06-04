@@ -1,15 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { PURGE } from "redux-persist";
-import { Customer, User } from "./state.interface";
+import { User } from "./state.interface";
 
 interface AuthState {
   session: User | null;
-  customerSession: Customer | null;
 }
 
 const initialState: AuthState = {
   session: null,
-  customerSession: null,
 };
 
 const authSlice = createSlice({
@@ -20,15 +18,8 @@ const authSlice = createSlice({
       if (!action.payload) return;
       state.session = action.payload;
     },
-    signInForCustomer: (state, action: PayloadAction<Customer>) => {
-      if (!action.payload) return;
-      state.customerSession = action.payload;
-    },
     signOut: (state) => {
       state.session = null;
-    },
-    signOutForCustomer: (state) => {
-      state.customerSession = null;
     },
   },
   extraReducers: (builder) => {
@@ -38,6 +29,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { signIn, signOut, signInForCustomer, signOutForCustomer } =
-  authSlice.actions;
+export const { signIn, signOut } = authSlice.actions;
 export default authSlice.reducer;
