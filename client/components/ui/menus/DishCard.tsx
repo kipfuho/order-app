@@ -1,7 +1,14 @@
 import { debounce } from "lodash";
 import { memo, useMemo, useState } from "react";
-import { View } from "react-native";
-import { Card, IconButton, Switch, Text, Tooltip } from "react-native-paper";
+import { StyleSheet, View } from "react-native";
+import {
+  Card,
+  IconButton,
+  Switch,
+  Text,
+  Tooltip,
+  useTheme,
+} from "react-native-paper";
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
 import { Dish } from "@stores/state.interface";
@@ -18,6 +25,7 @@ const DishCard = ({
   openMenu?: (dish: Dish, event: any) => void;
   containerWidth?: number;
 }) => {
+  const theme = useTheme();
   const { t } = useTranslation();
 
   const cardWidth = Math.min(300, containerWidth * 0.48);
@@ -51,6 +59,39 @@ const DishCard = ({
 
   return (
     <Card style={{ width: cardWidth, height: 300 }}>
+      {dish.status === DishStatus.deactivated && (
+        <View
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: 180,
+            zIndex: 10,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              ...StyleSheet.absoluteFillObject,
+              backgroundColor: theme.colors.inverseSurface,
+              borderTopLeftRadius: 12,
+              borderTopRightRadius: 12,
+              opacity: 0.5,
+            }}
+          />
+
+          <Text
+            style={{
+              opacity: 1,
+              color: theme.colors.inverseOnSurface,
+              fontWeight: "bold",
+              fontSize: 24,
+            }}
+          >
+            {t("sold_out")}
+          </Text>
+        </View>
+      )}
       <Image
         source={dish.imageUrls[0] || require("@assets/images/savora.png")}
         placeholder={{ blurhash: BLURHASH }}

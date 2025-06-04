@@ -32,7 +32,6 @@ const _getCustomerAccessToken = async (): Promise<string> => {
     store.dispatch(signOutForCustomer());
     return "";
   }
-
   if (isTokenExpired(_.get(customer, "tokens.access"))) {
     let newTokens = await refreshTokensRequest(
       customer.tokens.refresh.token,

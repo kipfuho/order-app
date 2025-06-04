@@ -84,6 +84,7 @@ const refreshTokensRequest = async (
     return null;
   } finally {
     refreshingPromise = null; // Reset the promise after resolving
+    customerRefreshingPromise = null; // Reset the promise after resolving
   }
 };
 

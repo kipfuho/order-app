@@ -14,7 +14,7 @@ import {
   useCheckoutCartMutation,
   useGetCartQuery,
 } from "@stores/apiSlices/cartApi.slice";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -36,8 +36,9 @@ const CartItemCard = ({
   dish: Dish;
   handleEditItemClick: (cartItem: CartItem) => void;
 }) => {
+  const { t } = useTranslation();
   if (!dish) {
-    return <Text>Dish not found</Text>;
+    return <Text>{t("dish_not_found")}</Text>;
   }
 
   return (
@@ -90,7 +91,9 @@ export default function CartDetail({
     shopId: shop.id,
     isCustomerApp: true,
   });
-  const dishById = _.keyBy(dishes, "id");
+  const dishById = useMemo(() => {
+    return _.keyBy(dishes, "id");
+  }, [dishes]);
 
   const [updateItemVisible, setUpdateItemVisible] = useState(false);
   const [selectedCartItem, setSelectedCartItem] = useState<CartItem>();

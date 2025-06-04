@@ -7,6 +7,7 @@ interface CustomerState {
   shop: Shop | null;
   table: Table | null;
   user: Customer | null;
+  cartItemByDishId: Record<string, { id?: string; quantity: number }>;
   currentCartItem: Record<string, CartItem>;
   currentCartAmount: number;
   isUpdateCartDebouncing: boolean;
@@ -17,6 +18,7 @@ const initialState: CustomerState = {
   shop: null,
   table: null,
   user: null,
+  cartItemByDishId: {},
   currentCartItem: {},
   currentCartAmount: 0,
   isUpdateCartDebouncing: false,
@@ -44,11 +46,24 @@ export const customerSlice = createSlice({
 
       state.currentCartItem = _.keyBy(action.payload.cartItems, "id");
       state.currentCartAmount = action.payload.totalAmount || 0;
+
+      const cartItemByDishId = _.groupBy(action.payload.cartItems, "dishId");
+      Object.values(cartItemByDishId).forEach((cartItemsOfSingleDish) => {
+        state.cartItemByDishId[cartItemsOfSingleDish[0].dishId] = {
+          id: cartItemsOfSingleDish[0].id,
+          quantity: _.sumBy(cartItemsOfSingleDish, "quantity"),
+        };
+      });
     },
 
     updateCartSingleDish: (
       state,
-      action: PayloadAction<{ id?: string; dish: Dish; quantity: number }>,
+      action: PayloadAction<{
+        id?: string;
+        dish: Dish;
+        quantity: number;
+        note?: string;
+      }>,
     ) => {
       if (!_.get(action, "payload")) return;
 
@@ -61,12 +76,17 @@ export const customerSlice = createSlice({
 
       if (action.payload.quantity === 0) {
         delete state.currentCartItem[action.payload.id || dish.id];
+        delete state.cartItemByDishId[dish.id];
         return;
       }
-
       state.currentCartItem[action.payload.id || dish.id] = {
         ...currentCartItem,
         dishId: dish.id,
+        quantity: action.payload.quantity,
+        note: action.payload.note,
+      };
+      state.cartItemByDishId[dish.id] = {
+        ...state.cartItemByDishId[dish.id],
         quantity: action.payload.quantity,
       };
     },

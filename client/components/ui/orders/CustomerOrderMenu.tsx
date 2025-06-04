@@ -27,7 +27,6 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
     currentCartItem: Record<string, CartItem>;
     currentCartAmount: number;
   };
-  const cartItemsGroupByDish = _.groupBy(currentCartItem, "dishId");
 
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
     useGetDishCategoriesQuery({
@@ -101,7 +100,6 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
         groups={availableDishCategories}
         itemByGroup={dishesByCategory}
         itemType={ItemTypeFlatList.DISH_CARD_CUSTOMER}
-        additionalDatas={{ cartItemsGroupByDish }}
       />
     </Surface>
   );

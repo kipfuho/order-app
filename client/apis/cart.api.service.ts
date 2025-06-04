@@ -15,6 +15,7 @@ const getCartRequest = async (shopId: string, isCustomerApp = false) => {
   return result.cart;
 };
 
+let updateCartPromise: Promise<any> | null = null;
 const updateCartRequest = async ({
   shopId,
   cartItems,
@@ -24,19 +25,28 @@ const updateCartRequest = async ({
   cartItems: CartItem[];
   isCustomerApp?: boolean;
 }) => {
-  const accessToken = await getAccessTokenLazily(isCustomerApp);
+  try {
+    if (updateCartPromise) {
+      await updateCartPromise;
+      return true;
+    }
+    const accessToken = await getAccessTokenLazily(isCustomerApp);
 
-  await apiRequest({
-    method: "POST",
-    endpoint: `/v1/shops/${shopId}/orders/update-cart`,
-    token: accessToken,
-    data: {
-      cartItems,
-    },
-    isCustomerApp,
-  });
+    updateCartPromise = apiRequest({
+      method: "POST",
+      endpoint: `/v1/shops/${shopId}/orders/update-cart`,
+      token: accessToken,
+      data: {
+        cartItems,
+      },
+      isCustomerApp,
+    });
 
-  return true;
+    await updateCartPromise;
+    return true;
+  } finally {
+    updateCartPromise = null;
+  }
 };
 
 const checkoutCartRequest = async ({

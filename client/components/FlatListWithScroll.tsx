@@ -7,12 +7,7 @@ import {
 } from "react-native";
 import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
 import { LegendList, LegendListRef } from "@legendapp/list";
-import {
-  CartItem,
-  Dish,
-  KitchenDishOrder,
-  KitchenLog,
-} from "@stores/state.interface";
+import { Dish, KitchenDishOrder, KitchenLog } from "@stores/state.interface";
 import KitchenDishOrderByOrderCard from "./ui/kitchen/KitchenDishOrderByOrderCard";
 import KitchenDishOrderByDishCard from "./ui/kitchen/KitchenDishOrderByDishCard";
 import KitchenDishOrderServingCard from "./ui/kitchen/KitchenDishOrderServingCard";
@@ -125,21 +120,16 @@ export const ItemTypeMap = {
     key,
     item,
     containerWidth,
-    additionalDatas,
   }: {
     key: string;
     item: Dish;
     containerWidth?: number;
-    additionalDatas: {
-      cartItemsGroupByDish: Record<string, CartItem[]>;
-    };
   }) => {
     return (
       <MemoizedDishCardForCustomer
         key={key}
         dish={item}
         containerWidth={containerWidth}
-        cartItems={additionalDatas.cartItemsGroupByDish[item.id]}
       />
     );
   },
@@ -389,7 +379,7 @@ const FlatListWithScroll = ({
 
     const flatListData = groups.flatMap((g) => {
       const items = itemByGroup[g.id] || [];
-      const itemRows = [];
+      const itemRows: FlatListItem[] = [];
 
       for (let i = 0; i < items.length; i += numColumns) {
         itemRows.push({
@@ -447,7 +437,6 @@ const FlatListWithScroll = ({
                 item: _item,
                 openMenu,
                 containerWidth: itemContainerWidth,
-                additionalDatas,
               });
             })}
             {Array(Math.max(0, numColumns - (item.items || []).length))
@@ -461,7 +450,7 @@ const FlatListWithScroll = ({
 
       return null;
     },
-    [itemType, itemContainerWidth, openMenu, additionalDatas, numColumns],
+    [itemType, itemContainerWidth, openMenu, numColumns],
   );
 
   const scrollToCategory = (categoryId: string) => {

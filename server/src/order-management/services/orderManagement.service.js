@@ -407,12 +407,12 @@ const updateCart = async ({ customerId, shopId, requestBody }) => {
   const dishById = _.keyBy(dishes, 'id');
 
   // Map existing items by dish ID for quick lookup
-  const existingItemsByDish = _.keyBy(cart.cartItems, 'dish');
+  const existingItemsByDishId = _.keyBy(cart.cartItems, 'dishId');
 
   const updatedItems = [];
   const createdItems = [];
   incomingItems.forEach((item) => {
-    const existingItem = existingItemsByDish[item.dishId];
+    const existingItem = existingItemsByDishId[item.dishId];
     if (existingItem) {
       existingItem.update = true;
       updatedItems.push({

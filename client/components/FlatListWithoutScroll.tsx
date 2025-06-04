@@ -286,7 +286,6 @@ const FlatListWithoutScroll = ({
                 item: _item,
                 openMenu,
                 containerWidth: itemContainerWidth,
-                additionalDatas,
               });
             })}
             {Array(Math.max(0, numColumns - (item.items || []).length))
@@ -300,14 +299,7 @@ const FlatListWithoutScroll = ({
 
       return null;
     },
-    [
-      itemType,
-      itemContainerWidth,
-      openMenu,
-      additionalDatas,
-      numColumns,
-      shouldShowGroup,
-    ],
+    [itemType, itemContainerWidth, openMenu, numColumns, shouldShowGroup],
   );
 
   const HEADER_HEIGHT = ItemTypeFlatListProperties[itemType].HEADER_HEIGHT;

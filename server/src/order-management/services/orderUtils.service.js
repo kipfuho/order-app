@@ -909,7 +909,11 @@ const getCart = async ({ shopId, customerId }) => {
     },
     update: {},
     include: {
-      cartItems: true,
+      cartItems: {
+        orderBy: {
+          createdAt: 'asc',
+        },
+      },
     },
   });
 

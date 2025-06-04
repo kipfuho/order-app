@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { memo, useState } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Button,
@@ -12,6 +12,7 @@ import {
   Text,
   TextInput,
   Tooltip,
+  useTheme,
 } from "react-native-paper";
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
@@ -20,7 +21,7 @@ import { RootState } from "@stores/store";
 import { updateCurrentOrder } from "@stores/shop.slice";
 import { Dish, DishOrder } from "@stores/state.interface";
 import { convertPaymentAmount } from "@constants/utils";
-import { BLURHASH } from "@constants/common";
+import { BLURHASH, DishStatus } from "@constants/common";
 
 const QuantityControl = ({
   dish,
@@ -76,7 +77,6 @@ const QuantityControl = ({
 
   return (
     <>
-      {/* Delete Confirmation Dialog */}
       <Portal>
         <Dialog
           visible={dialogVisible}
@@ -154,6 +154,8 @@ const DishCardForOrder = ({
   containerWidth?: number;
 }) => {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const { t } = useTranslation();
 
   const cardWidth = Math.min(200, containerWidth * 0.48);
   const currentOrder = useSelector(
@@ -173,7 +175,39 @@ const DishCardForOrder = ({
       mode="contained"
       style={{ margin: 3, width: cardWidth, height: 250 }}
       onPress={increaseDishQuantity}
+      disabled={dish.status === DishStatus.deactivated}
     >
+      {dish.status === DishStatus.deactivated && (
+        <View
+          style={{
+            position: "absolute",
+            width: cardWidth,
+            height: cardWidth,
+            zIndex: 10,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              ...StyleSheet.absoluteFillObject,
+              backgroundColor: theme.colors.inverseSurface,
+              opacity: 0.5,
+            }}
+          />
+
+          <Text
+            style={{
+              opacity: 1,
+              color: theme.colors.inverseOnSurface,
+              fontWeight: "bold",
+              fontSize: 24,
+            }}
+          >
+            {t("sold_out")}
+          </Text>
+        </View>
+      )}
       <Surface
         style={{
           position: "absolute",
