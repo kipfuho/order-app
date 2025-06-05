@@ -1,27 +1,30 @@
-import _ from "lodash";
+import _, { debounce } from "lodash";
 import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
 import { Keyboard, ScrollView, useWindowDimensions, View } from "react-native";
 import {
   useGetDishesQuery,
   useGetDishTypesQuery,
 } from "@stores/apiSlices/dishApi.slice";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@stores/store";
-import { Dish, Shop, Table } from "@stores/state.interface";
+import { CartItem, Dish, Shop, Table } from "@stores/state.interface";
 import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
 import CustomerOrderMenu from "@components/ui/orders/CustomerOrderMenu";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CustomerAppBar } from "@components/ui/customer/CustomerAppBar";
 import {
   useGetCartQuery,
   useGetRecommendationDishesQuery,
+  useUpdateCartMutation,
 } from "@stores/apiSlices/cartApi.slice";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import AppBarSearchBox from "@/components/AppBarSearchBox";
 import { styles } from "@/constants/styles";
 import RecommendDishImageSlider from "@/components/RecommendDishSlider";
+import { updateIsUpdateCartDebouncing } from "@/stores/customerSlice";
+import { mergeCartItems } from "@/constants/utils";
 
 const getButtonSize = (width: number) => {
   return width / 2 - 30;
@@ -57,11 +60,14 @@ export default function CustomerHomePage() {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const buttonSize = getButtonSize(width);
+  const dispatch = useDispatch();
 
-  const { shop, table } = useSelector((state: RootState) => state.customer) as {
+  const customerState = useSelector((state: RootState) => state.customer);
+  const { shop, table } = customerState as {
     shop: Shop;
     table: Table;
   };
+  const { currentCartItem, currentCartAmount } = customerState;
 
   const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery({
     shopId: shop.id,
@@ -76,7 +82,25 @@ export default function CustomerHomePage() {
     data: recommendationDishes = [],
     isLoading: recommendationDishLoading,
   } = useGetRecommendationDishesQuery(shop.id);
-  const { isLoading: cartLoading } = useGetCartQuery(shop.id);
+  const {
+    data: cart,
+    isLoading: cartLoading,
+    isFetching: cartFetching,
+  } = useGetCartQuery(shop.id);
+
+  const [updateCart, { isLoading: updateCartLoading }] =
+    useUpdateCartMutation();
+
+  const debouncedUpdateCart = useMemo(
+    () =>
+      debounce(
+        ({ shopId, cartItems }: { shopId: string; cartItems: CartItem[] }) => {
+          updateCart({ cartItems, shopId });
+        },
+        1000,
+      ),
+    [updateCart],
+  );
 
   const { availableDishTypes, dishGroupByDishType } = getDishGroupByDishType(
     dishes,
@@ -101,6 +125,32 @@ export default function CustomerHomePage() {
     setSearchVisible(true);
     setMenuVisible(true);
   };
+
+  useEffect(() => {
+    if (cartFetching || updateCartLoading) {
+      return;
+    }
+
+    const isSameCart =
+      currentCartAmount === cart?.totalAmount &&
+      Object.values(currentCartItem).length === cart?.cartItems?.length;
+    if (!isSameCart) {
+      dispatch(updateIsUpdateCartDebouncing(true));
+      debouncedUpdateCart({
+        shopId: shop.id,
+        cartItems: mergeCartItems(currentCartItem),
+      });
+    }
+  }, [
+    currentCartItem,
+    cartFetching,
+    updateCartLoading,
+    cart,
+    currentCartAmount,
+    debouncedUpdateCart,
+    dispatch,
+    shop,
+  ]);
 
   if (dishLoading || dishTypeLoading || cartLoading) {
     return <LoaderBasic />;

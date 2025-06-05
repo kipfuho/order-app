@@ -1,28 +1,18 @@
+import _ from "lodash";
 import { Surface } from "react-native-paper";
-import { useEffect, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import _, { debounce } from "lodash";
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
 import { LoaderBasic } from "@components/ui/Loader";
 import { RootState } from "@stores/store";
 import { CartItem, Dish, Shop } from "@stores/state.interface";
 import { useGetDishCategoriesQuery } from "@stores/apiSlices/dishApi.slice";
-import {
-  useGetCartQuery,
-  useUpdateCartMutation,
-} from "@stores/apiSlices/cartApi.slice";
-import { mergeCartItems } from "@constants/utils";
 import { ItemTypeFlatList } from "@/components/FlatListWithScroll";
-import { updateIsUpdateCartDebouncing } from "@stores/customerSlice";
 import FlatListWithoutScroll from "@/components/FlatListWithoutScroll";
 import { useTranslation } from "react-i18next";
 
 export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
-  const dispatch = useDispatch();
   const { t } = useTranslation();
-
-  const { shop, currentCartItem, currentCartAmount } = useSelector(
-    (state: RootState) => state.customer,
-  ) as {
+  const { shop } = useSelector((state: RootState) => state.customer) as {
     shop: Shop;
     currentCartItem: Record<string, CartItem>;
     currentCartAmount: number;
@@ -44,53 +34,7 @@ export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
     return { availableDishCategories, dishesByCategory };
   }, [dishCategories, dishes, t]);
 
-  const {
-    data: cart,
-    isLoading: cartLoading,
-    isFetching: cartFetching,
-  } = useGetCartQuery(shop.id);
-
-  const [updateCart, { isLoading: updateCartLoading }] =
-    useUpdateCartMutation();
-
-  const debouncedUpdateCart = useMemo(
-    () =>
-      debounce(
-        ({ shopId, cartItems }: { shopId: string; cartItems: CartItem[] }) => {
-          updateCart({ cartItems, shopId });
-        },
-        1000,
-      ),
-    [updateCart],
-  );
-
-  useEffect(() => {
-    if (cartFetching || updateCartLoading) {
-      return;
-    }
-
-    const isSameCart =
-      currentCartAmount === cart?.totalAmount &&
-      Object.values(currentCartItem).length === cart?.cartItems?.length;
-    if (!isSameCart) {
-      dispatch(updateIsUpdateCartDebouncing(true));
-      debouncedUpdateCart({
-        shopId: shop.id,
-        cartItems: mergeCartItems(currentCartItem),
-      });
-    }
-  }, [
-    currentCartItem,
-    cartFetching,
-    updateCartLoading,
-    cart,
-    currentCartAmount,
-    debouncedUpdateCart,
-    dispatch,
-    shop,
-  ]);
-
-  if (dishCategoryLoading || cartLoading) {
+  if (dishCategoryLoading) {
     return <LoaderBasic />;
   }
 

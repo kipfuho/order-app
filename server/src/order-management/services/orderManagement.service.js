@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const { Order, OrderSession, Cart, ReturnedDishOrder, DishOrder } = require('../../models');
+const { Order, OrderSession, Cart, ReturnedDishOrder, DishOrder, CartItem } = require('../../models');
 const orderUtilService = require('./orderUtils.service');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
@@ -407,45 +407,76 @@ const updateCart = async ({ customerId, shopId, requestBody }) => {
   const dishById = _.keyBy(dishes, 'id');
 
   // Map existing items by dish ID for quick lookup
-  const existingItemsByDishId = _.keyBy(cart.cartItems, 'dishId');
+  const existingItemsById = _.keyBy(cart.cartItems, 'id');
 
   const updatedItems = [];
   const createdItems = [];
   incomingItems.forEach((item) => {
-    const existingItem = existingItemsByDishId[item.dishId];
+    const existingItem = existingItemsById[item.id];
     if (existingItem) {
-      existingItem.update = true;
-      updatedItems.push({
-        ...item,
-        id: existingItem.id,
-        price: dishById[item.dishId].price,
-      });
+      existingItem.shouldUpdate = true;
+      if (existingItem.quantity !== item.quantity) {
+        if (item.quantity === 0) {
+          existingItem.shouldDelete = true;
+          return;
+        }
+        updatedItems.push(
+          _.pickBy({
+            id: existingItem.id,
+            cartId: cart.id,
+            dishId: item.dishId,
+            quantity: item.quantity,
+            note: item.note,
+            price: dishById[item.dishId].price,
+          })
+        );
+      }
       return;
     }
 
-    createdItems.push({
-      ...item,
-      price: dishById[item.dishId].price,
-    });
+    createdItems.push(
+      _.pickBy({
+        ...item,
+        price: dishById[item.dishId].price,
+        cartId: cart.id,
+      })
+    );
   });
-  const deletedCartItemIds = cart.cartItems.filter((cartItem) => !cartItem.update).map((cartItem) => cartItem.id);
-  const totalAmount = _.sumBy(updatedItems, (item) => item.quantity * item.price) || 0;
+  const deletedCartItemIds = cart.cartItems
+    .filter((cartItem) => !cartItem.shouldUpdate || cartItem.shouldDelete)
+    .map((cartItem) => cartItem.id);
+  const totalAmount =
+    (_.sumBy(createdItems, (item) => item.quantity * item.price) || 0) +
+    (_.sumBy(updatedItems, (item) => item.quantity * item.price) || 0);
 
-  return Cart.update({
-    data: {
-      totalAmount,
-      cartItems: {
-        deleteMany: { id: { in: deletedCartItemIds } },
-        update: updatedItems.map((item) => ({
-          data: item,
-          where: { id: item.id },
-        })),
-        createMany: {
-          data: createdItems,
+  if (createdItems.length > 0) {
+    await CartItem.createMany({
+      data: createdItems,
+    });
+  }
+
+  if (updatedItems.length > 0) {
+    await bulkUpdate(PostgreSQLTable.CartItem, updatedItems);
+  }
+
+  if (deletedCartItemIds.length > 0) {
+    await CartItem.deleteMany({
+      where: {
+        id: {
+          in: deletedCartItemIds,
         },
       },
+    });
+  }
+
+  await Cart.update({
+    data: {
+      totalAmount,
     },
     where: { id: cart.id },
+    select: {
+      id: true,
+    },
   });
 };
 

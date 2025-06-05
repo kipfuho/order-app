@@ -9,10 +9,12 @@ import {
   Portal,
   Surface,
   Text,
+  useTheme,
 } from "react-native-paper";
 import {
   useCheckoutCartMutation,
   useGetCartQuery,
+  useUpdateCartMutation,
 } from "@stores/apiSlices/cartApi.slice";
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -21,22 +23,27 @@ import { useTranslation } from "react-i18next";
 import { RootState } from "@stores/store";
 import { CartItem, Dish, Shop, Table } from "@stores/state.interface";
 import { LoaderBasic } from "../Loader";
-import { convertPaymentAmount } from "@constants/utils";
+import { convertPaymentAmount, mergeCartItems } from "@constants/utils";
 import { useGetDishesQuery } from "@stores/apiSlices/dishApi.slice";
 import VerticalDivider from "../VerticalDivider";
 import UpdateCartItem from "./UpdateCartItem";
 import { styles } from "@/constants/styles";
+import { ConfirmCancelDialog } from "../CancelDialog";
 
 const CartItemCard = ({
   item,
   dish,
   handleEditItemClick,
+  handleDeleteItemClick,
 }: {
   item: CartItem;
   dish: Dish;
   handleEditItemClick: (cartItem: CartItem) => void;
+  handleDeleteItemClick: (cartItem: CartItem) => void;
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+
   if (!dish) {
     return <Text>{t("dish_not_found")}</Text>;
   }
@@ -50,21 +57,54 @@ const CartItemCard = ({
           alignItems: "center",
         }}
       >
-        <View style={{ gap: 6 }}>
-          <Text variant="titleMedium" style={{ fontWeight: "bold" }}>
+        <View style={{ flexWrap: "wrap", maxWidth: "70%" }}>
+          <Text
+            variant="titleMedium"
+            style={{ fontWeight: "bold" }}
+            numberOfLines={3}
+          >
             {dish.name}
           </Text>
           <Text variant="titleMedium">{convertPaymentAmount(dish.price)}</Text>
+          {item.note && (
+            <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+              <Icon source="note-edit-outline" size={16} />
+              <Text>{`${t("note")}: ${item.note}`}</Text>
+            </View>
+          )}
         </View>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={{ fontWeight: "bold", fontSize: 24 }}>
-            x {item.quantity}
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            flexWrap: "wrap",
+            maxWidth: "25%",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 24,
+            }}
+            numberOfLines={2}
+          >
+            x{item.quantity}
           </Text>
-          <IconButton
-            icon="pencil"
-            size={16}
-            onPress={() => handleEditItemClick(item)}
-          />
+          <View style={{ flexDirection: "row" }}>
+            <IconButton
+              icon="pencil"
+              size={16}
+              onPress={() => handleEditItemClick(item)}
+            />
+            <IconButton
+              icon="delete"
+              size={16}
+              iconColor={theme.colors.error}
+              onPress={() => handleDeleteItemClick(item)}
+            />
+          </View>
         </View>
       </View>
 
@@ -82,7 +122,8 @@ export default function CartDetail({
 }) {
   const { t } = useTranslation();
 
-  const { shop, table } = useSelector((state: RootState) => state.customer) as {
+  const customerState = useSelector((state: RootState) => state.customer);
+  const { shop, table } = customerState as {
     shop: Shop;
     table: Table;
   };
@@ -95,20 +136,43 @@ export default function CartDetail({
     return _.keyBy(dishes, "id");
   }, [dishes]);
 
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [updateItemVisible, setUpdateItemVisible] = useState(false);
   const [selectedCartItem, setSelectedCartItem] = useState<CartItem>();
 
   const [checkoutCart, { isLoading: checkoutCartLoading }] =
     useCheckoutCartMutation();
+  const [updateCart, { isLoading: updateCartLoading }] =
+    useUpdateCartMutation();
 
   const handleEditItemClick = (cartItem: CartItem) => {
     setSelectedCartItem(cartItem);
     setUpdateItemVisible(true);
   };
 
+  const handleDeleteItemClick = (cartItem: CartItem) => {
+    setSelectedCartItem(cartItem);
+    setConfirmDeleteVisible(true);
+  };
+
   const handleCheckoutCart = async () => {
     await checkoutCart({ shopId: shop.id, tableId: table.id });
     setCartDetailVisible(false);
+  };
+
+  const handleConfirmDeleteCartItem = async () => {
+    if (!selectedCartItem) return;
+
+    const newCartItems = {
+      ...customerState.currentCartItem,
+    };
+    delete newCartItems[selectedCartItem.id];
+
+    await updateCart({
+      shopId: shop!.id,
+      cartItems: mergeCartItems(newCartItems),
+    }).unwrap();
+    setConfirmDeleteVisible(false);
   };
 
   if (cartLoading || dishLoading) {
@@ -129,13 +193,29 @@ export default function CartDetail({
             dish={dishById[selectedCartItem?.dishId || ""]}
           />
         </Modal>
+        <ConfirmCancelDialog
+          title={`${t("delete_confirm")} ${dishById[selectedCartItem?.dishId || ""]?.name}`}
+          dialogVisible={confirmDeleteVisible}
+          setDialogVisible={setConfirmDeleteVisible}
+          isLoading={updateCartLoading}
+          onCancelClick={() => setConfirmDeleteVisible(false)}
+          onConfirmClick={handleConfirmDeleteCartItem}
+        />
       </Portal>
       <Surface style={styles.baseContainer}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Icon source="cart" size={32} />
-          <Text variant="titleLarge" style={{ fontWeight: "bold" }}>
-            {t("cart_items")}
-          </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Icon source="cart" size={32} />
+            <Text variant="titleLarge" style={{ fontWeight: "bold" }}>
+              {t("cart_items")}
+            </Text>
+          </View>
         </View>
         <ScrollView
           style={{ marginTop: 20 }}
@@ -147,6 +227,7 @@ export default function CartDetail({
               item={item}
               dish={dishById[item.dishId]}
               handleEditItemClick={handleEditItemClick}
+              handleDeleteItemClick={handleDeleteItemClick}
             />
           ))}
           {isLoading && <ActivityIndicator />}

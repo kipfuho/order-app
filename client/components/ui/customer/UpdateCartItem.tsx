@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { Dispatch, SetStateAction, useState } from "react";
 import {
+  ActivityIndicator,
   Button,
   Dialog,
   Divider,
@@ -14,15 +15,15 @@ import {
   useTheme,
 } from "react-native-paper";
 import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
-import { Dish } from "@stores/state.interface";
-import { updateCartSingleDish } from "@stores/customerSlice";
-import { convertPaymentAmount } from "@constants/utils";
+import { Dish, Shop } from "@stores/state.interface";
+import { convertPaymentAmount, mergeCartItems } from "@constants/utils";
 import { RootState } from "@stores/store";
 import { BLURHASH } from "@constants/common";
 import Toast from "react-native-toast-message";
+import { useUpdateCartMutation } from "@/stores/apiSlices/cartApi.slice";
 
 export default function UpdateCartItem({
   cartItemId,
@@ -33,15 +34,15 @@ export default function UpdateCartItem({
   dish?: Dish;
   setVisible: Dispatch<SetStateAction<boolean>>;
 }) {
-  const dispatch = useDispatch();
   const theme = useTheme();
   const { t } = useTranslation();
   const { height } = useWindowDimensions();
 
-  const cartItem = useSelector(
-    (state: RootState) => state.customer.currentCartItem[cartItemId],
-  );
-
+  const customerState = useSelector((state: RootState) => state.customer);
+  const shop = customerState.shop as Shop;
+  const cartItem = customerState.currentCartItem[cartItemId];
+  const [updateCart, { isLoading: updateCartLoading }] =
+    useUpdateCartMutation();
   const [dialogVisible, setDialogVisible] = useState(false);
   const [note, setNote] = useState("");
   const [currentItemQuantity, setCurrentQuantity] = useState(
@@ -63,17 +64,22 @@ export default function UpdateCartItem({
     setDialogVisible(false);
   };
 
-  const handleUpdateCartItem = () => {
+  const handleUpdateCartItem = async () => {
     if (!cartItem || !dish) return;
 
-    dispatch(
-      updateCartSingleDish({
-        id: cartItemId,
-        dish,
+    const newCartItems = {
+      ...customerState.currentCartItem,
+      [cartItem.id]: {
+        ...customerState.currentCartItem[cartItem.id],
         quantity: currentItemQuantity,
         note,
-      }),
-    );
+      },
+    };
+
+    await updateCart({
+      shopId: shop!.id,
+      cartItems: mergeCartItems(newCartItems),
+    }).unwrap();
     setVisible(false);
   };
 
@@ -240,31 +246,38 @@ export default function UpdateCartItem({
         <Divider style={{ marginVertical: 8 }} />
 
         {/* Buttons */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            padding: 16,
-            gap: 8,
-          }}
-        >
-          <Button
-            mode="contained"
-            icon="cart"
-            onPress={handleUpdateCartItem}
-            style={{ flex: 1, borderRadius: 8 }}
+        {updateCartLoading ? (
+          <View style={{ padding: 16 }}>
+            <ActivityIndicator size={40} />
+          </View>
+        ) : (
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              padding: 16,
+              gap: 8,
+            }}
           >
-            {t("update_cart")}
-          </Button>
-          <Button
-            mode="contained-tonal"
-            icon="close"
-            onPress={() => setVisible(false)}
-            style={{ flex: 1, borderRadius: 8 }}
-          >
-            {t("close")}
-          </Button>
-        </View>
+            <Button
+              mode="contained"
+              icon="cart"
+              onPress={handleUpdateCartItem}
+              style={{ flex: 1, borderRadius: 8 }}
+              disabled={updateCartLoading}
+            >
+              {t("update_cart")}
+            </Button>
+            <Button
+              mode="contained-tonal"
+              icon="close"
+              onPress={() => setVisible(false)}
+              style={{ flex: 1, borderRadius: 8 }}
+            >
+              {t("close")}
+            </Button>
+          </View>
+        )}
       </Surface>
     </>
   );

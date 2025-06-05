@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { Cart, CartItem, Dish, Order } from "../state.interface";
 import { API_BASE_URL } from "@apis/api.service";
@@ -40,11 +39,6 @@ export const cartApiSlice = createApi({
     >({
       queryFn: async ({ cartItems, shopId }, api) => {
         try {
-          const state = api.getState();
-          if (!_.get(state, "customer.isUpdateCartDebouncing")) {
-            return { data: false };
-          }
-
           await updateCartRequest({
             shopId,
             cartItems,
