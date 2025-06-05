@@ -29,12 +29,12 @@ function QuantityControlForCustomer({ dish }: { dish: Dish }) {
   const handleDecrease = () => {
     if (!cartItemByDish) return;
 
-    if (cartItemByDish.quantity > 0) {
+    if (cartItemByDish.totalQuantity > 0) {
       dispatch(
         updateCartSingleDish({
           id: cartItemByDish.id,
           dish,
-          quantity: cartItemByDish.quantity - 1,
+          quantity: cartItemByDish.newQuantity - 1,
         }),
       );
     }
@@ -45,13 +45,13 @@ function QuantityControlForCustomer({ dish }: { dish: Dish }) {
       updateCartSingleDish({
         id: cartItemByDish?.id,
         dish,
-        quantity: (cartItemByDish?.quantity ?? 0) + 1,
+        quantity: (cartItemByDish?.newQuantity ?? 0) + 1,
       }),
     );
   };
   if (
     dish.status === DishStatus.deactivated &&
-    (!cartItemByDish || cartItemByDish.quantity === 0)
+    (!cartItemByDish || cartItemByDish.newQuantity === 0)
   ) {
     return;
   }
@@ -67,7 +67,7 @@ function QuantityControlForCustomer({ dish }: { dish: Dish }) {
         zIndex: 5,
       }}
     >
-      {!cartItemByDish || cartItemByDish.quantity === 0 ? (
+      {!cartItemByDish || cartItemByDish.totalQuantity === 0 ? (
         <Surface style={{ padding: 4, borderRadius: 20 }}>
           <TouchableRipple
             style={{
@@ -93,15 +93,17 @@ function QuantityControlForCustomer({ dish }: { dish: Dish }) {
             flexWrap: "wrap",
           }}
         >
-          <TouchableRipple
-            style={{
-              backgroundColor: theme.colors.onBackground,
-              borderRadius: 20,
-            }}
-            onPress={handleDecrease}
-          >
-            <Icon source="minus" size={24} color={theme.colors.background} />
-          </TouchableRipple>
+          {cartItemByDish.newQuantity > 0 && (
+            <TouchableRipple
+              style={{
+                backgroundColor: theme.colors.onBackground,
+                borderRadius: 20,
+              }}
+              onPress={handleDecrease}
+            >
+              <Icon source="minus" size={24} color={theme.colors.background} />
+            </TouchableRipple>
+          )}
           <Pressable
             style={{ flex: 1, alignItems: "center" }}
             onPress={() => {
@@ -115,7 +117,7 @@ function QuantityControlForCustomer({ dish }: { dish: Dish }) {
                 fontSize: 18,
               }}
             >
-              {cartItemByDish.quantity}
+              {cartItemByDish.totalQuantity}
             </Text>
           </Pressable>
           {dish.status !== DishStatus.deactivated && (

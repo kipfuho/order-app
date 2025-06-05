@@ -4,6 +4,24 @@ import store from "@stores/store";
 import { Countries, CurrencyText } from "./common";
 import { CustomMD3Theme } from "./theme";
 
+const logger = {
+  log: (...args: any) => {
+    if (process.env.NODE_ENV === "production") return;
+    // eslint-disable-next-line no-console
+    console.log(...args);
+  },
+  debug: (...args: any) => {
+    if (process.env.NODE_ENV === "production") return;
+    // eslint-disable-next-line no-console
+    console.debug(...args);
+  },
+  error: (...args: any) => {
+    if (process.env.NODE_ENV === "production") return;
+    // eslint-disable-next-line no-console
+    console.error(...args);
+  },
+};
+
 const getCountryCurrency = () => {
   try {
     const state = store.getState();
@@ -83,6 +101,7 @@ const oneSecondBeforeTodayUTC = () => {
 };
 
 export {
+  logger,
   getCountryCurrency,
   convertPaymentAmount,
   mergeCartItems,

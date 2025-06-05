@@ -7,7 +7,10 @@ interface CustomerState {
   shop: Shop | null;
   table: Table | null;
   user: Customer | null;
-  cartItemByDishId: Record<string, { id?: string; quantity: number }>;
+  cartItemByDishId: Record<
+    string,
+    { id?: string; totalQuantity: number; newQuantity: number }
+  >;
   currentCartItem: Record<string, CartItem>;
   currentCartAmount: number;
   isUpdateCartDebouncing: boolean;
@@ -48,12 +51,22 @@ export const customerSlice = createSlice({
       state.currentCartAmount = action.payload.totalAmount || 0;
 
       const cartItemByDishId = _.groupBy(action.payload.cartItems, "dishId");
+      const newCartItemByDishId: Record<
+        string,
+        { id?: string; totalQuantity: number; newQuantity: number }
+      > = {};
       Object.values(cartItemByDishId).forEach((cartItemsOfSingleDish) => {
-        state.cartItemByDishId[cartItemsOfSingleDish[0].dishId] = {
-          id: cartItemsOfSingleDish[0].id,
-          quantity: _.sumBy(cartItemsOfSingleDish, "quantity"),
+        const cartItemWithoutNote = _.find(
+          cartItemsOfSingleDish,
+          (_cartItem) => !_cartItem.note,
+        );
+        newCartItemByDishId[cartItemsOfSingleDish[0].dishId] = {
+          id: cartItemWithoutNote?.id,
+          totalQuantity: _.sumBy(cartItemsOfSingleDish, "quantity"),
+          newQuantity: cartItemWithoutNote?.quantity || 0,
         };
       });
+      state.cartItemByDishId = newCartItemByDishId;
     },
 
     updateCartSingleDish: (
@@ -87,7 +100,10 @@ export const customerSlice = createSlice({
       };
       state.cartItemByDishId[dish.id] = {
         ...state.cartItemByDishId[dish.id],
-        quantity: action.payload.quantity,
+        totalQuantity:
+          state.cartItemByDishId[dish.id].totalQuantity +
+          action.payload.quantity -
+          state.cartItemByDishId[dish.id].newQuantity,
       };
     },
 

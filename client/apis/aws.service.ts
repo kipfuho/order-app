@@ -14,6 +14,7 @@ import _ from "lodash";
 import { getShopRequest } from "./shop.api.service";
 import { updateShop, updateTable } from "@/stores/customerSlice";
 import { getTableRequest } from "./table.api.service";
+import { logger } from "@/constants/utils";
 
 const namespace = "default";
 const useappsync = true;
@@ -66,7 +67,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
     const subscription = channel.subscribe({
       next: async ({ event }) => {
         try {
-          console.log("Received event for shop:", event);
+          logger.log("Received event for shop:", event);
           const { type, data } = event;
           const { userId } = data;
           const currentSessionUserId = store.getState().auth.session?.id;
@@ -683,12 +684,12 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
             return;
           }
 
-          console.log("Cannot match event type!~");
+          logger.log("Cannot match event type!~");
         } catch (error) {
-          console.error("Error handling event:", error);
+          logger.error("Error handling event:", error);
         }
       },
-      error: (err) => console.error("Subscription error:", err),
+      error: (err) => logger.error("Subscription error:", err),
     });
 
     store.dispatch(
@@ -699,7 +700,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
       }),
     );
   } catch (err) {
-    console.error("Connection error:", err);
+    logger.error("Connection error:", err);
   }
 };
 
@@ -720,7 +721,7 @@ const connectAppSyncForShopForCustomer = async ({
     const subscription = channel.subscribe({
       next: async ({ event }) => {
         try {
-          console.log("Received event for customer:", event);
+          logger.log("Received event for customer:", event);
           const { type, data } = event;
 
           if (type === EventType.SHOP_CHANGED) {
@@ -946,12 +947,12 @@ const connectAppSyncForShopForCustomer = async ({
             return;
           }
 
-          console.log("Cannot match event type!~");
+          logger.log("Cannot match event type!~");
         } catch (error) {
-          console.error("Error handling event:", error);
+          logger.error("Error handling event:", error);
         }
       },
-      error: (err) => console.error("Subscription error:", err),
+      error: (err) => logger.error("Subscription error:", err),
     });
 
     store.dispatch(
@@ -962,7 +963,7 @@ const connectAppSyncForShopForCustomer = async ({
       }),
     );
   } catch (err) {
-    console.error("Connection error:", err);
+    logger.error("Connection error:", err);
   }
 };
 
@@ -983,7 +984,7 @@ const connectAppSyncForOnlinePayment = async ({
     const subscription = channel.subscribe({
       next: async ({ event }) => {
         try {
-          console.log("Received event for online payment:", event);
+          logger.log("Received event for online payment:", event);
           const { type, data } = event;
 
           if (type === EventType.PAYMENT_COMPLETE) {
@@ -992,12 +993,12 @@ const connectAppSyncForOnlinePayment = async ({
             return;
           }
 
-          console.log("Cannot match event type!~");
+          logger.log("Cannot match event type!~");
         } catch (error) {
-          console.error("Error handling event:", error);
+          logger.error("Error handling event:", error);
         }
       },
-      error: (err) => console.error("Subscription error:", err),
+      error: (err) => logger.error("Subscription error:", err),
     });
 
     store.dispatch(
@@ -1008,7 +1009,7 @@ const connectAppSyncForOnlinePayment = async ({
       }),
     );
   } catch (err) {
-    console.error("Connection error:", err);
+    logger.error("Connection error:", err);
   }
 };
 

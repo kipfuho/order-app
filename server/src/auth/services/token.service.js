@@ -104,7 +104,7 @@ const generateAuthTokens = async (user, isCustomer = false) => {
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
   const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS, isCustomer);
 
-  const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
+  const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays * (isCustomer ? 1000 : 1), 'days');
   const refreshToken = generateToken(user.id, refreshTokenExpires, tokenTypes.REFRESH, isCustomer);
   await saveToken(refreshToken, user.id, refreshTokenExpires, tokenTypes.REFRESH, isCustomer);
 

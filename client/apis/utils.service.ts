@@ -18,7 +18,9 @@ const isTokenExpired = (
     | undefined,
 ) => {
   if (!token || !token.expires) return false;
-  return Date.now() >= token.expires;
+
+  // should refresh token if it's gonna expire soon
+  return Date.now() + 5000 >= token.expires;
 };
 
 const _getCustomerAccessToken = async (): Promise<string> => {

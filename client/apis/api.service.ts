@@ -1,7 +1,8 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { signOut, signOutForCustomer } from "../stores/auth.slice";
+import { signOut } from "../stores/auth.slice";
 import _ from "lodash";
 import { Platform } from "react-native";
+import { logger } from "@/constants/utils";
 
 export const API_BASE_URL =
   Platform.OS === "web"
@@ -84,14 +85,13 @@ export const apiRequest = async <T>({
     const response = await apiClient.request<T>(config);
     return response.data;
   } catch (error: any) {
-    console.error(error);
+    logger.error(error);
+
     // 401 Unauthorized
     if (error.status === 401) {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const store = require("../stores/store").default;
-      if (isCustomerApp) {
-        store.dispatch(signOutForCustomer());
-      } else {
+      if (!isCustomerApp) {
         store.dispatch(signOut());
       }
     }
@@ -145,6 +145,6 @@ export const apiFormDataRequest = async <T>({
 //     return decodedResponse;
 //   } catch (err) {
 //     // eslint-disable-next-line no-console
-//     console.error(err);
+//     logger.error(err);
 //   }
 // };

@@ -415,7 +415,7 @@ const updateCart = async ({ customerId, shopId, requestBody }) => {
     const existingItem = existingItemsById[item.id];
     if (existingItem) {
       existingItem.shouldUpdate = true;
-      if (existingItem.quantity !== item.quantity) {
+      if (existingItem.quantity !== item.quantity || existingItem.note !== item.note) {
         if (item.quantity === 0) {
           existingItem.shouldDelete = true;
           return;
@@ -480,8 +480,28 @@ const updateCart = async ({ customerId, shopId, requestBody }) => {
   });
 };
 
-const clearCart = async ({ shopId, customerId }) => {
-  return Cart.update({
+const clearCart = async ({ shopId, customerId, remainingItems, deletedItems }) => {
+  if (_.isEmpty(remainingItems)) {
+    return Cart.update({
+      where: {
+        customer_shop_unique: {
+          customerId,
+          shopId,
+        },
+      },
+      data: {
+        cartItems: {
+          deleteMany: {},
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+  }
+
+  const cartItemIdsForDeletion = (deletedItems || []).map((item) => item.id);
+  await Cart.update({
     where: {
       customer_shop_unique: {
         customerId,
@@ -490,11 +510,16 @@ const clearCart = async ({ shopId, customerId }) => {
     },
     data: {
       cartItems: {
-        deleteMany: {},
+        deleteMany: {
+          id: {
+            in: cartItemIdsForDeletion,
+          },
+        },
       },
+      totalAmount: _.sumBy(remainingItems, (item) => item.quantity * item.price) || 0,
     },
-    include: {
-      cartItems: true,
+    select: {
+      id: true,
     },
   });
 };
@@ -511,15 +536,27 @@ const checkoutCart = async ({ customerId, shopId, requestBody }) => {
   const cart = await orderUtilService.getCart({ shopId, customerId });
   throwBadRequest(_.isEmpty(cart.cartItems), getMessageByLocale({ key: 'cart.empty' }));
 
+  const dishes = await getDishesFromCache({ shopId });
+  const dishById = _.keyBy(dishes, 'id');
+  const availableCartItems = [];
+  const unavailableCartItems = [];
+  cart.cartItems.forEach((cartItem) => {
+    if ((dishById[cartItem.dishId] || {}).status === Status.activated) {
+      availableCartItems.push(cartItem);
+    } else {
+      unavailableCartItems.push(cartItem);
+    }
+  });
+
   // Nếu bàn cần xác nhận của nhân viên thì không gắn order session
   if (table.needApprovalWhenCustomerOrder) {
     await orderUtilService.createNewOrder({
       tableId,
       shopId,
-      dishOrders: cart.cartItems,
+      dishOrders: availableCartItems,
       customerId,
     });
-    await clearCart({ customerId, shopId });
+    await clearCart({ customerId, shopId, remainingItems: unavailableCartItems, deletedItems: availableCartItems });
     return;
   }
 
@@ -533,11 +570,11 @@ const checkoutCart = async ({ customerId, shopId, requestBody }) => {
     tableId,
     shopId,
     orderSession,
-    dishOrders: cart.cartItems,
+    dishOrders: availableCartItems,
     customerId,
     isNewOrderSession,
   });
-  await clearCart({ customerId, shopId });
+  await clearCart({ customerId, shopId, remainingItems: unavailableCartItems, deletedItems: availableCartItems });
   const orderSessionJson = await orderUtilService.getOrderSessionById(orderSession.id);
   orderSessionJson.orders = _.filter(orderSessionJson.orders, (order) => order.id === newOrder.id);
   return orderSessionJson;

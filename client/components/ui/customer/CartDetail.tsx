@@ -29,6 +29,8 @@ import VerticalDivider from "../VerticalDivider";
 import UpdateCartItem from "./UpdateCartItem";
 import { styles } from "@/constants/styles";
 import { ConfirmCancelDialog } from "../CancelDialog";
+import { DishStatus } from "@/constants/common";
+import Toast from "react-native-toast-message";
 
 const CartItemCard = ({
   item,
@@ -66,12 +68,17 @@ const CartItemCard = ({
             {dish.name}
           </Text>
           <Text variant="titleMedium">{convertPaymentAmount(dish.price)}</Text>
-          {item.note && (
+          {item.note ? (
             <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
               <Icon source="note-edit-outline" size={16} />
               <Text>{`${t("note")}: ${item.note}`}</Text>
             </View>
-          )}
+          ) : null}
+          {dish.status === DishStatus.deactivated ? (
+            <Text style={{ color: theme.colors.error }}>
+              {t("sold_out_dish_check_out")}
+            </Text>
+          ) : null}
         </View>
         <View
           style={{
@@ -156,8 +163,19 @@ export default function CartDetail({
   };
 
   const handleCheckoutCart = async () => {
-    await checkoutCart({ shopId: shop.id, tableId: table.id });
-    setCartDetailVisible(false);
+    const { error } = await checkoutCart({
+      shopId: shop.id,
+      tableId: table.id,
+    });
+    if (error) {
+      Toast.show({
+        type: "error",
+        text1: t("checkout_failed"),
+        text2: _.get(error, "data.message"),
+      });
+    } else {
+      setCartDetailVisible(false);
+    }
   };
 
   const handleConfirmDeleteCartItem = async () => {

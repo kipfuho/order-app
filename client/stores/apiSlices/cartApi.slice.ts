@@ -64,7 +64,9 @@ export const cartApiSlice = createApi({
 
           return { data: true };
         } catch (error) {
-          return { error: { status: 500, data: error } };
+          return {
+            error: { status: 500, data: error },
+          };
         }
       },
       invalidatesTags: ["Cart", "CartHistory"],
