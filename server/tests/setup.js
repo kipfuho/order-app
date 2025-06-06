@@ -1,9 +1,11 @@
 const getDatabase = require('@databases/pg-test').default;
 const createDatabase = require('@databases/pg-test/jest/globalSetup').default;
 const teardownDatabase = require('@databases/pg-test/jest/globalTeardown').default;
+const supertest = require('supertest');
 // eslint-disable-next-line security/detect-child-process
 const { execSync } = require('child_process');
 const { prisma } = require('../src/utils/prisma');
+const app = require('../src/app');
 
 async function globalSetup() {
   await createDatabase();
@@ -50,8 +52,17 @@ function setupTestDB() {
   });
 }
 
+let request;
+const getRequest = () => {
+  if (!request) {
+    request = supertest(app);
+  }
+  return request;
+};
+
 module.exports = {
   globalSetup,
   globalTeardown,
   setupTestDB,
+  getRequest,
 };

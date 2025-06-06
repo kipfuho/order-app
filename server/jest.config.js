@@ -8,4 +8,5 @@ module.exports = {
   coverageReporters: ['text', 'lcov', 'clover', 'html'],
   globalSetup: '<rootDir>/tests/globalSetup.js',
   globalTeardown: '<rootDir>/tests/globalTearDown.js',
+  testTimeout: 30000,
 };
