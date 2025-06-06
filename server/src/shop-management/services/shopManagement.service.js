@@ -25,27 +25,28 @@ const queryShop = async (query) => {
       status: Status.enabled,
     },
   };
-  const { employeeUserId } = query;
+  const operator = getOperatorFromSession();
+  const userId = _.get(operator, 'user.id');
 
-  if (!employeeUserId)
+  if (!userId)
     return {
       page: 1,
       limit: 10000,
       totalPages: 1,
       totalResults: 0,
-      result: [],
+      results: [],
     };
 
   const employees = await Employee.findMany({
     where: {
-      userId: employeeUserId,
+      userId,
       status: Status.enabled,
     },
   });
   const employeeShopIds = _.map(employees, 'shopId');
   const selfOwnerShops = await Shop.findMany({
     where: {
-      ownerId: employeeUserId,
+      ownerId: userId,
     },
   });
   const selfOwnerShopIds = _.map(selfOwnerShops, 'id');
@@ -62,7 +63,12 @@ const queryShop = async (query) => {
     filter.take = 1 * options.limit;
   }
   const shops = await Shop.findMany(filter);
-  return shops;
+
+  return {
+    page: options.page || 1,
+    limit: options.limit || 10000,
+    results: shops,
+  };
 };
 
 const createShop = async ({ createBody }) => {

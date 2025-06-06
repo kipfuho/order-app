@@ -75,16 +75,13 @@ const getShopRequest = async (shopId: string, isCustomerApp = false) => {
 };
 
 const queryShopsRequest = async ({
-  user,
   searchName,
   sortBy = "createdAt",
   page = 1,
   limit = 10,
 }: QueryShopsRequest) => {
-  if (!user) return [];
   const accessToken = await getAccessTokenLazily();
   const queryParams = new URLSearchParams({
-    employeeUserId: user.id,
     sortBy,
     page: page.toString(),
     limit: limit.toString(),
@@ -93,10 +90,6 @@ const queryShopsRequest = async ({
   if (searchName) {
     queryParams.append("name", searchName);
   }
-  // Append user ID or token if necessary
-  if (user.id) {
-    queryParams.append("userId", user.id);
-  }
 
   const result: any = await apiRequest({
     method: "GET",
@@ -104,7 +97,7 @@ const queryShopsRequest = async ({
     token: accessToken,
   });
 
-  const shops: Shop[] = result.results || result;
+  const shops: Shop[] = result.results;
   return shops;
 };
 

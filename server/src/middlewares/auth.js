@@ -44,6 +44,9 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
       shopId = req.params.shopId || _.get(req, 'body.shopId');
     }
     if (!shopId) {
+      setOperatorToSession({
+        user,
+      });
       resolve();
       return;
     }
@@ -84,6 +87,8 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
 };
 
 const isFromInternal = (req) => {
+  if (config.env === 'test') return false;
+
   try {
     const appId = _.get(req, 'headers.appid') || '';
     if (appId !== config.appid.internal) return false;

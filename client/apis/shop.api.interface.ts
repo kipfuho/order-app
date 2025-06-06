@@ -1,5 +1,3 @@
-import { User } from "@stores/state.interface";
-
 interface UploadImageRequest {
   formData: FormData;
 }
@@ -14,7 +12,6 @@ interface CreateShopRequest {
 }
 
 interface QueryShopsRequest {
-  user?: User;
   searchName?: string;
   sortBy?: string;
   page?: number;

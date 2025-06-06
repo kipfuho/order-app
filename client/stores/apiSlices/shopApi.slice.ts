@@ -1,6 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { Shop } from "../state.interface";
-import { RootState } from "../store";
 import {
   createShopRequest,
   deleteShopRequest,
@@ -35,18 +34,14 @@ export const shopApiSlice = createApi({
     }),
 
     getShops: builder.query<Shop[], QueryShopsRequest>({
-      queryFn: async (
-        { searchName, sortBy = "createdAt", page = 1, limit = 1000 },
-        api,
-      ) => {
-        const user = (api.getState() as RootState).auth.session;
-        if (!user) {
-          return { error: { status: 400, data: "User is required" } };
-        }
-
+      queryFn: async ({
+        searchName,
+        sortBy = "createdAt",
+        page = 1,
+        limit = 1000,
+      }) => {
         try {
           const shops = await queryShopsRequest({
-            user,
             limit,
             page,
             searchName,
