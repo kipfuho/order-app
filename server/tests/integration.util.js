@@ -187,7 +187,121 @@ const setupCompleteShopData = async () => {
   });
   const tables = await getTables({ token, shop });
 
-  return { shop, dishCategories, dishes, units, tablePositions, tables };
+  return { token, shop, dishCategories, dishes, units, tablePositions, tables };
+};
+
+const getTableForOrder = async ({ token, shop }) => {
+  const result = await request
+    .post(`/v1/shops/${shop.id}/orders/get-table-for-orders`)
+    .set({ Authorization: `Bearer ${token}` })
+    .expect(httpStatus.OK);
+  return result.body.tables;
+};
+
+const createNewOrder = async ({ token, shop, table, dishOrders, orderSession }) => {
+  const result = await request
+    .post(`/v1/shops/${shop.id}/orders/create-order`)
+    .send({ shopId: shop.id, tableId: table.id, dishOrders, ...(orderSession ? { orderSessionId: orderSession.id } : null) })
+    .set({ Authorization: `Bearer ${token}` })
+    .expect(httpStatus.OK);
+  return result.body;
+};
+
+const getTableActiveOrderSessions = async ({ token, shop, table }) => {
+  const result = await request
+    .post(`/v1/shops/${shop.id}/orders/get-active-ordersessions`)
+    .send({ shopId: shop.id, tableId: table.id })
+    .set({ Authorization: `Bearer ${token}` })
+    .expect(httpStatus.OK);
+  return result.body.orderSessions;
+};
+
+const getOrderSessionDetail = async ({ token, shop, orderSession }) => {
+  const result = await request
+    .post(`/v1/shops/${shop.id}/orders/get-ordersession-detail`)
+    .send({ shopId: shop.id, orderSessionId: orderSession.id })
+    .set({ Authorization: `Bearer ${token}` })
+    .expect(httpStatus.OK);
+  return result.body.orderSession;
+};
+
+const payOrderSession = async ({ token, shop, orderSession, paymentDetails }) => {
+  const result = await request
+    .post(`/v1/shops/${shop.id}/orders/pay-ordersession`)
+    .send({ orderSessionId: orderSession.id, paymentDetails })
+    .set({ Authorization: `Bearer ${token}` })
+    .expect(httpStatus.OK);
+  return result.body;
+};
+
+const cancelOrderSession = async ({ token, shop, orderSession, reason }) => {
+  const result = await request
+    .post(`/v1/shops/${shop.id}/cancel-ordersession/cancel-ordersession`)
+    .send({ orderSessionId: orderSession.id, reason })
+    .set({ Authorization: `Bearer ${token}` })
+    .expect(httpStatus.OK);
+  return result.body;
+};
+
+const cancelOrderSessionPaidStatus = async ({ token, shop, orderSession }) => {
+  const result = await request
+    .post(`/v1/shops/${shop.id}/orders/cancel-ordersession-paid-status`)
+    .send({ orderSessionId: orderSession.id })
+    .set({ Authorization: `Bearer ${token}` })
+    .expect(httpStatus.OK);
+  return result.body;
+};
+
+const discountOrderSession = async ({
+  token,
+  shop,
+  orderSession,
+  discountReason,
+  discountValue,
+  discountType,
+  discountAfterTax,
+}) => {
+  const result = await request
+    .post(`/v1/shops/${shop.id}/orders/discount-ordersession`)
+    .send({ orderSession: orderSession.id, discountReason, discountValue, discountType, discountAfterTax })
+    .set({ Authorization: `Bearer ${token}` })
+    .expect(httpStatus.OK);
+  return result.body;
+};
+
+const discountDishOrder = async ({
+  token,
+  shop,
+  orderSession,
+  dishOrderId,
+  orderId,
+  discountReason,
+  discountValue,
+  discountType,
+}) => {
+  const result = await request
+    .post(`/v1/shops/${shop.id}/orders/discount-dishorder`)
+    .send({ orderSessionId: orderSession.id, dishOrderId, orderId, discountReason, discountValue, discountType })
+    .set({ Authorization: `Bearer ${token}` })
+    .expect(httpStatus.OK);
+  return result.body;
+};
+
+const removeDiscountFromOrderSession = async ({ token, shop, orderSession, discountId }) => {
+  const result = await request
+    .post(`/v1/shops/${shop.id}/orders/remove-discount`)
+    .send({ orderSessionId: orderSession.id, discountId })
+    .set({ Authorization: `Bearer ${token}` })
+    .expect(httpStatus.OK);
+  return result.body;
+};
+
+const getOrderSessionHistory = async ({ token, shop }) => {
+  const result = await request
+    .post(`/v1/shops/${shop.id}/orders/get-ordersession-history`)
+    .set({ Authorization: `Bearer ${token}` })
+    .expect(httpStatus.OK);
+  return result.body;
 };
 
 module.exports = {
@@ -204,4 +318,15 @@ module.exports = {
   getTablePositions,
   getTables,
   setupCompleteShopData,
+  getTableForOrder,
+  createNewOrder,
+  getTableActiveOrderSessions,
+  getOrderSessionDetail,
+  payOrderSession,
+  cancelOrderSession,
+  cancelOrderSessionPaidStatus,
+  discountOrderSession,
+  discountDishOrder,
+  removeDiscountFromOrderSession,
+  getOrderSessionHistory,
 };
