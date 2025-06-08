@@ -37,7 +37,7 @@ export default function CreateDepartmentPage() {
   const [createDepartment, { isLoading: createDepartmentLoading }] =
     useCreateDepartmentMutation();
 
-  const [name, setName] = useState("department");
+  const [name, setName] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
   const togglePermission = (perm: string) => {

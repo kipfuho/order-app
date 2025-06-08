@@ -49,7 +49,7 @@ export default function UpdateDepartmentPage() {
   const [updateDepartment, { isLoading: updateDepartmentLoading }] =
     useUpdateDepartmentMutation();
 
-  const [name, setName] = useState("department");
+  const [name, setName] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
   const togglePermission = (perm: string) => {

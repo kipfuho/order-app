@@ -37,8 +37,8 @@ export default function CreateTablePage() {
   const [createTable, { isLoading: createTableLoading }] =
     useCreateTableMutation();
 
-  const [name, setName] = useState("table");
-  const [code, setCode] = useState("table");
+  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
   const [tablePosition, setTablePosition] = useState(tablePositions[0]);
   const [allowMultipleOrderSession, setAllowMultipleOrderSession] =
     useState(false);

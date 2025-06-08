@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View, TouchableOpacity } from "react-native";
-import { Button, Searchbar, Surface, Text } from "react-native-paper";
+import { Button, Portal, Searchbar, Surface, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { AppBar } from "@components/AppBar";
 import { useGetShopsQuery } from "@stores/apiSlices/shopApi.slice";
@@ -12,15 +12,21 @@ import _, { debounce } from "lodash";
 import { Shop } from "@stores/state.interface";
 import { LegendList } from "@legendapp/list";
 import { BLURHASH } from "@constants/common";
+import { ConfirmCancelDialog } from "@/components/ui/CancelDialog";
+import { logoutRequest } from "@/apis/auth.api.service";
+import { useSession } from "@/hooks/useSession";
 
 export default function ShopsPage() {
   const router = useRouter();
   const { t } = useTranslation();
 
   const { data: shops = [], isLoading, isFetching } = useGetShopsQuery({});
+  const { session } = useSession();
 
   const [filteredShops, setFilteredShops] = useState<Shop[]>([]);
   const [searchValue, setSearchValue] = useState("");
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   const handleSearch = useMemo(
     () =>
@@ -35,6 +41,12 @@ export default function ShopsPage() {
     [shops],
   );
 
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    await logoutRequest({ refreshToken: session?.tokens?.refresh.token });
+    setLogoutLoading(false);
+  };
+
   useEffect(() => {
     handleSearch(searchValue);
   }, [searchValue, isFetching, handleSearch]);
@@ -45,7 +57,17 @@ export default function ShopsPage() {
 
   return (
     <>
-      <AppBar title={t("shop")}>
+      <Portal>
+        <ConfirmCancelDialog
+          title={t("logout_confirm")}
+          dialogVisible={dialogVisible}
+          setDialogVisible={setDialogVisible}
+          isLoading={logoutLoading}
+          onCancelClick={() => setDialogVisible(false)}
+          onConfirmClick={handleLogout}
+        />
+      </Portal>
+      <AppBar title={t("shop")} goBack={() => setDialogVisible(true)}>
         <Button
           mode="contained-tonal"
           onPress={() => goToCreateShop({ router })}

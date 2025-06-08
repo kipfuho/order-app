@@ -1,11 +1,13 @@
 import { updatePermissions } from "@/stores/shop.slice";
-import { signIn } from "../stores/auth.slice";
+import { signIn, signOut } from "../stores/auth.slice";
 import { Customer, Tokens, User } from "../stores/state.interface";
 import { apiRequest } from "./api.service";
 import {
   LoginForCustomerRequest,
   LoginRequest,
+  LogoutRequest,
   RegisterForCustomerRequest,
+  RegisterRequest,
 } from "./auth.api.interface";
 import { signInForCustomer } from "@/stores/auth.customer.slice";
 
@@ -14,6 +16,24 @@ export const getAccessTokenLazily = async (isCustomerApp: boolean = false) => {
   const { getAccessToken } = await require("@apis/utils.service");
 
   return getAccessToken(isCustomerApp);
+};
+
+const registerRequest = async ({
+  name,
+  email,
+  password,
+}: RegisterRequest): Promise<boolean> => {
+  await apiRequest({
+    method: "POST",
+    endpoint: "v1/auth/register",
+    data: {
+      name,
+      email,
+      password,
+    },
+  });
+
+  return true;
 };
 
 const loginRequest = async ({
@@ -86,6 +106,24 @@ const refreshTokensRequest = async (
     refreshingPromise = null; // Reset the promise after resolving
     customerRefreshingPromise = null; // Reset the promise after resolving
   }
+};
+
+const logoutRequest = async ({
+  refreshToken,
+}: LogoutRequest): Promise<boolean> => {
+  try {
+    await apiRequest({
+      method: "POST",
+      endpoint: "v1/auth/logout",
+      data: {
+        refreshToken,
+      },
+    });
+  } finally {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("@stores/store").default.dispatch(signOut());
+  }
+  return true;
 };
 
 const checkUserByEmailRequest = async (email: string) => {
@@ -213,7 +251,9 @@ const getPermissionsRequest = async ({ shopId }: { shopId: string }) => {
 };
 
 export {
+  registerRequest,
   loginRequest,
+  logoutRequest,
   refreshTokensRequest,
   checkUserByEmailRequest,
   loginForAnonymousCustomerRequest,

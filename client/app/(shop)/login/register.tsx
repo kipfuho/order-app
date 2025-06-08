@@ -11,40 +11,45 @@ import Toast from "react-native-toast-message";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { View, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
-import { loginRequest } from "@apis/auth.api.service";
+import { registerRequest } from "@apis/auth.api.service"; // You'll need to implement this
 import Logo from "@assets/svg/logo.svg";
-import { goToShopList } from "@apis/navigate.service";
 import PasswordInput from "@/components/ui/PasswordInput";
 
-const LoginScreen = () => {
+const RegisterScreen = () => {
   const { t } = useTranslation();
   const theme = useTheme();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
+  const handleRegister = async () => {
+    if (!name.trim() || !email.trim() || !password.trim()) {
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Email and password are required",
+        text1: t("error"),
+        text2: t("fill_required_fields"),
       });
       return;
     }
 
     setLoading(true);
     try {
-      const result = await loginRequest({ email, password });
+      const result = await registerRequest({ name, email, password });
       if (result) {
-        goToShopList({ router });
+        Toast.show({
+          type: "success",
+          text1: t("register_success"),
+          text2: t("please_login"),
+        });
+        router.replace("/login");
       }
-    } catch {
+    } catch (err: any) {
       Toast.show({
         type: "error",
-        text1: "Login Failed",
-        text2: "Invalid email or password",
+        text1: t("register_failed"),
+        text2: err.message || t("something_wrong"),
       });
     } finally {
       setLoading(false);
@@ -56,7 +61,7 @@ const LoginScreen = () => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={{ flex: 1, backgroundColor: theme.colors.background }}
     >
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <Surface
           style={{
             flex: 1,
@@ -67,16 +72,20 @@ const LoginScreen = () => {
             elevation: 4,
           }}
         >
-          <View style={{ alignItems: "center", marginBottom: 32 }}>
+          <View style={{ alignItems: "center", marginBottom: 16 }}>
             <Logo width={240} height={240} fill="#2e7d32" />
-            <Text variant="headlineMedium" style={{ marginTop: 16 }}>
-              {t("login")}
-            </Text>
+            <Text variant="headlineMedium">{t("register")}</Text>
             <Text variant="bodyMedium" style={{ marginTop: 4 }}>
-              {t("login_welcome")}
+              {t("register_welcome")}
             </Text>
           </View>
 
+          <TextInput
+            label={t("name")}
+            value={name}
+            mode="outlined"
+            onChangeText={setName}
+          />
           <TextInput
             label={t("email")}
             value={email}
@@ -97,16 +106,20 @@ const LoginScreen = () => {
             {loading ? (
               <ActivityIndicator size={40} />
             ) : (
-              <Button mode="contained" onPress={handleLogin} disabled={loading}>
-                {t("login")}
+              <Button
+                mode="contained"
+                onPress={handleRegister}
+                disabled={loading}
+              >
+                {t("register")}
               </Button>
             )}
 
             <Button
               mode="contained-tonal"
-              onPress={() => router.replace("/login/register")}
+              onPress={() => router.replace("/login")}
             >
-              {t("register")}
+              {t("already_have_account")}
             </Button>
           </View>
         </Surface>
@@ -115,4 +128,4 @@ const LoginScreen = () => {
   );
 };
 
-export default LoginScreen;
+export default RegisterScreen;

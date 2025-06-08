@@ -155,6 +155,7 @@
   "credit_card": "Thẻ tín dụng",
   "vnpay": "VNPay",
   "edit": "Sửa",
+  "done": "Hoàn thành",
   "discount_directly": "Chiết khấu trực tiếp",
   "discount_type": "Loại chiết khấu",
   "percentage": "Phần trăm",
@@ -216,5 +217,19 @@
   "print_product_name": "Tên sản phẩm",
   "print_product_quantity": "SL",
   "print_product_price": "Đ.Giá",
-  "print_product_total_price": "T.Tiền"
+  "print_product_total_price": "T.Tiền",
+  "customer_load_dish": "Đang tìm món...",
+  "customer_load_dish_2": "Chuẩn bị các món ngon cho bạn",
+  "sold_out": "Đã hết",
+  "sold_out_dish_check_out": "Lưu ý: Món đã hết sẽ không được xác nhận",
+  "checkout_failed": "Xác nhận order thất bại",
+  "logout_confirm": "Xác nhận đăng xuất",
+  "register_welcome": "Hãy đăng ký tài khoản để tiếp tục",
+  "register": "Đăng ký",
+  "already_have_account": "Đã có tài khoản? Đăng nhập",
+  "fill_required_fields": "Hãy điền tất cả các trường",
+  "register_success": "Đăng ký thành công",
+  "please_login": "Bạn đã có thể đăng nhập",
+  "register_failed": "Đăng ký thất bại",
+  "something_wrong": "Có gì đó đã xảy ra, hãy thử lại."
 }

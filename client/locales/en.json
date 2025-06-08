@@ -155,6 +155,7 @@
   "credit_card": "Credit card",
   "vnpay": "VNPay",
   "edit": "Edit",
+  "done": "Done",
   "discount_directly": "Discount directly",
   "discount_type": "Discount type",
   "percentage": "Percentage",
@@ -216,5 +217,19 @@
   "print_product_name": "Product name",
   "print_product_quantity": "QTY",
   "print_product_price": "Price",
-  "print_product_total_price": "Total"
+  "print_product_total_price": "Total",
+  "customer_load_dish": "Loading your dishes...",
+  "customer_load_dish_2": "Preparing something delicious for you",
+  "sold_out": "Sold out",
+  "sold_out_dish_check_out": "Note: Out of stock items will not be confirmed",
+  "checkout_failed": "Checkout cart failed",
+  "logout_confirm": "Logout confirmation",
+  "register_welcome": "Create your account to continue",
+  "register": "Register",
+  "already_have_account": "Already have an account? Log in",
+  "fill_required_fields": "Please fill in all fields",
+  "register_success": "Registration Successful",
+  "please_login": "You can now log in.",
+  "register_failed": "Registration Failed",
+  "something_wrong": "Something went wrong. Try again."
 }

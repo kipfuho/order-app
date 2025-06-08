@@ -45,7 +45,7 @@ export default function CreateEmployeePage() {
   const [createEmployee, { isLoading: createEmployeeLoading }] =
     useCreateEmployeeMutation();
 
-  const [name, setName] = useState("employee");
+  const [name, setName] = useState("");
   const [position, setPosition] = useState<EmployeePosition>();
   const [department, setDepartment] = useState<Department>();
   const [email, setEmail] = useState("");

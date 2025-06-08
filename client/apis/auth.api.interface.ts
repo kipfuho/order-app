@@ -1,6 +1,16 @@
+interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+}
+
 interface LoginRequest {
   email: string;
   password: string;
+}
+
+interface LogoutRequest {
+  refreshToken?: string;
 }
 
 interface LoginForCustomerRequest {
@@ -15,4 +25,10 @@ interface RegisterForCustomerRequest {
   password: string;
 }
 
-export { LoginRequest, LoginForCustomerRequest, RegisterForCustomerRequest };
+export {
+  RegisterRequest,
+  LoginRequest,
+  LogoutRequest,
+  LoginForCustomerRequest,
+  RegisterForCustomerRequest,
+};
