@@ -13,6 +13,7 @@ import {
   updateKitchenDishOrder,
 } from "@/stores/shop.slice";
 import { useUpdateUncookedDishOrdersRequestMutation } from "@/stores/apiSlices/kitchenApi.slice";
+import { useCurrentTime } from "@/hooks/useCurrentTime";
 
 interface KitchenDishOrderProps {
   dishOrders: KitchenDishOrder[];
@@ -26,8 +27,9 @@ const TimeDifferentAndDishQuantity = ({
   dishOrders: KitchenDishOrder[];
   theme: CustomMD3Theme;
 }) => {
+  const now = useCurrentTime();
   const minutesSinceOrderCreated = getMinuteForDisplay(
-    Date.now() - new Date(dishOrders[0].createdAt).getTime(),
+    now - new Date(dishOrders[0].createdAt).getTime(),
   );
   const color = getStatusColor(theme, minutesSinceOrderCreated);
 

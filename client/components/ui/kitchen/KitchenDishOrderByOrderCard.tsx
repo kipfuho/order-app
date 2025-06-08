@@ -16,6 +16,7 @@ import {
   deleteKitchenDishOrder,
   updateKitchenDishOrder,
 } from "@stores/shop.slice";
+import { useCurrentTime } from "@/hooks/useCurrentTime";
 
 interface KitchenDishOrderProps {
   dishOrder: KitchenDishOrder;
@@ -29,8 +30,9 @@ const TimeDifferentAndDishQuantity = ({
   dishOrder: KitchenDishOrder;
   theme: CustomMD3Theme;
 }) => {
+  const now = useCurrentTime();
   const minutesSinceOrderCreated = getMinuteForDisplay(
-    Date.now() - new Date(dishOrder.createdAt).getTime(),
+    now - new Date(dishOrder.createdAt).getTime(),
   );
   const color = getStatusColor(theme, minutesSinceOrderCreated);
 

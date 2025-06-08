@@ -231,5 +231,8 @@
   "register_success": "Đăng ký thành công",
   "please_login": "Bạn đã có thể đăng nhập",
   "register_failed": "Đăng ký thất bại",
-  "something_wrong": "Có gì đó đã xảy ra, hãy thử lại."
+  "something_wrong": "Có gì đó đã xảy ra, hãy thử lại.",
+  "tab_approve_order": "Xác nhận",
+  "tab_order_management": "Quản lý",
+  "tab_order_history": "Lịch sử"
 }

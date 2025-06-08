@@ -8,12 +8,13 @@ import {
   getStatusColor,
 } from "@constants/utils";
 import { CustomMD3Theme } from "@constants/theme";
+import { useCurrentTime } from "@/hooks/useCurrentTime";
 
 const TableForOrderCurrentInfo = ({ table }: { table: TableForOrder }) => {
   const theme = useTheme<CustomMD3Theme>();
+  const now = useCurrentTime();
 
   if (table.numberOfOrderSession) {
-    const now = Date.now();
     const minutesSinceOrderCreated = getMinuteForDisplay(
       now - (table.orderCreatedAtEpoch ?? now),
     );

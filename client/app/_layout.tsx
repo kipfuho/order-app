@@ -15,6 +15,7 @@ import i18n from "@locales/i18n";
 import { darkTheme, lightTheme } from "@constants/theme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { enGB, registerTranslation } from "react-native-paper-dates";
+import { TimeProvider } from "@/hooks/useCurrentTime";
 
 Amplify.configure(AmplifyConfig);
 
@@ -72,7 +73,9 @@ export default function RootLayout() {
       <ReduxProvider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <I18nextProvider i18n={i18n}>
-            <ThemeLayout />
+            <TimeProvider>
+              <ThemeLayout />
+            </TimeProvider>
           </I18nextProvider>
         </PersistGate>
       </ReduxProvider>

@@ -126,10 +126,15 @@ export default function TablesManagementPage() {
               elevation: 4,
             }}
           >
-            <QRCode
-              value={`${process.env.EXPO_PUBLIC_WEB_URL}/order/shop/${shop.id}/table/${selectedTable?.id}`}
-              size={200}
-            />
+            <Text style={{ fontSize: 24, marginBottom: 12 }}>
+              {selectedTable?.name}
+            </Text>
+            <View style={{ borderWidth: 1, padding: 12, borderRadius: 12 }}>
+              <QRCode
+                value={`${process.env.EXPO_PUBLIC_WEB_URL}/order/shop/${shop.id}/table/${selectedTable?.id}`}
+                size={200}
+              />
+            </View>
           </Surface>
         </Modal>
 

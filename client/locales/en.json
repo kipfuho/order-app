@@ -231,5 +231,8 @@
   "register_success": "Registration Successful",
   "please_login": "You can now log in.",
   "register_failed": "Registration Failed",
-  "something_wrong": "Something went wrong. Try again."
+  "something_wrong": "Something went wrong. Try again.",
+  "tab_approve_order": "Approve",
+  "tab_order_management": "Order",
+  "tab_order_history": "History"
 }

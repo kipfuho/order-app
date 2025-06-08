@@ -18,6 +18,7 @@ import {
   deleteKitchenDishOrder,
   updateKitchenDishOrder,
 } from "@stores/shop.slice";
+import { useCurrentTime } from "@/hooks/useCurrentTime";
 
 const TableKitchenDishOrder = ({
   item,
@@ -29,8 +30,9 @@ const TableKitchenDishOrder = ({
   handleOnLongPress: (item: KitchenDishOrder) => void;
 }) => {
   const theme = useTheme<CustomMD3Theme>();
+  const now = useCurrentTime();
   const minutesSinceOrderCreated = getMinuteForDisplay(
-    Date.now() - new Date(item.createdAt).getTime(),
+    now - new Date(item.createdAt).getTime(),
   );
   const color = getStatusColor(theme, minutesSinceOrderCreated);
   const { kitchenDishOrder } = useSelector((state: RootState) => state.shop);

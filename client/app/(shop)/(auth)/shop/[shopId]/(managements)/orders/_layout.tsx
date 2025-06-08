@@ -1,9 +1,11 @@
 import { Tabs, useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Icon, useTheme } from "react-native-paper";
 
 export default function TabLayout() {
   const { shopId } = useLocalSearchParams() as { shopId: string };
   const theme = useTheme();
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -21,7 +23,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="approve-order"
         options={{
-          title: "Approve",
+          title: t("tab_approve_order"),
           tabBarIcon: ({ color }) => (
             <Icon size={28} source="menu" color={color} />
           ),
@@ -31,7 +33,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Order",
+          title: t("tab_order_management"),
           tabBarIcon: ({ color }) => (
             <Icon size={28} source="home" color={color} />
           ),
@@ -41,7 +43,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="history"
         options={{
-          title: "History",
+          title: t("tab_order_history"),
           tabBarIcon: ({ color }) => (
             <Icon size={28} source="history" color={color} />
           ),
