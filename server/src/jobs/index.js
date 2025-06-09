@@ -8,16 +8,16 @@ const { ioRedisConnection } = require('../utils/redisConnect');
 
 const worker = new Worker(
   config.jobKey,
-  async (jobData) => {
-    logger.log(`Received job: ${JSON.stringify(jobData)}`);
+  async (job) => {
+    logger.log(`Received job: ${JSON.stringify(job.data)}`);
 
     await runInAsyncContext(
       async () => {
-        await processJob(jobData);
+        await processJob(job.data);
       },
       {
-        jobId: jobData.id || 'unknown',
-        jobType: jobData.type || 'unknown',
+        jobId: job.id || 'unknown',
+        jobType: job.data.type || 'unknown',
         startTime: Date.now(),
       }
     );

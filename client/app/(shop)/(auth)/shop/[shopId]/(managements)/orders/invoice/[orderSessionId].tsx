@@ -56,6 +56,7 @@ const InvoiceDetailPage = () => {
         orderSessionId,
       }).unwrap();
 
+      setCancelPaidStatusDialogVisible(false);
       if (ak === "47") {
         goToOrderHistory({ router, shopId });
       } else {
