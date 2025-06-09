@@ -31,7 +31,9 @@ const _setupRedis = async () => {
         connectTimeout: 10000, // timeout after 10s
       },
     });
-    ioRedisConnection = new IORedis(`redis://${redisHost}:${redisPort}`);
+    ioRedisConnection = new IORedis(`redis://${redisHost}:${redisPort}`, {
+      maxRetriesPerRequest: null,
+    });
     client.on('error', function (err) {
       const message = `error connectting redis. ${err.stack}`;
       logger.error(message);

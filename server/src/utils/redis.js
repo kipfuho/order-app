@@ -80,33 +80,6 @@ const getCloudLock = async ({ key, periodInSecond }) => {
   }
 };
 
-const pushToQueue = async ({ key, val }) => {
-  await client.lPush(key, [val]);
-  if (_.includes(key, '_printer')) {
-    await client.expire(key, 12 * 60 * 60);
-  }
-};
-
-const popFromQueue = async ({ key }) => {
-  const result = await client.lPop(key);
-  return result;
-};
-
-// khong bao gio chay 2 slow job trong vong 2 phut
-const canExecuteSlowJob = async () => {
-  const currentTime = new Date().getTime();
-  const slowJobKey = `${env}_slow_job`;
-  let lastExecuteTime = await getSingleValue(slowJobKey);
-  lastExecuteTime = (lastExecuteTime || 0) * 1;
-  const diffTime = currentTime - lastExecuteTime;
-  if (diffTime < 60 * 1000) {
-    return false;
-  }
-  await putSingleValue(slowJobKey, currentTime.toString());
-  await expireKey(slowJobKey, 60);
-  return true;
-};
-
 module.exports = {
   putJson,
   getJson,
@@ -116,8 +89,5 @@ module.exports = {
   isRedisConnected,
   deleteKey,
   expireKey,
-  pushToQueue,
-  popFromQueue,
   getCloudLock,
-  canExecuteSlowJob,
 };

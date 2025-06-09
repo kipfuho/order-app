@@ -7,6 +7,7 @@ const { getOrderSessionById } = require('../order-management/services/orderUtils
 const config = require('../config/config');
 const { bulkUpdate, PostgreSQLTable } = require('../utils/prisma');
 const { OrderSessionStatus } = require('../utils/constant');
+const jobQueue = require('./job.queue');
 
 const _sendJobToQueue = async (jobData, delay) => {
   if (delay) {
@@ -16,8 +17,8 @@ const _sendJobToQueue = async (jobData, delay) => {
 
   try {
     const jobMessage = JSON.stringify(jobData);
-    logger.info(`_sendJobToQueue: ${jobMessage}`);
-    await redisClient.pushToQueue({ key: config.jobKey, val: jobMessage });
+    await jobQueue.add('process-job', jobMessage);
+    logger.info(`Sent job to BullMQ queue: ${config.jobKey}`);
   } catch (err) {
     logger.error(`error _sendJobToQueue. ${err}`);
   }

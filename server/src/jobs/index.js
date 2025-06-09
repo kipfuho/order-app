@@ -7,7 +7,7 @@ const { hasActiveContext, getCurrentStore } = require('../middlewares/clsHooked'
 const { ioRedisConnection } = require('../utils/redisConnect');
 
 const worker = new Worker(
-  config.jobQueueName,
+  config.jobKey,
   async (job) => {
     logger.debug(`Received job: ${job.id} | Type: ${job.data.type}`);
 
