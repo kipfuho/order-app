@@ -1,8 +1,10 @@
 const redis = require('redis');
+const IORedis = require('ioredis');
 const { redisHost, redisPort, env } = require('../config/config');
 const logger = require('../config/logger');
 
 let client = null;
+let ioRedisConnection = null;
 
 let connected = false;
 const _setupRedis = async () => {
@@ -29,6 +31,7 @@ const _setupRedis = async () => {
         connectTimeout: 10000, // timeout after 10s
       },
     });
+    ioRedisConnection = new IORedis(`redis://${redisHost}:${redisPort}`);
     client.on('error', function (err) {
       const message = `error connectting redis. ${err.stack}`;
       logger.error(message);
@@ -52,5 +55,6 @@ const isRedisConnected = () => {
 
 module.exports = {
   client,
+  ioRedisConnection,
   isRedisConnected,
 };

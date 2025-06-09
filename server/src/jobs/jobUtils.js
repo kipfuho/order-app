@@ -1,34 +1,18 @@
-const redis = require('../utils/redis');
 const logger = require('../config/logger');
 const config = require('../config/config');
 const { processJob } = require('./job.service');
+const jobQueue = require('./job.queue');
 
 const _sendJobMessage = async ({ messageBody }) => {
-  if (config.env !== 'production') {
-    return false;
-  }
+  if (config.env !== 'production') return false;
 
   try {
-    logger.info(`send Job to redis queue ${config.jobKey}`);
-    await redis.pushToQueue({ key: config.jobKey, val: messageBody });
+    await jobQueue.add('process-job', messageBody);
+    logger.info(`Sent job to BullMQ queue: ${config.jobKey}`);
     return true;
   } catch (err) {
-    const message = `error when send job to redis queue. ${config.jobKey} = ${err.stack}`;
-    logger.error(message);
+    logger.error(`Error sending job to BullMQ queue. ${err.stack}`);
     return false;
-  }
-};
-
-const receiveJobMessage = async (jobKey) => {
-  try {
-    const result = await redis.popFromQueue({ key: jobKey });
-    if (result) {
-      logger.info(`Get job message from redis queue ${jobKey}: ${result}`);
-      return { Messages: [{ Body: result }] };
-    }
-  } catch (err) {
-    const message = `error when get job from redis queue. ${jobKey} = ${err.stack}`;
-    logger.error(message);
   }
 };
 
@@ -51,6 +35,5 @@ const registerJob = async (jobData) => {
 };
 
 module.exports = {
-  receiveJobMessage,
   registerJob,
 };
