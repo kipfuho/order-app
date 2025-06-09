@@ -268,6 +268,7 @@ export default function ActiveOrderSessionPage({
           data={activeOrderSession.orders || []}
           keyExtractor={(item) => item.id}
           style={{ maxHeight: height * 0.6, padding: 12 }}
+          contentContainerStyle={{ paddingBottom: 24 }}
           renderItem={({ item: order, index }) => (
             <Surface mode="flat">
               <Text
@@ -291,6 +292,7 @@ export default function ActiveOrderSessionPage({
               </View>
             </Surface>
           )}
+          nestedScrollEnabled={true}
         />
       </Surface>
     </>

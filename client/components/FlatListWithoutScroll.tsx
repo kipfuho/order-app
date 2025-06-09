@@ -359,7 +359,7 @@ const FlatListWithoutScroll = ({
         initialContainerPoolRatio={1.5}
         onEndReached={handleEndReached}
         onEndReachedThreshold={onEndReachedThreshold}
-        contentContainerStyle={{ flex: 1, padding: 10 }}
+        contentContainerStyle={{ padding: 10 }}
       />
     </Surface>
   );

@@ -64,8 +64,8 @@ const getAvailableButtons = (permissions: Set<string>): Item[] => {
 };
 
 const getButtonSize = (width: number) => {
-  if (width > 600) return width / 3 - 30;
-  if (width > 380) return width / 2 - 30;
+  if (width > 600) return (width - 52) / 3; // 32 padding, 20 gap
+  if (width > 380) return (width - 42) / 2; // 32 padding, 10 gap
   return width - 30;
 };
 
@@ -179,7 +179,7 @@ export default function ShopPage() {
                 key={item.route}
                 mode="contained-tonal"
                 onPress={() =>
-                  router.navigate({
+                  router.replace({
                     pathname: `/shop/[shopId]/${item.route}`,
                     params: { shopId: shop.id },
                   })

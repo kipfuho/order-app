@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useRef } from "react";
+import React, { PropsWithChildren } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Icon, Surface, Text } from "react-native-paper";
 import Animated, {
@@ -6,31 +6,29 @@ import Animated, {
   withTiming,
   useAnimatedStyle,
   interpolate,
-  runOnUI,
 } from "react-native-reanimated";
 
 export function Collapsible({
   children,
   title,
 }: PropsWithChildren & { title: string }) {
-  const isOpen = useSharedValue(1); // 1 = open, 0 = closed
+  const isOpen = useSharedValue(0); // 1 = open, 0 = closed
   const contentHeight = useSharedValue(0);
-  const contentRef = useRef<View>(null);
 
-  const measureContentHeight = () => {
-    const node = contentRef.current;
-    if (node) {
-      node.measure((_x, _y, _width, height) => {
-        runOnUI(() => {
-          contentHeight.value = height;
-        })();
-      });
+  const measureContentHeight = (event: any) => {
+    const { height } = event.nativeEvent.layout;
+    if (height > 0) {
+      contentHeight.value = height;
+      if (isOpen.value === 0) {
+        isOpen.value = withTiming(1, { duration: 300 });
+      }
     }
   };
 
   const handleToggle = () => {
-    measureContentHeight(); // recalculate before animation
-    isOpen.value = withTiming(isOpen.value === 1 ? 0 : 1, { duration: 300 });
+    if (contentHeight.value > 0) {
+      isOpen.value = withTiming(isOpen.value === 1 ? 0 : 1, { duration: 300 });
+    }
   };
 
   const animatedContainerStyle = useAnimatedStyle(() => ({
@@ -63,8 +61,9 @@ export function Collapsible({
 
       <Animated.View style={animatedContainerStyle}>
         <View
-          ref={contentRef}
           style={{
+            position: "absolute",
+            width: "100%",
             paddingTop: 10,
           }}
           onLayout={measureContentHeight}
@@ -87,17 +86,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    zIndex: 1, // make sure it's above any content overflow
+    zIndex: 1,
   },
   title: {
     fontWeight: "600",
     fontSize: 16,
-  },
-  hidden: {
-    position: "absolute",
-    opacity: 0,
-    zIndex: -1,
-    left: 0,
-    right: 0,
   },
 });

@@ -8,7 +8,7 @@ export const TimeProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setNow(Date.now());
-    }, 60000);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 

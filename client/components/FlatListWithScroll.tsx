@@ -501,7 +501,7 @@ const FlatListWithScroll = ({
         getEstimatedItemSize={getEstimatedItemSize}
         estimatedItemSize={ROW_HEIGHT + MARGIN_BOTTOM}
         initialContainerPoolRatio={2.0}
-        contentContainerStyle={{ flex: 1, padding: 10 }}
+        contentContainerStyle={{ padding: 10 }}
         ListFooterComponent={() => children}
       />
     </Surface>

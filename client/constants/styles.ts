@@ -16,8 +16,8 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
-    paddingVertical: 10,
     gap: 10,
+    paddingVertical: 10,
   },
   baseFAB: {
     position: "absolute",

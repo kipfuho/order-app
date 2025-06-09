@@ -63,7 +63,7 @@ export default function SettingManagementPage() {
                 mode="contained-tonal"
                 style={{ width: buttonSize, height: 100, borderRadius: 10 }}
                 onPress={() =>
-                  router.navigate({
+                  router.replace({
                     pathname: `/shop/[shopId]/settings/${item.route}`,
                     params: { shopId: shop.id },
                   })
