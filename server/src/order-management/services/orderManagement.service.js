@@ -30,7 +30,6 @@ const _validateBeforeCreateOrder = (orderSession) => {
 
 const createOrder = async ({ shopId, requestBody }) => {
   const { tableId, orderSessionId, dishOrders } = requestBody;
-  const operator = getOperatorFromSession();
   const { orderSession, isNewOrderSession } = await orderUtilService.getOrCreateOrderSession({
     orderSessionId,
     tableId,
@@ -40,7 +39,6 @@ const createOrder = async ({ shopId, requestBody }) => {
   const newOrder = await orderUtilService.createNewOrder({
     tableId,
     shopId,
-    userId: _.get(operator, 'user.id'),
     orderSession,
     dishOrders,
     isNewOrderSession,
@@ -278,7 +276,7 @@ const payOrderSession = async ({ shopId, requestBody }) => {
     }),
   });
 
-  await notifyOrderSessionPayment({ orderSession: updatedOrderSession, userId: _.get(operator, 'user.id') });
+  await notifyOrderSessionPayment({ orderSession: updatedOrderSession });
   await registerJob({
     type: JobTypes.PAY_ORDER,
     data: {
@@ -345,7 +343,6 @@ const cancelOrder = async ({ shopId, requestBody }) => {
 
   await notifyUpdateOrderSession({
     orderSession: updatedOrderSession,
-    userId: _.get(operator, 'user.id'),
     action: EventActionType.CANCEL,
   });
   await registerJob({
@@ -358,7 +355,6 @@ const cancelOrder = async ({ shopId, requestBody }) => {
 };
 
 const cancelPaidStatus = async ({ orderSessionId, shopId }) => {
-  const operator = getOperatorFromSession();
   const updatedOrderSession = await orderUtilService.updateOrderSession({
     orderSessionId,
     shopId,
@@ -374,7 +370,6 @@ const cancelPaidStatus = async ({ orderSessionId, shopId }) => {
 
   await notifyCancelPaidStatusOrderSession({
     orderSession: updatedOrderSession,
-    userId: _.get(operator, 'user.id'),
     action: EventActionType.CANCEL,
   });
   await registerJob({

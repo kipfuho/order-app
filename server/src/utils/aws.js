@@ -8,6 +8,7 @@ const { ALLOWED_IMAGE_MIME_TYPES, MAX_FILE_SIZE } = require('./constant');
 const { throwBadRequest } = require('./errorHandling');
 const { getMessageByLocale } = require('../locale');
 const { S3Log } = require('../models');
+const { getClientIdFromSession } = require('../middlewares/clsHooked');
 
 const { region, accessKeyId, secretAccessKey, s3BucketName } = config.aws;
 const s3BaseUrl = `https://${s3BucketName}.s3.${region}.amazonaws.com`;
@@ -119,6 +120,10 @@ const publishAppSyncEvents = async ({ channel, events }) => {
 };
 
 const publishSingleAppSyncEvent = async ({ channel, event }) => {
+  const clientId = getClientIdFromSession();
+  // eslint-disable-next-line no-param-reassign
+  event.clientId = clientId;
+
   return publishAppSyncEvents({
     channel,
     events: [event],

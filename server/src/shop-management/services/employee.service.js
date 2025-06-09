@@ -71,7 +71,6 @@ const createEmployee = async ({ shopId, createBody }) => {
     action: EventActionType.CREATE,
     shopId,
     employee,
-    userId: _.get(operator, 'user.id'),
   });
 };
 
@@ -109,12 +108,10 @@ const updateEmployee = async ({ shopId, employeeId, updateBody }) => {
     modifiedFields.department = newDepartment;
   }
 
-  const operator = await getOperatorFromSession();
   await notifyUpdateEmployee({
     action: EventActionType.UPDATE,
     shopId,
     employee: modifiedFields,
-    userId: _.get(operator, 'user.id'),
   });
 };
 
@@ -128,12 +125,10 @@ const deleteEmployee = async ({ shopId, employeeId }) => {
     select: { id: true },
   });
 
-  const operator = await getOperatorFromSession();
   await notifyUpdateEmployee({
     action: EventActionType.DELETE,
     shopId,
     employee: { id: employeeId },
-    userId: _.get(operator, 'user.id'),
   });
 };
 
@@ -156,12 +151,10 @@ const createEmployeePosition = async ({ shopId, createBody }) => {
     }),
   });
 
-  const operator = await getOperatorFromSession();
   await notifyUpdateEmployeePosition({
     action: EventActionType.CREATE,
     shopId,
     employeePosition,
-    userId: _.get(operator, 'user.id'),
   });
 };
 
@@ -183,12 +176,10 @@ const updateEmployeePosition = async ({ shopId, employeePositionId, updateBody }
     }
   });
 
-  const operator = await getOperatorFromSession();
   await notifyUpdateEmployeePosition({
     action: EventActionType.UPDATE,
     shopId,
     employeePosition: modifiedFields,
-    userId: _.get(operator, 'user.id'),
   });
 };
 
@@ -202,14 +193,12 @@ const deleteEmployeePosition = async ({ shopId, employeePositionId }) => {
     select: { id: true },
   });
 
-  const operator = await getOperatorFromSession();
   await notifyUpdateEmployeePosition({
     action: EventActionType.DELETE,
     shopId,
     employeePosition: {
       id: employeePosition.id,
     },
-    userId: _.get(operator, 'user.id'),
   });
   return employeePosition;
 };
@@ -239,12 +228,10 @@ const createDepartment = async ({ shopId, createBody }) => {
     }),
   });
 
-  const operator = await getOperatorFromSession();
   await notifyUpdateDepartment({
     action: EventActionType.CREATE,
     shopId,
     department,
-    userId: _.get(operator, 'user.id'),
   });
   return department;
 };
@@ -271,12 +258,10 @@ const updateDepartment = async ({ shopId, departmentId, updateBody }) => {
     }
   });
 
-  const operator = await getOperatorFromSession();
   await notifyUpdateDepartment({
     action: EventActionType.UPDATE,
     shopId,
     department: modifiedFields,
-    userId: _.get(operator, 'user.id'),
   });
 };
 
@@ -293,14 +278,12 @@ const deleteDepartment = async ({ shopId, departmentId }) => {
     select: { id: true },
   });
 
-  const operator = await getOperatorFromSession();
   await notifyUpdateDepartment({
     action: EventActionType.DELETE,
     shopId,
     department: {
       id: department.id,
     },
-    userId: _.get(operator, 'user.id'),
   });
   return department;
 };

@@ -50,7 +50,7 @@ const notifyOrderSessionPaymentForCustomer = async ({ orderSession }) => {
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyOrderSessionPayment = async ({ orderSession, userId }) => {
+const notifyOrderSessionPayment = async ({ orderSession }) => {
   if (_.isEmpty(orderSession)) {
     return;
   }
@@ -61,7 +61,6 @@ const notifyOrderSessionPayment = async ({ orderSession, userId }) => {
     data: {
       orderSessionId: orderSession.id,
       tableId: _.get(orderSession, 'tableIds.0'),
-      userId,
       billNo: formatOrderSessionNo(orderSession),
     },
   };
@@ -85,14 +84,13 @@ const _notifyUpdateShopForCustomer = async ({ action, shop }) => {
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateShop = async ({ action, shop, userId }) => {
+const notifyUpdateShop = async ({ action, shop }) => {
   const channel = getShopChannel(shop.id);
   const event = {
     type: AppSyncEvent.SHOP_CHANGED,
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       shop,
-      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
@@ -111,14 +109,13 @@ const _notifyUpdateTableForCustomer = async ({ action, shopId, table }) => {
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateTable = async ({ action, shopId, table, userId }) => {
+const notifyUpdateTable = async ({ action, shopId, table }) => {
   const channel = getShopChannel(shopId);
   const event = {
     type: AppSyncEvent.TABLE_CHANGED,
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       table,
-      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
@@ -137,14 +134,13 @@ const _notifyUpdateTablePositionForCustomer = async ({ action, shopId, tablePosi
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateTablePosition = async ({ action, shopId, tablePosition, userId }) => {
+const notifyUpdateTablePosition = async ({ action, shopId, tablePosition }) => {
   const channel = getShopChannel(shopId);
   const event = {
     type: AppSyncEvent.TABLE_POSITION_CHANGED,
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       tablePosition,
-      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
@@ -163,14 +159,13 @@ const _notifyUpdateDishForCustomer = async ({ action, shopId, dish }) => {
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateDish = async ({ action, shopId, dish, userId }) => {
+const notifyUpdateDish = async ({ action, shopId, dish }) => {
   const channel = getShopChannel(shopId);
   const event = {
     type: AppSyncEvent.DISH_CHANGED,
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       dish,
-      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
@@ -189,67 +184,62 @@ const _notifyUpdateDishCategoryForCustomer = async ({ action, shopId, dishCatego
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateDishCategory = async ({ action, shopId, dishCategory, userId }) => {
+const notifyUpdateDishCategory = async ({ action, shopId, dishCategory }) => {
   const channel = getShopChannel(shopId);
   const event = {
     type: AppSyncEvent.DISH_CATEGORY_CHANGED,
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       dishCategory,
-      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
   await _notifyUpdateDishCategoryForCustomer({ action, shopId, dishCategory });
 };
 
-const notifyUpdateEmployee = async ({ action, shopId, employee, userId }) => {
+const notifyUpdateEmployee = async ({ action, shopId, employee }) => {
   const channel = getShopChannel(shopId);
   const event = {
     type: AppSyncEvent.EMPLOYEE_CHANGED,
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       employee,
-      userId,
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateEmployeePosition = async ({ action, shopId, employeePosition, userId }) => {
+const notifyUpdateEmployeePosition = async ({ action, shopId, employeePosition }) => {
   const channel = getShopChannel(shopId);
   const event = {
     type: AppSyncEvent.EMPLOYEE_POSITION_CHANGED,
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       employeePosition,
-      userId,
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateDepartment = async ({ action, shopId, department, userId }) => {
+const notifyUpdateDepartment = async ({ action, shopId, department }) => {
   const channel = getShopChannel(shopId);
   const event = {
     type: AppSyncEvent.DEPARTMENT_CHANGED,
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       department,
-      userId,
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateKitchen = async ({ action, shopId, kitchen, userId }) => {
+const notifyUpdateKitchen = async ({ action, shopId, kitchen }) => {
   const channel = getShopChannel(shopId);
   const event = {
     type: AppSyncEvent.DISH_CHANGED,
     data: {
       action, // 'CREATE', 'UPDATE', 'DELETE'
       kitchen,
-      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
@@ -273,7 +263,7 @@ const _notifyUpdateOrderSessionForCustomer = async ({ orderSession, action }) =>
   return publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyUpdateOrderSession = async ({ orderSession, userId, action }) => {
+const notifyUpdateOrderSession = async ({ orderSession, action }) => {
   if (_.isEmpty(orderSession)) {
     return;
   }
@@ -285,14 +275,13 @@ const notifyUpdateOrderSession = async ({ orderSession, userId, action }) => {
       action, // 'CANCEL'
       orderSessionId: orderSession.id,
       tableId: _.get(orderSession, 'tableIds.0'),
-      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
   await _notifyUpdateOrderSessionForCustomer({ orderSession, action });
 };
 
-const notifyCancelPaidStatusOrderSession = async ({ orderSession, userId, action }) => {
+const notifyCancelPaidStatusOrderSession = async ({ orderSession, action }) => {
   if (_.isEmpty(orderSession)) {
     return;
   }
@@ -304,14 +293,13 @@ const notifyCancelPaidStatusOrderSession = async ({ orderSession, userId, action
       action, // 'CANCEL'
       orderSessionId: orderSession.id,
       tableId: _.get(orderSession, 'tableIds.0'),
-      userId,
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
   await _notifyUpdateOrderSessionForCustomer({ orderSession, action });
 };
 
-const notifyNewOrder = async ({ order, userId, action }) => {
+const notifyNewOrder = async ({ order, action }) => {
   if (_.isEmpty(order)) {
     return;
   }
@@ -323,7 +311,6 @@ const notifyNewOrder = async ({ order, userId, action }) => {
       action, // 'CREATE'
       orderId: order.id,
       tableId: order.tableId,
-      userId,
     },
   };
 

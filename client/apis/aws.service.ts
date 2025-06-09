@@ -69,8 +69,8 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
         try {
           logger.log("Received event for shop:", event);
           const { type, data } = event;
-          const { userId } = data;
-          const currentSessionUserId = store.getState().auth.session?.id;
+          const { clientId } = data;
+          const currentClientId = store.getState().auth.clientId;
 
           // unskippable events
           if (type === EventType.PAYMENT_COMPLETE) {
@@ -122,7 +122,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
 
           if (type === EventType.SHOP_CHANGED) {
             const { action, shop } = data;
-            if (currentSessionUserId !== userId) {
+            if (currentClientId !== clientId) {
               (() => {
                 if (_.isEmpty(shop)) {
                   store.dispatch(shopApiSlice.util.invalidateTags(["Shops"]));
@@ -186,7 +186,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
             store.dispatch(
               orderApiSlice.util.invalidateTags(["TablesForOrder"]),
             );
-            if (currentSessionUserId !== userId) {
+            if (currentClientId !== clientId) {
               (() => {
                 if (_.isEmpty(table)) {
                   store.dispatch(tableApiSlice.util.invalidateTags(["Tables"]));
@@ -247,7 +247,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
 
           if (type === EventType.TABLE_POSITION_CHANGED) {
             const { action, tablePosition } = data;
-            if (currentSessionUserId !== userId) {
+            if (currentClientId !== clientId) {
               (() => {
                 if (_.isEmpty(tablePosition)) {
                   store.dispatch(
@@ -321,7 +321,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
 
           if (type === EventType.DISH_CHANGED) {
             const { action, dish } = data;
-            if (currentSessionUserId !== userId) {
+            if (currentClientId !== clientId) {
               (() => {
                 if (_.isEmpty(dish)) {
                   store.dispatch(dishApiSlice.util.invalidateTags(["Dishes"]));
@@ -384,7 +384,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
 
           if (type === EventType.DISH_CATEGORY_CHANGED) {
             const { action, dishCategory } = data;
-            if (currentSessionUserId !== userId) {
+            if (currentClientId !== clientId) {
               (() => {
                 if (_.isEmpty(dishCategory)) {
                   store.dispatch(
@@ -455,7 +455,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
 
           if (type === EventType.EMPLOYEE_CHANGED) {
             const { action, employee } = data;
-            if (currentSessionUserId !== userId) {
+            if (currentClientId !== clientId) {
               (() => {
                 if (_.isEmpty(employee)) {
                   store.dispatch(
@@ -526,7 +526,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           if (type === EventType.EMPLOYEE_POSITION_CHANGED) {
             const { action, employeePosition } = data;
 
-            if (currentSessionUserId !== userId) {
+            if (currentClientId !== clientId) {
               (() => {
                 if (_.isEmpty(employeePosition)) {
                   store.dispatch(
@@ -600,7 +600,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           if (type === EventType.DEPARTMENT_CHANGED) {
             const { action, department } = data;
 
-            if (currentSessionUserId !== userId) {
+            if (currentClientId !== clientId) {
               (() => {
                 if (_.isEmpty(department)) {
                   store.dispatch(
@@ -673,7 +673,7 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
               orderSessionId,
               tableId,
             }: { orderSessionId: string; tableId: string } = data;
-            if (currentSessionUserId !== userId) {
+            if (currentClientId !== clientId) {
               store.dispatch(
                 orderApiSlice.util.invalidateTags([
                   { type: "OrderSessions", id: orderSessionId },

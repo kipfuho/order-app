@@ -375,7 +375,7 @@ const _setMetatadaForDishOrder = ({ dishOrder, dishById, unitById, orderSessionT
   };
 };
 
-const createNewOrder = async ({ tableId, shopId, userId, orderSession, dishOrders, customerId, isNewOrderSession }) => {
+const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, customerId, isNewOrderSession }) => {
   try {
     const shop = await getShopFromCache({ shopId });
     const dishes = await getDishesFromCache({ shopId });
@@ -420,7 +420,7 @@ const createNewOrder = async ({ tableId, shopId, userId, orderSession, dishOrder
       },
     });
     if (orderSession) {
-      await notifyNewOrder({ order, userId, action: EventActionType.CREATE });
+      await notifyNewOrder({ order, action: EventActionType.CREATE });
     }
 
     return order;

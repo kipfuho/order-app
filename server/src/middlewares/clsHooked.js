@@ -55,6 +55,14 @@ const getOperatorFromSession = () => {
   return getSession({ key: 'operator' }) || {};
 };
 
+const setClientIdToSession = ({ clientId }) => {
+  setSession({ key: 'clientId', value: clientId });
+};
+
+const getClientIdFromSession = () => {
+  return getSession({ key: 'clientId' }) || '';
+};
+
 const setShopToSession = (shopJson) => {
   return setSession({ key: 'shop', value: shopJson });
 };
@@ -131,6 +139,8 @@ module.exports = {
   getShopLang,
   setOperatorToSession,
   getOperatorFromSession,
+  setClientIdToSession,
+  getClientIdFromSession,
   getClientLanguageWithHook,
   runInAsyncContext,
   getCurrentStore,

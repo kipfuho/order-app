@@ -10,7 +10,6 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { notifyUpdateTable, EventActionType, notifyUpdateTablePosition } = require('../../utils/awsUtils/appSync.utils');
 const { getMessageByLocale } = require('../../locale');
 const { Status } = require('../../utils/constant');
-const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const getTable = async ({ shopId, tableId }) => {
   const table = await getTableFromCache({
@@ -55,8 +54,7 @@ const createTable = async ({ shopId, createBody }) => {
     },
   });
 
-  const operator = getOperatorFromSession();
-  await notifyUpdateTable({ action: EventActionType.CREATE, shopId, table, userId: _.get(operator, 'user.id') });
+  await notifyUpdateTable({ action: EventActionType.CREATE, shopId, table });
   return table;
 };
 
@@ -97,12 +95,10 @@ const updateTable = async ({ shopId, tableId, updateBody }) => {
     delete modifiedFields.positionId;
   }
 
-  const operator = getOperatorFromSession();
   await notifyUpdateTable({
     action: EventActionType.UPDATE,
     shopId,
     table: modifiedFields,
-    userId: _.get(operator, 'user.id'),
   });
 };
 
@@ -116,12 +112,10 @@ const deleteTable = async ({ shopId, tableId }) => {
     select: { id: true },
   });
 
-  const operator = getOperatorFromSession();
   await notifyUpdateTable({
     action: EventActionType.DELETE,
     shopId,
     table: { id: tableId },
-    userId: _.get(operator, 'user.id'),
   });
 };
 
@@ -155,12 +149,10 @@ const createTablePosition = async ({ shopId, createBody }) => {
     }),
   });
 
-  const operator = getOperatorFromSession();
   await notifyUpdateTablePosition({
     action: EventActionType.CREATE,
     shopId,
     tablePosition,
-    userId: _.get(operator, 'user.id'),
   });
   return tablePosition;
 };
@@ -196,12 +188,10 @@ const updateTablePosition = async ({ shopId, tablePositionId, updateBody }) => {
     }
   });
 
-  const operator = getOperatorFromSession();
   await notifyUpdateTablePosition({
     action: EventActionType.UPDATE,
     shopId,
     tablePosition: modifiedFields,
-    userId: _.get(operator, 'user.id'),
   });
 };
 
@@ -215,12 +205,10 @@ const deleteTablePosition = async ({ shopId, tablePositionId }) => {
     select: { id: true },
   });
 
-  const operator = getOperatorFromSession();
   await notifyUpdateTablePosition({
     action: EventActionType.DELETE,
     shopId,
     tablePosition: { id: tablePositionId },
-    userId: _.get(operator, 'user.id'),
   });
   return tablePosition;
 };

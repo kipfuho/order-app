@@ -5,7 +5,6 @@ const { notifyUpdateKitchen, EventActionType } = require('../../utils/awsUtils/a
 const { getMessageByLocale } = require('../../locale');
 const { getKitchenFromCache, getKitchensFromCache } = require('../../metadata/kitchenMetadata.service');
 const { Status } = require('../../utils/constant');
-const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const getKitchen = async ({ shopId, kitchenId }) => {
   const kitchen = await getKitchenFromCache({ shopId, kitchenId });
@@ -26,12 +25,10 @@ const createKitchen = async ({ shopId, createBody }) => {
     },
   });
 
-  const operator = getOperatorFromSession();
   await notifyUpdateKitchen({
     action: EventActionType.CREATE,
     shopId,
     kitchen,
-    userId: _.get(operator, 'user.id'),
   });
   return kitchen;
 };
@@ -59,12 +56,10 @@ const updateKitchen = async ({ shopId, kitchenId, updateBody }) => {
     }
   });
 
-  const operator = getOperatorFromSession();
   await notifyUpdateKitchen({
     action: EventActionType.UPDATE,
     shopId,
     kitchen: modifiedFields,
-    userId: _.get(operator, 'user.id'),
   });
   return kitchen;
 };
@@ -83,12 +78,10 @@ const deleteKitchen = async ({ shopId, kitchenId }) => {
     select: { id: true },
   });
 
-  const operator = getOperatorFromSession();
   await notifyUpdateKitchen({
     action: EventActionType.DELETE,
     shopId,
     kitchen: { id: kitchenId },
-    userId: _.get(operator, 'user.id'),
   });
   return kitchen;
 };

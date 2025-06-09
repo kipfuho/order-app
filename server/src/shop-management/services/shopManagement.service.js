@@ -124,7 +124,7 @@ const createShop = async ({ createBody }) => {
       keys: _.map(shop.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  await notifyUpdateShop({ action: EventActionType.CREATE, shop, userId: _.get(operator, 'user.id') });
+  await notifyUpdateShop({ action: EventActionType.CREATE, shop });
 };
 
 const updateShop = async ({ shopId, updateBody }) => {
@@ -149,8 +149,7 @@ const updateShop = async ({ shopId, updateBody }) => {
     },
   });
 
-  const operator = getOperatorFromSession();
-  await notifyUpdateShop({ action: EventActionType.UPDATE, shop: modifiedFields, userId: _.get(operator, 'user.id') });
+  await notifyUpdateShop({ action: EventActionType.UPDATE, shop: modifiedFields });
 };
 
 const deleteShop = async ({ shopId }) => {
@@ -167,8 +166,7 @@ const deleteShop = async ({ shopId }) => {
     },
   });
 
-  const operator = getOperatorFromSession();
-  await notifyUpdateShop({ action: EventActionType.CREATE, shop: { id: shopId }, userId: _.get(operator, 'user.id') });
+  await notifyUpdateShop({ action: EventActionType.CREATE, shop: { id: shopId } });
 };
 
 const uploadImage = async ({ image }) => {

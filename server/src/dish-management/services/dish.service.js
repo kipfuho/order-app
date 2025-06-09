@@ -21,7 +21,6 @@ const { getMessageByLocale } = require('../../locale');
 const { getUnitsFromCache, getUnitFromCache } = require('../../metadata/unitMetadata.service');
 const logger = require('../../config/logger');
 const { bulkUpdate, PostgreSQLTable } = require('../../utils/prisma');
-const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const getDish = async ({ shopId, dishId }) => {
   const dish = await getDishFromCache({ shopId, dishId });
@@ -67,12 +66,10 @@ const createDish = async ({ shopId, createBody }) => {
       keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  const operator = getOperatorFromSession();
   await notifyUpdateDish({
     action: EventActionType.CREATE,
     shopId,
     dish,
-    userId: _.get(operator, 'user.id'),
   });
 };
 
@@ -135,12 +132,10 @@ const updateDish = async ({ shopId, dishId, updateBody }) => {
       keys: _.map(updatedDish.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  const operator = getOperatorFromSession();
   await notifyUpdateDish({
     action: EventActionType.UPDATE,
     shopId,
     dish: modifiedFields,
-    userId: _.get(operator, 'user.id'),
   });
 };
 
@@ -167,14 +162,12 @@ const deleteDish = async ({ shopId, dishId }) => {
       keys: _.map(updatedDish.imageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
-  const operator = getOperatorFromSession();
   await notifyUpdateDish({
     action: EventActionType.DELETE,
     shopId,
     dish: {
       id: dish.id,
     },
-    userId: _.get(operator, 'user.id'),
   });
   return dish;
 };

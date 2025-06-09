@@ -6,7 +6,6 @@ const { notifyUpdateDishCategory, EventActionType } = require('../../utils/awsUt
 const { getMessageByLocale } = require('../../locale');
 const { Status } = require('../../utils/constant');
 const { bulkUpdate, PostgreSQLTable } = require('../../utils/prisma');
-const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const getDishCategory = async ({ shopId, dishCategoryId }) => {
   const dishCategory = await getDishCategoryFromCache({ shopId, dishCategoryId });
@@ -33,11 +32,9 @@ const createDishCategory = async ({ shopId, createBody }) => {
       shopId,
     }),
   });
-  const operator = getOperatorFromSession();
   await notifyUpdateDishCategory({
     action: EventActionType.CREATE,
     dishCategory,
-    userId: _.get(operator, 'user.id'),
   });
   return dishCategory;
 };
@@ -71,12 +68,10 @@ const updateDishCategory = async ({ shopId, dishCategoryId, updateBody }) => {
     }
   });
 
-  const operator = getOperatorFromSession();
   await notifyUpdateDishCategory({
     action: EventActionType.UPDATE,
     shopId,
     dishCategory: modifiedFields,
-    userId: _.get(operator, 'user.id'),
   });
   return dishCategory;
 };
@@ -91,11 +86,9 @@ const deleteDishCategory = async ({ shopId, dishCategoryId }) => {
   });
   throwBadRequest(!dishCategory, getMessageByLocale({ key: 'dishCategory.notFound' }));
 
-  const operator = getOperatorFromSession();
   await notifyUpdateDishCategory({
     action: EventActionType.DELETE,
     dishCategory: { id: dishCategory.id, shopId },
-    userId: _.get(operator, 'user.id'),
   });
   return dishCategory;
 };
