@@ -3,11 +3,11 @@ const config = require('../config/config');
 const { processJob } = require('./job.service');
 const jobQueue = require('./job.queue');
 
-const _sendJobMessage = async ({ messageBody }) => {
+const _sendJobToBullMQ = async (jobData) => {
   if (config.env !== 'production') return false;
 
   try {
-    await jobQueue.add('process-job', messageBody);
+    await jobQueue.add('process-job', jobData);
     logger.info(`Sent job to BullMQ queue: ${config.jobKey}`);
     return true;
   } catch (err) {
@@ -23,9 +23,8 @@ const _sendJobMessage = async ({ messageBody }) => {
  */
 const registerJob = async (jobData) => {
   try {
-    const jobMessage = JSON.stringify(jobData);
-    logger.info(`registerJob: ${jobMessage}`);
-    const canSend = await _sendJobMessage({ messageBody: jobMessage });
+    logger.info(`registerJob: ${JSON.stringify(jobData)}`);
+    const canSend = await _sendJobToBullMQ(jobData);
     if (!canSend) {
       processJob(jobData);
     }
