@@ -39,6 +39,7 @@ const registerRequest = async ({
 const loginRequest = async ({
   email,
   password,
+  clientId,
 }: LoginRequest): Promise<boolean> => {
   const {
     user,
@@ -52,21 +53,32 @@ const loginRequest = async ({
     data: {
       email,
       password,
+      clientId,
     },
   });
 
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  require("@stores/store").default.dispatch(signIn({ ...user, tokens }));
+  require("@stores/store").default.dispatch(
+    signIn({
+      user: { ...user, tokens },
+      clientId,
+    }),
+  );
   return true;
 };
 
 let refreshingPromise: Promise<Tokens> | null = null;
 let customerRefreshingPromise: Promise<Tokens> | null = null;
 
-const refreshTokensRequest = async (
-  refreshToken: string,
-  isCustomerApp: boolean = false,
-) => {
+const refreshTokensRequest = async ({
+  refreshToken,
+  clientId,
+  isCustomerApp = false,
+}: {
+  refreshToken: string;
+  clientId: string;
+  isCustomerApp?: boolean;
+}) => {
   try {
     let tokens;
     if (isCustomerApp) {
@@ -79,6 +91,7 @@ const refreshTokensRequest = async (
         endpoint: "v1/auth/refresh-tokens",
         data: {
           refreshToken,
+          clientId,
         },
       });
 
@@ -93,6 +106,7 @@ const refreshTokensRequest = async (
         endpoint: "v1/auth/refresh-tokens",
         data: {
           refreshToken,
+          clientId,
         },
       });
 
@@ -150,7 +164,13 @@ let loginForAnonymousCustomerRequestPromise: Promise<{
   tokens: Tokens;
 }> | null = null;
 
-const loginForAnonymousCustomerRequest = async (customerId?: string) => {
+const loginForAnonymousCustomerRequest = async ({
+  customerId,
+  clientId,
+}: {
+  customerId?: string;
+  clientId: string;
+}) => {
   try {
     if (!loginForAnonymousCustomerRequestPromise) {
       loginForAnonymousCustomerRequestPromise = apiRequest({
@@ -158,6 +178,7 @@ const loginForAnonymousCustomerRequest = async (customerId?: string) => {
         endpoint: "v1/auth/login-for-anonymous-customer",
         data: {
           customerId,
+          clientId,
         },
         isCustomerApp: true,
       });
@@ -169,7 +190,10 @@ const loginForAnonymousCustomerRequest = async (customerId?: string) => {
     if (!customerId) {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       require("@stores/store").default.dispatch(
-        signInForCustomer({ ...response.customer, tokens: response.tokens }),
+        signInForCustomer({
+          customer: { ...response.customer, tokens: response.tokens },
+          clientId,
+        }),
       );
     }
     return response.tokens;
@@ -183,6 +207,7 @@ const loginForAnonymousCustomerRequest = async (customerId?: string) => {
 const loginForCustomerRequest = async ({
   phone,
   password,
+  clientId,
 }: LoginForCustomerRequest) => {
   try {
     const { customer, tokens }: { customer: Customer; tokens: Tokens } =
@@ -192,12 +217,16 @@ const loginForCustomerRequest = async ({
         data: {
           phone,
           password,
+          clientId,
         },
       });
 
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     require("@stores/store").default.dispatch(
-      signInForCustomer({ ...customer, tokens }),
+      signInForCustomer({
+        customer: { ...customer, tokens },
+        clientId,
+      }),
     );
     return true;
   } catch {
@@ -210,6 +239,7 @@ const registerForCustomerRequest = async ({
   name,
   phone,
   password,
+  clientId,
 }: RegisterForCustomerRequest) => {
   try {
     const { customer, tokens }: { customer: Customer; tokens: Tokens } =
@@ -221,12 +251,16 @@ const registerForCustomerRequest = async ({
           name,
           phone,
           password,
+          clientId,
         },
       });
 
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     require("@stores/store").default.dispatch(
-      signInForCustomer({ ...customer, tokens }),
+      signInForCustomer({
+        customer: { ...customer, tokens },
+        clientId,
+      }),
     );
     return true;
   } catch {

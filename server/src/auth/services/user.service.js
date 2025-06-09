@@ -47,6 +47,9 @@ const createUser = async (userBody) => {
   }
   return User.create({
     data: userBody,
+    select: {
+      id: 1,
+    },
   });
 };
 

@@ -15,13 +15,14 @@ const { getMessageByLocale } = require('../../locale');
  * @param {string} [secret]
  * @returns {string}
  */
-const generateToken = (userId, expires, type, isCustomer = false, secret = config.jwt.secret) => {
+const generateToken = ({ userId, clientId, expires, type, isCustomer = false, secret = config.jwt.secret }) => {
   const payload = {
     sub: userId,
     iat: moment().unix(),
     exp: expires.unix(),
     type,
     isCustomer,
+    clientId,
   };
   return jwt.sign(payload, secret);
 };
@@ -35,12 +36,13 @@ const generateToken = (userId, expires, type, isCustomer = false, secret = confi
  * @param {boolean} [blacklisted]
  * @returns {Promise<Token>}
  */
-const saveToken = async (token, userId, expires, type, isCustomer = false, blacklisted = false) => {
+const saveToken = async ({ token, userId, clientId, expires, type, isCustomer = false, blacklisted = false }) => {
   if (isCustomer) {
     const tokenDoc = await Token.create({
       data: {
         token,
         customerId: userId,
+        clientId,
         expires: expires.toDate(),
         type,
         blacklisted,
@@ -53,6 +55,7 @@ const saveToken = async (token, userId, expires, type, isCustomer = false, black
     data: {
       token,
       userId,
+      clientId,
       expires: expires.toDate(),
       type,
       blacklisted,
@@ -62,7 +65,9 @@ const saveToken = async (token, userId, expires, type, isCustomer = false, black
   return tokenDoc;
 };
 
-const _checkTokenBelongToUser = ({ token, jwtPayload }) => {
+const _checkTokenBelongToUser = ({ token, jwtPayload, clientId }) => {
+  if (token.clientId !== clientId) return false;
+
   if (jwtPayload.isCustomer) {
     return jwtPayload.sub === token.customerId;
   }
@@ -75,7 +80,7 @@ const _checkTokenBelongToUser = ({ token, jwtPayload }) => {
  * @param {string} type
  * @returns {Promise<Token>}
  */
-const verifyToken = async (token, type) => {
+const verifyToken = async (token, type, clientId) => {
   const payload = jwt.verify(token, config.jwt.secret);
   const tokenDoc = await Token.findFirst({
     where: {
@@ -88,6 +93,7 @@ const verifyToken = async (token, type) => {
     !_checkTokenBelongToUser({
       token: tokenDoc,
       jwtPayload: payload,
+      clientId,
     })
   ) {
     throw new Error('Token not found');
@@ -100,16 +106,35 @@ const verifyToken = async (token, type) => {
  * @param {User} user
  * @returns {Promise<Object>}
  */
-const generateAuthTokens = async (user, isCustomer = false) => {
+const generateAuthTokens = async ({ user, clientId, isCustomer = false }) => {
   const accessTokenExpires = moment().add(
     config.jwt.accessExpirationMinutes * (config.env === 'test' ? 1000 : 1),
     'minutes'
   );
-  const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS, isCustomer);
+  const accessToken = generateToken({
+    userId: user.id,
+    clientId,
+    expires: accessTokenExpires,
+    type: tokenTypes.ACCESS,
+    isCustomer,
+  });
 
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays * (isCustomer ? 1000 : 1), 'days');
-  const refreshToken = generateToken(user.id, refreshTokenExpires, tokenTypes.REFRESH, isCustomer);
-  await saveToken(refreshToken, user.id, refreshTokenExpires, tokenTypes.REFRESH, isCustomer);
+  const refreshToken = generateToken({
+    userId: user.id,
+    clientId,
+    expires: refreshTokenExpires,
+    type: tokenTypes.REFRESH,
+    isCustomer,
+  });
+  await saveToken({
+    token: refreshToken,
+    userId: user.id,
+    clientId,
+    expires: refreshTokenExpires,
+    type: tokenTypes.REFRESH,
+    isCustomer,
+  });
 
   return {
     access: {
@@ -132,8 +157,13 @@ const generateResetPasswordToken = async (email) => {
   const user = await getUserFromDatabase({ email });
   throwBadRequest(!user, getMessageByLocale({ key: 'user.notFound' }));
   const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
-  const resetPasswordToken = generateToken(user.id, expires, tokenTypes.RESET_PASSWORD);
-  await saveToken(resetPasswordToken, user.id, expires, tokenTypes.RESET_PASSWORD);
+  const resetPasswordToken = generateToken({ userId: user.id, clientId: '', expires, type: tokenTypes.RESET_PASSWORD });
+  await saveToken({
+    token: resetPasswordToken,
+    userId: user.id,
+    expires,
+    type: tokenTypes.RESET_PASSWORD,
+  });
   return resetPasswordToken;
 };
 
@@ -144,8 +174,8 @@ const generateResetPasswordToken = async (email) => {
  */
 const generateVerifyEmailToken = async (user) => {
   const expires = moment().add(config.jwt.verifyEmailExpirationMinutes, 'minutes');
-  const verifyEmailToken = generateToken(user.id, expires, tokenTypes.VERIFY_EMAIL);
-  await saveToken(verifyEmailToken, user.id, expires, tokenTypes.VERIFY_EMAIL);
+  const verifyEmailToken = generateToken({ userId: user.id, clientId: '', expires, type: tokenTypes.VERIFY_EMAIL });
+  await saveToken({ token: verifyEmailToken, userId: user.id, expires, type: tokenTypes.VERIFY_EMAIL });
   return verifyEmailToken;
 };
 

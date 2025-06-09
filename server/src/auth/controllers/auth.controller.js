@@ -6,15 +6,13 @@ const customerService = require('../../customer-management/services/customerMana
 const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const register = catchAsync(async (req, res) => {
-  const user = await userService.createUser(req.body);
-  const tokens = await tokenService.generateAuthTokens(user);
-  res.status(httpStatus.CREATED).send({ user, tokens });
+  await userService.createUser(req.body);
+  res.status(httpStatus.CREATED).send({ message: 'Đăng ký thành công' });
 });
 
 const registerForCustomer = catchAsync(async (req, res) => {
-  const customer = await customerService.registerCustomer(req.body);
-  const tokens = await tokenService.generateAuthTokens(customer, true);
-  res.status(httpStatus.CREATED).send({ customer, tokens });
+  await customerService.registerCustomer(req.body);
+  res.status(httpStatus.CREATED).send({ message: 'Đăng ký thành công' });
 });
 
 const loginWithProtobuf = catchAsync(async (req, res) => {
@@ -26,14 +24,17 @@ const loginWithProtobuf = catchAsync(async (req, res) => {
 });
 
 const login = catchAsync(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, clientId } = req.body;
   const user = await authService.loginUserWithEmailAndPassword({ email, password });
-  const tokens = await tokenService.generateAuthTokens(user);
+  const tokens = await tokenService.generateAuthTokens({
+    user,
+    clientId,
+  });
   res.send({ user, tokens });
 });
 
 const loginForAnonymousCustomer = catchAsync(async (req, res) => {
-  const { customerId } = req.body;
+  const { customerId, clientId } = req.body;
   let customer;
   if (customerId) {
     customer = await customerService.getCustomer(customerId);
@@ -42,14 +43,22 @@ const loginForAnonymousCustomer = catchAsync(async (req, res) => {
       anonymous: true,
     });
   }
-  const tokens = await tokenService.generateAuthTokens(customer, true);
+  const tokens = await tokenService.generateAuthTokens({
+    user: customer,
+    clientId,
+    isCustomer: true,
+  });
   res.send({ customer, tokens });
 });
 
 const loginForCustomer = catchAsync(async (req, res) => {
-  const { phone, password } = req.body;
+  const { phone, password, clientId } = req.body;
   const customer = await authService.loginCustomerWithPhoneAndPassword({ phone, password });
-  const tokens = await tokenService.generateAuthTokens(customer, true);
+  const tokens = await tokenService.generateAuthTokens({
+    user: customer,
+    clientId,
+    isCustomer: true,
+  });
   res.send({ customer, tokens });
 });
 
@@ -59,7 +68,7 @@ const logout = catchAsync(async (req, res) => {
 });
 
 const refreshTokens = catchAsync(async (req, res) => {
-  const tokens = await authService.refreshAuth(req.body.refreshToken);
+  const tokens = await authService.refreshAuth(req.body);
   res.send({ ...tokens });
 });
 

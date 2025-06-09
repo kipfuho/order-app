@@ -4,19 +4,28 @@ import { User } from "./state.interface";
 
 interface AuthState {
   session: User | null;
+  clientId: string;
 }
 
 const initialState: AuthState = {
   session: null,
+  clientId: crypto.randomUUID(),
 };
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    signIn: (state, action: PayloadAction<User>) => {
+    signIn: (
+      state,
+      action: PayloadAction<{
+        user: User;
+        clientId: string;
+      }>,
+    ) => {
       if (!action.payload) return;
-      state.session = action.payload;
+      state.session = action.payload.user;
+      state.clientId = action.payload.clientId;
     },
     signOut: (state) => {
       state.session = null;

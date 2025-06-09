@@ -39,8 +39,6 @@ const loginUserWithEmailAndPassword = async ({ email, password }) => {
   const isPasswordMatch = await compareUserPassword(user, password);
   throwUnauthorized(!isPasswordMatch, getMessageByLocale({ key: 'auth.incorrectCredential' }));
 
-  // delete all previous refresh tokens
-  await Token.deleteMany({ where: { userId: user.id, type: tokenTypes.REFRESH } });
   return user;
 };
 
@@ -54,9 +52,6 @@ const loginCustomerWithPhoneAndPassword = async ({ phone, password }) => {
   const customer = await getCustomerFromDatabase({ phone });
   const isPasswordMatch = await compareUserPassword(customer, password);
   throwUnauthorized(!isPasswordMatch, getMessageByLocale({ key: 'auth.incorrectCredential' }));
-
-  // delete all previous refresh tokens
-  await Token.deleteMany({ where: { customerId: customer.id, type: tokenTypes.REFRESH } });
   return customer;
 };
 
@@ -80,9 +75,9 @@ const logout = async (refreshToken) => {
  * @param {string} refreshToken
  * @returns {Promise<Object>}
  */
-const refreshAuth = async (refreshToken) => {
+const refreshAuth = async ({ refreshToken, clientId }) => {
   try {
-    const refreshTokenDoc = await tokenService.verifyToken(refreshToken, tokenTypes.REFRESH);
+    const refreshTokenDoc = await tokenService.verifyToken(refreshToken, tokenTypes.REFRESH, clientId);
     const user = await _getUserFromRefreshToken(refreshTokenDoc);
     throwBadRequest(!user, getMessageByLocale({ key: 'user.notFound' }));
 
@@ -91,7 +86,11 @@ const refreshAuth = async (refreshToken) => {
         id: refreshTokenDoc.id,
       },
     });
-    return tokenService.generateAuthTokens(user, refreshTokenDoc.isCustomer);
+    return tokenService.generateAuthTokens({
+      user,
+      clientId,
+      isCustomer: refreshTokenDoc.isCustomer,
+    });
   } catch (error) {
     logger.error(error);
     throwUnauthorized(true, getMessageByLocale({ key: 'auth.required' }));

@@ -13,6 +13,7 @@ const login = {
   body: Joi.object().keys({
     email: Joi.string().required(),
     password: Joi.string().required(),
+    clientId: Joi.string().required(),
   }),
 };
 
@@ -25,6 +26,7 @@ const logout = {
 const refreshTokens = {
   body: Joi.object().keys({
     refreshToken: Joi.string().required(),
+    clientId: Joi.string().required(),
   }),
 };
 

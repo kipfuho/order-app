@@ -34,19 +34,30 @@ const _getCustomerAccessToken = async (): Promise<string> => {
     store.dispatch(signOutForCustomer());
     return "";
   }
+
+  const clientId = state.authCustomer.clientId;
   if (isTokenExpired(_.get(customer, "tokens.access"))) {
-    let newTokens = await refreshTokensRequest(
-      customer.tokens.refresh.token,
-      true,
-    );
+    let newTokens = await refreshTokensRequest({
+      refreshToken: customer.tokens.refresh.token,
+      clientId,
+      isCustomerApp: true,
+    });
     if (!newTokens && customer.anonymous) {
-      newTokens = await loginForAnonymousCustomerRequest(customer.id);
+      newTokens = await loginForAnonymousCustomerRequest({
+        customerId: customer.id,
+        clientId,
+      });
     }
     if (!newTokens) {
       store.dispatch(signOutForCustomer());
       return "";
     }
-    store.dispatch(signInForCustomer({ ...customer, tokens: newTokens }));
+    store.dispatch(
+      signInForCustomer({
+        customer: { ...customer, tokens: newTokens },
+        clientId,
+      }),
+    );
     return newTokens.access.token;
   }
   return customer.tokens.access.token;
@@ -71,13 +82,22 @@ export const getAccessToken = async (
       return "";
     }
 
+    const clientId = state.auth.clientId;
     if (isTokenExpired(_.get(user, "tokens.access"))) {
-      const newTokens = await refreshTokensRequest(user.tokens.refresh.token);
+      const newTokens = await refreshTokensRequest({
+        refreshToken: user.tokens.refresh.token,
+        clientId,
+      });
       if (!newTokens) {
         store.dispatch(signOut());
         return "";
       }
-      store.dispatch(signIn({ ...user, tokens: newTokens }));
+      store.dispatch(
+        signIn({
+          user: { ...user, tokens: newTokens },
+          clientId,
+        }),
+      );
       return newTokens.access.token;
     }
     return user.tokens.access.token;

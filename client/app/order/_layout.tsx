@@ -6,7 +6,7 @@ import { Platform } from "react-native";
 import { useCustomerSession } from "@/hooks/useCustomerSession";
 
 export default function CustomerAppLayout() {
-  const { session } = useCustomerSession();
+  const { session, clientId } = useCustomerSession();
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
@@ -24,7 +24,7 @@ export default function CustomerAppLayout() {
   }, []);
 
   if (!session) {
-    loginForAnonymousCustomerRequest();
+    loginForAnonymousCustomerRequest({ clientId });
     return <Redirect href="/order/home" />;
   }
 

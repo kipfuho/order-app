@@ -75,14 +75,13 @@ const registerCustomer = async ({ phone, password, name, id }) => {
         id,
         anonymous: true,
       },
+      select: { id: 1 },
     });
 
     throwBadRequest(!customer, getMessageByLocale({ key: 'customer.notFound' }));
-    return customer;
   }
 
-  const customer = await createCustomer({ name, phone, password });
-  return customer;
+  await createCustomer({ name, phone, password });
 };
 
 const deleteCustomer = async (customerId) => {

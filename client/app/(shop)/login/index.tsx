@@ -15,10 +15,12 @@ import { loginRequest } from "@apis/auth.api.service";
 import Logo from "@assets/svg/logo.svg";
 import { goToShopList } from "@apis/navigate.service";
 import PasswordInput from "@/components/ui/PasswordInput";
+import { useSession } from "@/hooks/useSession";
 
 const LoginScreen = () => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { clientId } = useSession();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,7 +38,7 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      const result = await loginRequest({ email, password });
+      const result = await loginRequest({ email, password, clientId });
       if (result) {
         goToShopList({ router });
       }
