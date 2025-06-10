@@ -422,6 +422,7 @@ model Dish {
   updatedAt              DateTime            @updatedAt
   id                     String              @id @default(uuid())
   imageUrls              String[]
+  tags                   String[]
   type                   DishType
   cartItem               CartItem[]
   category               DishCategory        @relation(fields: [categoryId], references: [id])

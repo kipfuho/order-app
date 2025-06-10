@@ -1,7 +1,18 @@
 const _ = require('lodash');
+const natural = require('natural');
 const { getDayOfWeek } = require('../../utils/common');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const { getOrderSessionJsonWithLimit } = require('../../order-management/services/orderUtils.service');
+const redisClient = require('../../utils/redis');
+
+const tokenizer = new natural.WordTokenizer();
+const stopwords = new Set(['the', 'and', 'or', 'is', 'a']);
+
+const getOrderSessionsForRecommendation = async ({ shopId, limit = 10000, timeWindowDays = 30 }) => {
+  const cutoffDate = new Date(Date.now() - timeWindowDays * 24 * 60 * 60 * 1000);
+  const sessions = await getOrderSessionJsonWithLimit({ shopId, limit });
+  return sessions.filter((session) => new Date(session.createdAt) > cutoffDate);
+};
 
 const getPopularDishes = (orderSessions) => {
   const dishCount = {};
@@ -23,16 +34,24 @@ const getPopularDishes = (orderSessions) => {
 };
 
 const computeTFIDF = (docs) => {
-  const words = new Set(docs.flatMap((doc) => doc.split(' ')));
+  const preprocessedDocs = docs.map((doc) =>
+    tokenizer
+      .tokenize(doc.toLowerCase())
+      .filter((word) => !stopwords.has(word))
+      .join(' ')
+  );
+  const words = new Set(preprocessedDocs.flatMap((doc) => doc.split(' ')));
   const wordList = Array.from(words);
-  const termFrequencies = docs.map((doc) => {
+  const termFrequencies = preprocessedDocs.map((doc) => {
     const wordsInDoc = doc.split(' ');
     return wordList.map((word) => wordsInDoc.filter((w) => w === word).length / wordsInDoc.length);
   });
 
-  const documentFrequencies = wordList.map((word) => docs.filter((doc) => doc.includes(word)).length / docs.length);
+  const documentFrequencies = wordList.map(
+    (word) => preprocessedDocs.filter((doc) => doc.includes(word)).length / preprocessedDocs.length
+  );
 
-  return termFrequencies.map((tf) => tf.map((tfValue, i) => tfValue * Math.log(1 / documentFrequencies[i])));
+  return termFrequencies.map((tf) => tf.map((tfValue, i) => tfValue * Math.log(1 / (documentFrequencies[i] + 1e-10))));
 };
 
 const cosineSimilarity = (vecA, vecB) => {
@@ -43,19 +62,27 @@ const cosineSimilarity = (vecA, vecB) => {
 };
 
 const getSimilarDishesTFIDF = ({ dishId, allDishes }) => {
-  const tfidfScores = computeTFIDF(allDishes.map((dish) => dish.description || ''));
-  const baseDishIndex = _.findIndex(allDishes, (dish) => dish.id === dishId);
+  const cacheKey = `tfidf_${allDishes.map((d) => d.id).join('_')}`;
+  let tfidfScores = redisClient.getJson(cacheKey);
 
-  const similarities = _.map(allDishes, (dish, index) => ({
-    dish,
-    similarity: cosineSimilarity(tfidfScores[baseDishIndex], tfidfScores[index]),
-  }));
+  if (!tfidfScores) {
+    tfidfScores = computeTFIDF(allDishes.map((dish) => dish.description || ''));
+    redisClient.putJson(cacheKey, tfidfScores);
+  }
 
-  return _(similarities)
-    .sort((a, b) => b.similarity - a.similarity)
-    .slice(1, 4)
-    .map((entry) => entry.dish)
-    .value();
+  const baseDish = _.find(allDishes, (dish) => dish.id === dishId);
+  const baseTags = new Set(baseDish.tags || []);
+
+  const similarities = _.map(allDishes, (dish, index) => {
+    const tagOverlap = _.intersection(baseTags, dish.tags || []).length / baseTags.size || 1;
+    const tfidfSimilarity = cosineSimilarity(tfidfScores[_.findIndex(allDishes, { id: dishId })], tfidfScores[index]);
+    return {
+      dish,
+      similarity: 0.7 * tfidfSimilarity + 0.3 * tagOverlap,
+    };
+  });
+
+  return _(similarities).sortBy('similarity').reverse().slice(1, 4).map('dish').value();
 };
 
 const getCustomerPreferences = ({ orderSessions, customerId }) => {
@@ -71,7 +98,7 @@ const getCustomerPreferences = ({ orderSessions, customerId }) => {
       });
     });
 
-  return preferredDishes;
+  return Object.entries(preferredDishes).sort((a, b) => b[1] - a[1]);
 };
 
 // Helper function to track customer orders by day of the week
@@ -94,6 +121,29 @@ const getCustomerOrderPatterns = ({ orderSessions, customerId }) => {
     });
 
   return orderPatterns;
+};
+
+const getSimilarUsers = ({ orderSessions, customerId }) => {
+  const userVectors = {};
+  _.forEach(orderSessions, (session) => {
+    const userId = _.get(session, 'customerInfo.customerId');
+    if (!userVectors[userId]) userVectors[userId] = {};
+    _.forEach(session.orders, (order) => {
+      _.forEach(order.dishOrders, (dishOrder) => {
+        userVectors[userId][dishOrder.dishId] = (userVectors[userId][dishOrder.dishId] || 0) + dishOrder.quantity;
+      });
+    });
+  });
+
+  const targetVector = userVectors[customerId] || {};
+  const similarities = _.map(userVectors, (vector, otherUserId) => {
+    if (otherUserId === customerId) return null;
+    const vecA = Object.keys({ ...targetVector, ...vector }).map((dishId) => targetVector[dishId] || 0);
+    const vecB = Object.keys({ ...targetVector, ...vector }).map((dishId) => vector[dishId] || 0);
+    return { userId: otherUserId, similarity: cosineSimilarity(vecA, vecB) };
+  });
+
+  return _(similarities).filter(Boolean).sortBy('similarity').reverse().slice(0, 10).map('userId').value();
 };
 
 // Detect seasonal patterns (e.g., recommending soups in winter, ice cream in summer)
@@ -166,8 +216,100 @@ const recommendByDayPattern = ({ orderSessions, customerId, dishById }) => {
   return recommendedDishes;
 };
 
-const getOrderSessionsForRecommendation = async ({ shopId, limit = 10000 }) => {
-  return getOrderSessionJsonWithLimit({ shopId, limit });
+const getCollaborativeRecommendations = ({ orderSessions, customerId, dishById }) => {
+  const similarUsers = getSimilarUsers({ orderSessions, customerId });
+  const dishScores = {};
+
+  _.forEach(orderSessions, (session) => {
+    if (similarUsers.includes(_.get(session, 'customerInfo.customerId'))) {
+      _.forEach(session.orders, (order) => {
+        _.forEach(order.dishOrders, (dishOrder) => {
+          dishScores[dishOrder.dishId] = (dishScores[dishOrder.dishId] || 0) + dishOrder.quantity;
+        });
+      });
+    }
+  });
+
+  return Object.keys(dishScores)
+    .sort((a, b) => dishScores[b] - dishScores[a])
+    .slice(0, 3)
+    .map((id) => dishById[id]);
+};
+
+const getTrendingDishes = ({ orderSessions, dishById, timeWindowHours = 24 * 7 }) => {
+  const recentOrders = _.filter(
+    orderSessions,
+    (session) => new Date(session.createdAt) > new Date(Date.now() - timeWindowHours * 60 * 60 * 1000)
+  );
+  const dishCount = {};
+  _.forEach(recentOrders, (session) => {
+    _.forEach(session.orders, (order) => {
+      _.forEach(order.dishOrders, (dishOrder) => {
+        dishCount[dishOrder.dishId] = (dishCount[dishOrder.dishId] || 0) + dishOrder.quantity;
+      });
+    });
+  });
+
+  return Object.keys(dishCount)
+    .sort((a, b) => dishCount[b] - dishCount[a])
+    .slice(0, 5)
+    .map((id) => dishById[id]);
+};
+
+const diversifyRecommendations = ({ recommendations, maxPerCategory = 2 }) => {
+  const categoryCount = {};
+  const diversified = [];
+
+  _.forEach(recommendations, (dish) => {
+    const category = dish.category || 'default';
+    categoryCount[category] = (categoryCount[category] || 0) + 1;
+    if (categoryCount[category] <= maxPerCategory) {
+      diversified.push(dish);
+    }
+  });
+
+  return diversified.slice(0, 5);
+};
+
+const combineRecommendations = ({
+  preferredDishes,
+  patternDishes,
+  similarDishes,
+  seasonalDishes,
+  contextualDishes,
+  collaborativeDishes,
+  popularDishes,
+  weights = {
+    preferred: 0.35,
+    pattern: 0.15,
+    similar: 0.15,
+    seasonal: 0.1,
+    contextual: 0.1,
+    collaborative: 0.1,
+    popular: 0.05,
+  },
+}) => {
+  const scoredDishes = {};
+
+  const addScore = (dish, score, sourceWeight) => {
+    if (!scoredDishes[dish.id]) {
+      scoredDishes[dish.id] = { dish, score: 0 };
+    }
+    scoredDishes[dish.id].score += score * sourceWeight;
+  };
+
+  preferredDishes.forEach((dish, index) => addScore(dish, 1 - index / preferredDishes.length, weights.preferred));
+  patternDishes.forEach((dish, index) => addScore(dish, 1 - index / patternDishes.length, weights.pattern));
+  similarDishes.forEach((dish, index) => addScore(dish, 1 - index, weights.similar));
+  seasonalDishes.forEach((dish) => addScore(dish, 1, weights.seasonal));
+  contextualDishes.forEach((dish) => addScore(dish, 1, weights.contextual));
+  collaborativeDishes.forEach((dish) => addScore(dish, 1, weights.collaborative));
+  popularDishes.forEach((dish, index) => addScore(dish, 1 - index / popularDishes.length, weights.popular));
+
+  return Object.values(scoredDishes)
+    .sort((a, b) => b.score - a.score)
+    .map((entry) => entry.dish)
+    .slice(0, 20);
 };
 
 const recommendDishes = async ({ customerId, shopId, limit }) => {
@@ -175,44 +317,44 @@ const recommendDishes = async ({ customerId, shopId, limit }) => {
   const dishById = _.keyBy(allDishes, 'id');
   const orderSessions = await getOrderSessionsForRecommendation({ shopId, limit });
   const preferredDishes = getCustomerPreferences({ orderSessions, customerId });
-  const sortedPreferredDishes = Object.entries(preferredDishes).sort((a, b) => b[1] - a[1]); // Sort dishes by quantity ordered
-
-  let recommendations = sortedPreferredDishes.map(([dishId]) => dishById[dishId]);
 
   // Then, find similar dishes based on the TF-IDF scores of their descriptions
-  recommendations = recommendations.flatMap((dish) => {
+  const allSimilarDishes = preferredDishes.flatMap((dish) => {
     const similarDishes = getSimilarDishesTFIDF({ dishId: dish.id, allDishes });
     return [dish, ...similarDishes]; // Include the current dish and its similar dishes
   });
 
-  // Ensure that the recommendations are unique (no duplicates)
-  const uniqueRecommendations = Array.from(new Set(recommendations.map((dish) => dish.id))).map((id) =>
-    recommendations.find((dish) => dish.id === id)
-  );
-
   // Add recommendations based on user patterns (orders on the same day of the week)
   const patternRecommendations = recommendByDayPattern({ orderSessions, customerId, dishById });
-  recommendations = [...uniqueRecommendations, ...patternRecommendations];
 
   // Add seasonal recommendations (e.g., soups in winter, salads in summer)
   const seasonalRecommendations = getSeasonalRecommendations({ allDishes });
-  recommendations = [...recommendations, ...seasonalRecommendations];
 
   // Add contextual recommendations based on the time of day
   const contextualRecommendations = getContextualRecommendations({ allDishes });
-  recommendations = [...recommendations, ...contextualRecommendations];
+
+  // Add collaborative recommendations
+  const collaborativeRecommendations = getCollaborativeRecommendations({ orderSessions, dishById, customerId });
 
   // If there are fewer than 5 recommendations, add popular dishes
   const popularDishes = getPopularDishes(orderSessions);
-  if (recommendations.length < 5) {
-    recommendations.push(
-      ...Object.keys(popularDishes)
-        .slice(0, 5 - recommendations.length)
-        .map((id) => dishById[id])
-    );
-  }
 
-  return recommendations.slice(0, 5); // Limit to 5 recommendations
+  const combineRecommendationDishes = combineRecommendations({
+    preferredDishes,
+    patternDishes: patternRecommendations,
+    similarDishes: allSimilarDishes,
+    seasonalDishes: seasonalRecommendations,
+    contextualDishes: contextualRecommendations,
+    collaborativeDishes: collaborativeRecommendations,
+    popularDishes,
+  });
+
+  const diversifiedRecommendationDishes = diversifyRecommendations({
+    recommendations: combineRecommendationDishes,
+  });
+  const trendingDishes = getTrendingDishes({ orderSessions, dishById });
+
+  return { diversifiedRecommendationDishes, trendingDishes };
 };
 
 module.exports = { recommendDishes };
