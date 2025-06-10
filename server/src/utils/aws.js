@@ -2,6 +2,8 @@ const _ = require('lodash');
 const sharp = require('sharp');
 const AWS = require('@aws-sdk/client-s3');
 const axios = require('axios');
+const https = require('node:https');
+const { NodeHttpHandler } = require('@smithy/node-http-handler');
 const logger = require('../config/logger');
 const config = require('../config/config');
 const { ALLOWED_IMAGE_MIME_TYPES, MAX_FILE_SIZE } = require('./constant');
@@ -18,6 +20,12 @@ const s3 = new AWS.S3({
     accessKeyId,
     secretAccessKey,
   },
+  requestHandler: new NodeHttpHandler({
+    requestTimeout: 10000,
+    httpsAgent: new https.Agent({
+      maxSockets: 100,
+    }),
+  }),
 });
 
 const _reziseImageBuffer = async (imageBuffer) => {
@@ -73,7 +81,7 @@ const uploadFileBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType }) =>
   }
 };
 
-const deleteObjectFromS3 = async (key) => {
+const deleteObjectFromS3 = async (key, persistLog = false) => {
   try {
     const params = {
       Bucket: s3BucketName,
@@ -81,11 +89,13 @@ const deleteObjectFromS3 = async (key) => {
     };
 
     await s3.deleteObject(params);
-    await S3Log.delete({
-      where: {
-        key,
-      },
-    });
+    if (!persistLog) {
+      await S3Log.delete({
+        where: {
+          key,
+        },
+      });
+    }
 
     return true;
   } catch (err) {

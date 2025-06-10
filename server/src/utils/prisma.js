@@ -12,10 +12,13 @@ const {
   deleteEmployeePositionCache,
   deleteEmployeeCache,
   deleteKitchenCache,
+  deleteEmployeeByUserIdCache,
+  deleteUserCache,
 } = require('../metadata/common');
 const config = require('../config/config');
 const { DefaultUnitList, Countries } = require('./constant');
 const { getShopCountry } = require('../middlewares/clsHooked');
+const logger = require('../config/logger');
 
 /** @type {import('@prisma/client').PrismaClient} */
 const prisma = new PrismaClient({
@@ -706,6 +709,10 @@ const prisma = new PrismaClient({
   },
 });
 
+/**
+ * PostgreSQL Table Name
+ * Keys should match values
+ */
 const PostgreSQLTable = {
   Cart: 'Cart',
   CartItem: 'CartItem',
@@ -735,10 +742,220 @@ const PostgreSQLTable = {
 };
 
 /**
+ * PostgreSQL Table field's enum type by table
+ * Should match Prisma schema
+ */
+const PostgreSQLEnumByTable = {
+  [PostgreSQLTable.Cart]: {
+    status: 'Status',
+  },
+  [PostgreSQLTable.Customer]: {
+    status: 'Status',
+  },
+  [PostgreSQLTable.Discount]: {
+    discountType: 'DiscountType',
+    discountValueType: 'DiscountValueType',
+  },
+  [PostgreSQLTable.DiscountProduct]: {
+    discountValueType: 'DiscountValueType',
+  },
+  [PostgreSQLTable.Dish]: {
+    status: 'Switchabletatus',
+    type: 'DishType',
+  },
+  [PostgreSQLTable.DishCategory]: {
+    status: 'Status',
+  },
+  [PostgreSQLTable.DishOrder]: {
+    status: 'DishOrderStatus',
+  },
+  [PostgreSQLTable.Employee]: {
+    status: 'Status',
+  },
+  [PostgreSQLTable.EmployeePosition]: {
+    status: 'Status',
+  },
+  [PostgreSQLTable.EmployeeDepartment]: {
+    status: 'Status',
+  },
+  [PostgreSQLTable.Kitchen]: {
+    status: 'Status',
+  },
+  [PostgreSQLTable.KitchenLog]: {
+    status: 'Status',
+    action: 'KitchenActionEnum',
+  },
+  [PostgreSQLTable.Order]: {
+    status: 'Status',
+    orderSessionStatus: 'OrderSessionStatus',
+  },
+  [PostgreSQLTable.OrderSession]: {
+    status: 'OrderSessionStatus',
+  },
+  [PostgreSQLTable.PaymentDetail]: {
+    paymentMethod: 'PaymentMethodEnum',
+  },
+  [PostgreSQLTable.ReturnedDishOrder]: {
+    status: 'DishOrderStatus',
+  },
+  [PostgreSQLTable.Shop]: {
+    status: 'Status',
+    dishPriceRoundingType: 'RoundingPaymentType',
+    discountRoundingType: 'RoundingPaymentType',
+    taxRoundingType: 'RoundingPaymentType',
+  },
+  [PostgreSQLTable.Table]: {
+    status: 'Status',
+  },
+  [PostgreSQLTable.TablePosition]: {
+    status: 'Status',
+  },
+  [PostgreSQLTable.Token]: {
+    type: 'TokenType',
+  },
+  [PostgreSQLTable.Unit]: {
+    status: 'Switchabletatus',
+  },
+  [PostgreSQLTable.User]: {
+    role: 'Role',
+    status: 'Status',
+  },
+};
+
+const deleteCacheForBulkUpdate = async ({ tableName, entries }) => {
+  try {
+    if (tableName === PostgreSQLTable.User) {
+      await Promise.all(entries.map((user) => deleteUserCache({ userId: user.id })));
+    }
+    if (tableName === PostgreSQLTable.User) {
+      await Promise.all(entries.map((user) => deleteUserCache({ userId: user.id })));
+    }
+    if (tableName === PostgreSQLTable.Shop) {
+      await Promise.all(entries.map((shop) => deleteShopCache({ shopId: shop.id })));
+    }
+    if (tableName === PostgreSQLTable.Customer) {
+      await Promise.all(entries.map((customer) => deleteCustomerCache({ customerId: customer.id })));
+    }
+    if (tableName === PostgreSQLTable.Dish) {
+      const dish = await prisma.dish.findUnique({
+        where: {
+          id: entries[0].id,
+        },
+        select: {
+          shopId: true,
+        },
+      });
+      if (!dish) return;
+      await deleteMenuCache({ shopId: dish.shopId });
+    }
+    if (tableName === PostgreSQLTable.DishCategory) {
+      const dishCategory = await prisma.dishCategory.findUnique({
+        where: {
+          id: entries[0].id,
+        },
+        select: {
+          shopId: true,
+        },
+      });
+      if (!dishCategory) return;
+      await deleteMenuCache({ shopId: dishCategory.shopId });
+    }
+    if (tableName === PostgreSQLTable.Table) {
+      const table = await prisma.table.findUnique({
+        where: {
+          id: entries[0].id,
+        },
+        select: {
+          shopId: true,
+        },
+      });
+      if (!table) return;
+      await deleteTableCache({ shopId: table.shopId });
+    }
+    if (tableName === PostgreSQLTable.TablePosition) {
+      const tablePosition = await prisma.tablePosition.findUnique({
+        where: {
+          id: entries[0].id,
+        },
+        select: {
+          shopId: true,
+        },
+      });
+      if (!tablePosition) return;
+      await deleteTablePositionCache({ shopId: tablePosition.shopId });
+    }
+    if (tableName === PostgreSQLTable.Unit) {
+      const unit = await prisma.unit.findUnique({
+        where: {
+          id: entries[0].id,
+        },
+        select: {
+          shopId: true,
+        },
+      });
+      if (!unit) return;
+      await deleteUnitCache({ shopId: unit.shopId });
+    }
+    if (tableName === PostgreSQLTable.Employee) {
+      const employee = await prisma.employee.findUnique({
+        where: {
+          id: entries[0].id,
+        },
+        select: {
+          shopId: true,
+        },
+      });
+      if (!employee) return;
+      await deleteEmployeeCache({ shopId: employee.shopId });
+      await deleteEmployeeByUserIdCache({ shopId: employee.shopId });
+    }
+    if (tableName === PostgreSQLTable.EmployeePosition) {
+      const employeePosition = await prisma.employeePosition.findUnique({
+        where: {
+          id: entries[0].id,
+        },
+        select: {
+          shopId: true,
+        },
+      });
+      if (!employeePosition) return;
+      await deleteEmployeePositionCache({ shopId: employeePosition.shopId });
+    }
+    if (tableName === PostgreSQLTable.EmployeeDepartment) {
+      const employeeDepartment = await prisma.employeeDepartment.findUnique({
+        where: {
+          id: entries[0].id,
+        },
+        select: {
+          shopId: true,
+        },
+      });
+      if (!employeeDepartment) return;
+      await deleteDepartmentCache({ shopId: employeeDepartment.shopId });
+      await deleteEmployeeByUserIdCache({ shopId: employeeDepartment.shopId });
+    }
+    if (tableName === PostgreSQLTable.Kitchen) {
+      const kitchen = await prisma.kitchen.findUnique({
+        where: {
+          id: entries[0].id,
+        },
+        select: {
+          shopId: true,
+        },
+      });
+      if (!kitchen) return;
+      await deleteDepartmentCache({ shopId: kitchen.shopId });
+    }
+  } catch (err) {
+    logger.error(`error deleteCacheForBulkUpdate. ${err}`);
+  }
+};
+
+/**
  * Bulk update for prisma
  * Only accept primitive values and array
  */
-const bulkUpdate = (tableName, entries) => {
+const bulkUpdate = async (tableName, entries) => {
   if (entries.length === 0) return prisma.$executeRawUnsafe(`SELECT 1;`);
 
   const sanitizedTable = tableName.replace(/[^a-zA-Z0-9_]/g, '');
@@ -751,9 +968,44 @@ const bulkUpdate = (tableName, entries) => {
       const values = fields.map((field) => {
         const value = entry[field];
         if (Array.isArray(value)) {
-          return `ARRAY[${value.map((v) => (typeof v === 'string' ? `'${v.replace(/'/g, "''")}'` : v)).join(', ')}]`;
+          if (value.length === 0) {
+            // Handle empty arrays with explicit type casting
+            // Common types: text[], integer[], boolean[], etc.
+            return `ARRAY[]::text[]`; // Only works for String[]
+          }
+
+          // Determine array type based on first element
+          const firstElement = value[0];
+          let arrayType = 'text[]'; // default
+
+          if (typeof firstElement === 'number') {
+            arrayType = Number.isInteger(firstElement) ? 'integer[]' : 'numeric[]';
+          } else if (typeof firstElement === 'boolean') {
+            arrayType = 'boolean[]';
+          } else if (firstElement instanceof Date) {
+            arrayType = 'timestamp[]';
+          }
+
+          const formattedValues = value
+            .map((v) => {
+              if (typeof v === 'string') {
+                return `'${v.replace(/'/g, "''")}'`;
+              }
+              if (v instanceof Date) {
+                return `'${v.toISOString()}'`;
+              }
+              return v;
+            })
+            .join(', ');
+
+          return `ARRAY[${formattedValues}]::${arrayType}`;
         }
         if (typeof value === 'string') {
+          if (PostgreSQLEnumByTable[tableName][field]) {
+            // Cast string to enum
+            // Enum type is wrapped inside "" to imply case-sensitive
+            return `'${value.replace(/'/g, "''")}'::"${PostgreSQLEnumByTable[tableName][field]}"`;
+          }
           return `'${value.replace(/'/g, "''")}'`;
         }
         if (value instanceof Date) {
@@ -775,7 +1027,12 @@ const bulkUpdate = (tableName, entries) => {
     WHERE "${sanitizedTable}".id::text = data.id;
   `;
 
-  return prisma.$executeRawUnsafe(sql);
+  const result = await prisma.$executeRawUnsafe(sql);
+  await deleteCacheForBulkUpdate({
+    tableName,
+    entries,
+  });
+  return result;
 };
 
 module.exports = {

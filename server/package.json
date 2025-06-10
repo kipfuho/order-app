@@ -46,6 +46,7 @@
     "@aws-sdk/client-s3": "^3.772.0",
     "@databases/pg-test": "^3.1.2",
     "@prisma/client": "^6.8.2",
+    "@smithy/node-http-handler": "^4.0.6",
     "axios": "^1.8.4",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.53.2",

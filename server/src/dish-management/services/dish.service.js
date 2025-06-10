@@ -231,6 +231,7 @@ const importDishes = async ({ dishes, shopId }) => {
   const unitById = _.keyBy(units, 'id');
 
   const errorDishes = [];
+  const oldImageUrls = [];
   const newImageUrls = [];
   const createdDishes = [];
   const updatedDishes = [];
@@ -266,15 +267,6 @@ const importDishes = async ({ dishes, shopId }) => {
       dish.categoryId = dishCategory.id;
       // eslint-disable-next-line no-param-reassign
       dish.imageUrls = imageUrls;
-      if (imageUrls) {
-        newImageUrls.push(...imageUrls);
-        await registerJob({
-          type: JobTypes.REMOVE_S3_OBJECT_USAGE,
-          data: {
-            keys: _.map(dish.imageUrls, (url) => aws.getS3ObjectKey(url)),
-          },
-        });
-      }
       // eslint-disable-next-line no-param-reassign
       delete dish.dishCategoryId;
       // eslint-disable-next-line no-param-reassign
@@ -285,6 +277,7 @@ const importDishes = async ({ dishes, shopId }) => {
       delete dish.images;
 
       if (shopDishByCode[code]) {
+        oldImageUrls.push(...(shopDishByCode[code].imageUrls || []));
         updatedDishes.push({ ...shopDishByCode[code], ...dish });
       } else {
         createdDishes.push(dish);
@@ -294,33 +287,38 @@ const importDishes = async ({ dishes, shopId }) => {
 
   await Dish.createMany({ data: createdDishes });
   if (updatedDishes.length > 0) {
-    await bulkUpdate(
-      PostgreSQLTable.Dish,
-      updatedDishes.map((dish) => ({
-        id: dish.id,
-        name: dish.name,
-        code: dish.code,
-        price: dish.price,
-        isTaxIncludedPrice: dish.isTaxIncludedPrice,
-        categoryId: dish.categoryId,
-        taxRate: dish.taxRate,
-        isNewlyCreated: dish.isNewlyCreated,
-        isBestSeller: dish.isBestSeller,
-        stockQuantity: dish.stockQuantity,
-        hideForCustomers: dish.hideForCustomers,
-        hideForEmployees: dish.hideForEmployees,
-        outOfStockNotification: dish.outOfStockNotification,
-        description: dish.description,
-        imageUrls: dish.imageUrls,
-        type: dish.type,
-      }))
-    );
+    const updateData = updatedDishes.map((dish) => ({
+      id: dish.id,
+      name: dish.name,
+      code: dish.code,
+      price: dish.price,
+      isTaxIncludedPrice: dish.isTaxIncludedPrice || false,
+      categoryId: dish.categoryId,
+      taxRate: dish.taxRate || 0,
+      isNewlyCreated: dish.isNewlyCreated || false,
+      isBestSeller: dish.isBestSeller || false,
+      stockQuantity: dish.stockQuantity || 0,
+      hideForCustomers: dish.hideForCustomers || false,
+      hideForEmployees: dish.hideForEmployees || false,
+      outOfStockNotification: dish.outOfStockNotification || false,
+      description: dish.description || '',
+      imageUrls: dish.imageUrls || [],
+      type: dish.type || DishTypes.FOOD,
+      status: dish.status || Status.activated,
+    }));
+    await bulkUpdate(PostgreSQLTable.Dish, updateData);
   }
 
   await registerJob({
     type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
     data: {
       keys: _.map(newImageUrls, (url) => aws.getS3ObjectKey(url)),
+    },
+  });
+  await registerJob({
+    type: JobTypes.REMOVE_S3_OBJECT_USAGE,
+    data: {
+      keys: _.map(oldImageUrls, (url) => aws.getS3ObjectKey(url)),
     },
   });
   await notifyUpdateDish({

@@ -4,7 +4,7 @@ const getShopKey = ({ shopId }) => `shop_${shopId}`;
 const getTableKey = ({ shopId }) => `table_${shopId}`;
 const getTablePositionKey = ({ shopId }) => `tablePosition_${shopId}`;
 const getEmployeeKey = ({ shopId }) => `employee_${shopId}`;
-const getEmployeeByUserIdKey = ({ shopId, userId }) => `employee_${userId}_${shopId}`;
+const getEmployeeByUserIdKey = ({ shopId, userId }) => `employee_${shopId}_${userId}`;
 const getEmployeePositionKey = ({ shopId }) => `employeePosition_${shopId}`;
 const getDepartmentKey = ({ shopId }) => `department_${shopId}`;
 const getMenuKey = ({ shopId }) => `menu_${shopId}`;
@@ -37,9 +37,9 @@ const deleteEmployeeCache = async ({ shopId }) => {
   }
 };
 
-const deleteEmployeeByUserIdCache = async ({ userId, shopId }) => {
+const deleteEmployeeByUserIdCache = async ({ shopId }) => {
   if (redisClient.isRedisConnected()) {
-    redisClient.deleteKey(getEmployeeByUserIdKey({ userId, shopId }));
+    return redisClient.deleteKeysByPrefix(getEmployeeByUserIdKey({ userId: '', shopId }));
   }
 };
 

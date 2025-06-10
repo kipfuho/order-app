@@ -80,6 +80,30 @@ const getCloudLock = async ({ key, periodInSecond }) => {
   }
 };
 
+const deleteKeysByPrefix = async (prefix) => {
+  const pattern = `${prefix}*`;
+  let cursor = '0';
+  let totalDeleted = 0;
+
+  do {
+    // eslint-disable-next-line no-await-in-loop
+    const reply = await client.scan(cursor, {
+      MATCH: pattern,
+      COUNT: 100,
+    });
+    cursor = reply.cursor;
+
+    if (reply.keys.length > 0) {
+      // eslint-disable-next-line no-await-in-loop
+      const deleted = await client.del(...reply.keys);
+      totalDeleted += deleted;
+    }
+  } while (cursor !== '0');
+
+  logger.info(`Deleted ${totalDeleted} keys with prefix "${prefix}"`);
+  return totalDeleted;
+};
+
 module.exports = {
   putJson,
   getJson,
@@ -90,4 +114,5 @@ module.exports = {
   deleteKey,
   expireKey,
   getCloudLock,
+  deleteKeysByPrefix,
 };

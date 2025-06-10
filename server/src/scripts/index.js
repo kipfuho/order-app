@@ -1,6 +1,7 @@
 const _ = require('lodash');
-const { Order, OrderSession } = require('../models');
+const { Order, OrderSession, S3Log } = require('../models');
 const { DishOrderStatus } = require('../utils/constant');
+const { deleteObjectFromS3 } = require('../utils/aws');
 
 const auditOrders = async () => {
   const allOrders = await Order.find();
@@ -23,6 +24,31 @@ const auditOrders = async () => {
   await Order.bulkSave(allOrders);
 };
 
+const deleteUnusedS3 = async () => {
+  const allS3Logs = await S3Log.findMany({
+    where: {
+      inUse: false,
+      createdAt: {
+        lte: new Date(Date.now() - 86400000), // 1 day before
+      },
+    },
+    select: {
+      key: true,
+    },
+  });
+
+  const allKeys = allS3Logs.map((log) => log.key);
+  await Promise.all(allKeys.map((key) => deleteObjectFromS3(key, true)));
+  await S3Log.deleteMany({
+    where: {
+      key: {
+        in: allKeys,
+      },
+    },
+  });
+};
+
 module.exports = {
   auditOrders,
+  deleteUnusedS3,
 };

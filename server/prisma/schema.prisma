@@ -39,6 +39,8 @@ model S3Log {
   updatedAt DateTime @updatedAt
 
   @@index([key])
+  @@index([inUse])
+  @@index([createdAt])
 }
 
 model Customer {
@@ -421,8 +423,8 @@ model Dish {
   createdAt              DateTime            @default(now())
   updatedAt              DateTime            @updatedAt
   id                     String              @id @default(uuid())
-  imageUrls              String[]
-  tags                   String[]
+  imageUrls              String[]            @default([])
+  tags                   String[]            @default([])
   type                   DishType
   cartItem               CartItem[]
   category               DishCategory        @relation(fields: [categoryId], references: [id])
