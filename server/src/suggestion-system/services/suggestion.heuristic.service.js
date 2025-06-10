@@ -312,6 +312,18 @@ const combineRecommendations = ({
 const recommendDishes = async ({ customerId, shopId, limit = 1000 }) => {
   const allDishes = await getDishesFromCache({ shopId });
   const dishById = _.keyBy(allDishes, 'id');
+  const key = `recommendations_${customerId}`;
+  if (redisClient.isRedisConnected()) {
+    const cachedRecommendations = redisClient.getJson(key);
+    if (!_.isEmpty(cachedRecommendations)) {
+      const { validTimestamp, dishIds } = cachedRecommendations;
+      if (validTimestamp <= Date.now()) {
+        const dishes = dishIds.map((dishId) => dishById[dishId]);
+        return dishes;
+      }
+    }
+  }
+
   const orderSessions = await getOrderSessionsForRecommendation({ shopId, limit, timeWindowDays: 30 });
 
   // Get recommendations from various sources
@@ -347,7 +359,17 @@ const recommendDishes = async ({ customerId, shopId, limit = 1000 }) => {
     );
   }
 
-  return recommendations.slice(0, 5);
+  if (redisClient.isRedisConnected()) {
+    await redisClient.putJson({
+      key,
+      jsonVal: {
+        validTimestamp: Date.now() + 30 * 60000, // Should newly recommend every 30m
+        dishIds: recommendations.map((dish) => dish.id),
+      },
+    });
+  }
+
+  return recommendations;
 };
 
 module.exports = { recommendDishes };
