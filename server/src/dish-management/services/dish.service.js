@@ -187,11 +187,11 @@ const uploadImage = async ({ shopId, image }) => {
   return url;
 };
 
-const downloadAndUploadSingleImage = async ({ shopId, url }) => {
+const downloadAndUploadSingleImage = async ({ shopId, url, index = 0 }) => {
   const response = await axios.get(url, { responseType: 'arraybuffer' });
 
   const extension = path.extname(new URL(url).pathname) || '';
-  const originalname = `image${extension}`;
+  const originalname = `${index}_image${extension}`;
   const mimetype = response.headers['content-type'] || mime.lookup(extension) || 'application/octet-stream';
 
   const buffer = Buffer.from(response.data);
@@ -207,7 +207,9 @@ const downloadAndUploadSingleImage = async ({ shopId, url }) => {
 };
 
 const downloadAndUploadDishImages = async ({ shopId, imageUrls = [] }) => {
-  const results = await Promise.allSettled(imageUrls.map((url) => downloadAndUploadSingleImage({ shopId, url })));
+  const results = await Promise.allSettled(
+    imageUrls.map((url, index) => downloadAndUploadSingleImage({ shopId, url, index }))
+  );
 
   const uploadedUrls = results.map((result, index) => {
     if (result.status === 'fulfilled') {
@@ -232,7 +234,8 @@ const importDishes = async ({ dishes, shopId }) => {
 
   const errorDishes = [];
   const oldImageUrls = [];
-  const newImageUrls = [];
+  const newCreateImageUrls = [];
+  const newUpdateImageUrls = [];
   const createdDishes = [];
   const updatedDishes = [];
   await Promise.all(
@@ -240,7 +243,8 @@ const importDishes = async ({ dishes, shopId }) => {
       const { code, dishCategoryId, dishCategoryName, unitId, unitName, images } = dish;
 
       // eslint-disable-next-line no-await-in-loop
-      const imageUrls = await downloadAndUploadDishImages({ imageUrls: images, shopId });
+      const imageUrls =
+        dish.status === Status.disabled ? [] : await downloadAndUploadDishImages({ imageUrls: images, shopId });
 
       if (!code) {
         errorDishes.push({ dish, message: getMessageByLocale({ key: 'import.missingCode' }) });
@@ -279,13 +283,31 @@ const importDishes = async ({ dishes, shopId }) => {
       if (shopDishByCode[code]) {
         oldImageUrls.push(...(shopDishByCode[code].imageUrls || []));
         updatedDishes.push({ ...shopDishByCode[code], ...dish });
-      } else {
+        newUpdateImageUrls.push(...imageUrls);
+      } else if (dish.status !== Status.disabled) {
         createdDishes.push(dish);
+        newCreateImageUrls.push(...imageUrls);
       }
     })
   );
 
-  await Dish.createMany({ data: createdDishes });
+  try {
+    await Dish.createMany({ data: createdDishes });
+    await registerJob({
+      type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
+      data: {
+        keys: _.map(newCreateImageUrls, (url) => aws.getS3ObjectKey(url)),
+      },
+    });
+  } catch (err) {
+    await registerJob({
+      type: JobTypes.REMOVE_S3_OBJECT_USAGE,
+      data: {
+        keys: _.map(newCreateImageUrls, (url) => aws.getS3ObjectKey(url)),
+      },
+    });
+    errorDishes.push(...createdDishes.map((dish) => ({ dish, message: 'Tạo thất bại' })));
+  }
   if (updatedDishes.length > 0) {
     const updateData = updatedDishes.map((dish) => ({
       id: dish.id,
@@ -306,21 +328,31 @@ const importDishes = async ({ dishes, shopId }) => {
       type: dish.type || DishTypes.FOOD,
       status: dish.status || Status.activated,
     }));
-    await bulkUpdate(PostgreSQLTable.Dish, updateData);
+    try {
+      await bulkUpdate(PostgreSQLTable.Dish, updateData);
+      await registerJob({
+        type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
+        data: {
+          keys: _.map(newUpdateImageUrls, (url) => aws.getS3ObjectKey(url)),
+        },
+      });
+      await registerJob({
+        type: JobTypes.REMOVE_S3_OBJECT_USAGE,
+        data: {
+          keys: _.map(oldImageUrls, (url) => aws.getS3ObjectKey(url)),
+        },
+      });
+    } catch (err) {
+      await registerJob({
+        type: JobTypes.REMOVE_S3_OBJECT_USAGE,
+        data: {
+          keys: _.map(newUpdateImageUrls, (url) => aws.getS3ObjectKey(url)),
+        },
+      });
+      errorDishes.push(...updatedDishes.map((dish) => ({ dish, message: 'Cập nhật thất bại' })));
+    }
   }
 
-  await registerJob({
-    type: JobTypes.CONFIRM_S3_OBJECT_USAGE,
-    data: {
-      keys: _.map(newImageUrls, (url) => aws.getS3ObjectKey(url)),
-    },
-  });
-  await registerJob({
-    type: JobTypes.REMOVE_S3_OBJECT_USAGE,
-    data: {
-      keys: _.map(oldImageUrls, (url) => aws.getS3ObjectKey(url)),
-    },
-  });
   await notifyUpdateDish({
     action: EventActionType.UPDATE,
     shopId,

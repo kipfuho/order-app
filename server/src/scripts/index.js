@@ -2,6 +2,7 @@ const _ = require('lodash');
 const { Order, OrderSession, S3Log } = require('../models');
 const { DishOrderStatus } = require('../utils/constant');
 const { deleteObjectFromS3 } = require('../utils/aws');
+const logger = require('../config/logger');
 
 const auditOrders = async () => {
   const allOrders = await Order.find();
@@ -38,7 +39,15 @@ const deleteUnusedS3 = async () => {
   });
 
   const allKeys = allS3Logs.map((log) => log.key);
-  await Promise.all(allKeys.map((key) => deleteObjectFromS3(key, true)));
+  let currentIdx = 0;
+  const batchSize = 1000;
+  while (currentIdx < allKeys.length) {
+    const batchKeys = allKeys.slice(currentIdx, Math.min(currentIdx + batchSize, allKeys.length));
+    // eslint-disable-next-line no-await-in-loop
+    await Promise.all(batchKeys.map((key) => deleteObjectFromS3(key, true)));
+    currentIdx += batchSize;
+    logger.info(`delete items: ${batchKeys}`);
+  }
   await S3Log.deleteMany({
     where: {
       key: {
@@ -46,6 +55,8 @@ const deleteUnusedS3 = async () => {
       },
     },
   });
+
+  logger.info(`delete ${allKeys.length} items`);
 };
 
 module.exports = {

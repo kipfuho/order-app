@@ -433,7 +433,7 @@ model Dish {
   dishOrder              DishOrder[]
   returnedDishOrder      ReturnedDishOrder[]
 
-  @@unique([shopId, code], name: "dish_code_unique")
+  @@unique([shopId, code, status], name: "dish_code_unique")
   @@index([shopId])
 }
 
