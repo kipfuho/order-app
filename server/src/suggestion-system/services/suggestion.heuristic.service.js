@@ -14,7 +14,7 @@ const getOrderSessionsForRecommendation = async ({ shopId, limit = 10000, timeWi
   return sessions.filter((session) => new Date(session.createdAt) > cutoffDate);
 };
 
-const getPopularDishes = (orderSessions) => {
+const getPopularDishes = ({ orderSessions, dishById }) => {
   const dishCount = {};
 
   _.forEach(orderSessions, (session) => {
@@ -27,10 +27,7 @@ const getPopularDishes = (orderSessions) => {
 
   return Object.entries(dishCount)
     .sort((a, b) => b[1] - a[1])
-    .reduce((acc, [dishId, count]) => {
-      acc[dishId] = count;
-      return acc;
-    }, {});
+    .map((id) => dishById[id]);
 };
 
 const computeTFIDF = (docs) => {
@@ -85,7 +82,7 @@ const getSimilarDishesTFIDF = ({ dishId, allDishes }) => {
   return _(similarities).sortBy('similarity').reverse().slice(1, 4).map('dish').value();
 };
 
-const getCustomerPreferences = ({ orderSessions, customerId }) => {
+const getCustomerPreferences = ({ orderSessions, customerId, dishById }) => {
   const preferredDishes = {};
 
   _(orderSessions)
@@ -98,7 +95,7 @@ const getCustomerPreferences = ({ orderSessions, customerId }) => {
       });
     });
 
-  return Object.entries(preferredDishes).sort((a, b) => b[1] - a[1]);
+  return preferredDishes.sort((a, b) => b[1] - a[1]).map(([dishId]) => dishById[dishId]);
 };
 
 // Helper function to track customer orders by day of the week
@@ -261,9 +258,9 @@ const diversifyRecommendations = ({ recommendations, maxPerCategory = 2 }) => {
   const diversified = [];
 
   _.forEach(recommendations, (dish) => {
-    const category = dish.category || 'default';
-    categoryCount[category] = (categoryCount[category] || 0) + 1;
-    if (categoryCount[category] <= maxPerCategory) {
+    const categoryName = _.get(dish, 'category.name');
+    categoryCount[categoryName] = (categoryCount[categoryName] || 0) + 1;
+    if (categoryCount[categoryName] <= maxPerCategory) {
       diversified.push(dish);
     }
   });
@@ -312,49 +309,45 @@ const combineRecommendations = ({
     .slice(0, 20);
 };
 
-const recommendDishes = async ({ customerId, shopId, limit }) => {
+const recommendDishes = async ({ customerId, shopId, limit = 1000 }) => {
   const allDishes = await getDishesFromCache({ shopId });
   const dishById = _.keyBy(allDishes, 'id');
-  const orderSessions = await getOrderSessionsForRecommendation({ shopId, limit });
-  const preferredDishes = getCustomerPreferences({ orderSessions, customerId });
+  const orderSessions = await getOrderSessionsForRecommendation({ shopId, limit, timeWindowDays: 30 });
 
-  // Then, find similar dishes based on the TF-IDF scores of their descriptions
-  const allSimilarDishes = preferredDishes.flatMap((dish) => {
-    const similarDishes = getSimilarDishesTFIDF({ dishId: dish.id, allDishes });
-    return [dish, ...similarDishes]; // Include the current dish and its similar dishes
-  });
-
-  // Add recommendations based on user patterns (orders on the same day of the week)
-  const patternRecommendations = recommendByDayPattern({ orderSessions, customerId, dishById });
-
-  // Add seasonal recommendations (e.g., soups in winter, salads in summer)
-  const seasonalRecommendations = getSeasonalRecommendations({ allDishes });
-
-  // Add contextual recommendations based on the time of day
-  const contextualRecommendations = getContextualRecommendations({ allDishes });
-
-  // Add collaborative recommendations
-  const collaborativeRecommendations = getCollaborativeRecommendations({ orderSessions, dishById, customerId });
-
-  // If there are fewer than 5 recommendations, add popular dishes
-  const popularDishes = getPopularDishes(orderSessions);
-
-  const combineRecommendationDishes = combineRecommendations({
-    preferredDishes,
-    patternDishes: patternRecommendations,
-    similarDishes: allSimilarDishes,
-    seasonalDishes: seasonalRecommendations,
-    contextualDishes: contextualRecommendations,
-    collaborativeDishes: collaborativeRecommendations,
-    popularDishes,
-  });
-
-  const diversifiedRecommendationDishes = diversifyRecommendations({
-    recommendations: combineRecommendationDishes,
-  });
+  // Get recommendations from various sources
+  const preferredDishes = getCustomerPreferences({ orderSessions, customerId, dishById });
+  const similarDishes = preferredDishes.flatMap((dish) => getSimilarDishesTFIDF({ dishId: dish.id, allDishes }));
+  const patternDishes = recommendByDayPattern({ orderSessions, customerId, dishById });
+  const seasonalDishes = getSeasonalRecommendations({ allDishes });
+  const contextualDishes = getContextualRecommendations({ allDishes });
+  const collaborativeDishes = getCollaborativeRecommendations({ orderSessions, customerId, dishById });
+  const popularDishes = getPopularDishes({ orderSessions, dishById });
   const trendingDishes = getTrendingDishes({ orderSessions, dishById });
 
-  return { diversifiedRecommendationDishes, trendingDishes };
+  // Combine recommendations with weights
+  let recommendations = combineRecommendations({
+    preferredDishes,
+    patternDishes,
+    similarDishes,
+    seasonalDishes,
+    contextualDishes,
+    popularDishes,
+    collaborativeDishes,
+  });
+
+  // Ensure diversity
+  recommendations = diversifyRecommendations(recommendations);
+
+  // Add trending dishes as fallback
+  if (recommendations.length < 5) {
+    const currentDishIdSet = new Set(recommendations.map((dish) => dish.id));
+    recommendations = [...recommendations, ..._.filter(trendingDishes, (dish) => !currentDishIdSet.has(dish.id))].slice(
+      0,
+      5
+    );
+  }
+
+  return recommendations.slice(0, 5);
 };
 
 module.exports = { recommendDishes };
