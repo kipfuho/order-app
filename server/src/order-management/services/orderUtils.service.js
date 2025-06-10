@@ -21,7 +21,7 @@ const { getCustomerFromCache } = require('../../metadata/customerMetadata.servic
 const { notifyNewOrder, EventActionType } = require('../../utils/awsUtils/appSync.utils');
 
 // Merge các dish order có trùng tên và giá
-const _mergeDishOrders = (dishOrders) => {
+const _mergeDishOrders = (dishOrders, isReturnedDishOrders) => {
   if (_.isEmpty(dishOrders)) {
     return [];
   }
@@ -31,20 +31,23 @@ const _mergeDishOrders = (dishOrders) => {
   for (const dishOrder of dishOrders) {
     const item = dishOrder;
     const { dishId } = dishOrder;
-    let key = `${dishId}-${dishOrder.dishName}-${dishOrder.price}`;
+    let key = `${dishId}-${dishOrder.dishName}-${dishOrder.price}-${dishOrder.note}`;
     key = key.replace(/\./g, '');
     const existingItem = dishOrderMap[key];
     const existingDishOrderQuantity = (_.get(existingItem, 'quantity') || 0) * 1;
     const currentOrderQuantity = (dishOrder.quantity || 0) * 1;
     item.quantity = currentOrderQuantity + existingDishOrderQuantity;
-    item.beforeTaxTotalPrice = (_.get(existingItem, 'beforeTaxTotalPrice') || 0) + (dishOrder.beforeTaxTotalPrice || 0);
-    item.afterTaxTotalPrice = (_.get(existingItem, 'afterTaxTotalPrice') || 0) + (dishOrder.afterTaxTotalPrice || 0);
-    item.beforeTaxTotalDiscountAmount =
-      (_.get(existingItem, 'beforeTaxTotalDiscountAmount') || 0) + (dishOrder.beforeTaxTotalDiscountAmount || 0);
-    item.afterTaxTotalDiscountAmount =
-      (_.get(existingItem, 'afterTaxTotalDiscountAmount') || 0) + (dishOrder.afterTaxTotalDiscountAmount || 0);
-    item.revenueAmount = (_.get(existingItem, 'revenueAmount') || 0) + (dishOrder.revenueAmount || 0);
-    item.paymentAmount = (_.get(existingItem, 'paymentAmount') || 0) + (dishOrder.paymentAmount || 0);
+    // với returnedDishOrders thì không cần merge các trường này
+    if (!isReturnedDishOrders) {
+      item.beforeTaxTotalPrice = (_.get(existingItem, 'beforeTaxTotalPrice') || 0) + (dishOrder.beforeTaxTotalPrice || 0);
+      item.afterTaxTotalPrice = (_.get(existingItem, 'afterTaxTotalPrice') || 0) + (dishOrder.afterTaxTotalPrice || 0);
+      item.beforeTaxTotalDiscountAmount =
+        (_.get(existingItem, 'beforeTaxTotalDiscountAmount') || 0) + (dishOrder.beforeTaxTotalDiscountAmount || 0);
+      item.afterTaxTotalDiscountAmount =
+        (_.get(existingItem, 'afterTaxTotalDiscountAmount') || 0) + (dishOrder.afterTaxTotalDiscountAmount || 0);
+      item.revenueAmount = (_.get(existingItem, 'revenueAmount') || 0) + (dishOrder.revenueAmount || 0);
+      item.paymentAmount = (_.get(existingItem, 'paymentAmount') || 0) + (dishOrder.paymentAmount || 0);
+    }
     dishOrderMap[key] = item;
   }
   return Object.values(dishOrderMap);
@@ -885,6 +888,18 @@ const mergeDishOrdersOfOrders = (orderSessionJson) => {
   return [];
 };
 
+const mergeReturnedDishOrdersOfOrders = (orderSessionJson) => {
+  const orders = _.get(orderSessionJson, 'orders');
+  if (!_.isEmpty(orders)) {
+    let returnedDishOrders = _.flatMap(orders, (o) => o.returnedDishOrders);
+    returnedDishOrders = _.filter(returnedDishOrders, (returnedDishOrder) => {
+      return returnedDishOrder.quantity > 0;
+    });
+    return _mergeDishOrders(returnedDishOrders, true);
+  }
+  return [];
+};
+
 const mergeCartItems = (cartItems) => {
   if (!_.isEmpty(cartItems)) {
     const filterdCartItems = _.filter(cartItems, (cartItem) => {
@@ -931,6 +946,7 @@ module.exports = {
   getOrderSessionById,
   updateOrderSession,
   mergeDishOrdersOfOrders,
+  mergeReturnedDishOrdersOfOrders,
   mergeCartItems,
   getCart,
   getActiveOrderSessionStatus,

@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const { convertOrderForResponse } = require('./order.converter');
 const { formatDateHHMMDDMMYYYY, formatOrderSessionNo } = require('../../utils/common');
-const { mergeDishOrdersOfOrders } = require('../services/orderUtils.service');
+const { mergeDishOrdersOfOrders, mergeReturnedDishOrdersOfOrders } = require('../services/orderUtils.service');
 
 /* eslint-disable no-param-reassign */
 const convertOrderSessionForResponse = (orderSessionJson, shouldMergeDishOrders = true) => {
@@ -14,6 +14,7 @@ const convertOrderSessionForResponse = (orderSessionJson, shouldMergeDishOrders 
   if (!_.isEmpty(orderSessionJson.orders)) {
     if (shouldMergeDishOrders) {
       orderSessionJson.orders[0].dishOrders = mergeDishOrdersOfOrders(orderSessionJson);
+      orderSessionJson.orders[0].returnedDishOrders = mergeReturnedDishOrdersOfOrders(orderSessionJson);
       orderSessionJson.orders = [convertOrderForResponse(orderSessionJson.orders[0])];
     } else {
       orderSessionJson.orders = _.map(orderSessionJson.orders, (order) => convertOrderForResponse(order));
