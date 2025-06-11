@@ -123,7 +123,7 @@ const createOrderRequest = async ({
 }: CreateOrderRequest) => {
   const accessToken = await getAccessTokenLazily();
 
-  const result: { orderSession: OrderSession } = await apiRequest({
+  await apiRequest({
     method: "POST",
     endpoint: `/v1/shops/${shopId}/orders/create-order`,
     token: accessToken,
@@ -134,7 +134,7 @@ const createOrderRequest = async ({
     },
   });
 
-  return result.orderSession;
+  return true;
 };
 
 /**

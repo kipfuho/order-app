@@ -144,12 +144,12 @@ export const orderApiSlice = createApi({
           : [{ type: "OrderSessions" as const, id: "ALL" }],
     }),
 
-    createOrder: builder.mutation<OrderSession, CreateOrderRequest>({
+    createOrder: builder.mutation<boolean, CreateOrderRequest>({
       queryFn: async ({ orderSessionId, shopId, tableId }, api) => {
         try {
           const state = api.getState() as RootState;
 
-          const orderSession = await createOrderRequest({
+          await createOrderRequest({
             shopId,
             dishOrders: Object.values(state.shop.currentOrder),
             orderSessionId,
@@ -158,7 +158,7 @@ export const orderApiSlice = createApi({
 
           api.dispatch(resetCurrentOrder());
 
-          return { data: orderSession };
+          return { data: true };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }

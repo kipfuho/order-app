@@ -1,12 +1,12 @@
 const _ = require('lodash');
 const { getDayOfWeek } = require('../../utils/common');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
-const { getOrderSessionJsonWithLimit } = require('../../order-management/services/orderUtils.service');
+const { getorderSessionDetailWithLimit } = require('../../order-management/services/orderUtils.service');
 const redisClient = require('../../utils/redis');
 
 const getOrderSessionsForRecommendation = async ({ shopId, limit = 10000, timeWindowDays = 30 }) => {
   const cutoffDate = new Date(Date.now() - timeWindowDays * 24 * 60 * 60 * 1000);
-  const sessions = await getOrderSessionJsonWithLimit({ shopId, limit });
+  const sessions = await getorderSessionDetailWithLimit({ shopId, limit });
   return sessions.filter((session) => new Date(session.createdAt) > cutoffDate);
 };
 

@@ -4,34 +4,34 @@ const { formatDateHHMMDDMMYYYY, formatOrderSessionNo } = require('../../utils/co
 const { mergeDishOrdersOfOrders, mergeReturnedDishOrdersOfOrders } = require('../services/orderUtils.service');
 
 /* eslint-disable no-param-reassign */
-const convertOrderSessionForResponse = (orderSessionJson, shouldMergeDishOrders = true) => {
-  orderSessionJson.tableIds = _.map(orderSessionJson.tables, 'id');
-  orderSessionJson.tableName = _.join(orderSessionJson.tableNames, ',');
-  orderSessionJson.billNo = formatOrderSessionNo(orderSessionJson);
-  orderSessionJson.endedAt = orderSessionJson.endedAt ? formatDateHHMMDDMMYYYY(orderSessionJson.endedAt) : 'N/A';
-  orderSessionJson.updatedAt = formatDateHHMMDDMMYYYY(orderSessionJson.updatedAt);
-  orderSessionJson.createdAt = formatDateHHMMDDMMYYYY(orderSessionJson.createdAt);
-  if (!_.isEmpty(orderSessionJson.orders)) {
+const convertOrderSessionForResponse = (orderSessionDetail, shouldMergeDishOrders = true) => {
+  orderSessionDetail.tableIds = _.map(orderSessionDetail.tables, 'id');
+  orderSessionDetail.tableName = _.join(orderSessionDetail.tableNames, ',');
+  orderSessionDetail.billNo = formatOrderSessionNo(orderSessionDetail);
+  orderSessionDetail.endedAt = orderSessionDetail.endedAt ? formatDateHHMMDDMMYYYY(orderSessionDetail.endedAt) : 'N/A';
+  orderSessionDetail.updatedAt = formatDateHHMMDDMMYYYY(orderSessionDetail.updatedAt);
+  orderSessionDetail.createdAt = formatDateHHMMDDMMYYYY(orderSessionDetail.createdAt);
+  if (!_.isEmpty(orderSessionDetail.orders)) {
     if (shouldMergeDishOrders) {
-      orderSessionJson.orders[0].dishOrders = mergeDishOrdersOfOrders(orderSessionJson);
-      orderSessionJson.orders[0].returnedDishOrders = mergeReturnedDishOrdersOfOrders(orderSessionJson);
-      orderSessionJson.orders = [convertOrderForResponse(orderSessionJson.orders[0])];
+      orderSessionDetail.orders[0].dishOrders = mergeDishOrdersOfOrders(orderSessionDetail);
+      orderSessionDetail.orders[0].returnedDishOrders = mergeReturnedDishOrdersOfOrders(orderSessionDetail);
+      orderSessionDetail.orders = [convertOrderForResponse(orderSessionDetail.orders[0])];
     } else {
-      orderSessionJson.orders = _.map(orderSessionJson.orders, (order) => convertOrderForResponse(order));
+      orderSessionDetail.orders = _.map(orderSessionDetail.orders, (order) => convertOrderForResponse(order));
     }
   }
 
-  delete orderSessionJson.shop;
-  delete orderSessionJson.tables;
-  delete orderSessionJson.tableNames;
-  delete orderSessionJson.orderSessionNo;
-  return orderSessionJson;
+  delete orderSessionDetail.shop;
+  delete orderSessionDetail.tables;
+  delete orderSessionDetail.tableNames;
+  delete orderSessionDetail.orderSessionNo;
+  return orderSessionDetail;
 };
 /* eslint-enable no-param-reassign */
 
 /* eslint-disable no-param-reassign */
 const convertOrderSessionHistoryForResponse = (orderSession) => {
-  const orderSessionJson = _.pick(orderSession, [
+  const orderSessionDetail = _.pick(orderSession, [
     'id',
     'tableNames',
     'endedAt',
@@ -42,37 +42,37 @@ const convertOrderSessionHistoryForResponse = (orderSession) => {
     'paymentDetails',
     'status',
   ]);
-  orderSessionJson.tableName = _.join(orderSessionJson.tableNames, ',');
-  orderSessionJson.billNo = formatOrderSessionNo(orderSessionJson);
-  orderSessionJson.endedAt = orderSessionJson.endedAt ? formatDateHHMMDDMMYYYY(orderSessionJson.endedAt) : 'N/A';
-  orderSessionJson.updatedAt = formatDateHHMMDDMMYYYY(orderSessionJson.updatedAt);
-  orderSessionJson.createdAt = formatDateHHMMDDMMYYYY(orderSessionJson.createdAt);
-  orderSessionJson.totalTaxAmount -=
-    orderSessionJson.afterTaxTotalDiscountAmount - orderSessionJson.beforeTaxTotalDiscountAmount;
-  orderSessionJson.paymentDetails = (orderSessionJson.paymentDetails || []).map((paymentDetail) => ({
+  orderSessionDetail.tableName = _.join(orderSessionDetail.tableNames, ',');
+  orderSessionDetail.billNo = formatOrderSessionNo(orderSessionDetail);
+  orderSessionDetail.endedAt = orderSessionDetail.endedAt ? formatDateHHMMDDMMYYYY(orderSessionDetail.endedAt) : 'N/A';
+  orderSessionDetail.updatedAt = formatDateHHMMDDMMYYYY(orderSessionDetail.updatedAt);
+  orderSessionDetail.createdAt = formatDateHHMMDDMMYYYY(orderSessionDetail.createdAt);
+  orderSessionDetail.totalTaxAmount -=
+    orderSessionDetail.afterTaxTotalDiscountAmount - orderSessionDetail.beforeTaxTotalDiscountAmount;
+  orderSessionDetail.paymentDetails = (orderSessionDetail.paymentDetails || []).map((paymentDetail) => ({
     paymentMethod: paymentDetail.paymentMethod,
     paymentAmount: paymentDetail.paymentAmount,
   }));
-  orderSessionJson.taxDetails = (orderSessionJson.taxDetails || []).map((taxDetail) => ({
+  orderSessionDetail.taxDetails = (orderSessionDetail.taxDetails || []).map((taxDetail) => ({
     taxAmount: taxDetail.taxAmount - (taxDetail.afterTaxTotalDiscountAmount - taxDetail.beforeTaxTotalDiscountAmount),
     taxRate: taxDetail.taxRate,
   }));
 
-  delete orderSessionJson.orderSessionNo;
-  delete orderSessionJson.tableNames;
-  delete orderSessionJson.startedByUserId;
-  delete orderSessionJson.paidByUserId;
-  delete orderSessionJson.cancelledByUserId;
-  delete orderSessionJson.customerId;
-  delete orderSessionJson.auditedAt;
-  delete orderSessionJson.totalTaxAmount;
-  return orderSessionJson;
+  delete orderSessionDetail.orderSessionNo;
+  delete orderSessionDetail.tableNames;
+  delete orderSessionDetail.startedByUserId;
+  delete orderSessionDetail.paidByUserId;
+  delete orderSessionDetail.cancelledByUserId;
+  delete orderSessionDetail.customerId;
+  delete orderSessionDetail.auditedAt;
+  delete orderSessionDetail.totalTaxAmount;
+  return orderSessionDetail;
 };
 /* eslint-enable no-param-reassign */
 
 /* eslint-disable no-param-reassign */
 const convertOrderSessionForCartCheckoutHistoryResponse = (orderSession) => {
-  const orderSessionJson = _.pick(orderSession, [
+  const orderSessionDetail = _.pick(orderSession, [
     'id',
     'tableNames',
     'createdAt',
@@ -81,13 +81,13 @@ const convertOrderSessionForCartCheckoutHistoryResponse = (orderSession) => {
     'status',
     'orders',
   ]);
-  orderSessionJson.tableName = _.join(orderSessionJson.tableNames, ',');
-  orderSessionJson.billNo = formatOrderSessionNo(orderSessionJson);
-  orderSessionJson.createdAt = formatDateHHMMDDMMYYYY(orderSessionJson.createdAt);
+  orderSessionDetail.tableName = _.join(orderSessionDetail.tableNames, ',');
+  orderSessionDetail.billNo = formatOrderSessionNo(orderSessionDetail);
+  orderSessionDetail.createdAt = formatDateHHMMDDMMYYYY(orderSessionDetail.createdAt);
 
-  delete orderSessionJson.orderSessionNo;
-  delete orderSessionJson.tableNames;
-  return orderSessionJson;
+  delete orderSessionDetail.orderSessionNo;
+  delete orderSessionDetail.tableNames;
+  return orderSessionDetail;
 };
 /* eslint-enable no-param-reassign */
 

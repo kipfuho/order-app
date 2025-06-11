@@ -89,12 +89,18 @@ const formatDateTimeToISOString = (dateTime) => {
   }
 };
 
-const formatOrderSessionNo = (orderSessionJson) => {
+/**
+ * @param {Object} orderSession
+ * @param {number} orderSession.orderSessionNo
+ * @param {Date} orderSession.createdAt
+ * @returns {string}
+ */
+const formatOrderSessionNo = (orderSession) => {
   try {
-    const orderSessionNo = _.get(orderSessionJson, 'orderSessionNo', 0);
+    const orderSessionNo = _.get(orderSession, 'orderSessionNo', 0);
     const orderSessionNoWithPadding = formatIntegerWithZeroPadding(orderSessionNo, 4);
 
-    let createdAt = _.get(orderSessionJson, 'createdAt');
+    let createdAt = _.get(orderSession, 'createdAt');
     if (createdAt instanceof Date) {
       createdAt = formatDateTimeToISOString(createdAt);
     }

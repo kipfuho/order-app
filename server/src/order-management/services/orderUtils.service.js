@@ -378,80 +378,11 @@ const _setMetatadaForDishOrder = ({ dishOrder, dishById, unitById, orderSessionT
   };
 };
 
-const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, customerId, isNewOrderSession }) => {
-  try {
-    const shop = await getShopFromCache({ shopId });
-    const dishes = await getDishesFromCache({ shopId });
-    const units = await getUnitsFromCache({ shopId });
-    const unitById = _.keyBy(units, 'id');
-    const dishById = _.keyBy(dishes, 'id');
-    const orderSessionTaxRate = _.get(orderSession, 'taxRate') || _.get(shop, 'taxRate', 0);
-    const orderDishOrders = _.map(
-      _.filter(dishOrders, (dishOrder) => dishOrder.quantity > 0),
-      (dishOrder, index) => {
-        const _dishOrder = _setMetatadaForDishOrder({
-          dishById,
-          dishOrder,
-          unitById,
-          orderSessionTaxRate,
-          calculateTaxDirectly: shop.calculateTaxDirectly,
-        });
-        _dishOrder.dishOrderNo = index + 1;
-        return _dishOrder;
-      }
-    );
-    const orderNo = await getOrderNoForNewOrder({ shopId });
-    const order = await Order.create({
-      data: {
-        tableId,
-        shopId,
-        orderSessionId: _.get(orderSession, 'id'),
-        orderNo,
-        dishOrders: {
-          createMany: {
-            data: orderDishOrders,
-          },
-        },
-        customerId,
-        totalQuantity: _.sumBy(orderDishOrders, 'quantity') || 0,
-        totalBeforeTaxAmount: _.sumBy(orderDishOrders, 'beforeTaxTotalPrice') || 0,
-        totalAfterTaxAmount: _.sumBy(orderDishOrders, 'afterTaxTotalPrice') || 0,
-        beforeTaxTotalDiscountAmount: _.sumBy(orderDishOrders, 'beforeTaxTotalDiscountAmount') || 0,
-        afterTaxTotalDiscountAmount: _.sumBy(orderDishOrders, 'afterTaxTotalDiscountAmount') || 0,
-        revenueAmount: _.sumBy(orderDishOrders, 'revenueAmount') || 0,
-        paymentAmount: _.sumBy(orderDishOrders, 'paymentAmount') || 0,
-      },
-      select: {
-        id: true,
-        shopId: true,
-        tableId: true,
-        customerId: true,
-        dishOrders: true,
-      },
-    });
-    if (orderSession) {
-      await notifyNewOrder({ order, orderSession, action: EventActionType.CREATE });
-    }
-
-    return order;
-  } catch (err) {
-    // xoá order session rỗng được tạo ra
-    if (isNewOrderSession) {
-      await OrderSession.delete({
-        where: {
-          id: orderSession.id,
-        },
-      });
-    }
-
-    throw err;
-  }
-};
-
 /**
- * Get order session json with populated datas
+ * Get order session detail from database
+ * And a copy with populated datas from redis
  */
-const _getOrderSessionJson = async ({ orderSessionId, shopId }) => {
+const _getOrderSessionDetail = async ({ orderSessionId, shopId }) => {
   const orderSession = await OrderSession.findUnique({
     where: {
       id: orderSessionId,
@@ -475,7 +406,7 @@ const _getOrderSessionJson = async ({ orderSessionId, shopId }) => {
   throwBadRequest(!orderSession, 'orderSession.notFound');
   throwBadRequest(shopId && orderSession.shopId !== shopId, 'orderSession.notFound');
 
-  const orderSessionJson = _.cloneDeep(orderSession);
+  const orderSessionDetail = _.cloneDeep(orderSession);
 
   // eslint-disable-next-line no-param-reassign
   shopId = orderSession.shopId;
@@ -493,15 +424,15 @@ const _getOrderSessionJson = async ({ orderSessionId, shopId }) => {
       }
     });
   });
-  orderSessionJson.shop = shop;
-  orderSessionJson.tables = _.map(orderSessionJson.tableIds, (tableId) => tableById[tableId]);
+  orderSessionDetail.shop = shop;
+  orderSessionDetail.tables = _.map(orderSessionDetail.tableIds, (tableId) => tableById[tableId]);
   return {
     orderSession,
-    orderSessionJson,
+    orderSessionDetail,
   };
 };
 
-const getOrderSessionJsonWithLimit = async ({ shopId, limit }) => {
+const getorderSessionDetailWithLimit = async ({ shopId, limit }) => {
   const orderSessions = await OrderSession.findMany({
     where: {
       shopId,
@@ -536,9 +467,9 @@ const getOrderSessionJsonWithLimit = async ({ shopId, limit }) => {
   const dishes = await getDishesFromCache({ shopId });
   const dishById = _.keyBy(dishes, 'id');
 
-  const orderSessionJsons = _.map(orderSessions, (orderSession) => {
-    const orderSessionJson = _.cloneDeep(orderSession);
-    const orderJsons = _.map(orderMapByOrderSessionId[orderSessionJson.id], (order) => {
+  const orderSessionDetails = _.map(orderSessions, (orderSession) => {
+    const orderSessionDetail = _.cloneDeep(orderSession);
+    const orderJsons = _.map(orderMapByOrderSessionId[orderSessionDetail.id], (order) => {
       const orderJson = _.cloneDeep(order);
       orderJson.dishOrders.forEach((dishOrder) => {
         if (dishOrder.dish) {
@@ -548,17 +479,17 @@ const getOrderSessionJsonWithLimit = async ({ shopId, limit }) => {
       });
       return orderJson;
     });
-    orderSessionJson.shop = shop;
-    orderSessionJson.orders = orderJsons;
-    orderSessionJson.tables = _.map(orderSessionJson.tableIds, (tableId) => tableById[tableId]);
-    return orderSessionJson;
+    orderSessionDetail.shop = shop;
+    orderSessionDetail.orders = orderJsons;
+    orderSessionDetail.tables = _.map(orderSessionDetail.tableIds, (tableId) => tableById[tableId]);
+    return orderSessionDetail;
   });
 
-  return orderSessionJsons;
+  return orderSessionDetails;
 };
 
-const calculateTax = async ({ orderSessionJson, dishOrders, calculateTaxDirectly = false }) => {
-  const shopTaxRate = _.get(orderSessionJson, 'taxRate', 0);
+const calculateTax = async ({ orderSessionDetail, dishOrders, calculateTaxDirectly = false }) => {
+  const shopTaxRate = _.get(orderSessionDetail, 'taxRate', 0);
   if (shopTaxRate < 0.001) {
     return {
       totalTaxAmount: 0,
@@ -571,7 +502,7 @@ const calculateTax = async ({ orderSessionJson, dishOrders, calculateTaxDirectly
   _.forEach(dishOrders, (dishOrder) => {
     const dishTaxRate = dishOrder.taxRate || shopTaxRate;
 
-    if (orderSessionJson.shouldRecalculateTax) {
+    if (orderSessionDetail.shouldRecalculateTax) {
       const { beforeTaxPrice, beforeTaxTotalPrice, afterTaxPrice, afterTaxTotalPrice } = _getPaymentDetailForDishOrder({
         isTaxIncludedPrice: dishOrder.isTaxIncludedPrice,
         price: dishOrder.price,
@@ -737,14 +668,14 @@ const _calculateDiscountByDiscountType = {
   [OrderSessionDiscountType.PRODUCT]: _calculateDiscountOnProduct,
 };
 
-const calculateDiscount = async ({ orderSessionJson, pretaxPaymentAmount, totalTaxAmount, calculateTaxDirectly }) => {
-  const discounts = _.get(orderSessionJson, 'discounts', []);
+const calculateDiscount = async ({ orderSessionDetail, pretaxPaymentAmount, totalTaxAmount, calculateTaxDirectly }) => {
+  const discounts = _.get(orderSessionDetail, 'discounts', []);
 
-  if (_.isEmpty(discounts) || orderSessionJson.endedAt || orderSessionJson.auditedAt) {
+  if (_.isEmpty(discounts)) {
     return {
-      beforeTaxTotalDiscountAmount: orderSessionJson.beforeTaxTotalDiscountAmount || 0,
-      afterTaxTotalDiscountAmount: orderSessionJson.afterTaxTotalDiscountAmount || 0,
-      taxDetailsWithDiscountInfo: orderSessionJson.taxDetails,
+      beforeTaxTotalDiscountAmount: 0,
+      afterTaxTotalDiscountAmount: 0,
+      taxDetailsWithDiscountInfo: orderSessionDetail.taxDetails,
     };
   }
 
@@ -756,15 +687,15 @@ const calculateDiscount = async ({ orderSessionJson, pretaxPaymentAmount, totalT
       discount,
       pretaxPaymentAmount,
       totalTaxAmount,
-      taxDetails: orderSessionJson.taxDetails || [],
-      orderSessionTaxRate: orderSessionJson.taxRate || 0,
+      taxDetails: orderSessionDetail.taxDetails || [],
+      orderSessionTaxRate: orderSessionDetail.taxRate || 0,
       calculateTaxDirectly,
       discountDetailByTax,
     });
     beforeTaxTotalDiscountAmount += beforeTaxAmount;
     afterTaxTotalDiscountAmount += afterTaxAmount;
   });
-  const taxDetailsWithDiscountInfo = orderSessionJson.taxDetails || [];
+  const taxDetailsWithDiscountInfo = orderSessionDetail.taxDetails || [];
   if (taxDetailsWithDiscountInfo.length === 0) {
     taxDetailsWithDiscountInfo.push({ taxRate: 0, taxAmount: 0 });
   }
@@ -782,10 +713,10 @@ const calculateDiscount = async ({ orderSessionJson, pretaxPaymentAmount, totalT
  * @param {Object} params
  * @param {number} params.beforeTaxTotalDiscountAmount
  * @param {number} params.afterTaxTotalDiscountAmount
- * @param {Object} params.orderSessionJson
+ * @param {Object} params.orderSessionDetail
  */
-const normalizeDiscountAmount = ({ orderSessionJson, beforeTaxTotalDiscountAmount, afterTaxTotalDiscountAmount }) => {
-  const { pretaxPaymentAmount, totalTaxAmount } = orderSessionJson;
+const normalizeDiscountAmount = ({ orderSessionDetail, beforeTaxTotalDiscountAmount, afterTaxTotalDiscountAmount }) => {
+  const { pretaxPaymentAmount, totalTaxAmount } = orderSessionDetail;
   if (
     beforeTaxTotalDiscountAmount === 0 ||
     (beforeTaxTotalDiscountAmount <= pretaxPaymentAmount &&
@@ -794,7 +725,7 @@ const normalizeDiscountAmount = ({ orderSessionJson, beforeTaxTotalDiscountAmoun
     return;
   }
 
-  const taxDetailsWithDiscountInfo = orderSessionJson.taxDetails;
+  const taxDetailsWithDiscountInfo = orderSessionDetail.taxDetails;
   const normalizedBeforeTax = divideToNPart({
     initialSum: pretaxPaymentAmount,
     parts: taxDetailsWithDiscountInfo.map((taxDetail) => taxDetail.beforeTaxTotalDiscountAmount),
@@ -811,64 +742,143 @@ const normalizeDiscountAmount = ({ orderSessionJson, beforeTaxTotalDiscountAmoun
   });
 };
 
-const getOrderSessionById = async (orderSessionId, shopId) => {
-  const { orderSession, orderSessionJson } = await _getOrderSessionJson({ orderSessionId, shopId });
-  const { shop } = orderSessionJson;
+const calculateOrderSessionAndReturn = async (orderSessionId, shopId) => {
+  const { orderSession, orderSessionDetail } = await _getOrderSessionDetail({ orderSessionId, shopId });
+  const shouldRecalculate = (orderSession.auditedAt || 0) > orderSession.updatedAt;
+  if (!shouldRecalculate) {
+    return orderSessionDetail;
+  }
+
+  const { shop } = orderSessionDetail;
   const { calculateTaxDirectly } = shop;
-  const dishOrders = _.flatMap(orderSessionJson.orders, 'dishOrders');
+  const dishOrders = _.flatMap(orderSessionDetail.orders, 'dishOrders');
 
   const pretaxPaymentAmount = _.sumBy(dishOrders, (dishOrder) => dishOrder.price * dishOrder.quantity) || 0;
-  orderSessionJson.pretaxPaymentAmount = pretaxPaymentAmount;
+  orderSessionDetail.pretaxPaymentAmount = pretaxPaymentAmount;
   const { totalTaxAmount, taxDetails } = await calculateTax({
-    orderSessionJson,
+    orderSessionDetail,
     dishOrders,
     calculateTaxDirectly,
   });
-  orderSessionJson.totalTaxAmount = totalTaxAmount;
-  orderSessionJson.taxDetails = taxDetails;
+  orderSessionDetail.totalTaxAmount = totalTaxAmount;
+  orderSessionDetail.taxDetails = taxDetails;
 
   const { beforeTaxTotalDiscountAmount, afterTaxTotalDiscountAmount, taxDetailsWithDiscountInfo } = await calculateDiscount({
-    orderSessionJson,
+    orderSessionDetail,
     pretaxPaymentAmount,
     totalTaxAmount,
     calculateTaxDirectly,
   });
 
-  orderSessionJson.taxDetails = taxDetailsWithDiscountInfo;
-  orderSessionJson.beforeTaxTotalDiscountAmount = Math.min(beforeTaxTotalDiscountAmount, pretaxPaymentAmount);
-  orderSessionJson.afterTaxTotalDiscountAmount = Math.min(afterTaxTotalDiscountAmount, pretaxPaymentAmount + totalTaxAmount);
-  orderSessionJson.revenueAmount = pretaxPaymentAmount - orderSessionJson.beforeTaxTotalDiscountAmount;
-  orderSessionJson.paymentAmount = pretaxPaymentAmount + totalTaxAmount - orderSessionJson.afterTaxTotalDiscountAmount;
-  normalizeDiscountAmount({ orderSessionJson, beforeTaxTotalDiscountAmount, pretaxPaymentAmount });
+  orderSessionDetail.taxDetails = taxDetailsWithDiscountInfo;
+  orderSessionDetail.beforeTaxTotalDiscountAmount = Math.min(beforeTaxTotalDiscountAmount, pretaxPaymentAmount);
+  orderSessionDetail.afterTaxTotalDiscountAmount = Math.min(
+    afterTaxTotalDiscountAmount,
+    pretaxPaymentAmount + totalTaxAmount
+  );
+  orderSessionDetail.revenueAmount = pretaxPaymentAmount - orderSessionDetail.beforeTaxTotalDiscountAmount;
+  orderSessionDetail.paymentAmount = pretaxPaymentAmount + totalTaxAmount - orderSessionDetail.afterTaxTotalDiscountAmount;
+  normalizeDiscountAmount({ orderSessionDetail, beforeTaxTotalDiscountAmount, pretaxPaymentAmount });
 
   // update order if not audited
   if (
     !orderSession.auditedAt &&
-    (orderSession.paymentAmount !== orderSessionJson.paymentAmount ||
-      orderSession.totalTaxAmount !== orderSessionJson.totalTaxAmount ||
-      orderSession.beforeTaxTotalDiscountAmount !== orderSessionJson.beforeTaxTotalDiscountAmount ||
-      orderSession.afterTaxTotalDiscountAmount !== orderSessionJson.afterTaxTotalDiscountAmount)
+    (orderSession.paymentAmount !== orderSessionDetail.paymentAmount ||
+      orderSession.totalTaxAmount !== orderSessionDetail.totalTaxAmount ||
+      orderSession.beforeTaxTotalDiscountAmount !== orderSessionDetail.beforeTaxTotalDiscountAmount ||
+      orderSession.afterTaxTotalDiscountAmount !== orderSessionDetail.afterTaxTotalDiscountAmount)
   ) {
     await OrderSession.update({
       data: {
         shouldRecalculateTax: false,
-        pretaxPaymentAmount: orderSessionJson.pretaxPaymentAmount,
-        revenueAmount: orderSessionJson.revenueAmount,
-        paymentAmount: orderSessionJson.paymentAmount,
-        beforeTaxTotalDiscountAmount: orderSessionJson.beforeTaxTotalDiscountAmount,
-        afterTaxTotalDiscountAmount: orderSessionJson.afterTaxTotalDiscountAmount,
-        totalTaxAmount: orderSessionJson.totalTaxAmount,
+        pretaxPaymentAmount: orderSessionDetail.pretaxPaymentAmount,
+        revenueAmount: orderSessionDetail.revenueAmount,
+        paymentAmount: orderSessionDetail.paymentAmount,
+        beforeTaxTotalDiscountAmount: orderSessionDetail.beforeTaxTotalDiscountAmount,
+        afterTaxTotalDiscountAmount: orderSessionDetail.afterTaxTotalDiscountAmount,
+        totalTaxAmount: orderSessionDetail.totalTaxAmount,
         taxDetails: {
           deleteMany: {},
           createMany: {
-            data: orderSessionJson.taxDetails,
+            data: orderSessionDetail.taxDetails,
           },
         },
       },
       where: { id: orderSessionId },
     });
   }
-  return orderSessionJson;
+  return orderSessionDetail;
+};
+
+const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, customerId, isNewOrderSession }) => {
+  try {
+    const shop = await getShopFromCache({ shopId });
+    const dishes = await getDishesFromCache({ shopId });
+    const units = await getUnitsFromCache({ shopId });
+    const unitById = _.keyBy(units, 'id');
+    const dishById = _.keyBy(dishes, 'id');
+    const orderSessionTaxRate = _.get(orderSession, 'taxRate') || _.get(shop, 'taxRate', 0);
+    const orderDishOrders = _.map(
+      _.filter(dishOrders, (dishOrder) => dishOrder.quantity > 0),
+      (dishOrder, index) => {
+        const _dishOrder = _setMetatadaForDishOrder({
+          dishById,
+          dishOrder,
+          unitById,
+          orderSessionTaxRate,
+          calculateTaxDirectly: shop.calculateTaxDirectly,
+        });
+        _dishOrder.dishOrderNo = index + 1;
+        return _dishOrder;
+      }
+    );
+    const orderNo = await getOrderNoForNewOrder({ shopId });
+    const order = await Order.create({
+      data: {
+        tableId,
+        shopId,
+        orderSessionId: _.get(orderSession, 'id'),
+        orderNo,
+        dishOrders: {
+          createMany: {
+            data: orderDishOrders,
+          },
+        },
+        customerId,
+        totalQuantity: _.sumBy(orderDishOrders, 'quantity') || 0,
+        totalBeforeTaxAmount: _.sumBy(orderDishOrders, 'beforeTaxTotalPrice') || 0,
+        totalAfterTaxAmount: _.sumBy(orderDishOrders, 'afterTaxTotalPrice') || 0,
+        beforeTaxTotalDiscountAmount: _.sumBy(orderDishOrders, 'beforeTaxTotalDiscountAmount') || 0,
+        afterTaxTotalDiscountAmount: _.sumBy(orderDishOrders, 'afterTaxTotalDiscountAmount') || 0,
+        revenueAmount: _.sumBy(orderDishOrders, 'revenueAmount') || 0,
+        paymentAmount: _.sumBy(orderDishOrders, 'paymentAmount') || 0,
+      },
+      select: {
+        id: true,
+        shopId: true,
+        tableId: true,
+        customerId: true,
+        dishOrders: true,
+      },
+    });
+    if (orderSession) {
+      await calculateOrderSessionAndReturn(orderSession.id);
+      await notifyNewOrder({ order, orderSession, action: EventActionType.CREATE });
+    }
+
+    return order;
+  } catch (err) {
+    // xoá order session rỗng được tạo ra
+    if (isNewOrderSession) {
+      await OrderSession.delete({
+        where: {
+          id: orderSession.id,
+        },
+      });
+    }
+
+    throw err;
+  }
 };
 
 const updateOrderSession = async ({ orderSessionId, shopId, updateBody }) => {
@@ -880,11 +890,11 @@ const updateOrderSession = async ({ orderSessionId, shopId, updateBody }) => {
     },
   });
 
-  return getOrderSessionById(orderSessionId);
+  return calculateOrderSessionAndReturn(orderSessionId);
 };
 
-const mergeDishOrdersOfOrders = (orderSessionJson) => {
-  const orders = _.get(orderSessionJson, 'orders');
+const mergeDishOrdersOfOrders = (orderSessionDetail) => {
+  const orders = _.get(orderSessionDetail, 'orders');
   if (!_.isEmpty(orders)) {
     let dishOrders = _.flatMap(orders, (o) => o.dishOrders);
     dishOrders = _.filter(dishOrders, (dishOrder) => {
@@ -895,8 +905,8 @@ const mergeDishOrdersOfOrders = (orderSessionJson) => {
   return [];
 };
 
-const mergeReturnedDishOrdersOfOrders = (orderSessionJson) => {
-  const orders = _.get(orderSessionJson, 'orders');
+const mergeReturnedDishOrdersOfOrders = (orderSessionDetail) => {
+  const orders = _.get(orderSessionDetail, 'orders');
   if (!_.isEmpty(orders)) {
     let returnedDishOrders = _.flatMap(orders, (o) => o.returnedDishOrders);
     returnedDishOrders = _.filter(returnedDishOrders, (returnedDishOrder) => {
@@ -950,12 +960,12 @@ const getCart = async ({ shopId, customerId }) => {
 module.exports = {
   createNewOrder,
   getOrCreateOrderSession,
-  getOrderSessionById,
+  calculateOrderSessionAndReturn,
   updateOrderSession,
   mergeDishOrdersOfOrders,
   mergeReturnedDishOrdersOfOrders,
   mergeCartItems,
   getCart,
   getActiveOrderSessionStatus,
-  getOrderSessionJsonWithLimit,
+  getorderSessionDetailWithLimit,
 };

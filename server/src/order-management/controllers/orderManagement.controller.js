@@ -13,9 +13,8 @@ const { convertCartForResponse } = require('../converters/cart.converter');
 const createOrder = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const requestBody = req.body;
-  const orderSessionJson = await orderManagementService.createOrder({ shopId, requestBody });
-  const orderSessionResponse = convertOrderSessionForResponse(orderSessionJson);
-  res.status(httpStatus.OK).send({ message: 'OK', orderSession: orderSessionResponse });
+  await orderManagementService.createOrder({ shopId, requestBody });
+  res.status(httpStatus.OK).send({ message: 'OK' });
 });
 
 const changeDishQuantity = catchAsync(async (req, res) => {
@@ -41,9 +40,9 @@ const getTableForOrder = catchAsync(async (req, res) => {
 const getTableActiveOrderSessions = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const { tableId } = req.body;
-  const orderSessionJsons = await orderManagementService.getTableActiveOrderSessions({ shopId, tableId });
-  const orderSessionResponses = _.map(orderSessionJsons, (orderSessionJson) =>
-    convertOrderSessionForResponse(orderSessionJson, false)
+  const orderSessionDetails = await orderManagementService.getTableActiveOrderSessions({ shopId, tableId });
+  const orderSessionResponses = _.map(orderSessionDetails, (orderSessionDetail) =>
+    convertOrderSessionForResponse(orderSessionDetail, false)
   );
   res.status(httpStatus.OK).send({ message: 'OK', orderSessions: orderSessionResponses });
 });
@@ -51,8 +50,8 @@ const getTableActiveOrderSessions = catchAsync(async (req, res) => {
 const getOrderSessionDetail = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const { orderSessionId } = req.body;
-  const orderSessionJson = await orderManagementService.getOrderSessionDetail({ shopId, orderSessionId });
-  const orderSessionResponse = convertOrderSessionForResponse(orderSessionJson);
+  const orderSessionDetail = await orderManagementService.getOrderSessionDetail({ shopId, orderSessionId });
+  const orderSessionResponse = convertOrderSessionForResponse(orderSessionDetail);
   res.status(httpStatus.OK).send({ message: 'OK', orderSession: orderSessionResponse });
 });
 

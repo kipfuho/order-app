@@ -1,10 +1,10 @@
 const { ProductCode, VnpLocale, dateFormat } = require('vnpay');
-const { getOrderSessionById } = require('../../order-management/services/orderUtils.service');
+const { calculateOrderSessionAndReturn } = require('../../order-management/services/orderUtils.service');
 const { formatOrderSessionNo } = require('../../utils/common');
 const { vnpay, vnpayConfig } = require('../../config/vnpay.config');
 
 const getPaymentVnpayUrl = async ({ orderSessionId, ipAddress }) => {
-  const orderSession = await getOrderSessionById(orderSessionId);
+  const orderSession = await calculateOrderSessionAndReturn(orderSessionId);
 
   const createDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
 

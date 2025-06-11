@@ -3,7 +3,7 @@ const logger = require('../config/logger');
 const { KitchenLog, S3Log, Order } = require('../models');
 const { JobTypes } = require('./constant');
 const redisClient = require('../utils/redis');
-const { getOrderSessionById } = require('../order-management/services/orderUtils.service');
+const { calculateOrderSessionAndReturn } = require('../order-management/services/orderUtils.service');
 const config = require('../config/config');
 const { bulkUpdate, PostgreSQLTable } = require('../utils/prisma');
 const { OrderSessionStatus } = require('../utils/constant');
@@ -39,7 +39,7 @@ const updateFullOrderSession = async ({ orderSessionId }) => {
     );
   }
   try {
-    const orderSession = await getOrderSessionById(orderSessionId);
+    const orderSession = await calculateOrderSessionAndReturn(orderSessionId);
     const discountPercent = Math.min(orderSession.beforeTaxTotalDiscountAmount / orderSession.pretaxPaymentAmount, 1);
 
     if (discountPercent < 0.001) {
