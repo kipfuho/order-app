@@ -1,15 +1,25 @@
+import _ from "lodash";
 import { IconButton, Surface, Text } from "react-native-paper";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
 import { RootState } from "@stores/store";
 import { useTranslation } from "react-i18next";
-import { Shop } from "@stores/state.interface";
+import {
+  OrderCartCheckoutHistory,
+  OrderSessionCartCheckoutHistory,
+  Shop,
+} from "@stores/state.interface";
 import { LoaderBasic } from "../Loader";
-import { useGetCheckoutCartHistoryQuery } from "@stores/apiSlices/cartApi.slice";
-import VerticalDivider from "../VerticalDivider";
-import { convertPaymentAmount } from "@constants/utils";
+import {
+  useGetCheckoutCartHistoryQuery,
+  useGetUnconfirmedCheckoutCartHistoryQuery,
+} from "@stores/apiSlices/cartApi.slice";
 import { styles } from "@/constants/styles";
+import CartCheckoutHistoryCard from "./CartCheckoutHistoryCard";
+import { useInfiniteScrollingQuery } from "@/hooks/useInfiniteScrolling";
+import { LegendList } from "@legendapp/list";
+import UnconfirmedCartCheckoutHistoryCard from "./UnconfirmedCartCheckoutHistoryCard";
 
 export default function CartCheckoutHistory({
   setVisible,
@@ -17,14 +27,75 @@ export default function CartCheckoutHistory({
   setVisible: Dispatch<SetStateAction<boolean>>;
 }) {
   const { t } = useTranslation();
-
   const { shop } = useSelector((state: RootState) => state.customer) as {
     shop: Shop;
   };
-  const { data: histories = [], isLoading: historyLoading } =
-    useGetCheckoutCartHistoryQuery(shop.id);
 
-  if (historyLoading) {
+  const {
+    data: unconfirmedHistories = [],
+    fetchNextPage: unconfirmedHistoriesFetchNextPage,
+    hasNextPage: unconfirmedHistoriesHasNextPage,
+    isFetchingNextPage: unconfirmedHistoriesIsFetchingNextPage,
+    isLoading: unconfirmedHistoryLoading,
+  } = useInfiniteScrollingQuery(
+    shop.id,
+    useGetUnconfirmedCheckoutCartHistoryQuery,
+  );
+
+  const {
+    data: confirmedHistories = [],
+    fetchNextPage: confirmedHistoriesFetchNextPage,
+    hasNextPage: confirmedHistoriesHasNextPage,
+    isFetchingNextPage: confirmedHistoriesIsFetchingNextPage,
+    isLoading: confirmedHistoriesLoading,
+  } = useInfiniteScrollingQuery(shop.id, useGetCheckoutCartHistoryQuery);
+
+  const handleEndReached = useCallback(() => {
+    if (
+      unconfirmedHistoriesHasNextPage &&
+      !unconfirmedHistoriesIsFetchingNextPage &&
+      unconfirmedHistoriesFetchNextPage
+    ) {
+      unconfirmedHistoriesFetchNextPage();
+    }
+
+    if (
+      !unconfirmedHistoriesHasNextPage &&
+      confirmedHistoriesHasNextPage &&
+      !confirmedHistoriesIsFetchingNextPage &&
+      confirmedHistoriesFetchNextPage
+    ) {
+      confirmedHistoriesFetchNextPage();
+    }
+  }, [
+    confirmedHistoriesFetchNextPage,
+    confirmedHistoriesHasNextPage,
+    confirmedHistoriesIsFetchingNextPage,
+    unconfirmedHistoriesFetchNextPage,
+    unconfirmedHistoriesHasNextPage,
+    unconfirmedHistoriesIsFetchingNextPage,
+  ]);
+
+  const renderItem = useCallback(
+    ({
+      item,
+    }: {
+      item: OrderCartCheckoutHistory | OrderSessionCartCheckoutHistory;
+    }) => {
+      // Order Session
+      if (!_.isEmpty(_.get(item, "orders"))) {
+        const orderSession = item as OrderSessionCartCheckoutHistory;
+        return <CartCheckoutHistoryCard orderSession={orderSession} />;
+      }
+
+      // Order
+      const order = item as OrderCartCheckoutHistory;
+      return <UnconfirmedCartCheckoutHistoryCard order={order} />;
+    },
+    [],
+  );
+
+  if (unconfirmedHistoryLoading || confirmedHistoriesLoading) {
     return <LoaderBasic />;
   }
 
@@ -44,33 +115,17 @@ export default function CartCheckoutHistory({
           </Text>
         </View>
         <View style={styles.baseContainer}>
-          <ScrollView
-            style={{ marginTop: 20 }}
-            showsVerticalScrollIndicator={false}
-          >
-            {histories.map((history) => (
-              <Surface key={history.id}>{history.id}</Surface>
-            ))}
-          </ScrollView>
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 3,
-              justifyContent: "center",
-              alignItems: "center",
-              paddingVertical: 4,
-            }}
-          >
-            <Text
-              variant="titleMedium"
-              style={{ fontWeight: "bold", marginRight: 8 }}
-            >
-              {t("total")}
-            </Text>
-            <Text variant="titleMedium">{`${0} ${t("dish_item")}`}</Text>
-            <VerticalDivider />
-            <Text variant="titleMedium">{convertPaymentAmount(0)}</Text>
-          </View>
+          <LegendList
+            data={[...unconfirmedHistories, ...confirmedHistories]}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            estimatedItemSize={150}
+            initialContainerPoolRatio={1.5}
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.5}
+            contentContainerStyle={{ padding: 10 }}
+            showsHorizontalScrollIndicator={false}
+          />
         </View>
       </Surface>
     </>

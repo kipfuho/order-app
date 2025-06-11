@@ -370,7 +370,6 @@ const cancelPaidStatus = async ({ orderSessionId, shopId }) => {
 
   await notifyCancelPaidStatusOrderSession({
     orderSession: updatedOrderSession,
-    action: EventActionType.CANCEL,
   });
   await registerJob({
     type: JobTypes.CANCEL_ORDER_PAID_STATUS,
@@ -755,19 +754,86 @@ const getTableActiveOrderSessions = async ({ shopId, tableId }) => {
   return activeOrderSessionJsons;
 };
 
-const getCheckoutCartHistory = async ({ customerId, shopId }) => {
-  // need optimization
-  const orderHistories = await Order.findMany({
+const getCheckoutCartHistory = async ({ customerId, shopId, cursor, limit = 20 }) => {
+  const orderSessions = await OrderSession.findMany({
     where: {
       customerId,
       shopId,
     },
-    include: {
-      dishOrders: 1,
+    orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+    take: limit + 1,
+    ...(cursor && {
+      cursor: {
+        id: cursor,
+      },
+    }),
+    select: {
+      id: true,
+      orderSessionNo: true,
+      createdAt: true,
+      status: true,
+      tableNames: true,
+      orders: {
+        select: {
+          id: true,
+          customerId: true,
+          dishOrders: {
+            select: {
+              dishId: true,
+              name: true,
+              quantity: true,
+              note: true,
+            },
+          },
+        },
+      },
+      paymentAmount: true,
     },
   });
 
-  return orderHistories;
+  const hasNextPage = orderSessions.length > limit;
+  const items = hasNextPage ? orderSessions.slice(0, -1) : orderSessions;
+  return {
+    data: items,
+    nextCursor: hasNextPage ? orderSessions[orderSessions.length - 1].id : null,
+  };
+};
+
+const getUnconfirmedCheckoutCartHistory = async ({ customerId, shopId, cursor, limit = 20 }) => {
+  const orders = await Order.findMany({
+    where: {
+      customerId,
+      shopId,
+      orderSessionId: null,
+    },
+    orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+    take: limit + 1,
+    ...(cursor && {
+      cursor: {
+        id: cursor,
+      },
+    }),
+    select: {
+      id: true,
+      createdAt: true,
+      dishOrders: {
+        select: {
+          dishId: true,
+          name: true,
+          quantity: true,
+          note: true,
+        },
+      },
+      paymentAmount: true,
+    },
+  });
+
+  const hasNextPage = orders.length > limit;
+  const items = hasNextPage ? orders.slice(0, -1) : orders;
+  return {
+    data: items,
+    nextCursor: hasNextPage ? orders[orders.length - 1].id : null,
+  };
 };
 
 const getOrderNeedApproval = async ({ shopId }) => {
@@ -889,6 +955,7 @@ module.exports = {
   discountOrderSession,
   removeDiscountFromOrderSession,
   getCheckoutCartHistory,
+  getUnconfirmedCheckoutCartHistory,
   getOrderNeedApproval,
   updateUnconfirmedOrder,
   cancelUnconfirmedOrder,

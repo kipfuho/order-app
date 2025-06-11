@@ -92,10 +92,10 @@ export default function OrderManagementOrderPage() {
   };
 
   useEffect(() => {
-    if (_.isEmpty(tablesForOrder)) return;
+    if (_.isEmpty(tablesForOrder) || _.isEmpty(tablePositions)) return;
 
     setFilteredTables(tablesGroupByPosition);
-  }, [tablesForOrder, tablesGroupByPosition]);
+  }, [tablesForOrder, tablePositions, tablesGroupByPosition]);
 
   if (tableForOrderLoading || tablePositionLoading || tableLoading) {
     return <LoaderBasic />;

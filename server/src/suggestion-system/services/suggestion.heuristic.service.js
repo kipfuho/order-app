@@ -1,12 +1,8 @@
 const _ = require('lodash');
-const natural = require('natural');
 const { getDayOfWeek } = require('../../utils/common');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const { getOrderSessionJsonWithLimit } = require('../../order-management/services/orderUtils.service');
 const redisClient = require('../../utils/redis');
-
-const tokenizer = new natural.WordTokenizer();
-const stopwords = new Set(['the', 'and', 'or', 'is', 'a']);
 
 const getOrderSessionsForRecommendation = async ({ shopId, limit = 10000, timeWindowDays = 30 }) => {
   const cutoffDate = new Date(Date.now() - timeWindowDays * 24 * 60 * 60 * 1000);
@@ -27,28 +23,34 @@ const getPopularDishes = ({ orderSessions, dishById }) => {
 
   return Object.entries(dishCount)
     .sort((a, b) => b[1] - a[1])
-    .map((id) => dishById[id]);
+    .map(([id]) => dishById[id]);
 };
 
-const computeTFIDF = (docs) => {
-  const preprocessedDocs = docs.map((doc) =>
-    tokenizer
-      .tokenize(doc.toLowerCase())
-      .filter((word) => !stopwords.has(word))
-      .join(' ')
-  );
-  const words = new Set(preprocessedDocs.flatMap((doc) => doc.split(' ')));
-  const wordList = Array.from(words);
-  const termFrequencies = preprocessedDocs.map((doc) => {
-    const wordsInDoc = doc.split(' ');
-    return wordList.map((word) => wordsInDoc.filter((w) => w === word).length / wordsInDoc.length);
+const computeTFIDF = (tagDocs) => {
+  // Get the unique set of all tags
+  const tagSet = new Set(tagDocs.flat());
+  const tagList = Array.from(tagSet);
+
+  // Compute term frequency (TF)
+  const termFrequencies = tagDocs.map((tags) => {
+    return tagList.map((tag) => {
+      const count = tags.filter((t) => t === tag).length;
+      return count / tags.length;
+    });
   });
 
-  const documentFrequencies = wordList.map(
-    (word) => preprocessedDocs.filter((doc) => doc.includes(word)).length / preprocessedDocs.length
+  // Compute document frequency (DF) and inverse document frequency (IDF)
+  const documentFrequencies = tagList.map((tag) => {
+    const docCount = tagDocs.filter((tags) => tags.includes(tag)).length;
+    return docCount / tagDocs.length;
+  });
+
+  // Compute TF-IDF
+  const tfidfMatrix = termFrequencies.map((tf) =>
+    tf.map((tfValue, i) => tfValue * Math.log(1 / (documentFrequencies[i] + 1e-10)))
   );
 
-  return termFrequencies.map((tf) => tf.map((tfValue, i) => tfValue * Math.log(1 / (documentFrequencies[i] + 1e-10))));
+  return tfidfMatrix;
 };
 
 const cosineSimilarity = (vecA, vecB) => {
@@ -63,7 +65,7 @@ const getSimilarDishesTFIDF = ({ dishId, allDishes }) => {
   let tfidfScores = redisClient.getJson(cacheKey);
 
   if (!tfidfScores) {
-    tfidfScores = computeTFIDF(allDishes.map((dish) => dish.description || ''));
+    tfidfScores = computeTFIDF(allDishes.map((dish) => dish.tags || []));
     redisClient.putJson(cacheKey, tfidfScores);
   }
 
@@ -86,7 +88,7 @@ const getCustomerPreferences = ({ orderSessions, customerId, dishById }) => {
   const preferredDishes = {};
 
   _(orderSessions)
-    .filter((session) => _.get(session, 'customerInfo.customerId') === customerId)
+    .filter((session) => _.get(session, 'customerId') === customerId)
     .forEach((session) => {
       _.forEach(session.orders, (order) => {
         _.forEach(order.dishOrders, (dishOrder) => {
@@ -95,7 +97,9 @@ const getCustomerPreferences = ({ orderSessions, customerId, dishById }) => {
       });
     });
 
-  return preferredDishes.sort((a, b) => b[1] - a[1]).map(([dishId]) => dishById[dishId]);
+  return Object.entries(preferredDishes)
+    .sort((a, b) => b[1] - a[1])
+    .map(([dishId]) => dishById[dishId]);
 };
 
 // Helper function to track customer orders by day of the week
@@ -103,7 +107,7 @@ const getCustomerOrderPatterns = ({ orderSessions, customerId }) => {
   const orderPatterns = {};
 
   _(orderSessions)
-    .filter((session) => _.get(session, 'customerInfo.customerId') === customerId)
+    .filter((session) => _.get(session, 'customerId') === customerId)
     .forEach((session) => {
       _.forEach(session.orders, (order) => {
         const orderDay = getDayOfWeek(order.createdAt);
@@ -123,7 +127,7 @@ const getCustomerOrderPatterns = ({ orderSessions, customerId }) => {
 const getSimilarUsers = ({ orderSessions, customerId }) => {
   const userVectors = {};
   _.forEach(orderSessions, (session) => {
-    const userId = _.get(session, 'customerInfo.customerId');
+    const userId = _.get(session, 'customerId');
     if (!userVectors[userId]) userVectors[userId] = {};
     _.forEach(session.orders, (order) => {
       _.forEach(order.dishOrders, (dishOrder) => {
@@ -149,11 +153,11 @@ const getSeasonalRecommendations = ({ allDishes }) => {
   const seasonalDishes = [];
 
   _.forEach(allDishes, (dish) => {
-    // Assume we have a 'season' tag or keyword in the dish description for simplicity
-    if (_.includes(dish.description, 'winter') && (currentMonth >= 11 || currentMonth <= 1)) {
+    const tags = dish.tags || [];
+    if (tags.includes('mua dong') && (currentMonth >= 11 || currentMonth <= 1)) {
       seasonalDishes.push(dish);
     }
-    if (_.includes(dish.description, 'summer') && currentMonth >= 5 && currentMonth <= 7) {
+    if (tags.includes('mua he') && currentMonth >= 5 && currentMonth <= 7) {
       seasonalDishes.push(dish);
     }
   });
@@ -169,21 +173,24 @@ const getContextualRecommendations = ({ allDishes }) => {
   if (currentHour >= 6 && currentHour < 10) {
     // Recommend breakfast items in the morning
     _.forEach(allDishes, (dish) => {
-      if (_.includes(dish.description, 'breakfast')) {
+      const tags = dish.tags || [];
+      if (tags.includes('bua sang')) {
         contextualDishes.push(dish);
       }
     });
   } else if (currentHour >= 11 && currentHour < 14) {
     // Recommend lunch items around lunch time
     _.forEach(allDishes, (dish) => {
-      if (_.includes(dish.description, 'lunch')) {
+      const tags = dish.tags || [];
+      if (tags.includes('bua trua')) {
         contextualDishes.push(dish);
       }
     });
   } else if (currentHour >= 18 && currentHour < 22) {
     // Recommend dinner items in the evening
     _.forEach(allDishes, (dish) => {
-      if (_.includes(dish.description, 'dinner')) {
+      const tags = dish.tags || [];
+      if (tags.includes('bua toi')) {
         contextualDishes.push(dish);
       }
     });
@@ -218,7 +225,7 @@ const getCollaborativeRecommendations = ({ orderSessions, customerId, dishById }
   const dishScores = {};
 
   _.forEach(orderSessions, (session) => {
-    if (similarUsers.includes(_.get(session, 'customerInfo.customerId'))) {
+    if (similarUsers.includes(_.get(session, 'customerId'))) {
       _.forEach(session.orders, (order) => {
         _.forEach(order.dishOrders, (dishOrder) => {
           dishScores[dishOrder.dishId] = (dishScores[dishOrder.dishId] || 0) + dishOrder.quantity;

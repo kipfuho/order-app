@@ -27,7 +27,6 @@ import { ItemTypeFlatList } from "../FlatListWithScroll";
 import FlatListWithoutScroll from "../FlatListWithoutScroll";
 import { AppBar } from "../AppBar";
 import AppBarSearchBox from "../AppBarSearchBox";
-import { styles } from "@/constants/styles";
 import { goToTableCurrentOrderSessions } from "@/apis/navigate.service";
 import { useRouter } from "expo-router";
 
@@ -179,7 +178,7 @@ export default function CreateOrder({
         }
       />
       <GestureDetector gesture={gesture}>
-        <Surface style={styles.baseContainer}>
+        <Surface style={{ flex: 1 }}>
           <Surface mode="flat" style={{ height: 50 }}>
             <ScrollView
               horizontal

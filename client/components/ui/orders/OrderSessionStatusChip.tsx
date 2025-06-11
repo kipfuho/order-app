@@ -10,7 +10,11 @@ export default function OrderSessionStatusChip({ status }: { status: string }) {
     return (
       <Chip
         style={{ marginTop: 4, backgroundColor: theme.colors.primaryContainer }}
-        textStyle={{ color: theme.colors.onPrimaryContainer }}
+        textStyle={{
+          color: theme.colors.onPrimaryContainer,
+          textAlign: "center",
+          flex: 1,
+        }}
       >
         {t(status)}
       </Chip>
@@ -24,7 +28,11 @@ export default function OrderSessionStatusChip({ status }: { status: string }) {
           marginTop: 4,
           backgroundColor: theme.colors.secondaryContainer,
         }}
-        textStyle={{ color: theme.colors.onSecondaryContainer }}
+        textStyle={{
+          color: theme.colors.onSecondaryContainer,
+          textAlign: "center",
+          flex: 1,
+        }}
       >
         {t(status)}
       </Chip>
@@ -35,7 +43,11 @@ export default function OrderSessionStatusChip({ status }: { status: string }) {
     return (
       <Chip
         style={{ marginTop: 4, backgroundColor: theme.colors.errorContainer }}
-        textStyle={{ color: theme.colors.onErrorContainer }}
+        textStyle={{
+          color: theme.colors.onErrorContainer,
+          textAlign: "center",
+          flex: 1,
+        }}
       >
         {t(status)}
       </Chip>

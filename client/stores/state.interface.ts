@@ -109,7 +109,7 @@ interface DishCategory {
 }
 
 interface Customer {
-  id?: string;
+  id: string;
   name?: string;
   phone?: string;
   email?: string;
@@ -222,6 +222,40 @@ interface Order {
   revenueAmount?: number;
   approvedBy: string;
   cancelledBy: string;
+  customerId: string;
+  tableName: string; // cart history
+}
+
+interface OrderCartCheckoutHistory {
+  id: string;
+  dishOrders: {
+    dishId: string;
+    name: string;
+    quantity: string;
+    note: string;
+  }[];
+  createdAt: string;
+  paymentAmount: number;
+  tableName: string;
+}
+
+interface OrderSessionCartCheckoutHistory {
+  id: string;
+  billNo: string;
+  orders: {
+    id: string;
+    customerId: string;
+    dishOrders: {
+      dishId: string;
+      name: string;
+      quantity: string;
+      note: string;
+    }[];
+  }[];
+  createdAt: string;
+  paymentAmount: number;
+  tableName: string;
+  status: OrderSessionStatus;
 }
 
 interface UnconfirmedOrder extends Order {
@@ -363,4 +397,6 @@ export {
   PaymentMethodDistributionReportItem,
   HourlySalesReportItem,
   ReportDashboard,
+  OrderCartCheckoutHistory,
+  OrderSessionCartCheckoutHistory,
 };

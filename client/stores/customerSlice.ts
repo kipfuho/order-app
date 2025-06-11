@@ -14,6 +14,7 @@ interface CustomerState {
   currentCartItem: Record<string, CartItem>;
   currentCartAmount: number;
   isUpdateCartDebouncing: boolean;
+  dishById: Record<string, Dish>;
 }
 
 // Initial state
@@ -25,6 +26,7 @@ const initialState: CustomerState = {
   currentCartItem: {},
   currentCartAmount: 0,
   isUpdateCartDebouncing: false,
+  dishById: {},
 };
 
 // Create Slice
@@ -101,9 +103,10 @@ export const customerSlice = createSlice({
       state.cartItemByDishId[dish.id] = {
         ...state.cartItemByDishId[dish.id],
         totalQuantity:
-          state.cartItemByDishId[dish.id].totalQuantity +
+          (state.cartItemByDishId[dish.id]?.totalQuantity || 0) +
           action.payload.quantity -
-          state.cartItemByDishId[dish.id].newQuantity,
+          (state.cartItemByDishId[dish.id]?.newQuantity || 0),
+        newQuantity: action.payload.quantity,
       };
     },
 
@@ -120,6 +123,13 @@ export const customerSlice = createSlice({
 
     updateIsUpdateCartDebouncing: (state, action: PayloadAction<boolean>) => {
       state.isUpdateCartDebouncing = action.payload;
+    },
+
+    updateDishesForCustomer: (
+      state,
+      action: PayloadAction<{ dishes: Dish[] }>,
+    ) => {
+      state.dishById = _.keyBy(action.payload.dishes, "id");
     },
   },
   extraReducers: (builder) => {
@@ -138,6 +148,7 @@ export const {
   updateCartSingleDish,
   updateCustomer,
   updateIsUpdateCartDebouncing,
+  updateDishesForCustomer,
 } = customerSlice.actions;
 
 export default customerSlice.reducer;

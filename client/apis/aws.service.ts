@@ -15,6 +15,9 @@ import { getShopRequest } from "./shop.api.service";
 import { updateShop, updateTable } from "@/stores/customerSlice";
 import { getTableRequest } from "./table.api.service";
 import { logger } from "@/constants/utils";
+import { cartApiSlice } from "@/stores/apiSlices/cartApi.slice";
+import { OrderSessionStatus } from "@/constants/common";
+import { t } from "i18next";
 
 const namespace = "default";
 const useappsync = true;
@@ -22,13 +25,13 @@ const useappsync = true;
 export const AppSyncChannel = {
   SHOP: (shopId: string) => `${namespace}/shop/${shopId}`,
   CUSTOMER: (shopId: string) => `${namespace}/shop/${shopId}/customer`,
-  ONLINE_PAYMENT: (customerId: string) => `${namespace}/payment/${customerId}`,
+  SINGLE_CUSTOMER: (customerId: string) => `${namespace}/payment/${customerId}`,
 };
 
 export const AppSyncChannelType = {
   SHOP: "SHOP",
   CUSTOMER: "CUSTOMER",
-  ONLINE_PAYMENT: "ONLINE_PAYMENT",
+  SINGLE_CUSTOMER: "SINGLE_CUSTOMER",
 };
 
 export const EventType = {
@@ -82,8 +85,8 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
               data;
             Toast.show({
               type: "success",
-              text1: "Payment completed",
-              text2: `Order session ${billNo} has been paid`,
+              text1: t("payment_complete"),
+              text2: `${t("invoice")} ${billNo} ${t("has_been_paid")}`,
             });
             store.dispatch(
               orderApiSlice.util.invalidateTags([
@@ -114,6 +117,14 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           }
 
           if (type === EventType.NEW_ORDER) {
+            const { tableId, orderSessionId } = data;
+            store.dispatch(
+              orderApiSlice.util.invalidateTags([
+                { type: "OrderSessions", id: orderSessionId },
+                { type: "ActiveOrderSessions", id: tableId },
+                "TablesForOrder",
+              ]),
+            );
             store.dispatch(
               kitchenApiSlice.util.invalidateTags(["UncookedDishOrders"]),
             );
@@ -970,7 +981,7 @@ const connectAppSyncForShopForCustomer = async ({
 /**
  * Kết nối đến channel shop cho khách hàng
  */
-const connectAppSyncForOnlinePayment = async ({
+const connectAppSyncForSingleCustomer = async ({
   customerId,
 }: {
   customerId: string;
@@ -978,7 +989,7 @@ const connectAppSyncForOnlinePayment = async ({
   if (!useappsync) return;
 
   try {
-    const channelId = AppSyncChannel.ONLINE_PAYMENT(customerId);
+    const channelId = AppSyncChannel.SINGLE_CUSTOMER(customerId);
     const channel = await events.connect(channelId);
 
     const subscription = channel.subscribe({
@@ -986,9 +997,109 @@ const connectAppSyncForOnlinePayment = async ({
         try {
           logger.log("Received event for online payment:", event);
           const { type, data } = event;
+          const currentShopId = store.getState().customer.shop?.id as string;
 
           if (type === EventType.PAYMENT_COMPLETE) {
-            const { action, shop } = data;
+            const { orderSessionId, billNo } = data;
+            Toast.show({
+              type: "success",
+              text1: t("payment_complete"),
+              text2: `${t("invoice")} ${billNo} ${t("has_been_paid")}`,
+            });
+
+            store.dispatch(
+              cartApiSlice.util.updateQueryData(
+                "getCheckoutCartHistory",
+                { shopId: currentShopId, isCustomerApp: true },
+                (draft) => {
+                  const index = _.findIndex(
+                    draft.items,
+                    (item) => item.id === orderSessionId,
+                  );
+
+                  if (index !== -1) {
+                    draft.items[index] = {
+                      ...draft.items[index],
+                      status: OrderSessionStatus.paid,
+                    };
+                  }
+                },
+              ),
+            );
+
+            return;
+          }
+
+          if (type === EventType.ORDER_SESSION_UPDATE) {
+            const { orderSessionId, orderSession, billNo, action } = data;
+
+            // Đơn mới được tạo
+            if (action === EventActionType.CREATE) {
+              Toast.show({
+                type: "success",
+                text1: t("new_order"),
+                text2: `${t("invoice")} ${billNo} ${t("has_new_order")}`,
+              });
+
+              store.dispatch(
+                cartApiSlice.util.updateQueryData(
+                  "getCheckoutCartHistory",
+                  { shopId: currentShopId, isCustomerApp: true },
+                  (draft) => {
+                    const index = _.findIndex(
+                      draft.items,
+                      (item) => item.id === orderSessionId,
+                    );
+
+                    if (index !== -1) {
+                      draft.items[index] = {
+                        ...draft.items[index],
+                        orders: [
+                          ...draft.items[index].orders,
+                          orderSession.newOrder,
+                        ],
+                      };
+                    }
+                  },
+                ),
+              );
+            }
+
+            // Cập nhật hoặc sửa trạng thái
+            if (
+              action === EventActionType.UPDATE ||
+              action === EventActionType.CANCEL
+            ) {
+              Toast.show({
+                type: "success",
+                text1: t("update_order"),
+                text2: `${t("invoice")} ${billNo} ${t("has_been_update")}. ${t(orderSession.status)}`,
+              });
+
+              store.dispatch(
+                cartApiSlice.util.updateQueryData(
+                  "getCheckoutCartHistory",
+                  { shopId: currentShopId, isCustomerApp: true },
+                  (draft) => {
+                    const index = _.findIndex(
+                      draft.items,
+                      (item) => item.id === orderSessionId,
+                    );
+
+                    if (index !== -1) {
+                      draft.items[index] = {
+                        ...draft.items[index],
+                        status:
+                          orderSession.status || draft.items[index].status,
+                        paymentAmount:
+                          orderSession.paymentAmount ||
+                          draft.items[index].paymentAmount,
+                      };
+                    }
+                  },
+                ),
+              );
+            }
 
             return;
           }
@@ -1003,7 +1114,7 @@ const connectAppSyncForOnlinePayment = async ({
 
     store.dispatch(
       connectAppSyncChannel({
-        type: AppSyncChannelType.ONLINE_PAYMENT,
+        type: AppSyncChannelType.SINGLE_CUSTOMER,
         channel,
         subscription,
       }),
@@ -1016,5 +1127,5 @@ const connectAppSyncForOnlinePayment = async ({
 export {
   connectAppSyncForShop,
   connectAppSyncForShopForCustomer,
-  connectAppSyncForOnlinePayment,
+  connectAppSyncForSingleCustomer,
 };

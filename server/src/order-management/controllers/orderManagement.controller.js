@@ -5,6 +5,7 @@ const orderManagementService = require('../services/orderManagement.service');
 const {
   convertOrderSessionForResponse,
   convertOrderSessionHistoryForResponse,
+  convertOrderSessionForCartCheckoutHistoryResponse,
 } = require('../converters/orderSession.converter');
 const { convertOrderForResponse } = require('../converters/order.converter');
 const { convertCartForResponse } = require('../converters/cart.converter');
@@ -138,11 +139,35 @@ const checkoutCart = catchAsync(async (req, res) => {
 const getCheckoutCartHistory = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
   const customerId = _.get(req, 'user.id');
-  const histories = await orderManagementService.getCheckoutCartHistory({
+  const { cursor } = req.query;
+  const limit = parseInt(req.query.limit, 10) || 5;
+  const paginationResult = await orderManagementService.getCheckoutCartHistory({
     customerId,
     shopId,
+    cursor,
+    limit,
   });
-  res.status(httpStatus.OK).send({ message: 'OK', histories });
+  res.status(httpStatus.OK).send({
+    message: 'OK',
+    histories: (paginationResult.data || []).map((item) => convertOrderSessionForCartCheckoutHistoryResponse(item)),
+    nextCursor: paginationResult.nextCursor,
+  });
+});
+
+const getUnconfirmedCheckoutCartHistory = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const customerId = _.get(req, 'user.id');
+  const { cursor } = req.query;
+  const limit = parseInt(req.query.limit, 10) || 5;
+  const paginationResult = await orderManagementService.getUnconfirmedCheckoutCartHistory({
+    customerId,
+    shopId,
+    cursor,
+    limit,
+  });
+  res
+    .status(httpStatus.OK)
+    .send({ message: 'OK', histories: paginationResult.data || [], nextCursor: paginationResult.nextCursor });
 });
 
 const getUnconfirmedOrder = catchAsync(async (req, res) => {
@@ -199,6 +224,7 @@ module.exports = {
   clearCart,
   checkoutCart,
   getCheckoutCartHistory,
+  getUnconfirmedCheckoutCartHistory,
   getUnconfirmedOrder,
   updateUnconfirmedOrder,
   cancelUnconfirmedOrder,

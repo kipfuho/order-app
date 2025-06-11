@@ -19,8 +19,8 @@ const formatDateTime = ({ dateTime, format, timeZone }) => {
   return moment(dateTime).tz(timeZone).format(format);
 };
 
-const formatDateDDMMYYYY = (dateTime, timeZone) => formatDateTime({ dateTime, timeZone, format: 'HH:MM DD/MM/YYYY' });
-const formatDateHHMMDDMMYYYY = (dateTime, timeZone) => formatDateTime({ dateTime, timeZone, format: 'HH:MM DD/MM/YYYY' });
+const formatDateDDMMYYYY = (dateTime, timeZone) => formatDateTime({ dateTime, timeZone, format: 'DD/MM/YYYY' });
+const formatDateHHMMDDMMYYYY = (dateTime, timeZone) => formatDateTime({ dateTime, timeZone, format: 'HH:mm DD/MM/YYYY' });
 
 const getCurrencyPrecision = (currency) => {
   if (!currency) {
@@ -213,6 +213,17 @@ const divideToNPart = ({ initialSum, parts, precision }) => {
   return parts.map((part) => dividedPartByKey[part][0]);
 };
 
+const normalizeVietnamese = (str) => {
+  return str
+    .toLowerCase()
+    .normalize('NFD') // separate base characters and accents
+    .replace(/[\u0300-\u036f]/g, '') // remove diacritical marks
+    .replace(/đ/g, 'd') // replace đ
+    .replace(/[^a-z0-9\s]/g, '') // remove punctuation/special chars if needed
+    .replace(/\s+/g, ' ') // collapse multiple spaces
+    .trim(); // remove leading/trailing spaces
+};
+
 module.exports = {
   sleep,
   getStartTimeOfToday,
@@ -229,4 +240,5 @@ module.exports = {
   sortObject,
   getReportPeriod,
   divideToNPart,
+  normalizeVietnamese,
 };

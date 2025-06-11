@@ -88,10 +88,15 @@ export default function OrderManagementApprovePage() {
   };
 
   useEffect(() => {
-    if (_.isEmpty(tables)) return;
+    if (
+      _.isEmpty(tables) ||
+      _.isEmpty(unconfirmedOrders) ||
+      _.isEmpty(tablePositions)
+    )
+      return;
 
     setFilteredTables(tablesGroupByPosition);
-  }, [tables, tablesGroupByPosition]);
+  }, [unconfirmedOrders, tables, tablePositions, tablesGroupByPosition]);
 
   if (unconfirmedOrderLoading || tablePositionLoading || tableLoading) {
     return <LoaderBasic />;

@@ -23,6 +23,7 @@ import {
 } from "@apis/dish.api.interface";
 import { API_BASE_URL } from "@apis/api.service";
 import { updateDishesByCategory } from "../shop.slice";
+import { updateDishesForCustomer } from "../customerSlice";
 
 export const dishApiSlice = createApi({
   reducerPath: "dishApi",
@@ -154,6 +155,8 @@ export const dishApiSlice = createApi({
 
           if (!isCustomerApp) {
             api.dispatch(updateDishesByCategory({ dishes }));
+          } else {
+            api.dispatch(updateDishesForCustomer({ dishes }));
           }
 
           return { data: dishes };

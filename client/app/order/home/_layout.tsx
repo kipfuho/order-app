@@ -9,14 +9,16 @@ import { useEffect } from "react";
 import {
   AppSyncChannelType,
   connectAppSyncForShopForCustomer,
+  connectAppSyncForSingleCustomer,
 } from "@/apis/aws.service";
 import { closeAppSyncChannel } from "@/stores/awsSlice";
+import { useCustomerSession } from "@/hooks/useCustomerSession";
 
 export default function CustomerHomeLayout() {
   const { t } = useTranslation();
   const theme = useTheme();
   const dispatch = useDispatch();
-
+  const { session } = useCustomerSession();
   const { shop, table } = useSelector((state: RootState) => state.customer);
 
   useEffect(() => {
@@ -25,11 +27,15 @@ export default function CustomerHomeLayout() {
     }
 
     connectAppSyncForShopForCustomer({ shopId: shop.id });
+    connectAppSyncForSingleCustomer({ customerId: session?.id as string });
 
     return () => {
       dispatch(closeAppSyncChannel({ type: AppSyncChannelType.CUSTOMER }));
+      dispatch(
+        closeAppSyncChannel({ type: AppSyncChannelType.SINGLE_CUSTOMER }),
+      );
     };
-  }, [dispatch, shop]);
+  }, [dispatch, shop, session]);
 
   if (!shop) {
     return (

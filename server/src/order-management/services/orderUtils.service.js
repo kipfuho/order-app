@@ -421,9 +421,16 @@ const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, custo
         revenueAmount: _.sumBy(orderDishOrders, 'revenueAmount') || 0,
         paymentAmount: _.sumBy(orderDishOrders, 'paymentAmount') || 0,
       },
+      select: {
+        id: true,
+        shopId: true,
+        tableId: true,
+        customerId: true,
+        dishOrders: true,
+      },
     });
     if (orderSession) {
-      await notifyNewOrder({ order, action: EventActionType.CREATE });
+      await notifyNewOrder({ order, orderSession, action: EventActionType.CREATE });
     }
 
     return order;

@@ -180,7 +180,7 @@ const FlatListWithoutScroll = ({
     }
 
     const numColumns = Math.floor(
-      itemContainerWidth /
+      (itemContainerWidth + 12) /
         Math.min(
           ItemTypeFlatListProperties[itemType].MAX_WIDTH,
           itemContainerWidth * 0.48 + 12,

@@ -1,22 +1,35 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Cart, CartItem, Dish, Order } from "../state.interface";
+import {
+  Cart,
+  CartItem,
+  Dish,
+  OrderCartCheckoutHistory,
+  OrderSessionCartCheckoutHistory,
+} from "../state.interface";
 import { API_BASE_URL } from "@apis/api.service";
 import {
   checkoutCartRequest,
   getCartCheckoutHistoryRequest,
   getCartRequest,
   getRecommendationDishesRequest,
+  getUnconfirmedCartCheckoutHistoryRequest,
   updateCartRequest,
 } from "@apis/cart.api.service";
 import {
   updateCurrentCart,
   updateIsUpdateCartDebouncing,
 } from "../customerSlice";
+import { GetCartCheckoutHistoryRequest } from "@/apis/cart.api.interface";
 
 export const cartApiSlice = createApi({
   reducerPath: "cartApi",
   baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
-  tagTypes: ["Cart", "CartHistory", "DishRecommendation"],
+  tagTypes: [
+    "Cart",
+    "CartHistory",
+    "UnconfirmedCartHistory",
+    "DishRecommendation",
+  ],
   // keepUnusedDataFor: 600,
   endpoints: (builder) => ({
     getCart: builder.query<Cart, string>({
@@ -72,23 +85,107 @@ export const cartApiSlice = createApi({
       invalidatesTags: ["Cart", "CartHistory"],
     }),
 
-    getCheckoutCartHistory: builder.query<Order[], string>({
-      queryFn: async (shopId) => {
+    getCheckoutCartHistory: builder.query<
+      {
+        items: OrderSessionCartCheckoutHistory[];
+        nextCursor: string;
+      },
+      GetCartCheckoutHistoryRequest
+    >({
+      queryFn: async ({ shopId, cursor }) => {
         try {
-          const histories = await getCartCheckoutHistoryRequest({
-            shopId,
-            isCustomerApp: true,
-          });
+          const { histories, nextCursor } = await getCartCheckoutHistoryRequest(
+            {
+              shopId,
+              cursor,
+              isCustomerApp: true,
+            },
+          );
 
           return {
-            data: histories,
+            data: {
+              items: histories,
+              nextCursor,
+            },
           };
         } catch (error) {
           return { error: { status: 500, data: error } };
         }
       },
-
+      // This ensures that different cursors for the same shopId are treated as the same query
+      serializeQueryArgs: ({ queryArgs, endpointName }) => {
+        return `${endpointName}-${queryArgs.shopId}`;
+      },
+      // Merge function to combine paginated results
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.cursor) {
+          // If we have a cursor, we're loading more data - append it
+          return {
+            ...newItems,
+            items: [...currentCache.items, ...newItems.items],
+          };
+        } else {
+          // If no cursor, this is a fresh load - replace the data
+          return newItems;
+        }
+      },
+      // Force refetch when the cursor changes
+      forceRefetch({ currentArg, previousArg }) {
+        if (!currentArg?.cursor) return false;
+        return currentArg?.cursor !== previousArg?.cursor;
+      },
       providesTags: ["CartHistory"],
+    }),
+
+    getUnconfirmedCheckoutCartHistory: builder.query<
+      {
+        items: OrderCartCheckoutHistory[];
+        nextCursor: string;
+      },
+      GetCartCheckoutHistoryRequest
+    >({
+      queryFn: async ({ shopId, cursor }) => {
+        try {
+          const { histories, nextCursor } =
+            await getUnconfirmedCartCheckoutHistoryRequest({
+              shopId,
+              cursor,
+              isCustomerApp: true,
+            });
+
+          return {
+            data: {
+              items: histories,
+              nextCursor,
+            },
+          };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      // This ensures that different cursors for the same shopId are treated as the same query
+      serializeQueryArgs: ({ queryArgs, endpointName }) => {
+        return `${endpointName}-${queryArgs.shopId}`;
+      },
+      // Merge function to combine paginated results
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.cursor) {
+          // If we have a cursor, we're loading more data - append it
+          return {
+            ...newItems,
+            items: [...currentCache.items, ...newItems.items],
+          };
+        } else {
+          // If no cursor, this is a fresh load - replace the data
+          return newItems;
+        }
+      },
+      // Force refetch when the cursor changes
+      forceRefetch({ currentArg, previousArg }) {
+        if (!currentArg?.cursor) return false;
+        return currentArg?.cursor !== previousArg?.cursor;
+      },
+      providesTags: ["UnconfirmedCartHistory"],
     }),
 
     getRecommendationDishes: builder.query<Dish[], string>({
@@ -115,6 +212,7 @@ export const cartApiSlice = createApi({
 export const {
   useGetCartQuery,
   useGetCheckoutCartHistoryQuery,
+  useGetUnconfirmedCheckoutCartHistoryQuery,
   useGetRecommendationDishesQuery,
   useUpdateCartMutation,
   useCheckoutCartMutation,

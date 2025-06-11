@@ -1,6 +1,17 @@
-import { Cart, CartItem, Dish, Order } from "@stores/state.interface";
+import {
+  Cart,
+  CartItem,
+  Dish,
+  OrderCartCheckoutHistory,
+  OrderSessionCartCheckoutHistory,
+} from "@stores/state.interface";
 import { apiRequest } from "./api.service";
 import { getAccessTokenLazily } from "./auth.api.service";
+import {
+  GetCartCheckoutHistoryRequest,
+  GetUnconfirmedCartCheckoutHistoryRequest,
+} from "./cart.api.interface";
+import { getEndpointWithCursor } from "./common.service";
 
 const getCartRequest = async (shopId: string, isCustomerApp = false) => {
   const accessToken = await getAccessTokenLazily(isCustomerApp);
@@ -75,23 +86,48 @@ const checkoutCartRequest = async ({
 
 const getCartCheckoutHistoryRequest = async ({
   shopId,
+  cursor,
   isCustomerApp = false,
-}: {
-  shopId: string;
-  isCustomerApp?: boolean;
-}) => {
+}: GetCartCheckoutHistoryRequest) => {
   const accessToken = await getAccessTokenLazily(isCustomerApp);
 
   const result: {
-    histories: Order[];
+    histories: OrderSessionCartCheckoutHistory[];
+    nextCursor: string;
   } = await apiRequest({
     method: "POST",
-    endpoint: `/v1/shops/${shopId}/orders/checkout-cart-history`,
+    endpoint: getEndpointWithCursor({
+      endpoint: `/v1/shops/${shopId}/orders/checkout-cart-history`,
+      cursor,
+    }),
     token: accessToken,
     isCustomerApp,
   });
 
-  return result.histories;
+  return result;
+};
+
+const getUnconfirmedCartCheckoutHistoryRequest = async ({
+  shopId,
+  cursor,
+  isCustomerApp = false,
+}: GetUnconfirmedCartCheckoutHistoryRequest) => {
+  const accessToken = await getAccessTokenLazily(isCustomerApp);
+
+  const result: {
+    histories: OrderCartCheckoutHistory[];
+    nextCursor: string;
+  } = await apiRequest({
+    method: "POST",
+    endpoint: getEndpointWithCursor({
+      endpoint: `/v1/shops/${shopId}/orders/unconfirmed-checkout-cart-history`,
+      cursor,
+    }),
+    token: accessToken,
+    isCustomerApp,
+  });
+
+  return result;
 };
 
 const getRecommendationDishesRequest = async ({
@@ -120,5 +156,6 @@ export {
   updateCartRequest,
   checkoutCartRequest,
   getCartCheckoutHistoryRequest,
+  getUnconfirmedCartCheckoutHistoryRequest,
   getRecommendationDishesRequest,
 };

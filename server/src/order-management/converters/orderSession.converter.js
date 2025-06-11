@@ -70,7 +70,29 @@ const convertOrderSessionHistoryForResponse = (orderSession) => {
 };
 /* eslint-enable no-param-reassign */
 
+/* eslint-disable no-param-reassign */
+const convertOrderSessionForCartCheckoutHistoryResponse = (orderSession) => {
+  const orderSessionJson = _.pick(orderSession, [
+    'id',
+    'tableNames',
+    'createdAt',
+    'orderSessionNo',
+    'paymentAmount',
+    'status',
+    'orders',
+  ]);
+  orderSessionJson.tableName = _.join(orderSessionJson.tableNames, ',');
+  orderSessionJson.billNo = formatOrderSessionNo(orderSessionJson);
+  orderSessionJson.createdAt = formatDateHHMMDDMMYYYY(orderSessionJson.createdAt);
+
+  delete orderSessionJson.orderSessionNo;
+  delete orderSessionJson.tableNames;
+  return orderSessionJson;
+};
+/* eslint-enable no-param-reassign */
+
 module.exports = {
   convertOrderSessionForResponse,
   convertOrderSessionHistoryForResponse,
+  convertOrderSessionForCartCheckoutHistoryResponse,
 };

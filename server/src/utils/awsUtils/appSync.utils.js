@@ -6,7 +6,7 @@ const namespace = 'default';
 
 const getShopChannel = (shopId) => `${namespace}/shop/${shopId}`;
 const getCustomerChannel = (shopId) => `${namespace}/shop/${shopId}/customer`;
-const getOnlinePaymentChannel = (customerId) => `${namespace}/payment/${customerId}`;
+const getSingleCustomerChannel = (customerId) => `${namespace}/payment/${customerId}`;
 
 const AppSyncEvent = {
   SHOP_CHANGED: 'SHOP_CHANGED',
@@ -32,18 +32,16 @@ const EventActionType = {
 };
 
 const notifyOrderSessionPaymentForCustomer = async ({ orderSession }) => {
-  const { customerInfo } = orderSession;
-  if (!customerInfo || !customerInfo.customerId) {
+  const { customerId } = orderSession;
+  if (_.isEmpty(customerId)) {
     return;
   }
 
-  const { customerId } = customerInfo;
-  const channel = getOnlinePaymentChannel(customerId);
+  const channel = getSingleCustomerChannel(customerId);
   const event = {
     type: AppSyncEvent.PAYMENT_COMPLETE,
     data: {
       orderSessionId: orderSession.id,
-      tableId: _.get(orderSession, 'tableIds.0'),
       billNo: formatOrderSessionNo(orderSession),
     },
   };
@@ -245,19 +243,39 @@ const notifyUpdateKitchen = async ({ action, shopId, kitchen }) => {
   await publishSingleAppSyncEvent({ channel, event });
 };
 
-const _notifyUpdateOrderSessionForCustomer = async ({ orderSession, action }) => {
-  const { customerInfo } = orderSession;
-  if (!customerInfo || !customerInfo.customerId) {
+const _notifyUpdateOrderSessionForCustomer = async ({ order, orderSession, action }) => {
+  const { customerId } = orderSession;
+  if (_.isEmpty(customerId)) {
     return;
   }
 
-  const channel = getCustomerChannel(orderSession.shopId);
+  const channel = getSingleCustomerChannel(orderSession.shopId);
+  const billNo = formatOrderSessionNo(orderSession);
   const event = {
     type: AppSyncEvent.ORDER_SESSION_UPDATE,
     data: {
-      action, // 'CANCEL'
+      action,
       orderSessionId: orderSession.id,
-      tableId: _.get(orderSession, 'tableIds.0'),
+      orderSession: {
+        id: orderSession.id,
+        status: orderSession.status,
+        paymentAmount: orderSession.paymentAmount,
+        ...(order
+          ? {
+              newOrder: {
+                id: order.id,
+                customerId: order.customerId,
+                dishOrders: order.dishOrders.map((dishOrder) => ({
+                  dishId: dishOrder.dishId,
+                  name: dishOrder.name,
+                  quantity: dishOrder.quantity,
+                  note: dishOrder.note,
+                })),
+              },
+            }
+          : null),
+      },
+      billNo,
     },
   };
   return publishSingleAppSyncEvent({ channel, event });
@@ -281,7 +299,7 @@ const notifyUpdateOrderSession = async ({ orderSession, action }) => {
   await _notifyUpdateOrderSessionForCustomer({ orderSession, action });
 };
 
-const notifyCancelPaidStatusOrderSession = async ({ orderSession, action }) => {
+const notifyCancelPaidStatusOrderSession = async ({ orderSession }) => {
   if (_.isEmpty(orderSession)) {
     return;
   }
@@ -290,16 +308,15 @@ const notifyCancelPaidStatusOrderSession = async ({ orderSession, action }) => {
   const event = {
     type: AppSyncEvent.CANCEL_PAYMENT,
     data: {
-      action, // 'CANCEL'
       orderSessionId: orderSession.id,
       tableId: _.get(orderSession, 'tableIds.0'),
     },
   };
   await publishSingleAppSyncEvent({ channel, event });
-  await _notifyUpdateOrderSessionForCustomer({ orderSession, action });
+  await _notifyUpdateOrderSessionForCustomer({ orderSession, action: EventActionType.CANCEL });
 };
 
-const notifyNewOrder = async ({ order, action }) => {
+const notifyNewOrder = async ({ order, orderSession, action }) => {
   if (_.isEmpty(order)) {
     return;
   }
@@ -311,10 +328,12 @@ const notifyNewOrder = async ({ order, action }) => {
       action, // 'CREATE'
       orderId: order.id,
       tableId: order.tableId,
+      orderSessionId: orderSession.id,
     },
   };
 
   await publishSingleAppSyncEvent({ channel, event });
+  await _notifyUpdateOrderSessionForCustomer({ order, orderSession, action });
 };
 
 module.exports = {

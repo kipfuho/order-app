@@ -83,5 +83,6 @@ router.post('/get-cart', auth(), orderManagementController.getCart);
 router.post('/update-cart', auth(), orderManagementController.updateCart);
 router.post('/checkout-cart', auth(), orderManagementController.checkoutCart);
 router.post('/checkout-cart-history', auth(), orderManagementController.getCheckoutCartHistory);
+router.post('/unconfirmed-checkout-cart-history', auth(), orderManagementController.getUnconfirmedCheckoutCartHistory);
 
 module.exports = router;

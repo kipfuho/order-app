@@ -1001,7 +1001,7 @@ const bulkUpdate = async (tableName, entries) => {
           return `ARRAY[${formattedValues}]::${arrayType}`;
         }
         if (typeof value === 'string') {
-          if (PostgreSQLEnumByTable[tableName][field]) {
+          if (PostgreSQLEnumByTable[tableName] && PostgreSQLEnumByTable[tableName][field]) {
             // Cast string to enum
             // Enum type is wrapped inside "" to imply case-sensitive
             return `'${value.replace(/'/g, "''")}'::"${PostgreSQLEnumByTable[tableName][field]}"`;

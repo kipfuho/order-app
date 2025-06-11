@@ -279,7 +279,7 @@ const _getKitchenHistoriesByAction = async ({ shopId, from, to, actions, cursor,
       action: { in: actions },
       ...timeOptions,
     },
-    orderBy: [{ createdAt: 'desc' }],
+    orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
     take: limit + 1,
     ...(cursor && {
       cursor: {
