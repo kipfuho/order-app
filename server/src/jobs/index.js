@@ -5,45 +5,53 @@ const logger = require('../config/logger');
 const config = require('../config/config');
 const { hasActiveContext, getCurrentStore } = require('../middlewares/clsHooked');
 const { client } = require('../utils/redisConnect');
+const { prisma } = require('../utils/prisma');
 
-const worker = new Worker(
-  config.jobKey,
-  async (job) => {
-    logger.log(`Received job: ${JSON.stringify(job.data)}`);
+let worker = null;
 
-    await runInAsyncContext(
-      async () => {
-        await processJob(job.data);
-      },
-      {
-        jobId: job.id || 'unknown',
-        jobType: job.data.type || 'unknown',
-        startTime: Date.now(),
-      }
-    );
-  },
-  {
-    connection: client,
-    concurrency: 1,
-  }
-);
+prisma.$connect().then(() => {
+  logger.info('Connected to PostgreSQL');
+  worker = new Worker(
+    config.jobKey,
+    async (job) => {
+      logger.log(`Received job: ${JSON.stringify(job.data)}`);
 
-worker.on('completed', (job) => {
-  logger.debug(`Job ${job.id} completed`);
-});
+      await runInAsyncContext(
+        async () => {
+          await processJob(job.data);
+        },
+        {
+          jobId: job.id || 'unknown',
+          jobType: job.data.type || 'unknown',
+          startTime: Date.now(),
+        }
+      );
+    },
+    {
+      connection: client,
+      concurrency: 1,
+    }
+  );
 
-worker.on('failed', (job, err) => {
-  logger.error(`Job ${job.id} failed. Error: ${err.stack}`);
-});
+  worker.on('completed', (job) => {
+    logger.debug(`Job ${job.id} completed`);
+  });
 
-worker.on('error', (err) => {
-  logger.error(`Worker error: ${err.stack}`);
+  worker.on('failed', (job, err) => {
+    logger.error(`Job ${job.id} failed. Error: ${err.stack}`);
+  });
+
+  worker.on('error', (err) => {
+    logger.error(`Worker error: ${err.stack}`);
+  });
 });
 
 // Graceful shutdown
 const beforeExit = async (signal) => {
   logger.info(`Signal ${signal} received. Cleaning up...`);
-  await worker.close(); // Stop processing new jobs
+  if (worker) {
+    await worker.close(); // Stop processing new jobs
+  }
   logger.info('Worker closed. Exiting process.');
   process.exit(0);
 };
