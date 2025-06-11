@@ -1,7 +1,6 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
 const { authService, userService, tokenService, emailService } = require('../services');
-const authConverter = require('../converters/auth.converter');
 const customerService = require('../../customer-management/services/customerManagement.service');
 const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
@@ -13,14 +12,6 @@ const register = catchAsync(async (req, res) => {
 const registerForCustomer = catchAsync(async (req, res) => {
   await customerService.registerCustomer(req.body);
   res.status(httpStatus.CREATED).send({ message: 'Đăng ký thành công' });
-});
-
-const loginWithProtobuf = catchAsync(async (req, res) => {
-  const requestBody = req.body;
-  const user = await authService.loginUserWithEmailAndPassword(requestBody);
-  const tokens = await tokenService.generateAuthTokens(user);
-  const response = await authConverter.convertLoginResponse({ user, tokens });
-  res.send(response);
 });
 
 const login = catchAsync(async (req, res) => {
@@ -106,7 +97,6 @@ const getPermissions = catchAsync(async (req, res) => {
 
 module.exports = {
   register,
-  loginWithProtobuf,
   login,
   loginForAnonymousCustomer,
   loginForCustomer,
