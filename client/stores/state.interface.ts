@@ -259,6 +259,7 @@ interface ReturnedDishOrder {
   quantity: number;
   status: string;
   note: string;
+  createdAt: string;
 }
 
 interface KitchenDishOrder {

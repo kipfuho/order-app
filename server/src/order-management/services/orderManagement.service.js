@@ -723,6 +723,7 @@ const getTableActiveOrderSessions = async ({ shopId, tableId }) => {
     },
     include: {
       dishOrders: true,
+      returnedDishOrders: true,
     },
   });
   const shop = await getShopFromCache({ shopId });

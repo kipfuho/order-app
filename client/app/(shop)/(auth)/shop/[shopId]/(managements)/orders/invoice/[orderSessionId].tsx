@@ -97,8 +97,8 @@ const InvoiceDetailPage = () => {
           }
         }}
       />
-      <Surface style={{ flex: 1, padding: 16 }}>
-        <ScrollView>
+      <Surface style={{ flex: 1 }}>
+        <ScrollView style={{ padding: 16 }}>
           <View>
             {orderSessionDetail?.status === OrderSessionStatus.paid && (
               <View style={{ alignItems: "flex-end", marginBottom: 8 }}>
@@ -252,7 +252,7 @@ const InvoiceDetailPage = () => {
           </View>
         </ScrollView>
 
-        <View style={{ marginTop: 8 }}>
+        <View style={{ marginTop: 8, padding: 16 }}>
           <View
             style={{
               flexDirection: "row",

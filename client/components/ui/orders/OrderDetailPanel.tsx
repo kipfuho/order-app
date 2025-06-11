@@ -1,5 +1,6 @@
 import _ from "lodash";
 import {
+  Divider,
   Modal,
   Portal,
   Surface,
@@ -290,6 +291,28 @@ export default function ActiveOrderSessionPage({
                   />
                 ))}
               </View>
+              {!_.isEmpty(order.returnedDishOrders) && (
+                <View style={{ gap: 8, marginTop: 8, marginBottom: 8 }}>
+                  <Divider />
+                  <Text style={{ fontSize: 18, color: theme.colors.error }}>
+                    {t("returned_dish")}
+                  </Text>
+                  {order.returnedDishOrders.map((returnedDishOrder) => (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Text
+                        style={{ fontWeight: "bold" }}
+                      >{`${returnedDishOrder.name}: x${returnedDishOrder.quantity}`}</Text>
+                      <Text>{returnedDishOrder.createdAt}</Text>
+                    </View>
+                  ))}
+                  <Divider />
+                </View>
+              )}
             </Surface>
           )}
           nestedScrollEnabled={true}

@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { Button, List, Modal, Portal, Surface } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@stores/store";
@@ -57,7 +56,7 @@ export default function OrderTableCurrentOrderSessionsPage() {
     return <LoaderBasic />;
   }
 
-  if (!table.allowMultipleOrderSession && !_.isEmpty(activeOrderSessions)) {
+  if (!table.allowMultipleOrderSession && activeOrderSessions.length === 1) {
     return (
       <Redirect
         href={`/(shop)/(auth)/shop/${shop.id}/(managements)/orders/table/${table.id}/payment/${activeOrderSessions[0].id}`}
@@ -110,13 +109,15 @@ export default function OrderTableCurrentOrderSessionsPage() {
             ))}
           </List.Section>
         </ScrollView>
-        <Button
-          mode="contained"
-          style={[styles.baseButton, { marginTop: 20 }]}
-          onPress={handleAddNewCustomer}
-        >
-          {t("add_new_customer_order")}
-        </Button>
+        {table.allowMultipleOrderSession && (
+          <Button
+            mode="contained"
+            style={[styles.baseButton, { marginTop: 20 }]}
+            onPress={handleAddNewCustomer}
+          >
+            {t("add_new_customer_order")}
+          </Button>
+        )}
       </Surface>
     </>
   );

@@ -3,6 +3,7 @@ const config = require('./config');
 const { tokenTypes } = require('./tokens');
 const { getUserFromCache } = require('../metadata/userMetadata.service');
 const { getCustomerFromCache } = require('../metadata/customerMetadata.service');
+const logger = require('./logger');
 
 const jwtOptions = {
   secretOrKey: config.jwt.secret,
@@ -26,6 +27,7 @@ const jwtVerify = async (payload, done) => {
     }
     done(null, user, payload);
   } catch (error) {
+    logger.error(`error jwtVerify. ${JSON.stringify(payload)}. ${error}`);
     done(error, false, payload);
   }
 };

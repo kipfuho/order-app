@@ -172,19 +172,15 @@ const FlatListWithoutScroll = ({
 
   const [selectedGroup, setSelectGroup] = useState("");
   const { itemContainerWidth, numColumns } = useMemo(() => {
-    let itemContainerWidth;
-    if (width < UNIVERSAL_WIDTH_PIVOT) {
-      itemContainerWidth = width - 20; // minus padding
-    } else {
-      itemContainerWidth =
-        width -
-        (shouldShowGroup
-          ? Math.min(width * 0.15, UNIVERSAL_MAX_WIDTH_SIDEBAR)
-          : 0); // minus padding + sidebar
+    let itemContainerWidth = width - 52; // minus padding
+    if (width >= UNIVERSAL_WIDTH_PIVOT) {
+      itemContainerWidth -= shouldShowGroup
+        ? Math.min(width * 0.15, UNIVERSAL_MAX_WIDTH_SIDEBAR)
+        : 0; // minus sidebar
     }
 
     const numColumns = Math.floor(
-      (itemContainerWidth + 12) /
+      itemContainerWidth /
         Math.min(
           ItemTypeFlatListProperties[itemType].MAX_WIDTH,
           itemContainerWidth * 0.48 + 12,
@@ -360,6 +356,7 @@ const FlatListWithoutScroll = ({
         onEndReached={handleEndReached}
         onEndReachedThreshold={onEndReachedThreshold}
         contentContainerStyle={{ padding: 10 }}
+        showsHorizontalScrollIndicator={false}
       />
     </Surface>
   );
