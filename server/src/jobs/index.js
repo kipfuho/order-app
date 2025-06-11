@@ -4,7 +4,7 @@ const { runInAsyncContext } = require('../middlewares/clsHooked');
 const logger = require('../config/logger');
 const config = require('../config/config');
 const { hasActiveContext, getCurrentStore } = require('../middlewares/clsHooked');
-const { ioRedisConnection } = require('../utils/redisConnect');
+const { client } = require('../utils/redisConnect');
 
 const worker = new Worker(
   config.jobKey,
@@ -23,7 +23,7 @@ const worker = new Worker(
     );
   },
   {
-    connection: ioRedisConnection,
+    connection: client,
     concurrency: 1,
   }
 );

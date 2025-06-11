@@ -1,9 +1,9 @@
 const { Queue } = require('bullmq');
 const config = require('../config/config');
-const { ioRedisConnection } = require('../utils/redisConnect');
+const { client } = require('../utils/redisConnect');
 
 const jobQueue = new Queue(config.jobKey, {
-  connection: ioRedisConnection,
+  connection: client,
   defaultJobOptions: {
     attempts: 5,
     backoff: {
