@@ -1,5 +1,5 @@
 const IORedis = require('ioredis');
-const { redisHost, redisPort, env } = require('../config/config');
+const { redisUrl, env } = require('../config/config');
 const logger = require('../config/logger');
 
 let client = null;
@@ -15,8 +15,8 @@ const _setupRedis = async () => {
     return;
   }
 
-  if (redisHost && redisPort) {
-    client = new IORedis(`redis://${redisHost}:${redisPort}`, {
+  if (redisUrl) {
+    client = new IORedis(`${redisUrl}?family=0`, {
       maxRetriesPerRequest: null,
       reconnectOnError: (err) => {
         logger.warn(`Redis reconnect due to error: ${err.message}`);
