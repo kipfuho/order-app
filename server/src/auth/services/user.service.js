@@ -71,6 +71,7 @@ const updateUserById = async (userId, updateBody) => {
     where: {
       id: userId,
     },
+    select: { id: true },
   });
   return user;
 };

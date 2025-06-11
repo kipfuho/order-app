@@ -94,6 +94,7 @@ const deleteObjectFromS3 = async (key, persistLog = false) => {
         where: {
           key,
         },
+        select: { id: true },
       });
     }
 

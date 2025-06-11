@@ -67,6 +67,7 @@ const logout = async (refreshToken) => {
       type: tokenTypes.REFRESH,
       blacklisted: false,
     },
+    select: { id: true },
   });
 };
 
@@ -85,6 +86,7 @@ const refreshAuth = async ({ refreshToken, clientId }) => {
       where: {
         id: refreshTokenDoc.id,
       },
+      select: { id: true },
     });
     return tokenService.generateAuthTokens({
       user,

@@ -695,6 +695,7 @@ const discountDishOrder = async ({ shopId, requestBody }) => {
       }),
     },
     where: { id: orderSessionId },
+    select: { id: true },
   });
 };
 
@@ -733,6 +734,7 @@ const discountOrderSession = async ({ shopId, requestBody }) => {
         }),
       },
       where: { id: orderSessionId },
+      select: { id: true },
     });
   }
 };
@@ -743,7 +745,11 @@ const removeDiscountFromOrderSession = async ({ shopId, requestBody }) => {
   const orderSessionDetail = await orderUtilService.calculateOrderSessionAndReturn(orderSessionId, shopId);
   throwBadRequest(!orderSessionDetail, getMessageByLocale({ key: 'orderSession.notFound' }));
 
-  await OrderSession.update({ data: { discounts: { delete: { id: discountId } } }, where: { id: orderSessionId } });
+  await OrderSession.update({
+    data: { discounts: { delete: { id: discountId } } },
+    where: { id: orderSessionId },
+    select: { id: true },
+  });
 };
 
 const getTableActiveOrderSessions = async ({ shopId, tableId }) => {
@@ -941,9 +947,9 @@ const cancelUnconfirmedOrder = async ({ shopId, orderId }) => {
       id: orderId,
       shopId,
     },
+    select: { id: true },
   });
   throwBadRequest(!order, getMessageByLocale({ key: 'order.notFound' }));
-  return order;
 };
 
 const approveUnconfirmedOrder = async ({ shopId, orderId, orderSessionId }) => {
@@ -971,6 +977,7 @@ const approveUnconfirmedOrder = async ({ shopId, orderId, orderSessionId }) => {
       orderSessionId: orderSession.id,
     },
     where: { id: orderId },
+    select: { id: true },
   });
   return orderUtilService.calculateOrderSessionAndReturn(orderSession.id);
 };

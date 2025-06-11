@@ -38,9 +38,9 @@ const updateUnit = async ({ shopId, unitId, updateBody }) => {
       shopId,
     },
     where: { id: unitId, shopId },
+    select: { id: true },
   });
   throwBadRequest(!unit, getMessageByLocale({ key: 'unit.notFound' }));
-  return unit;
 };
 
 const deleteUnit = async ({ shopId, unitId }) => {
@@ -50,6 +50,7 @@ const deleteUnit = async ({ shopId, unitId }) => {
       id: unitId,
       shopId,
     },
+    select: { id: 1 },
   });
 };
 

@@ -113,6 +113,7 @@ const createShop = async ({ createBody }) => {
       where: {
         id: shopId,
       },
+      select: { id: true },
     });
     throw err;
   }

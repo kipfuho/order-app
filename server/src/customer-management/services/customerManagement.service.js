@@ -90,6 +90,7 @@ const deleteCustomer = async (customerId) => {
     where: {
       id: customerId,
     },
+    select: { id: 1 },
   });
 };
 
