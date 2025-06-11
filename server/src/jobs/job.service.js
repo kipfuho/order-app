@@ -39,15 +39,18 @@ const updateFullOrderSession = async ({ orderSessionId }) => {
     );
   }
   try {
-    const orderSession = await calculateOrderSessionAndReturn(orderSessionId);
-    const discountPercent = Math.min(orderSession.beforeTaxTotalDiscountAmount / orderSession.pretaxPaymentAmount, 1);
+    const orderSessionDetail = await calculateOrderSessionAndReturn(orderSessionId);
+    const discountPercent = Math.min(
+      orderSessionDetail.beforeTaxTotalDiscountAmount / orderSessionDetail.pretaxPaymentAmount,
+      1
+    );
 
     if (discountPercent < 0.001) {
       return;
     }
 
     /* eslint-disable no-param-reassign */
-    orderSession.orders.forEach((order) => {
+    orderSessionDetail.orders.forEach((order) => {
       order.dishOrders.forEach((dishOrder) => {
         dishOrder.beforeTaxTotalDiscountAmount = dishOrder.beforeTaxTotalPrice * discountPercent;
         dishOrder.afterTaxTotalDiscountAmount = dishOrder.afterTaxTotalPrice * discountPercent;
@@ -62,8 +65,8 @@ const updateFullOrderSession = async ({ orderSessionId }) => {
     });
     /* eslint-enable no-param-reassign */
 
-    const allOrders = orderSession.orders;
-    const allDishOrders = orderSession.orders.flatMap((order) => order.dishOrders);
+    const allOrders = orderSessionDetail.orders;
+    const allDishOrders = orderSessionDetail.orders.flatMap((order) => order.dishOrders);
 
     await bulkUpdate(
       PostgreSQLTable.DishOrder,

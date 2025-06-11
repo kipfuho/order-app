@@ -407,7 +407,10 @@ const _getOrderSessionDetail = async ({ orderSessionId, shopId }) => {
   throwBadRequest(shopId && orderSession.shopId !== shopId, 'orderSession.notFound');
 
   const orderSessionDetail = _.cloneDeep(orderSession);
-
+  const orderSessionLastAuditedTime = orderSession.auditedAt || 0;
+  const shouldRecalculate =
+    orderSession.updatedAt > orderSessionLastAuditedTime ||
+    orderSessionDetail.orders.some((order) => order.updatedAt > orderSessionLastAuditedTime);
   // eslint-disable-next-line no-param-reassign
   shopId = orderSession.shopId;
   const shop = await getShopFromCache({ shopId });
@@ -429,6 +432,7 @@ const _getOrderSessionDetail = async ({ orderSessionId, shopId }) => {
   return {
     orderSession,
     orderSessionDetail,
+    shouldRecalculate,
   };
 };
 
@@ -743,8 +747,8 @@ const normalizeDiscountAmount = ({ orderSessionDetail, beforeTaxTotalDiscountAmo
 };
 
 const calculateOrderSessionAndReturn = async (orderSessionId, shopId) => {
-  const { orderSession, orderSessionDetail } = await _getOrderSessionDetail({ orderSessionId, shopId });
-  const shouldRecalculate = (orderSession.auditedAt || 0) > orderSession.updatedAt;
+  const { orderSession, orderSessionDetail, shouldRecalculate } = await _getOrderSessionDetail({ orderSessionId, shopId });
+  // only recalculate if order session is recently updated
   if (!shouldRecalculate) {
     return orderSessionDetail;
   }
@@ -803,8 +807,12 @@ const calculateOrderSessionAndReturn = async (orderSessionId, shopId) => {
             data: orderSessionDetail.taxDetails,
           },
         },
+        auditedAt: new Date(),
       },
       where: { id: orderSessionId },
+      select: {
+        id: true,
+      },
     });
   }
   return orderSessionDetail;
@@ -874,6 +882,7 @@ const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, custo
         where: {
           id: orderSession.id,
         },
+        select: { id: 1 },
       });
     }
 
@@ -888,6 +897,7 @@ const updateOrderSession = async ({ orderSessionId, shopId, updateBody }) => {
       id: orderSessionId,
       shopId,
     },
+    select: { id: 1 },
   });
 
   return calculateOrderSessionAndReturn(orderSessionId);

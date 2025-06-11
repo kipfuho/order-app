@@ -21,7 +21,7 @@ const {
 } = require('../../utils/awsUtils/appSync.utils');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
-const { prisma, bulkUpdate, PostgreSQLTable } = require('../../utils/prisma');
+const { bulkUpdate, PostgreSQLTable } = require('../../utils/prisma');
 const { getOperatorFromSession } = require('../../middlewares/clsHooked');
 
 const _validateBeforeCreateOrder = (orderSession) => {
@@ -77,20 +77,38 @@ const changeDishQuantity = async ({ shopId, requestBody }) => {
     });
   }
   if (newQuantity === 0) {
-    await DishOrder.delete({
+    // update order to change updatedAt
+    await Order.update({
       where: {
-        id: targetDishOrder.id,
+        id: orderId,
       },
+      data: {
+        dishOrders: {
+          delete: {
+            id: targetDishOrder.id,
+          },
+        },
+      },
+      select: { id: true },
     });
     return;
   }
-  await DishOrder.update({
+  // update order to change updatedAt
+  await Order.update({
     where: {
-      id: targetDishOrder.id,
+      id: orderId,
     },
     data: {
-      quantity: newQuantity,
+      dishOrders: {
+        update: {
+          where: {
+            id: targetDishOrder.id,
+          },
+          data: { quantity: newQuantity },
+        },
+      },
     },
+    select: { id: true },
   });
 };
 
@@ -102,8 +120,20 @@ const updateOrder = async ({ shopId, requestBody }) => {
       id: { in: orderIds },
       shopId,
     },
-    include: {
-      dishOrders: true,
+    select: {
+      id: true,
+      dishOrders: {
+        select: {
+          id: true,
+          dishOrderNo: true,
+          dishId: true,
+          name: true,
+          unit: true,
+          note: true,
+          orderId: true,
+          quantity: true,
+        },
+      },
     },
   });
   const orderById = _.keyBy(orders, 'id');
@@ -114,7 +144,7 @@ const updateOrder = async ({ shopId, requestBody }) => {
     const order = orderById[orderUpdate.orderId];
     const newQuantity = orderUpdate.quantity;
     if (order) {
-      const dishOrder = _.find(order.dishOrders, { dishId: orderUpdate.dishId });
+      const dishOrder = _.find(order.dishOrders, (_dishOrder) => _dishOrder.dishId === orderUpdate.dishId);
       if (dishOrder) {
         if (newQuantity < dishOrder.quantity) {
           returnedDishOrders.push({
@@ -138,23 +168,35 @@ const updateOrder = async ({ shopId, requestBody }) => {
       data: returnedDishOrders,
     });
   }
-  await prisma.$transaction(
-    updatedDishOrders.map((dishOrder) => {
-      if (dishOrder.quantity === 0) {
-        return DishOrder.delete({
-          where: {
-            id: dishOrder.id,
-          },
-        });
-      }
-      return DishOrder.update({
-        data: {
-          quantity: dishOrder.quantity,
-        },
-        where: { id: dishOrder.id },
-      });
-    })
-  );
+  const deleteData = [];
+  const updateData = [];
+  updatedDishOrders.forEach((dishOrder) => {
+    if (dishOrder.quantity === 0) {
+      deleteData.push(dishOrder.id);
+      return;
+    }
+    updateData.push({
+      id: dishOrder.id,
+      quantity: dishOrder.quantity,
+    });
+  });
+
+  await DishOrder.deleteMany({
+    where: {
+      id: {
+        in: deleteData,
+      },
+    },
+  });
+  await bulkUpdate(PostgreSQLTable.DishOrder, updateData);
+  await Order.updateMany({
+    where: {
+      id: {
+        in: orderIds,
+      },
+    },
+    data: {},
+  });
 };
 
 /**
