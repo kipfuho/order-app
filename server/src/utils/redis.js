@@ -48,7 +48,7 @@ const getCloudLock = async ({ key, periodInSecond }) => {
 
   try {
     const timestamp = `${Date.now()}`;
-    const result = await client.setNX(key, timestamp);
+    const result = await client.setnx(key, timestamp);
     return !!result;
   } catch (err) {
     logger.error(`Error applying lock for ${key}: ${err.stack}`);

@@ -784,13 +784,12 @@ const calculateOrderSessionAndReturn = async (orderSessionId, shopId) => {
   orderSessionDetail.paymentAmount = pretaxPaymentAmount + totalTaxAmount - orderSessionDetail.afterTaxTotalDiscountAmount;
   normalizeDiscountAmount({ orderSessionDetail, beforeTaxTotalDiscountAmount, pretaxPaymentAmount });
 
-  // update order if not audited
+  // update order session detail
   if (
-    !orderSession.auditedAt &&
-    (orderSession.paymentAmount !== orderSessionDetail.paymentAmount ||
-      orderSession.totalTaxAmount !== orderSessionDetail.totalTaxAmount ||
-      orderSession.beforeTaxTotalDiscountAmount !== orderSessionDetail.beforeTaxTotalDiscountAmount ||
-      orderSession.afterTaxTotalDiscountAmount !== orderSessionDetail.afterTaxTotalDiscountAmount)
+    orderSession.paymentAmount !== orderSessionDetail.paymentAmount ||
+    orderSession.totalTaxAmount !== orderSessionDetail.totalTaxAmount ||
+    orderSession.beforeTaxTotalDiscountAmount !== orderSessionDetail.beforeTaxTotalDiscountAmount ||
+    orderSession.afterTaxTotalDiscountAmount !== orderSessionDetail.afterTaxTotalDiscountAmount
   ) {
     await OrderSession.update({
       data: {

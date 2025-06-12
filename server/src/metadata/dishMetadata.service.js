@@ -76,6 +76,12 @@ const getDishesFromCache = async ({ shopId }) => {
         category: true,
         unit: true,
       },
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+        { id: 'asc' },
+      ],
     });
     const newMenuVal = { ...menuVal, dishes };
     redisClient.putJson({ key, jsonVal: newMenuVal });
@@ -93,6 +99,12 @@ const getDishesFromCache = async ({ shopId }) => {
       category: true,
       unit: true,
     },
+    orderBy: [
+      {
+        createdAt: 'asc',
+      },
+      { id: 'asc' },
+    ],
   });
   setSession({ key, value: { ...currentClsHookedValue, dishes } });
   return dishes;
@@ -150,6 +162,12 @@ const getDishCategoriesFromCache = async ({ shopId }) => {
         shopId,
         status: constant.Status.enabled,
       },
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+        { id: 'asc' },
+      ],
     });
     const newMenuVal = { ...menuVal, categories: dishCategories };
     redisClient.putJson({ key, jsonVal: newMenuVal });
@@ -163,6 +181,12 @@ const getDishCategoriesFromCache = async ({ shopId }) => {
       shopId,
       status: constant.Status.enabled,
     },
+    orderBy: [
+      {
+        createdAt: 'asc',
+      },
+      { id: 'asc' },
+    ],
   });
   setSession({ key, value: { ...currentClsHookedValue, categories: dishCategories } });
   return dishCategories;

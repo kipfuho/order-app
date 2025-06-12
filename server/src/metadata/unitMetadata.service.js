@@ -56,6 +56,7 @@ const getUnitsFromCache = async ({ shopId }) => {
         shopId,
         status: { not: constant.Status.disabled },
       },
+      orderBy: [{ name: 'asc' }, { id: 'asc' }],
     });
     redisClient.putJson({ key, jsonVal: units });
     setSession({ key, value: units });
@@ -67,6 +68,7 @@ const getUnitsFromCache = async ({ shopId }) => {
       shopId,
       status: { not: constant.Status.disabled },
     },
+    orderBy: [{ name: 'asc' }, { id: 'asc' }],
   });
   setSession({ key, value: units });
   return units;

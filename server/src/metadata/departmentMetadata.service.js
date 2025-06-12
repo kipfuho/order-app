@@ -54,7 +54,15 @@ const getDepartmentsFromCache = async ({ shopId }) => {
       return departmentsCache;
     }
 
-    const departments = await Department.findMany({ where: { shopId, status: constant.Status.enabled } });
+    const departments = await Department.findMany({
+      where: { shopId, status: constant.Status.enabled },
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+        { id: 'asc' },
+      ],
+    });
     redisClient.putJson({ key, jsonVal: departments });
     setSession({ key, value: departments });
     return departments;
@@ -65,6 +73,12 @@ const getDepartmentsFromCache = async ({ shopId }) => {
       shopId,
       status: constant.Status.enabled,
     },
+    orderBy: [
+      {
+        createdAt: 'asc',
+      },
+      { id: 'asc' },
+    ],
   });
   setSession({ key, value: departments });
   return departments;

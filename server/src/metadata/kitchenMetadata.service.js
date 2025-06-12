@@ -59,6 +59,12 @@ const getKitchensFromCache = async ({ shopId }) => {
         shopId,
         status: constant.Status.enabled,
       },
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+        { id: 'asc' },
+      ],
     });
     redisClient.putJson({ key, jsonVal: kitchens });
     setSession({ key, value: kitchens });
@@ -70,6 +76,12 @@ const getKitchensFromCache = async ({ shopId }) => {
       shopId,
       status: constant.Status.enabled,
     },
+    orderBy: [
+      {
+        createdAt: 'asc',
+      },
+      { id: 'asc' },
+    ],
   });
   setSession({ key, value: kitchens });
   return kitchens;

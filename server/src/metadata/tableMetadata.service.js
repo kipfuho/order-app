@@ -70,6 +70,12 @@ const getTablesFromCache = async ({ shopId }) => {
       include: {
         position: true,
       },
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+        { id: 'asc' },
+      ],
     });
     redisClient.putJson({ key, jsonVal: tables });
     setSession({ key, value: tables });
@@ -84,6 +90,12 @@ const getTablesFromCache = async ({ shopId }) => {
     include: {
       position: true,
     },
+    orderBy: [
+      {
+        createdAt: 'asc',
+      },
+      { id: 'asc' },
+    ],
   });
   setSession({ key, value: tables });
   return tables;
@@ -138,6 +150,12 @@ const getTablePositionsFromCache = async ({ shopId }) => {
         shopId,
         status: constant.Status.enabled,
       },
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+        { id: 'asc' },
+      ],
     });
     redisClient.putJson({ key, jsonVal: tablePositions });
     setSession({ key, value: tablePositions });
@@ -149,6 +167,12 @@ const getTablePositionsFromCache = async ({ shopId }) => {
       shopId,
       status: constant.Status.enabled,
     },
+    orderBy: [
+      {
+        createdAt: 'asc',
+      },
+      { id: 'asc' },
+    ],
   });
   setSession({ key, value: tablePositions });
   return tablePositions;

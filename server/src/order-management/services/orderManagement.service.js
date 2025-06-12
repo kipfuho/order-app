@@ -599,7 +599,7 @@ const checkoutCart = async ({ customerId, shopId, requestBody }) => {
     customerId,
     isCustomerApp: true,
   });
-  const newOrder = await orderUtilService.createNewOrder({
+  await orderUtilService.createNewOrder({
     tableId,
     shopId,
     orderSession,
@@ -608,9 +608,6 @@ const checkoutCart = async ({ customerId, shopId, requestBody }) => {
     isNewOrderSession,
   });
   await clearCart({ customerId, shopId, remainingItems: unavailableCartItems, deletedItems: availableCartItems });
-  const orderSessionDetail = await orderUtilService.calculateOrderSessionAndReturn(orderSession.id);
-  orderSessionDetail.orders = _.filter(orderSessionDetail.orders, (order) => order.id === newOrder.id);
-  return orderSessionDetail;
 };
 
 const discountDishOrder = async ({ shopId, requestBody }) => {

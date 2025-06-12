@@ -78,6 +78,12 @@ const getEmployeesFromCache = async ({ shopId }) => {
         position: true,
         department: true,
       },
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+        { id: 'asc' },
+      ],
     });
     _.forEach(employees, (employee) => {
       // eslint-disable-next-line no-param-reassign
@@ -98,6 +104,12 @@ const getEmployeesFromCache = async ({ shopId }) => {
       position: true,
       department: true,
     },
+    orderBy: [
+      {
+        createdAt: 'asc',
+      },
+      { id: 'asc' },
+    ],
   });
   _.forEach(employees, (employee) => {
     // eslint-disable-next-line no-param-reassign
@@ -194,6 +206,12 @@ const getEmployeePositionsFromCache = async ({ shopId }) => {
         shopId,
         status: constant.Status.enabled,
       },
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+        { id: 'asc' },
+      ],
     });
     redisClient.putJson({ key, jsonVal: employeePositions });
     setSession({ key, value: employeePositions });
@@ -205,6 +223,12 @@ const getEmployeePositionsFromCache = async ({ shopId }) => {
       shopId,
       status: constant.Status.enabled,
     },
+    orderBy: [
+      {
+        createdAt: 'asc',
+      },
+      { id: 'asc' },
+    ],
   });
   setSession({ key, value: employeePositions });
   return employeePositions;
