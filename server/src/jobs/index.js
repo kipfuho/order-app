@@ -14,7 +14,7 @@ prisma.$connect().then(() => {
   worker = new Worker(
     config.jobKey,
     async (job) => {
-      logger.log(`Received job: ${JSON.stringify(job.data)}`);
+      logger.info(`Received job: ${JSON.stringify(job.data)}`);
 
       await runInAsyncContext(
         async () => {
@@ -63,7 +63,7 @@ setInterval(() => {
       getCurrentStore() ? Object.keys(getCurrentStore()).length : 0
     } | Context Active: ${hasActiveContext()}`
   );
-}, 10000);
+}, 60000);
 
 process.on('SIGINT', () => beforeExit('SIGINT'));
 process.on('SIGTERM', () => beforeExit('SIGTERM'));
