@@ -100,6 +100,17 @@ const oneSecondBeforeTodayUTC = () => {
   return new Date(startOfTodayUTC.getTime() - 1000);
 };
 
+const normalizeVietnamese = (str) => {
+  return str
+    .toLowerCase()
+    .normalize("NFD") // separate base characters and accents
+    .replace(/[\u0300-\u036f]/g, "") // remove diacritical marks
+    .replace(/đ/g, "d") // replace đ
+    .replace(/[^a-z0-9\s]/g, "") // remove punctuation/special chars if needed
+    .replace(/\s+/g, " ") // collapse multiple spaces
+    .trim(); // remove leading/trailing spaces
+};
+
 export {
   logger,
   getCountryCurrency,
@@ -109,4 +120,5 @@ export {
   getStatusColor,
   convertHourForDisplay,
   oneSecondBeforeTodayUTC,
+  normalizeVietnamese,
 };

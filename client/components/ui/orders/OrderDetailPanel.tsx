@@ -271,7 +271,7 @@ export default function ActiveOrderSessionPage({
           style={{ maxHeight: height * 0.6, padding: 12 }}
           contentContainerStyle={{ paddingBottom: 24 }}
           renderItem={({ item: order, index }) => (
-            <Surface mode="flat">
+            <Surface mode="flat" style={{ marginBottom: 12 }}>
               <Text
                 style={{
                   alignSelf: "flex-end",
@@ -292,7 +292,7 @@ export default function ActiveOrderSessionPage({
                 ))}
               </View>
               {!_.isEmpty(order.returnedDishOrders) && (
-                <View style={{ gap: 8, marginTop: 8, marginBottom: 8 }}>
+                <View style={{ gap: 8 }}>
                   <Divider />
                   <Text style={{ fontSize: 18, color: theme.colors.error }}>
                     {t("returned_dish")}
