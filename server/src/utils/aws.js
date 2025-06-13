@@ -55,8 +55,8 @@ const getS3ObjectKey = (url) => {
 
 const uploadFileBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType }) => {
   try {
-    throwBadRequest(fileBuffer.length > MAX_FILE_SIZE, getMessageByLocale('fileTooLarge'));
-    throwBadRequest(!ALLOWED_IMAGE_MIME_TYPES.includes(mimeType), getMessageByLocale('notImage'));
+    throwBadRequest(fileBuffer.length > MAX_FILE_SIZE, getMessageByLocale({ key: 'fileTooLarge' }));
+    throwBadRequest(!ALLOWED_IMAGE_MIME_TYPES.includes(mimeType), getMessageByLocale({ key: 'notImage' }));
     // Read content from the file
     const resizeContent = await _resizeAndCompressImageBuffer(fileBuffer);
 

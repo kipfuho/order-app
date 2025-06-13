@@ -52,6 +52,7 @@ const createDish = async ({ shopId, createBody }) => {
       isNewlyCreated: createBody.isNewlyCreated,
       isTaxIncludedPrice: createBody.isTaxIncludedPrice,
       outOfStockNotification: createBody.outOfStockNotification,
+      tags: createBody.tags,
     }),
     include: {
       category: true,
@@ -96,6 +97,7 @@ const updateDish = async ({ shopId, dishId, updateBody }) => {
     isNewlyCreated: updateBody.isNewlyCreated,
     isTaxIncludedPrice: updateBody.isTaxIncludedPrice,
     outOfStockNotification: updateBody.outOfStockNotification,
+    tags: updateBody.tags,
   });
   const updatedDish = await Dish.update({
     data: compactUpdateBody,

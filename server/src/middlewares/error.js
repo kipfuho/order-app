@@ -8,7 +8,7 @@ const errorConverter = (err, req, res, next) => {
   let error = err;
   if (!(error instanceof ApiError)) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      next(new ApiError(httpStatus.BAD_REQUEST, getMessageByLocale('fileTooLarge'), true, err.stack));
+      next(new ApiError(httpStatus.BAD_REQUEST, getMessageByLocale({ key: 'fileTooLarge' }), true, err.stack));
     }
     const statusCode = error.statusCode ? httpStatus.BAD_REQUEST : httpStatus.INTERNAL_SERVER_ERROR;
     const message = error.message || httpStatus[statusCode];

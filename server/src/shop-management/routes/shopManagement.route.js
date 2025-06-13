@@ -97,7 +97,7 @@ const upload = multer({
   limits: { fileSize: MAX_FILE_SIZE },
   fileFilter(req, file, cb) {
     if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-      return cb(new ApiError(httpStatus.BAD_REQUEST, getMessageByLocale('notImage')));
+      return cb(new ApiError(httpStatus.BAD_REQUEST, getMessageByLocale({ key: 'notImage' })));
     }
     return cb(undefined, true);
   },

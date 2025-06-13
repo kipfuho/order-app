@@ -33,7 +33,7 @@ model User {
 
 model S3Log {
   id        String   @id @default(uuid())
-  key       String
+  key       String   @unique
   inUse     Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
