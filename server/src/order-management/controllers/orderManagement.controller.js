@@ -7,7 +7,10 @@ const {
   convertOrderSessionHistoryForResponse,
   convertOrderSessionForCartCheckoutHistoryResponse,
 } = require('../converters/orderSession.converter');
-const { convertOrderForResponse } = require('../converters/order.converter');
+const {
+  convertOrderForResponse,
+  convertUnconfirmedOrderForCartCheckoutHistoryResponse,
+} = require('../converters/order.converter');
 const { convertCartForResponse } = require('../converters/cart.converter');
 
 const createOrder = catchAsync(async (req, res) => {
@@ -164,9 +167,11 @@ const getUnconfirmedCheckoutCartHistory = catchAsync(async (req, res) => {
     cursor,
     limit,
   });
-  res
-    .status(httpStatus.OK)
-    .send({ message: 'OK', histories: paginationResult.data || [], nextCursor: paginationResult.nextCursor });
+  res.status(httpStatus.OK).send({
+    message: 'OK',
+    histories: (paginationResult.data || []).map((item) => convertUnconfirmedOrderForCartCheckoutHistoryResponse(item)),
+    nextCursor: paginationResult.nextCursor,
+  });
 });
 
 const getUnconfirmedOrder = catchAsync(async (req, res) => {

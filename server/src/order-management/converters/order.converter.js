@@ -35,6 +35,15 @@ const convertOrderForResponse = (order) => {
 };
 /* eslint-enable no-param-reassign */
 
+/* eslint-disable no-param-reassign */
+const convertUnconfirmedOrderForCartCheckoutHistoryResponse = (order) => {
+  order.createdAt = formatDateHHMMDDMMYYYY(order.createdAt);
+
+  return order;
+};
+/* eslint-enable no-param-reassign */
+
 module.exports = {
   convertOrderForResponse,
+  convertUnconfirmedOrderForCartCheckoutHistoryResponse,
 };

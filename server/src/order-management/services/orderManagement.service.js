@@ -823,6 +823,7 @@ const getCheckoutCartHistory = async ({ customerId, shopId, cursor, limit = 20 }
             select: {
               dishId: true,
               name: true,
+              price: true,
               quantity: true,
               note: true,
             },
@@ -863,6 +864,7 @@ const getUnconfirmedCheckoutCartHistory = async ({ customerId, shopId, cursor, l
         select: {
           dishId: true,
           name: true,
+          price: true,
           quantity: true,
           note: true,
         },
