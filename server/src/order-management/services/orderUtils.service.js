@@ -820,6 +820,7 @@ const calculateOrderSessionAndReturn = async (orderSessionId, shopId) => {
 const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, customerId, isNewOrderSession }) => {
   try {
     const shop = await getShopFromCache({ shopId });
+    const table = await getTableFromCache({ shopId, tableId });
     const dishes = await getDishesFromCache({ shopId });
     const units = await getUnitsFromCache({ shopId });
     const unitById = _.keyBy(units, 'id');
@@ -843,6 +844,7 @@ const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, custo
     const order = await Order.create({
       data: {
         tableId,
+        tableName: table.name,
         shopId,
         orderSessionId: _.get(orderSession, 'id'),
         orderNo,

@@ -1,28 +1,20 @@
 const _ = require('lodash');
-const { Order, OrderSession, S3Log } = require('../models');
-const { DishOrderStatus } = require('../utils/constant');
+const { Order, S3Log, Table } = require('../models');
 const { deleteObjectFromS3 } = require('../utils/aws');
 const logger = require('../config/logger');
+const { bulkUpdate, PostgreSQLTable } = require('../utils/prisma');
 
 const auditOrders = async () => {
-  const allOrders = await Order.find();
-  const allOrderSession = await OrderSession.find();
-  const orderSessionById = _.keyBy(allOrderSession, 'id');
-  allOrders.forEach((order) => {
-    order.dishOrders.forEach((dishOrder, index) => {
-      // eslint-disable-next-line no-param-reassign
-      dishOrder.status = DishOrderStatus.confirmed;
-      // eslint-disable-next-line no-param-reassign
-      dishOrder.dishOrderNo = index + 1;
-    });
+  const allOrders = await Order.findMany();
+  const tables = await Table.findMany();
+  const tableById = _.keyBy(tables, 'id');
 
-    if (orderSessionById[order.orderSessionId]) {
-      // eslint-disable-next-line no-param-reassign
-      order.orderSessionStatus = orderSessionById[order.orderSessionId].status;
-    }
-  });
+  const updateData = _.map(allOrders, (order) => ({
+    id: order.id,
+    tableName: _.get(tableById[order.tableId], 'name') || '',
+  }));
 
-  await Order.bulkSave(allOrders);
+  await bulkUpdate(PostgreSQLTable.Order, updateData);
 };
 
 const deleteUnusedS3 = async () => {

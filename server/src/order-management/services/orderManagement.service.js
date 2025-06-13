@@ -858,6 +858,7 @@ const getUnconfirmedCheckoutCartHistory = async ({ customerId, shopId, cursor, l
     select: {
       id: true,
       createdAt: true,
+      tableName: true,
       dishOrders: {
         select: {
           dishId: true,

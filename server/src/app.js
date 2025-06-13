@@ -78,6 +78,10 @@ app.get('/payment/failed', function (_, res) {
   });
 });
 
+app.get('/favicon.ico', function (_, res) {
+  res.sendFile(`${staticFolder}/favicon.ico`);
+});
+
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
   next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
