@@ -11,6 +11,8 @@ const { getMessageByLocale } = require('../locale');
 const logger = require('../config/logger');
 const config = require('../config/config');
 
+const _getShopIdFromRequest = (req) => req.shopId || req.params.shopId || _.get(req, 'body.shopId');
+
 const _verifyAdmin = (req, requiredRights) => {
   const { user } = req;
   if (user.role === ROLES.ADMIN && requiredRights.length) {
@@ -39,10 +41,7 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
     req.isCustomerRequest = info.isCustomer;
     req.isShopRequest = !req.isCustomerRequest;
 
-    let { shopId } = req;
-    if (!shopId) {
-      shopId = req.params.shopId || _.get(req, 'body.shopId');
-    }
+    const shopId = _getShopIdFromRequest(req);
     if (!shopId) {
       setOperatorToSession({
         user,
@@ -104,11 +103,13 @@ const isFromInternal = (req) => {
 
 const _resolveFromInternalReq = async (req, resolve) => {
   try {
-    const shopId = req.shopId || req.params.shopId;
+    const shopId = _getShopIdFromRequest(req);
+    if (shopId) {
+      const shop = await getShopFromCache({ shopId });
+      req.shop = shop;
+      setShopToSession(shop);
+    }
 
-    const shop = await getShopFromCache({ shopId });
-    req.shop = shop;
-    setShopToSession(shop);
     const permissions = Object.values(PermissionType);
     setOperatorToSession({
       permissions,

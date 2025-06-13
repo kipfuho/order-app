@@ -33,6 +33,10 @@ const computeTFIDF = (tagDocs) => {
 
   // Compute term frequency (TF)
   const termFrequencies = tagDocs.map((tags) => {
+    if (tags.length === 0) {
+      return tagList.map(() => 0);
+    }
+
     return tagList.map((tag) => {
       const count = tags.filter((t) => t === tag).length;
       return count / tags.length;
@@ -60,28 +64,31 @@ const cosineSimilarity = (vecA, vecB) => {
   return magnitudeA && magnitudeB ? dotProduct / (magnitudeA * magnitudeB) : 0;
 };
 
-const getSimilarDishesTFIDF = ({ dishId, allDishes }) => {
-  const cacheKey = `tfidf_${allDishes.map((d) => d.id).join('_')}`;
-  let tfidfScores = redisClient.getJson(cacheKey);
-
-  if (!tfidfScores) {
-    tfidfScores = computeTFIDF(allDishes.map((dish) => dish.tags || []));
-    redisClient.putJson(cacheKey, tfidfScores);
-  }
-
-  const baseDish = _.find(allDishes, (dish) => dish.id === dishId);
+const getSimilarDishesTFIDF = ({ dishId, allDishes, dishById, tfidfScores }) => {
+  const baseDish = dishById[dishId];
+  const baseIndex = baseDish._index;
   const baseTags = new Set(baseDish.tags || []);
+  const baseVector = tfidfScores[baseIndex];
 
-  const similarities = _.map(allDishes, (dish, index) => {
-    const tagOverlap = _.intersection(baseTags, dish.tags || []).length / baseTags.size || 1;
-    const tfidfSimilarity = cosineSimilarity(tfidfScores[_.findIndex(allDishes, { id: dishId })], tfidfScores[index]);
-    return {
-      dish,
-      similarity: 0.7 * tfidfSimilarity + 0.3 * tagOverlap,
-    };
-  });
+  return _.chain(allDishes)
+    .map((dish, index) => {
+      if (dish.id === dishId) return null;
 
-  return _(similarities).sortBy('similarity').reverse().slice(1, 4).map('dish').value();
+      const tagOverlap = baseTags.size > 0 ? _.intersection(baseTags, dish.tags || []).length / baseTags.size : 0;
+
+      const tfidfSimilarity = cosineSimilarity(baseVector, tfidfScores[index]);
+
+      return {
+        dish,
+        similarity: 0.7 * tfidfSimilarity + 0.3 * tagOverlap,
+      };
+    })
+    .compact()
+    .sortBy('similarity')
+    .reverse()
+    .slice(0, 3)
+    .map('dish')
+    .value();
 };
 
 const getCustomerPreferences = ({ orderSessions, customerId, dishById }) => {
@@ -318,10 +325,15 @@ const combineRecommendations = ({
 
 const recommendDishes = async ({ customerId, shopId, limit = 1000 }) => {
   const allDishes = await getDishesFromCache({ shopId });
+  allDishes.forEach((dish, index) => {
+    // eslint-disable-next-line no-param-reassign
+    dish._index = index;
+  });
   const dishById = _.keyBy(allDishes, 'id');
+
   const key = `recommendations_${customerId}`;
   if (redisClient.isRedisConnected()) {
-    const cachedRecommendations = redisClient.getJson(key);
+    const cachedRecommendations = await redisClient.getJson(key);
     if (!_.isEmpty(cachedRecommendations)) {
       const { validTimestamp, dishIds } = cachedRecommendations;
       if (validTimestamp <= Date.now()) {
@@ -332,10 +344,16 @@ const recommendDishes = async ({ customerId, shopId, limit = 1000 }) => {
   }
 
   const orderSessions = await getOrderSessionsForRecommendation({ shopId, limit, timeWindowDays: 30 });
+  const cacheKey = `tfidf_${shopId}_${allDishes.map((d) => d.id).join('_')}`;
+  let tfidfScores = await redisClient.getJson(cacheKey);
+  if (!tfidfScores) {
+    tfidfScores = computeTFIDF(allDishes.map((dish) => dish.tags || []));
+    await redisClient.putJson({ key: cacheKey, jsonVal: tfidfScores });
+  }
 
   // Get recommendations from various sources
   const preferredDishes = getCustomerPreferences({ orderSessions, customerId, dishById });
-  const similarDishes = preferredDishes.flatMap((dish) => getSimilarDishesTFIDF({ dishId: dish.id, allDishes }));
+  const similarDishes = preferredDishes.flatMap((dish) => getSimilarDishesTFIDF({ dishId: dish.id, dishById, tfidfScores }));
   const patternDishes = recommendByDayPattern({ orderSessions, customerId, dishById });
   const seasonalDishes = getSeasonalRecommendations({ allDishes });
   const contextualDishes = getContextualRecommendations({ allDishes });
