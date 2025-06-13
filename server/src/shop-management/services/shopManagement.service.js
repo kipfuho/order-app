@@ -171,8 +171,9 @@ const deleteShop = async ({ shopId }) => {
 };
 
 const uploadImage = async ({ image }) => {
-  const fileName = `${crypto.randomBytes(3).toString('hex')}_${refineFileNameForUploading(image.originalname)}`;
-  const url = await aws.uploadFileBufferToS3({
+  const { base } = refineFileNameForUploading(image.originalname);
+  const fileName = `${crypto.randomBytes(3).toString('hex')}_${base}`;
+  const url = await aws.uploadImageBufferToS3({
     fileBuffer: image.buffer,
     targetFilePath: `shops/${fileName}`,
     mimeType: image.mimetype,

@@ -180,8 +180,9 @@ const getDishTypes = (shopId) => {
 };
 
 const uploadImage = async ({ shopId, image }) => {
-  const fileName = `${crypto.randomBytes(3).toString('hex')}_${refineFileNameForUploading(image.originalname)}`;
-  const url = await aws.uploadFileBufferToS3({
+  const { base } = refineFileNameForUploading(image.originalname);
+  const fileName = `${crypto.randomBytes(3).toString('hex')}_${base}`;
+  const url = await aws.uploadImageBufferToS3({
     fileBuffer: image.buffer,
     targetFilePath: `shops/${shopId}/dishes/${fileName}`,
     mimeType: image.mimetype,

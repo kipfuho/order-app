@@ -65,14 +65,22 @@ const getRoundPaymentAmount = (amount) => {
   return _getRoundPrice(amount, 'taxRoundingType');
 };
 
-const refineFileNameForUploading = (fileName) => {
-  const splits = (fileName || '').split('.');
-  const ext = splits.pop();
-  const baseName = splits.join('.').replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>{}[\]\\/]/gi, '_');
-  if (ext) {
-    return `${baseName}.${ext}`;
+const refineFileNameForUploading = (fileName, maxLength = 25) => {
+  if (!fileName) {
+    return {
+      base: 'unnamed_file',
+      ext: '',
+    };
   }
-  return baseName;
+
+  const splits = fileName.split('.');
+  const ext = splits.length > 1 ? splits.pop() : '';
+  const baseName = splits.join('.').replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>{}[\]\\/]/gi, '_');
+  const safeBase = baseName.slice(0, Math.max(0, maxLength - (ext.length || 0) - 1));
+  return {
+    base: safeBase,
+    ext,
+  };
 };
 
 const formatIntegerWithZeroPadding = (num, places) => String(num).padStart(places, '0');

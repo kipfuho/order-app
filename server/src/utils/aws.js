@@ -53,18 +53,23 @@ const getS3ObjectKey = (url) => {
   }
 };
 
-const uploadFileBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType }) => {
+const uploadImageBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType, shouldRetainImageQuality = false }) => {
   try {
     throwBadRequest(fileBuffer.length > MAX_FILE_SIZE, getMessageByLocale({ key: 'fileTooLarge' }));
     throwBadRequest(!ALLOWED_IMAGE_MIME_TYPES.includes(mimeType), getMessageByLocale({ key: 'notImage' }));
-    // Read content from the file
-    const resizeContent = await _resizeAndCompressImageBuffer(fileBuffer);
+
+    let imageBuffer = fileBuffer;
+    let imageMimeType = mimeType;
+    if (!shouldRetainImageQuality) {
+      imageBuffer = await _resizeAndCompressImageBuffer(fileBuffer);
+      imageMimeType = 'image/jpeg';
+    }
 
     const params = {
       Bucket: s3BucketName,
       Key: targetFilePath,
-      Body: resizeContent,
-      ContentType: mimeType,
+      Body: imageBuffer,
+      ContentType: imageMimeType,
     };
     // Uploading files to the bucket
     await s3.putObject(params);
@@ -145,7 +150,7 @@ const publishSingleAppSyncEvent = async ({ channel, event }) => {
 
 module.exports = {
   getS3ObjectKey,
-  uploadFileBufferToS3,
+  uploadImageBufferToS3,
   deleteObjectFromS3,
   publishAppSyncEvents,
   publishSingleAppSyncEvent,

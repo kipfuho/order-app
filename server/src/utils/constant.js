@@ -1,5 +1,5 @@
 const SESSION_NAME_SPACE = 'userSession';
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 5 MB
 const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
 
 const Language = {
