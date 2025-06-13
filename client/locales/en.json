@@ -234,5 +234,15 @@
   "something_wrong": "Something went wrong. Try again.",
   "tab_approve_order": "Approve",
   "tab_order_management": "Order",
-  "tab_order_history": "History"
+  "tab_order_history": "History",
+  "returned_dish": "Returned dishes",
+  "order_again": "Order again",
+  "pay_using_vnpay": "Pay using VNPay",
+  "payment_complete": "Payment completed",
+  "has_been_paid": "has been paid",
+  "new_order": "New created order",
+  "has_new_order": "has new order",
+  "update_order": "Updated Order",
+  "has_been_update": "has been updated",
+  "no_results": "No results"
 }

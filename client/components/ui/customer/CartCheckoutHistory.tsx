@@ -123,7 +123,7 @@ export default function CartCheckoutHistory({
             initialContainerPoolRatio={1.5}
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
-            contentContainerStyle={{ padding: 10 }}
+            contentContainerStyle={{ padding: 10, gap: 16 }}
             showsHorizontalScrollIndicator={false}
           />
         </View>

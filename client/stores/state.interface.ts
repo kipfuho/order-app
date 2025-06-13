@@ -231,7 +231,8 @@ interface OrderCartCheckoutHistory {
   dishOrders: {
     dishId: string;
     name: string;
-    quantity: string;
+    quantity: number;
+    price: number;
     note: string;
   }[];
   createdAt: string;
@@ -248,7 +249,8 @@ interface OrderSessionCartCheckoutHistory {
     dishOrders: {
       dishId: string;
       name: string;
-      quantity: string;
+      quantity: number;
+      price: number;
       note: string;
     }[];
   }[];

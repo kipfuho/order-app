@@ -234,5 +234,15 @@
   "something_wrong": "Có gì đó đã xảy ra, hãy thử lại.",
   "tab_approve_order": "Xác nhận",
   "tab_order_management": "Quản lý",
-  "tab_order_history": "Lịch sử"
+  "tab_order_history": "Lịch sử",
+  "returned_dish": "Các món bị trả",
+  "order_again": "Đặt lại",
+  "pay_using_vnpay": "Thanh toán bằng VNPay",
+  "payment_complete": "Thanh toán thành công",
+  "has_been_paid": "đã được thanh toán",
+  "new_order": "Có đơn mới được tạo",
+  "has_new_order": "có đơn mới",
+  "update_order": "Có đơn mới được cập nhật",
+  "has_been_update": "được cập nhật",
+  "no_results": "Không có kết quả"
 }
