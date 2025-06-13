@@ -9,16 +9,35 @@ import {
 } from "@constants/utils";
 import { CustomMD3Theme } from "@constants/theme";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
+import { useTranslation } from "react-i18next";
 
-const TableForOrderCurrentInfo = ({ table }: { table: TableForOrder }) => {
+const TableForOrderCurrentInfoTime = ({ table }: { table: TableForOrder }) => {
   const theme = useTheme<CustomMD3Theme>();
   const now = useCurrentTime();
+  const minutesSinceOrderCreated = getMinuteForDisplay(
+    now - (table.orderCreatedAtEpoch ?? now),
+  );
+
+  return (
+    <Text
+      style={{
+        fontSize: 16,
+        color: getStatusColor(theme, minutesSinceOrderCreated).view,
+        marginLeft: 8,
+        fontWeight: "bold",
+      }}
+    >
+      {minutesSinceOrderCreated}
+    </Text>
+  );
+};
+
+const MemoizedTableForOrderCurrentInfoTime = memo(TableForOrderCurrentInfoTime);
+
+const TableForOrderCurrentInfo = ({ table }: { table: TableForOrder }) => {
+  const { t } = useTranslation();
 
   if (table.numberOfOrderSession) {
-    const minutesSinceOrderCreated = getMinuteForDisplay(
-      now - (table.orderCreatedAtEpoch ?? now),
-    );
-
     return (
       <Surface
         mode="flat"
@@ -36,17 +55,10 @@ const TableForOrderCurrentInfo = ({ table }: { table: TableForOrder }) => {
             {table.numberOfCustomer}
           </Text>
           <Text style={{ fontSize: 12, marginLeft: 2 }}>P</Text>
-          <Text
-            style={{
-              fontSize: 16,
-              color: getStatusColor(theme, minutesSinceOrderCreated).view,
-              marginLeft: 8,
-              fontWeight: "bold",
-            }}
-          >
-            {minutesSinceOrderCreated}
+          <MemoizedTableForOrderCurrentInfoTime table={table} />
+          <Text style={{ fontSize: 12, marginLeft: 2 }}>
+            {t("minute_short")}
           </Text>
-          <Text style={{ fontSize: 12, marginLeft: 2 }}>m</Text>
         </View>
 
         {/* Total payment */}

@@ -91,7 +91,7 @@ export default function UnconfirmedCartCheckoutHistoryCard({
                   </Text>
                 </View>
               </View>
-              {index !== order.dishOrders.length - 1 && <Divider />}
+              <Divider />
             </>
           );
         })}

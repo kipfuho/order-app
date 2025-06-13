@@ -2,6 +2,8 @@ const { formatDateHHMMDDMMYYYY } = require('../../utils/common');
 
 /* eslint-disable no-param-reassign */
 const convertDishOrderForKitchenResponse = (dishOrder) => {
+  dishOrder.createdAt = formatDateHHMMDDMMYYYY(dishOrder.createdAt);
+
   delete dishOrder.price;
   delete dishOrder.isTaxIncludedPrice;
   delete dishOrder.taxIncludedPrice;

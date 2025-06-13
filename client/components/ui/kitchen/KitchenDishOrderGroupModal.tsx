@@ -20,6 +20,58 @@ import {
 } from "@stores/shop.slice";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 
+const TableKitchenDishOrderTime = ({
+  item,
+  theme,
+}: {
+  item: KitchenDishOrder;
+  theme: CustomMD3Theme;
+}) => {
+  const { t } = useTranslation();
+  const now = useCurrentTime();
+  const minutesSinceOrderCreated = getMinuteForDisplay(
+    now - new Date(item.createdAt).getTime(),
+  );
+  const color = getStatusColor(theme, minutesSinceOrderCreated);
+
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+      }}
+    >
+      <Text style={{ fontSize: 16 }}>x{item.quantity}</Text>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "flex-end",
+          backgroundColor: color.view,
+          padding: 1,
+          paddingHorizontal: 4,
+          borderRadius: 4,
+        }}
+      >
+        <Text style={{ fontSize: 16, color: color.onView }}>
+          {minutesSinceOrderCreated}
+        </Text>
+        <Text
+          style={{
+            fontSize: 12,
+            marginLeft: 2,
+            color: color.onView,
+          }}
+        >
+          {t("minute_short")}
+        </Text>
+      </View>
+    </View>
+  );
+};
+
+const MemoizedTableKitchenDishOrderTime = memo(TableKitchenDishOrderTime);
+
 const TableKitchenDishOrder = ({
   item,
   handleOnPress,
@@ -30,11 +82,6 @@ const TableKitchenDishOrder = ({
   handleOnLongPress: (item: KitchenDishOrder) => void;
 }) => {
   const theme = useTheme<CustomMD3Theme>();
-  const now = useCurrentTime();
-  const minutesSinceOrderCreated = getMinuteForDisplay(
-    now - new Date(item.createdAt).getTime(),
-  );
-  const color = getStatusColor(theme, minutesSinceOrderCreated);
   const { kitchenDishOrder } = useSelector((state: RootState) => state.shop);
 
   return (
@@ -59,37 +106,7 @@ const TableKitchenDishOrder = ({
         }}
       >
         <Text style={{ fontSize: 16 }}>{item.tableName}</Text>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <Text style={{ fontSize: 16 }}>{item.quantity}</Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "flex-end",
-              backgroundColor: color.view,
-              padding: 1,
-              paddingHorizontal: 4,
-            }}
-          >
-            <Text style={{ fontSize: 16, color: color.onView }}>
-              {minutesSinceOrderCreated}
-            </Text>
-            <Text
-              style={{
-                fontSize: 12,
-                marginLeft: 2,
-                color: color.onView,
-              }}
-            >
-              m
-            </Text>
-          </View>
-        </View>
+        <MemoizedTableKitchenDishOrderTime item={item} theme={theme} />
       </Surface>
     </TouchableOpacity>
   );

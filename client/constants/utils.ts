@@ -100,7 +100,7 @@ const oneSecondBeforeTodayUTC = () => {
   return new Date(startOfTodayUTC.getTime() - 1000);
 };
 
-const normalizeVietnamese = (str) => {
+const normalizeVietnamese = (str: string) => {
   return str
     .toLowerCase()
     .normalize("NFD") // separate base characters and accents

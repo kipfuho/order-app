@@ -244,5 +244,6 @@
   "has_new_order": "has new order",
   "update_order": "Updated Order",
   "has_been_update": "has been updated",
-  "no_results": "No results"
+  "no_results": "No results",
+  "minute_short": "m"
 }

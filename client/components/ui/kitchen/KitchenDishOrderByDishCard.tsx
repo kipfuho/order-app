@@ -14,6 +14,7 @@ import {
 } from "@/stores/shop.slice";
 import { useUpdateUncookedDishOrdersRequestMutation } from "@/stores/apiSlices/kitchenApi.slice";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
+import { useTranslation } from "react-i18next";
 
 interface KitchenDishOrderProps {
   dishOrders: KitchenDishOrder[];
@@ -27,6 +28,7 @@ const TimeDifferentAndDishQuantity = ({
   dishOrders: KitchenDishOrder[];
   theme: CustomMD3Theme;
 }) => {
+  const { t } = useTranslation();
   const now = useCurrentTime();
   const minutesSinceOrderCreated = getMinuteForDisplay(
     now - new Date(dishOrders[0].createdAt).getTime(),
@@ -51,7 +53,7 @@ const TimeDifferentAndDishQuantity = ({
           {minutesSinceOrderCreated}
         </Text>
         <Text style={{ fontSize: 12, marginLeft: 2, color: color.onView }}>
-          m
+          {t("minute_short")}
         </Text>
       </View>
       <Text
@@ -187,10 +189,21 @@ const KitchenDishOrderByDishCard: React.FC<KitchenDishOrderProps> = ({
             </ScrollView>
           </View>
 
-          <MemoizedTimeDifferentAndDishQuantity
-            dishOrders={dishOrders}
-            theme={theme}
-          />
+          <View>
+            <Text
+              style={{
+                fontSize: 14,
+                alignSelf: "flex-end",
+                color: theme.colors.outline,
+              }}
+            >
+              {dishOrders[0].createdAt}
+            </Text>
+            <MemoizedTimeDifferentAndDishQuantity
+              dishOrders={dishOrders}
+              theme={theme}
+            />
+          </View>
         </Surface>
       </TouchableOpacity>
     </>

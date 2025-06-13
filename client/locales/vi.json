@@ -244,5 +244,6 @@
   "has_new_order": "có đơn mới",
   "update_order": "Có đơn mới được cập nhật",
   "has_been_update": "được cập nhật",
-  "no_results": "Không có kết quả"
+  "no_results": "Không có kết quả",
+  "minute_short": "phút"
 }

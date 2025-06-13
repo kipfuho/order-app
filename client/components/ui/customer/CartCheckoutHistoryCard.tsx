@@ -152,15 +152,16 @@ const CartCheckoutHistoryCard = ({
               }}
             >
               <Text
-                style={{ fontSize: 16 }}
+                style={{ fontSize: 16, fontWeight: "bold" }}
               >{`${t("times")}: ${index + 1}`}</Text>
-              {order.customerId && (
+              {/* {order.customerId && (
                 <Button mode="contained-tonal" style={{ borderRadius: 8 }}>
                   {t("order_again")}
                 </Button>
-              )}
+              )} */}
             </View>
             <MemoizedCartHistoryOrderCard order={order} />
+            <Divider />
           </>
         ))}
       </View>

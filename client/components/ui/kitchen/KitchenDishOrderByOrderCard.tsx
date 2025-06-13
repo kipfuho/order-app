@@ -17,6 +17,7 @@ import {
   updateKitchenDishOrder,
 } from "@stores/shop.slice";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
+import { useTranslation } from "react-i18next";
 
 interface KitchenDishOrderProps {
   dishOrder: KitchenDishOrder;
@@ -30,6 +31,7 @@ const TimeDifferentAndDishQuantity = ({
   dishOrder: KitchenDishOrder;
   theme: CustomMD3Theme;
 }) => {
+  const { t } = useTranslation();
   const now = useCurrentTime();
   const minutesSinceOrderCreated = getMinuteForDisplay(
     now - new Date(dishOrder.createdAt).getTime(),
@@ -54,7 +56,7 @@ const TimeDifferentAndDishQuantity = ({
           {minutesSinceOrderCreated}
         </Text>
         <Text style={{ fontSize: 12, marginLeft: 2, color: color.onView }}>
-          m
+          {t("minute_short")}
         </Text>
       </View>
       <Text
@@ -199,10 +201,21 @@ const KitchenDishOrderByOrderCard: React.FC<KitchenDishOrderProps> = ({
           </View>
         </View>
 
-        <MemoizedTimeDifferentAndDishQuantity
-          dishOrder={dishOrder}
-          theme={theme}
-        />
+        <View>
+          <Text
+            style={{
+              fontSize: 14,
+              alignSelf: "flex-end",
+              color: theme.colors.outline,
+            }}
+          >
+            {dishOrder.createdAt}
+          </Text>
+          <MemoizedTimeDifferentAndDishQuantity
+            dishOrder={dishOrder}
+            theme={theme}
+          />
+        </View>
       </Surface>
     </TouchableOpacity>
   );
