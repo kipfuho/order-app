@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const sharp = require('sharp');
+const mime = require('mime-types');
 const AWS = require('@aws-sdk/client-s3');
 const axios = require('axios');
 const https = require('node:https');
@@ -65,9 +66,10 @@ const uploadImageBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType, sho
       imageMimeType = 'image/jpeg';
     }
 
+    const completeTargetPath = `${targetFilePath}.${mime.extension(imageMimeType)}`;
     const params = {
       Bucket: s3BucketName,
-      Key: targetFilePath,
+      Key: completeTargetPath,
       Body: imageBuffer,
       ContentType: imageMimeType,
     };
@@ -76,11 +78,11 @@ const uploadImageBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType, sho
     // create log for object
     await S3Log.create({
       data: {
-        key: targetFilePath,
+        key: completeTargetPath,
       },
     });
 
-    const resultUrl = `${s3BaseUrl}/${targetFilePath}`;
+    const resultUrl = `${s3BaseUrl}/${completeTargetPath}`;
     return resultUrl;
   } catch (err) {
     logger.error(`Error deleting file: ${err.message}`);

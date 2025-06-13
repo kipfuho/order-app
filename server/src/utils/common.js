@@ -65,7 +65,7 @@ const getRoundPaymentAmount = (amount) => {
   return _getRoundPrice(amount, 'taxRoundingType');
 };
 
-const refineFileNameForUploading = (fileName, maxLength = 25) => {
+const refineFileNameForUploading = (fileName, maxLength = 50) => {
   if (!fileName) {
     return {
       base: 'unnamed_file',
