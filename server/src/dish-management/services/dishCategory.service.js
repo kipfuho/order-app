@@ -25,6 +25,11 @@ const createDishCategory = async ({ shopId, createBody }) => {
     _.find(dishCategories, (dishCategory) => dishCategory.name === createBody.name),
     getMessageByLocale({ key: 'dishCategory.alreadyExist' })
   );
+  throwBadRequest(
+    _.find(dishCategories, (dishCategory) => dishCategory.code === createBody.code),
+    getMessageByLocale({ key: 'code.duplicated' })
+  );
+
   const dishCategory = await DishCategory.create({
     data: _.pickBy({
       name: createBody.name,
@@ -46,6 +51,10 @@ const updateDishCategory = async ({ shopId, dishCategoryId, updateBody }) => {
   throwBadRequest(
     _.find(dishCategories, (dc) => dc.name === updateBody.name && dc.id !== dishCategoryId),
     getMessageByLocale({ key: 'dishCategory.alreadyExist' })
+  );
+  throwBadRequest(
+    _.find(dishCategories, (dc) => dc.code === updateBody.code && dc.id !== dishCategoryId),
+    getMessageByLocale({ key: 'code.duplicated' })
   );
 
   const compactUpdateBody = _.pickBy({

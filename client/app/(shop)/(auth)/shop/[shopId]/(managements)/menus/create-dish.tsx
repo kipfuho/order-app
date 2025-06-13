@@ -11,6 +11,7 @@ import {
   Surface,
   Switch,
   Text,
+  IconButton,
 } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import { Collapsible } from "@components/Collapsible";
@@ -55,6 +56,8 @@ export default function CreateDishPage() {
   const [taxRate, setTaxRate] = useState("");
   const [images, setImages] = useState<{ uri: string; loading: boolean }[]>([]);
   const [isTaxIncludedPrice, setIsTaxIncludedPrice] = useState(false);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
 
   const resetField = () => {
     setName("");
@@ -65,6 +68,7 @@ export default function CreateDishPage() {
     setUnit(units[0]);
     setTaxRate("");
     setImages([]);
+    setTags([]);
   };
 
   const uploadDishImage = async (formData: FormData) => {
@@ -121,6 +125,7 @@ export default function CreateDishPage() {
         taxRate: _.toNumber(taxRate),
         isTaxIncludedPrice,
         imageUrls: _.map(images, "uri"),
+        tags,
       }).unwrap();
 
       resetField();
@@ -184,6 +189,62 @@ export default function CreateDishPage() {
                 setItem={setCategory}
                 getItemValue={(item: DishCategory) => item?.name}
               />
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: 10,
+                }}
+              >
+                <TextInput
+                  label={t("add_tag")}
+                  value={tagInput}
+                  onChangeText={setTagInput}
+                  onSubmitEditing={() => {
+                    const trimmed = tagInput.trim();
+                    if (trimmed && !tags.includes(trimmed)) {
+                      setTags([...tags, trimmed]);
+                    }
+                    setTagInput("");
+                  }}
+                  returnKeyType="done"
+                  mode="outlined"
+                  style={{ flex: 1, marginBottom: 10 }}
+                />
+                <IconButton
+                  onPress={() => {
+                    const trimmed = tagInput.trim();
+                    if (trimmed && !tags.includes(trimmed)) {
+                      setTags([...tags, trimmed]);
+                      setTagInput("");
+                    }
+                  }}
+                  disabled={!tagInput.trim()}
+                  mode="contained"
+                  icon="plus"
+                />
+              </View>
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  gap: 8,
+                  marginBottom: 20,
+                }}
+              >
+                {tags.map((tag) => (
+                  <Button
+                    key={tag}
+                    mode="outlined"
+                    compact
+                    onPress={() => setTags(tags.filter((t) => t !== tag))}
+                  >
+                    {tag} ✕
+                  </Button>
+                ))}
+              </View>
             </Collapsible>
 
             {/* Price Collapsible */}

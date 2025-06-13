@@ -146,6 +146,7 @@ const createDishRequest = async ({
   unit,
   isTaxIncludedPrice = false,
   imageUrls = [],
+  tags = [],
 }: CreateDishRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
@@ -158,6 +159,7 @@ const createDishRequest = async ({
     unitId: string;
     isTaxIncludedPrice: boolean;
     imageUrls: string[];
+    tags: string[];
   } = {
     name,
     code,
@@ -168,6 +170,7 @@ const createDishRequest = async ({
     unitId: unit.id,
     isTaxIncludedPrice,
     imageUrls,
+    tags,
   };
 
   const result: { dish: Dish } = await apiRequest({
@@ -217,6 +220,7 @@ const updateDishRequest = async ({
   isTaxIncludedPrice = false,
   imageUrls = [],
   status,
+  tags = [],
 }: UpdateDishRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
@@ -230,6 +234,7 @@ const updateDishRequest = async ({
     isTaxIncludedPrice?: boolean;
     imageUrls?: string[];
     status?: string;
+    tags?: string[];
   } = {};
 
   if (name) {
@@ -261,6 +266,9 @@ const updateDishRequest = async ({
   }
   if (status) {
     body.status = status;
+  }
+  if (tags) {
+    body.tags = tags;
   }
 
   await apiRequest({

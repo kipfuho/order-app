@@ -34,6 +34,12 @@ const getDishes = async ({ shopId }) => {
 };
 
 const createDish = async ({ shopId, createBody }) => {
+  const dishes = await getDishesFromCache({ shopId });
+  throwBadRequest(
+    _.find(dishes, (dish) => dish.code === createBody.code),
+    getMessageByLocale({ key: 'code.duplicated' })
+  );
+
   const dish = await Dish.create({
     data: _.pickBy({
       name: createBody.name,
@@ -77,6 +83,11 @@ const createDish = async ({ shopId, createBody }) => {
 const updateDish = async ({ shopId, dishId, updateBody }) => {
   const dish = await getDishFromCache({ shopId, dishId });
   throwBadRequest(!dish, getMessageByLocale({ key: 'dish.notFound' }));
+  const dishes = await getDishesFromCache({ shopId });
+  throwBadRequest(
+    _.find(dishes, (d) => d.code === updateBody.code && d.id !== dishId),
+    getMessageByLocale({ key: 'code.duplicated' })
+  );
 
   const compactUpdateBody = _.pickBy({
     id: dishId,

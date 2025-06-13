@@ -39,6 +39,10 @@ const createTable = async ({ shopId, createBody }) => {
     ),
     getMessageByLocale({ key: 'table.alreadyExist' })
   );
+  throwBadRequest(
+    _.find(tables, (table) => _.toLower(table.code) === _.toLower(createBody.code)),
+    getMessageByLocale({ key: 'code.duplicated' })
+  );
 
   // eslint-disable-next-line no-param-reassign
   createBody.positionId = createBody.position;
@@ -70,6 +74,10 @@ const updateTable = async ({ shopId, tableId, updateBody }) => {
       (t) => _.toLower(t.name) === _.toLower(updateBody.name) && t.positionId === updateBody.position && t.id !== tableId
     ),
     getMessageByLocale({ key: 'table.alreadyExist' })
+  );
+  throwBadRequest(
+    _.find(tables, (t) => _.toLower(t.code) === _.toLower(updateBody.code) && t.id !== tableId),
+    getMessageByLocale({ key: 'code.duplicated' })
   );
 
   const compactUpdateBody = _.pickBy({ ...updateBody, position: null, positionId: updateBody.position });
@@ -137,6 +145,10 @@ const createTablePosition = async ({ shopId, createBody }) => {
     _.find(tablePostions, (tablePosition) => _.toLower(tablePosition.name) === _.toLower(createBody.name)),
     getMessageByLocale({ key: 'tablePosition.alreadyExist' })
   );
+  throwBadRequest(
+    _.find(tablePostions, (tablePosition) => _.toLower(tablePosition.code) === _.toLower(createBody.code)),
+    getMessageByLocale({ key: 'code.duplicated' })
+  );
   const dishCategoryIds = createBody.dishCategories;
   // eslint-disable-next-line no-param-reassign
   delete createBody.dishCategories;
@@ -164,6 +176,10 @@ const updateTablePosition = async ({ shopId, tablePositionId, updateBody }) => {
   throwBadRequest(
     _.find(tablePostions, (tp) => _.toLower(tp.name) === _.toLower(updateBody.name) && tp.id !== tablePositionId),
     getMessageByLocale({ key: 'tablePosition.alreadyExist' })
+  );
+  throwBadRequest(
+    _.find(tablePostions, (tp) => _.toLower(tp.code) === _.toLower(updateBody.code) && tp.id !== tablePositionId),
+    getMessageByLocale({ key: 'code.duplicated' })
   );
 
   const compactUpdateBody = _.pickBy({
