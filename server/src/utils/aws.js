@@ -28,17 +28,19 @@ const s3 = new AWS.S3({
   }),
 });
 
-const _reziseImageBuffer = async (imageBuffer) => {
-  const options = {
+const _resizeAndCompressImageBuffer = async (imageBuffer) => {
+  const resizeOptions = {
     width: 700,
     height: 700,
     fit: sharp.fit.inside,
     withoutEnlargement: true,
   };
+
   try {
-    return await sharp(imageBuffer).resize(options).withMetadata().toBuffer();
+    return await sharp(imageBuffer).resize(resizeOptions).withMetadata().jpeg({ quality: 80, progressive: true }).toBuffer();
   } catch (error) {
-    logger.error(error.stack);
+    logger.error('Image processing failed:', error);
+    return imageBuffer;
   }
 };
 
@@ -56,7 +58,7 @@ const uploadFileBufferToS3 = async ({ fileBuffer, targetFilePath, mimeType }) =>
     throwBadRequest(fileBuffer.length > MAX_FILE_SIZE, getMessageByLocale('fileTooLarge'));
     throwBadRequest(!ALLOWED_IMAGE_MIME_TYPES.includes(mimeType), getMessageByLocale('notImage'));
     // Read content from the file
-    const resizeContent = await _reziseImageBuffer(fileBuffer);
+    const resizeContent = await _resizeAndCompressImageBuffer(fileBuffer);
 
     const params = {
       Bucket: s3BucketName,

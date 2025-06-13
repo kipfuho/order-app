@@ -187,11 +187,11 @@ const uploadImage = async ({ shopId, image }) => {
   return url;
 };
 
-const downloadAndUploadSingleImage = async ({ shopId, url, index = 0 }) => {
+const downloadAndUploadSingleImage = async ({ shopId, url }) => {
   const response = await axios.get(url, { responseType: 'arraybuffer' });
 
   const extension = path.extname(new URL(url).pathname) || '';
-  const originalname = `${index}_image${extension}`;
+  const originalname = `image_${Date.now()}${extension}`;
   const mimetype = response.headers['content-type'] || mime.lookup(extension) || 'application/octet-stream';
 
   const buffer = Buffer.from(response.data);
@@ -207,9 +207,7 @@ const downloadAndUploadSingleImage = async ({ shopId, url, index = 0 }) => {
 };
 
 const downloadAndUploadDishImages = async ({ shopId, imageUrls = [] }) => {
-  const results = await Promise.allSettled(
-    imageUrls.map((url, index) => downloadAndUploadSingleImage({ shopId, url, index }))
-  );
+  const results = await Promise.allSettled(imageUrls.map((url) => downloadAndUploadSingleImage({ shopId, url })));
 
   const uploadedUrls = results.map((result, index) => {
     if (result.status === 'fulfilled') {
