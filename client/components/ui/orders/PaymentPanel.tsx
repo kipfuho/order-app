@@ -23,6 +23,7 @@ import { goToOrderSessionDetail } from "@apis/navigate.service";
 import { PaymentComponentMap, PaymentMethod } from "@constants/paymentMethod";
 import { convertPaymentAmount } from "@constants/utils";
 import VNPay from "@assets/svg/VNPAY.svg";
+import toastConfig from "@/components/CustomToast";
 
 export default function PaymentMethodPage() {
   const { t } = useTranslation();
@@ -164,7 +165,7 @@ export default function PaymentMethodPage() {
             </View>
           </Surface>
         </Modal>
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
       <Surface
         mode="flat"

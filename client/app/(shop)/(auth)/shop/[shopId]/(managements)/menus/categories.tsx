@@ -30,6 +30,7 @@ import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
 import Toast from "react-native-toast-message";
 import { styles } from "@/constants/styles";
 import { PermissionType } from "@/constants/common";
+import toastConfig from "@/components/CustomToast";
 
 export default function CategoriesManagementPage() {
   const router = useRouter();
@@ -54,8 +55,8 @@ export default function CategoriesManagementPage() {
       if (!selectedDishCategory) {
         Toast.show({
           type: "error",
-          text1: "Delete Failed",
-          text2: "Cannot find dish category",
+          text1: t("delete_failed"),
+          text2: t("dish_category_not_found"),
         });
         return;
       }
@@ -97,7 +98,7 @@ export default function CategoriesManagementPage() {
             </Text>
           </Dialog.Content>
         </ConfirmCancelDialog>
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
       <AppBar
         title={t("dish_category")}

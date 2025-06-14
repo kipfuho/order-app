@@ -16,6 +16,7 @@ import { darkTheme, lightTheme } from "@constants/theme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { enGB, registerTranslation } from "react-native-paper-dates";
 import { TimeProvider } from "@/hooks/useCurrentTime";
+import toastConfig from "@/components/CustomToast";
 
 Amplify.configure(AmplifyConfig);
 
@@ -57,7 +58,7 @@ function ThemeLayout() {
   return (
     <PaperProvider theme={theme}>
       <Stack screenOptions={{ headerShown: false }} />
-      <Toast />
+      <Toast config={toastConfig} />
     </PaperProvider>
   );
 }

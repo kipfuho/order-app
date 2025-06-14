@@ -3,6 +3,7 @@ import {
   goToTablesForOrderList,
 } from "@/apis/navigate.service";
 import { AppBar } from "@/components/AppBar";
+import toastConfig from "@/components/CustomToast";
 import { ConfirmCancelDialog } from "@/components/ui/CancelDialog";
 import { OrderSessionStatus } from "@/constants/common";
 import { convertPaymentAmount } from "@/constants/utils";
@@ -85,7 +86,7 @@ const InvoiceDetailPage = () => {
           }}
           onConfirmClick={handleCancelOrderSessionPaidStatus}
         />
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
       <AppBar
         title={t("invoice")}

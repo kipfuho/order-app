@@ -24,6 +24,7 @@ import {
 import { CustomerInfoDialog } from "@components/ui/orders/CustomerInfoDialog";
 import TableForOrderCard from "@/components/ui/orders/TableForOrderCard";
 import { styles } from "@/constants/styles";
+import toastConfig from "@/components/CustomToast";
 
 export default function OrderManagementOrderPage() {
   const router = useRouter();
@@ -129,7 +130,7 @@ export default function OrderManagementOrderPage() {
             isNewOrder={true}
           />
         </Modal>
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
 
       <Surface style={styles.baseContainer}>

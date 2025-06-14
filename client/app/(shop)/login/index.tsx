@@ -30,8 +30,8 @@ const LoginScreen = () => {
     if (!email.trim() || !password.trim()) {
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Email and password are required",
+        text1: t("error_login"),
+        text2: t("error_login_detail"),
       });
       return;
     }
@@ -45,8 +45,8 @@ const LoginScreen = () => {
     } catch {
       Toast.show({
         type: "error",
-        text1: "Login Failed",
-        text2: "Invalid email or password",
+        text1: t("error_login"),
+        text2: t("error_login_detail_2"),
       });
     } finally {
       setLoading(false);

@@ -31,6 +31,7 @@ import CreateOrder from "../CreateOrderView";
 import { RootState } from "@stores/store";
 import { DiscountValueType } from "@/constants/common";
 import DiscountModal from "./DiscountModal";
+import toastConfig from "@/components/CustomToast";
 
 export default function ActiveOrderSessionPage({
   activeOrderSession,
@@ -270,7 +271,7 @@ export default function ActiveOrderSessionPage({
           onApply={applyDiscount}
           isLoading={discountDishOrderLoading}
         />
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
       <Surface mode="flat" style={{ flex: 1 }}>
         <Surface mode="flat" style={{ padding: 12 }}>

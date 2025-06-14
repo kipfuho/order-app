@@ -34,6 +34,7 @@ import { PermissionType } from "@/constants/common";
 import Toast from "react-native-toast-message";
 import { ConfirmCancelDialog } from "@/components/ui/CancelDialog";
 import QRCode from "react-native-qrcode-svg";
+import toastConfig from "@/components/CustomToast";
 
 export default function TablesManagementPage() {
   const router = useRouter();
@@ -62,8 +63,8 @@ export default function TablesManagementPage() {
       if (!selectedTable) {
         Toast.show({
           type: "error",
-          text1: "Delete Failed",
-          text2: "Cannot find table",
+          text1: t("delete_failed"),
+          text2: t("table_not_found"),
         });
         return;
       }
@@ -138,7 +139,7 @@ export default function TablesManagementPage() {
           </Surface>
         </Modal>
 
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
 
       <AppBar

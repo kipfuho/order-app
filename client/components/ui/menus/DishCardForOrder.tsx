@@ -22,6 +22,7 @@ import { updateCurrentOrder } from "@stores/shop.slice";
 import { Dish, DishOrder } from "@stores/state.interface";
 import { convertPaymentAmount } from "@constants/utils";
 import { BLURHASH, DishStatus } from "@constants/common";
+import toastConfig from "@/components/CustomToast";
 
 const QuantityControl = ({
   dish,
@@ -57,8 +58,8 @@ const QuantityControl = ({
     if (newQuantity > 999999) {
       Toast.show({
         type: "error",
-        text1: "Update quantity Failed",
-        text2: "Please enter valid quantity",
+        text1: t("update_failed"),
+        text2: t("error_update_quantity"),
       });
       return;
     }
@@ -103,7 +104,7 @@ const QuantityControl = ({
             </Button>
           </Dialog.Actions>
         </Dialog>
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
       <Surface
         style={{

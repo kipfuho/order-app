@@ -85,16 +85,16 @@ export default function CreateOrder({
     if (currentOrderTotalAmount === 0) {
       Toast.show({
         type: "error",
-        text1: "Create order Failed",
-        text2: "Please select at least one dish",
+        text1: t("create_order_failed"),
+        text2: t("error_create_order_empty_dish"),
       });
       return;
     }
     if (!currentTable) {
       Toast.show({
         type: "error",
-        text1: "Create order Failed",
-        text2: "Cannot find table",
+        text1: t("create_order_failed"),
+        text2: t("table_not_found"),
       });
       return;
     }

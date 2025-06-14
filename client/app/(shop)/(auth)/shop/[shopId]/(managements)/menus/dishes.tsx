@@ -29,6 +29,7 @@ import { runOnJS } from "react-native-reanimated";
 import AppBarSearchBox from "@/components/AppBarSearchBox";
 import { styles } from "@/constants/styles";
 import { PermissionType } from "@/constants/common";
+import toastConfig from "@/components/CustomToast";
 
 const createDismissGesture = (onDismissSearch: () => void) =>
   Gesture.Tap().onStart(() => {
@@ -72,8 +73,8 @@ export default function DishesManagementPage() {
       if (!selectedDish) {
         Toast.show({
           type: "error",
-          text1: "Delete Failed",
-          text2: "Cannot find dish",
+          text1: t("delete_failed"),
+          text2: t("dish_not_found"),
         });
         return;
       }
@@ -188,7 +189,7 @@ export default function DishesManagementPage() {
             leadingIcon="delete"
           />
         </Menu>
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
 
       <GestureDetector gesture={gesture}>

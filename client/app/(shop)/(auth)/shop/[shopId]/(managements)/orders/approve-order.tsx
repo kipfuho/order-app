@@ -20,6 +20,7 @@ import {
 import TableForApproveCard from "@/components/ui/orders/TableForApproveCard";
 import UnconfirmedOrderCard from "@/components/ui/orders/UnconfirmedOrderCard";
 import { styles } from "@/constants/styles";
+import toastConfig from "@/components/CustomToast";
 
 export default function OrderManagementApprovePage() {
   const router = useRouter();
@@ -130,7 +131,7 @@ export default function OrderManagementApprovePage() {
             </Surface>
           </>
         </Modal>
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
       <AppBar
         title={t("shop_approve_order")}

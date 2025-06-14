@@ -32,6 +32,7 @@ import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
 import Toast from "react-native-toast-message";
 import { styles } from "@/constants/styles";
 import { PermissionType } from "@/constants/common";
+import toastConfig from "@/components/CustomToast";
 
 export default function StaffEmployeePage() {
   const { t } = useTranslation();
@@ -58,8 +59,8 @@ export default function StaffEmployeePage() {
       if (!selectedEmployee) {
         Toast.show({
           type: "error",
-          text1: "Delete Failed",
-          text2: "Cannot find employee",
+          text1: t("delete_failed"),
+          text2: t("employee_not_found"),
         });
         return;
       }
@@ -101,7 +102,7 @@ export default function StaffEmployeePage() {
             </Text>
           </Dialog.Content>
         </ConfirmCancelDialog>
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
       <AppBar
         title={t("employee")}

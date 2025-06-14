@@ -30,6 +30,7 @@ import { styles } from "@/constants/styles";
 import { PermissionType } from "@/constants/common";
 import { ConfirmCancelDialog } from "@/components/ui/CancelDialog";
 import Toast from "react-native-toast-message";
+import toastConfig from "@/components/CustomToast";
 
 export default function TablePositionsManagementPage() {
   const router = useRouter();
@@ -55,8 +56,8 @@ export default function TablePositionsManagementPage() {
       if (!selectedTablePosition) {
         Toast.show({
           type: "error",
-          text1: "Delete Failed",
-          text2: "Cannot find table position",
+          text1: t("delete_failed"),
+          text2: t("table_position_not_found"),
         });
         return;
       }
@@ -98,7 +99,7 @@ export default function TablePositionsManagementPage() {
             </Text>
           </Dialog.Content>
         </ConfirmCancelDialog>
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
 
       <AppBar

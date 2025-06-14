@@ -24,6 +24,7 @@ import { RootState } from "@stores/store";
 import { BLURHASH } from "@constants/common";
 import Toast from "react-native-toast-message";
 import { useUpdateCartMutation } from "@/stores/apiSlices/cartApi.slice";
+import toastConfig from "@/components/CustomToast";
 
 export default function UpdateCartItem({
   cartItemId,
@@ -55,8 +56,8 @@ export default function UpdateCartItem({
     if (newQuantity > 999999) {
       Toast.show({
         type: "error",
-        text1: "Update quantity Failed",
-        text2: "Please enter valid quantity",
+        text1: t("update_failed"),
+        text2: t("error_update_quantity"),
       });
       return;
     }
@@ -115,7 +116,7 @@ export default function UpdateCartItem({
             </Button>
           </Dialog.Actions>
         </Dialog>
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
       <Surface style={{ flex: 1 }}>
         <ScrollView>

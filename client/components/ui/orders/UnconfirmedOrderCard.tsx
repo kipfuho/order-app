@@ -30,6 +30,7 @@ import {
   useUpdateUnconfirmedOrderMutation,
 } from "@stores/apiSlices/orderApi.slice";
 import { RootState } from "@stores/store";
+import toastConfig from "@/components/CustomToast";
 
 const UnconfirmedOrderCard = ({
   unconfirmedOrder,
@@ -174,7 +175,7 @@ const UnconfirmedOrderCard = ({
             </Button>
           </Dialog.Actions>
         </Dialog>
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
       <Surface
         style={{

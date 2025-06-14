@@ -16,6 +16,7 @@ import Toast from "react-native-toast-message";
 import { CustomerInfoDialog } from "@components/ui/orders/CustomerInfoDialog";
 import { resetCurrentOrder } from "@stores/shop.slice";
 import { styles } from "@/constants/styles";
+import toastConfig from "@/components/CustomToast";
 
 export default function OrderTableCurrentOrderSessionsPage() {
   const router = useRouter();
@@ -87,7 +88,7 @@ export default function OrderTableCurrentOrderSessionsPage() {
             }}
           />
         </Modal>
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
 
       <AppBar

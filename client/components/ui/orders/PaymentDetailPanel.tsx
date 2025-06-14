@@ -22,6 +22,7 @@ import {
 import { RootState } from "@stores/store";
 import { DiscountType, DiscountValueType } from "@constants/common";
 import { OrderSession } from "@stores/state.interface";
+import toastConfig from "@/components/CustomToast";
 
 export default function OrderSessionDetailPage({
   orderSessionDetail,
@@ -104,7 +105,7 @@ export default function OrderSessionDetailPage({
           onApply={applyDiscount}
           isLoading={discountOrderSessionLoading}
         />
-        <Toast />
+        <Toast config={toastConfig} />
       </Portal>
       <Surface mode="flat" style={{ flex: 1, borderRadius: 10 }}>
         <View

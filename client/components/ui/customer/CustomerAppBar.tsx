@@ -22,6 +22,7 @@ import CartDetail from "./CartDetail";
 import CartCheckoutHistory from "./CartCheckoutHistory";
 import { useUpdateCartMutation } from "@/stores/apiSlices/cartApi.slice";
 import { mergeCartItems } from "@/constants/utils";
+import toastConfig from "@/components/CustomToast";
 
 export function CustomerAppBar({
   children,
@@ -74,7 +75,6 @@ export function CustomerAppBar({
             setCartDetailVisible={setCartDetailVisible}
             isLoading={updateCartLoading}
           />
-          <Toast />
         </Modal>
         <Modal
           visible={checkoutHistoryVisible}
@@ -84,8 +84,8 @@ export function CustomerAppBar({
           }}
         >
           <CartCheckoutHistory setVisible={setCheckoutHistoryVisible} />
-          <Toast />
         </Modal>
+        <Toast config={toastConfig} />
       </Portal>
       <Appbar.Header style={{ height: 60, paddingHorizontal: 8 }}>
         {goBack && <Appbar.BackAction onPress={goBack} size={20} />}
