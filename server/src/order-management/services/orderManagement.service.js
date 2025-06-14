@@ -655,45 +655,43 @@ const discountDishOrder = async ({ shopId, requestBody }) => {
 
   await OrderSession.update({
     data: {
-      beforeTaxTotalDiscountAmount: 0,
-      afterTaxTotalDiscountAmount: 0,
-      discounts: _.pickBy({
-        create: {
+      discounts: {
+        create: _.pickBy({
           name: `${getMessageByLocale({ key: 'discount.dish' })} - ${dishOrder.name}`,
           discountReason,
           discountType: OrderSessionDiscountType.PRODUCT,
           discountValue,
           discountValueType: discountType,
           discountAfterTax,
-          discountProducts: {
+          discountProducts: _.pickBy({
             delete: deletedDiscount
               ? {
                   id: deletedDiscount.id,
                 }
               : null,
-            createMany: [
-              {
-                dishOrderId,
-                dishId: dishOrder.dishId,
-                dishName: dishOrder.name,
-                discountValue,
-                discountValueType: discountType,
-                discountRate:
-                  discountType === DiscountValueType.PERCENTAGE
-                    ? discountValue
-                    : _.min(100, (100 * discountValue) / (discountAfterTax ? afterTaxDishPrice : dishOrder.price)),
-                beforeTaxDiscountPrice,
-                afterTaxDiscountPrice,
-                taxDiscountPrice,
-              },
-            ],
-          },
-        },
-      }),
+            create: _.pickBy({
+              dishOrderId,
+              dishId: dishOrder.dishId,
+              dishName: dishOrder.name,
+              discountValue,
+              discountValueType: discountType,
+              discountRate:
+                discountType === DiscountValueType.PERCENTAGE
+                  ? discountValue
+                  : _.min(100, (100 * discountValue) / (discountAfterTax ? afterTaxDishPrice : dishOrder.price)),
+              beforeTaxDiscountPrice,
+              afterTaxDiscountPrice,
+              taxDiscountPrice,
+            }),
+          }),
+        }),
+      },
     },
     where: { id: orderSessionId },
     select: { id: true },
   });
+
+  return orderUtilService.calculateOrderSessionAndReturn(orderSessionId);
 };
 
 const discountOrderSession = async ({ shopId, requestBody }) => {
@@ -712,28 +710,28 @@ const discountOrderSession = async ({ shopId, requestBody }) => {
   ) {
     await OrderSession.update({
       data: {
-        beforeTaxTotalDiscountAmount: 0,
-        afterTaxTotalDiscountAmount: 0,
         discounts: _.pickBy({
           delete: previousDiscount
             ? {
                 id: previousDiscount.id,
               }
             : null,
-          create: {
+          create: _.pickBy({
             name: getMessageByLocale({ key: 'discount.order' }),
             discountType: OrderSessionDiscountType.INVOICE,
             discountValueType: discountType,
             discountValue,
             discountAfterTax,
             discountReason,
-          },
+          }),
         }),
       },
       where: { id: orderSessionId },
       select: { id: true },
     });
   }
+
+  return orderUtilService.calculateOrderSessionAndReturn(orderSessionId);
 };
 
 const removeDiscountFromOrderSession = async ({ shopId, requestBody }) => {

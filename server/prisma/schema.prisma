@@ -274,7 +274,7 @@ model Discount {
   orderSessionId               String
   createdAt                    DateTime          @default(now())
   updatedAt                    DateTime          @updatedAt
-  discountAfterTax             Boolean
+  discountAfterTax             Boolean           @default(false)
   discountReason               String            @default("")
   orderSession                 OrderSession      @relation(fields: [orderSessionId], references: [id])
   discountProducts             DiscountProduct[]
