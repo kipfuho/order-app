@@ -22,6 +22,7 @@ const convertOrderForResponse = (order) => {
   order.updatedAt = formatDateHHMMDDMMYYYY(order.updatedAt);
   order.dishOrders = _.map(order.dishOrders, (dishOrder) => convertDishOrderForResponse(dishOrder));
   order.returnedDishOrders = _.map(order.returnedDishOrders, (dishOrder) => convertDishOrderForResponse(dishOrder, true));
+  order.isCustomerOrder = !!order.customerId;
 
   delete order.orderSessionId;
   delete order.shopId;

@@ -22,12 +22,15 @@ import { ConfirmCancelDialog } from "../CancelDialog";
 import {
   useCancelOrderSessionMutation,
   useChangeDishQuantityMutation,
+  useDiscountDishOrderMutation,
 } from "@stores/apiSlices/orderApi.slice";
-import { DishOrder, OrderSession, Shop } from "@stores/state.interface";
+import { DishOrder, Order, OrderSession, Shop } from "@stores/state.interface";
 import { goToTablesForOrderList } from "@apis/navigate.service";
 import { resetCurrentTable } from "@stores/shop.slice";
 import CreateOrder from "../CreateOrderView";
 import { RootState } from "@stores/store";
+import { DiscountValueType } from "@/constants/common";
+import DiscountModal from "./DiscountModal";
 
 export default function ActiveOrderSessionPage({
   activeOrderSession,
@@ -48,42 +51,59 @@ export default function ActiveOrderSessionPage({
 
   const [cancelOrderSession, { isLoading: cancelOrderSessionLoading }] =
     useCancelOrderSessionMutation();
-
   const [updateDishQuantity, { isLoading: updateDishQuantityLoading }] =
     useChangeDishQuantityMutation();
+  const [discountDishOrder, { isLoading: discountDishOrderLoading }] =
+    useDiscountDishOrderMutation();
 
+  const [discountModalVisible, setDiscountModalVisible] = useState(false);
   const [cancelDialogVisible, setCancelDialogVisible] = useState(false);
   const [createOrderVisible, setCreateOrderVisible] = useState(false);
   const [dishQuantityDialogVisible, setDishQuantityDialogVisible] =
     useState(false);
-  const [changeQuantityDishOrder, setChangeQuantityDishOrder] =
-    useState<DishOrder>();
-  const [orderId, setOrderId] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState<Order>();
+  const [selectedDishOrder, setSelectedDishOrder] = useState<DishOrder>();
   const [newQuantity, setNewQuantity] = useState("");
   const [reason, setReason] = useState("");
 
-  const onDishQuantityClick = (
-    dishOrder: DishOrder,
-    orderId: string,
-    newQuantity: number,
-  ) => {
-    setChangeQuantityDishOrder(dishOrder);
+  const onDishQuantityClick = ({
+    dishOrder,
+    order,
+    newQuantity,
+  }: {
+    dishOrder: DishOrder;
+    order: Order;
+    newQuantity: number;
+  }) => {
     setNewQuantity(`${newQuantity}`);
-    setOrderId(orderId);
+    setSelectedOrder(order);
+    setSelectedDishOrder(dishOrder);
     setDishQuantityDialogVisible(true);
   };
 
+  const onDishOrderDiscountClick = ({
+    order,
+    dishOrder,
+  }: {
+    order: Order;
+    dishOrder: DishOrder;
+  }) => {
+    setSelectedOrder(order);
+    setSelectedDishOrder(dishOrder);
+    setDiscountModalVisible(true);
+  };
+
   const handleChangeDishQuantity = async () => {
-    if (!changeQuantityDishOrder) return;
+    if (!selectedOrder || !selectedDishOrder) return;
 
     try {
       await updateDishQuantity({
         orderSessionId: orderSession.id,
         // reason,
         shopId: shop.id,
-        dishOrderId: changeQuantityDishOrder.id,
+        dishOrderId: selectedDishOrder.id,
         newQuantity: _.toNumber(newQuantity),
-        orderId,
+        orderId: selectedOrder.id,
       }).unwrap();
 
       setDishQuantityDialogVisible(false);
@@ -121,6 +141,41 @@ export default function ActiveOrderSessionPage({
     }
   };
 
+  const applyDiscount = async ({
+    discountAfterTax,
+    discountReason,
+    discountValue,
+    discountType,
+  }: {
+    discountAfterTax: boolean;
+    discountReason: string;
+    discountValue: string;
+    discountType: DiscountValueType;
+  }) => {
+    if (
+      !selectedOrder ||
+      !selectedDishOrder ||
+      !currentShop ||
+      !currentOrderSession ||
+      discountDishOrderLoading
+    ) {
+      return;
+    }
+
+    await discountDishOrder({
+      dishOrderId: selectedDishOrder.id,
+      orderId: selectedOrder.id,
+      orderSessionId: currentOrderSession.id,
+      shopId: currentShop.id,
+      discountAfterTax,
+      discountReason,
+      discountValue: _.toNumber(discountValue),
+      discountType,
+    }).unwrap();
+
+    setDiscountModalVisible(false);
+  };
+
   if (!activeOrderSession) {
     return;
   }
@@ -150,7 +205,7 @@ export default function ActiveOrderSessionPage({
           </View>
         </ConfirmCancelDialog>
         <ConfirmCancelDialog
-          title={changeQuantityDishOrder?.name || ""}
+          title={selectedDishOrder?.name || ""}
           isLoading={updateDishQuantityLoading}
           dialogVisible={dishQuantityDialogVisible}
           setDialogVisible={setDishQuantityDialogVisible}
@@ -170,7 +225,7 @@ export default function ActiveOrderSessionPage({
                   textDecorationLine: "line-through",
                 }}
               >
-                {changeQuantityDishOrder?.quantity}
+                {selectedDishOrder?.quantity}
               </Text>{" "}
               <Text style={{ fontSize: 16, fontWeight: "600" }}>→</Text>{" "}
               <Text style={{ fontWeight: "bold", color: theme.colors.primary }}>
@@ -208,6 +263,13 @@ export default function ActiveOrderSessionPage({
             goBack={() => setCreateOrderVisible(false)}
           />
         </Modal>
+        <DiscountModal
+          title={`${t("discount_dish_order")} ${selectedDishOrder?.name}`}
+          visible={discountModalVisible}
+          onDismiss={() => setDiscountModalVisible(false)}
+          onApply={applyDiscount}
+          isLoading={discountDishOrderLoading}
+        />
         <Toast />
       </Portal>
       <Surface mode="flat" style={{ flex: 1 }}>
@@ -288,6 +350,7 @@ export default function ActiveOrderSessionPage({
                     order={order}
                     dishOrder={dishOrder}
                     onQuantityClick={onDishQuantityClick}
+                    onDiscountClick={onDishOrderDiscountClick}
                   />
                 ))}
               </View>

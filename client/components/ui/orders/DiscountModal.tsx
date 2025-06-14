@@ -15,11 +15,13 @@ import { DiscountValueType } from "@constants/common";
 import { SymbolSwitch } from "@/components/SymbolSwitch";
 
 export default function DiscountModal({
+  title,
   visible,
   onDismiss,
   onApply,
   isLoading,
 }: {
+  title?: string;
   visible: boolean;
   onDismiss: () => void;
   onApply: (data: any) => void;
@@ -50,7 +52,7 @@ export default function DiscountModal({
           borderRadius: 12,
         }}
       >
-        <Text style={styles.title}>{t("discount_directly")}</Text>
+        <Text style={styles.title}>{title || t("discount_directly")}</Text>
 
         <Text style={styles.label}>{t("discount_type")}</Text>
         <View style={styles.radioRow}>

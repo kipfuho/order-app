@@ -1,9 +1,17 @@
 import { Fragment, memo, useMemo } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
-import { Card, Text, useTheme, Icon, Surface } from "react-native-paper";
+import {
+  Card,
+  Text,
+  useTheme,
+  Icon,
+  Surface,
+  Divider,
+} from "react-native-paper";
 import { DishOrder, Order } from "@stores/state.interface";
 import { convertPaymentAmount } from "@constants/utils";
 import { DishOrderStatus } from "@constants/common";
+import { useTranslation } from "react-i18next";
 
 type Step = {
   icon: string;
@@ -55,16 +63,29 @@ export default function DishOrderCard({
   order,
   dishOrder,
   onQuantityClick,
+  onDiscountClick,
 }: {
   order: Order;
   dishOrder: DishOrder;
-  onQuantityClick: (
-    dishOrder: DishOrder,
-    orderId: string,
-    newQuantity: number,
-  ) => void;
+  onQuantityClick: ({
+    dishOrder,
+    order,
+    newQuantity,
+  }: {
+    dishOrder: DishOrder;
+    order: Order;
+    newQuantity: number;
+  }) => void;
+  onDiscountClick: ({
+    order,
+    dishOrder,
+  }: {
+    order: Order;
+    dishOrder: DishOrder;
+  }) => void;
 }) {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   return (
     <Card style={styles.card} mode="outlined">
@@ -72,7 +93,11 @@ export default function DishOrderCard({
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <View style={styles.leftSection}>
-              <Icon source="store-outline" size={20} />
+              {order.isCustomerOrder ? (
+                <Icon source="account-outline" size={20} />
+              ) : (
+                <Icon source="store-outline" size={20} />
+              )}
 
               <Text
                 variant="titleMedium"
@@ -86,7 +111,11 @@ export default function DishOrderCard({
             <Surface style={styles.quantityBadge}>
               <TouchableOpacity
                 onPress={() =>
-                  onQuantityClick(dishOrder, order.id, dishOrder.quantity - 1)
+                  onQuantityClick({
+                    dishOrder: dishOrder,
+                    order,
+                    newQuantity: dishOrder.quantity - 1,
+                  })
                 }
               >
                 <Icon source="minus-circle-outline" size={14} />
@@ -99,14 +128,22 @@ export default function DishOrderCard({
                   paddingHorizontal: 5,
                 }}
                 onPress={() =>
-                  onQuantityClick(dishOrder, order.id, dishOrder.quantity)
+                  onQuantityClick({
+                    dishOrder: dishOrder,
+                    order,
+                    newQuantity: dishOrder.quantity,
+                  })
                 }
               >
                 {dishOrder.quantity}
               </Text>
               <TouchableOpacity
                 onPress={() =>
-                  onQuantityClick(dishOrder, order.id, dishOrder.quantity + 1)
+                  onQuantityClick({
+                    dishOrder: dishOrder,
+                    order,
+                    newQuantity: dishOrder.quantity + 1,
+                  })
                 }
               >
                 <Icon source="plus-circle-outline" size={14} />
@@ -121,8 +158,31 @@ export default function DishOrderCard({
             <Text style={styles.timestamp}>{order.createdAt}</Text>
           </View>
         </View>
+        <>
+          {dishOrder.note && (
+            <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
+              <Text style={{ color: theme.colors.error }}>{t("note")}:</Text>
+              <Text>{dishOrder.note}</Text>
+            </View>
+          )}
+        </>
         {/* <ChildDishList /> */}
         <MemoiezdDishOrderStepper status={dishOrder.status} />
+        <Divider style={{ marginVertical: 8 }} />
+        <View style={{ flexDirection: "row", justifyContent: "center" }}>
+          <TouchableOpacity
+            onPress={() => onDiscountClick({ order, dishOrder })}
+          >
+            <Text
+              style={{
+                fontSize: 14,
+                color: theme.colors.error,
+              }}
+            >
+              {t("discount")}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </Card>
   );

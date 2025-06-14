@@ -220,10 +220,10 @@ interface Order {
   afterTaxTotalDiscountAmount?: number;
   paymentAmount?: number;
   revenueAmount?: number;
-  approvedBy: string;
-  cancelledBy: string;
-  customerId: string;
-  tableName: string; // cart history
+  approvedBy?: string;
+  cancelledBy?: string;
+  customerId?: string;
+  isCustomerOrder: boolean;
 }
 
 interface OrderCartCheckoutHistory {
