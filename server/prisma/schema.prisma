@@ -257,6 +257,7 @@ model DiscountProduct {
   discountId             String
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
+  status                 Status            @default(enabled)
   discount               Discount          @relation(fields: [discountId], references: [id])
 
   @@index([discountId])
@@ -276,6 +277,7 @@ model Discount {
   updatedAt                    DateTime          @updatedAt
   discountAfterTax             Boolean           @default(false)
   discountReason               String            @default("")
+  status                       Status            @default(enabled)
   orderSession                 OrderSession      @relation(fields: [orderSessionId], references: [id])
   discountProducts             DiscountProduct[]
 

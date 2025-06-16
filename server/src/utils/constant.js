@@ -2,72 +2,72 @@ const SESSION_NAME_SPACE = 'userSession';
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 5 MB
 const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
 
-const Language = {
+const Language = Object.freeze({
   vietnamese: 'vi',
   english: 'en',
-};
+});
 
-const Countries = {
-  VietNam: {
+const Countries = Object.freeze({
+  VietNam: Object.freeze({
     name: 'Việt Nam',
     currency: 'vnd',
-  },
-};
+  }),
+});
 
-const CurrencySetting = {
-  VND: {
+const CurrencySetting = Object.freeze({
+  vnd: Object.freeze({
     precision: 0,
-  },
-  USD: {
+  }),
+  usd: Object.freeze({
     precision: 2,
-  },
-};
+  }),
+});
 
-const RoundingPaymentType = {
+const RoundingPaymentType = Object.freeze({
   NO_ROUND: 'no_round',
   ROUND: 'round',
   FLOOR: 'floor',
   CEIL: 'ceil',
-};
+});
 
-const Status = {
+const Status = Object.freeze({
   enabled: 'enabled',
   disabled: 'disabled',
   activated: 'activated',
   deactivated: 'deactivated',
-};
+});
 
-const DishOrderStatus = {
+const DishOrderStatus = Object.freeze({
   confirmed: 'confirmed',
   cooked: 'cooked',
   served: 'served',
-};
+});
 
-const OrderSessionStatus = {
+const OrderSessionStatus = Object.freeze({
   disabled: 'disabled',
   unpaid: 'unpaid',
   paid: 'paid',
   cancelled: 'cancelled',
-};
+});
 
-const OrderSessionDiscountType = {
+const OrderSessionDiscountType = Object.freeze({
   INVOICE: 'invoice',
   PRODUCT: 'product',
-};
+});
 
-const DiscountValueType = {
+const DiscountValueType = Object.freeze({
   PERCENTAGE: 'percentage',
   ABSOLUTE: 'absolute',
-};
+});
 
-const PaymentMethod = {
+const PaymentMethod = Object.freeze({
   CASH: 'cash',
   BANK_TRANSFER: 'bank_transfer',
   CREDIT_CARD: 'credit_card',
   VNPAY: 'vnpay',
-};
+});
 
-const PermissionType = {
+const PermissionType = Object.freeze({
   SHOP_APP: 'shop_app',
   VIEW_SHOP: 'shop_view',
   UPDATE_SHOP: 'shop_update',
@@ -89,7 +89,7 @@ const PermissionType = {
   VIEW_REPORT: 'shop_view_report',
   VIEW_KITCHEN: 'shop_view_kitchen',
   UPDATE_KITCHEN: 'shop_update_kitchen',
-};
+});
 
 const TableDepartmentPermissions = [
   PermissionType.CREATE_ORDER,
@@ -113,17 +113,17 @@ const CashierDepartmentPermissions = [
   PermissionType.CANCEL_ORDER_PAID_STATUS,
 ];
 
-const DishTypes = {
+const DishTypes = Object.freeze({
   FOOD: 'food',
   DRINK: 'drink',
-};
+});
 
-const KitchenAction = {
+const KitchenAction = Object.freeze({
   UPDATE_COOKED: 'update_cooked',
   UPDATE_SERVED: 'update_served',
   UNDO_COOKED: 'undo_cooked',
   UNDO_SERVED: 'undo_served',
-};
+});
 
 const DefaultUnitList = {
   'Việt Nam': [
@@ -266,11 +266,11 @@ const DefaultUnitList = {
   ],
 };
 
-const ReportPeriod = {
+const ReportPeriod = Object.freeze({
   DAY: 'day',
   WEEK: 'week',
   MONTH: 'month',
-};
+});
 
 module.exports = {
   SESSION_NAME_SPACE,

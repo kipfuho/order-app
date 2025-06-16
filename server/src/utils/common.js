@@ -28,7 +28,8 @@ const getCurrencyPrecision = (currency) => {
     currency = getShopCurrency();
   }
 
-  return constant.CurrencySetting[currency];
+  const currencySetting = constant.CurrencySetting[currency];
+  return currencySetting ? currencySetting.precision : 0;
 };
 
 const _getRoundPrice = (price, type) => {

@@ -5,7 +5,7 @@ const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { getShopTimeZone, getOperatorFromSession } = require('../../middlewares/clsHooked');
 const { Order, OrderSession, Cart } = require('../../models');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
-const { OrderSessionDiscountType, DiscountValueType, OrderSessionStatus } = require('../../utils/constant');
+const { OrderSessionDiscountType, DiscountValueType, OrderSessionStatus, Status } = require('../../utils/constant');
 const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { getTableFromCache, getTablesFromCache } = require('../../metadata/tableMetadata.service');
@@ -392,6 +392,9 @@ const _getOrderSessionDetail = async ({ orderSessionId, shopId }) => {
         include: {
           discountProducts: true,
         },
+        where: {
+          status: Status.enabled,
+        },
       },
       paymentDetails: true,
       taxDetails: true,
@@ -446,24 +449,24 @@ const getorderSessionDetailWithLimit = async ({ shopId, limit }) => {
     },
     take: 1 * limit,
     include: {
-      discounts: true,
+      discounts: {
+        include: {
+          discountProducts: true,
+        },
+        where: {
+          status: Status.enabled,
+        },
+      },
       paymentDetails: true,
       taxDetails: true,
+      orders: {
+        include: {
+          dishOrders: true,
+          returnedDishOrders: true,
+        },
+      },
     },
   });
-
-  const orderSessionIds = _.map(orderSessions, 'id');
-  const orders = await Order.findMany({
-    where: {
-      orderSessionId: { in: orderSessionIds },
-    },
-    include: {
-      dishOrders: true,
-      returnedDishOrders: true,
-    },
-  });
-
-  const orderMapByOrderSessionId = _.groupBy(orders, 'orderSessionId');
 
   const shop = await getShopFromCache({ shopId });
   const tables = await getTablesFromCache({ shopId });
@@ -471,20 +474,18 @@ const getorderSessionDetailWithLimit = async ({ shopId, limit }) => {
   const dishes = await getDishesFromCache({ shopId });
   const dishById = _.keyBy(dishes, 'id');
 
-  const orderSessionDetails = _.map(orderSessions, (orderSession) => {
-    const orderSessionDetail = _.cloneDeep(orderSession);
-    const orderJsons = _.map(orderMapByOrderSessionId[orderSessionDetail.id], (order) => {
-      const orderJson = _.cloneDeep(order);
-      orderJson.dishOrders.forEach((dishOrder) => {
+  const orderSessionDetails = _.map(orderSessions, (orderSessionDetail) => {
+    orderSessionDetail.orders.forEach((order) => {
+      order.dishOrders.forEach((dishOrder) => {
         if (dishOrder.dish) {
           // eslint-disable-next-line no-param-reassign
           dishOrder.dish = dishById[dishOrder.dish];
         }
       });
-      return orderJson;
     });
+    // eslint-disable-next-line no-param-reassign
     orderSessionDetail.shop = shop;
-    orderSessionDetail.orders = orderJsons;
+    // eslint-disable-next-line no-param-reassign
     orderSessionDetail.tables = _.map(orderSessionDetail.tableIds, (tableId) => tableById[tableId]);
     return orderSessionDetail;
   });
@@ -640,9 +641,9 @@ const _calculateDiscountOnProduct = ({
       );
       dishOrderBeforeTaxTotalDiscountAmount = dishOrderAfterTaxTotalDiscountAmount - dishOrderTaxTotalDiscountAmount;
     } else {
-      dishOrderBeforeTaxTotalDiscountAmount += discountProduct.beforeTaxDiscountPrice * dishQuantity;
-      dishOrderAfterTaxTotalDiscountAmount += discountProduct.afterTaxDiscountPrice * dishQuantity;
-      dishOrderTaxTotalDiscountAmount += discountProduct.taxDiscountPrice * dishQuantity;
+      dishOrderBeforeTaxTotalDiscountAmount = discountProduct.beforeTaxDiscountPrice * dishQuantity;
+      dishOrderAfterTaxTotalDiscountAmount = discountProduct.afterTaxDiscountPrice * dishQuantity;
+      dishOrderTaxTotalDiscountAmount = discountProduct.taxDiscountPrice * dishQuantity;
     }
 
     beforeTaxTotalDiscountAmount += dishOrderBeforeTaxTotalDiscountAmount;
@@ -672,7 +673,13 @@ const _calculateDiscountByDiscountType = {
   [OrderSessionDiscountType.PRODUCT]: _calculateDiscountOnProduct,
 };
 
-const calculateDiscount = async ({ orderSessionDetail, pretaxPaymentAmount, totalTaxAmount, calculateTaxDirectly }) => {
+const calculateDiscount = async ({
+  orderSessionDetail,
+  pretaxPaymentAmount,
+  totalTaxAmount,
+  calculateTaxDirectly,
+  dishOrders,
+}) => {
   const discounts = _.get(orderSessionDetail, 'discounts', []);
 
   if (_.isEmpty(discounts)) {
@@ -684,6 +691,7 @@ const calculateDiscount = async ({ orderSessionDetail, pretaxPaymentAmount, tota
   }
 
   const discountDetailByTax = {};
+  const dishOrderById = _.keyBy(dishOrders, 'id');
   let beforeTaxTotalDiscountAmount = 0;
   let afterTaxTotalDiscountAmount = 0;
   _.forEach(discounts, (discount) => {
@@ -695,6 +703,7 @@ const calculateDiscount = async ({ orderSessionDetail, pretaxPaymentAmount, tota
       orderSessionTaxRate: orderSessionDetail.taxRate || 0,
       calculateTaxDirectly,
       discountDetailByTax,
+      dishOrderById,
     });
     beforeTaxTotalDiscountAmount += beforeTaxAmount;
     afterTaxTotalDiscountAmount += afterTaxAmount;
@@ -705,9 +714,9 @@ const calculateDiscount = async ({ orderSessionDetail, pretaxPaymentAmount, tota
   }
   taxDetailsWithDiscountInfo.forEach((taxDetail) => {
     // eslint-disable-next-line no-param-reassign
-    taxDetail.beforeTaxTotalDiscountAmount = discountDetailByTax[taxDetail.taxRate].beforeTaxTotalDiscountAmount;
+    taxDetail.beforeTaxTotalDiscountAmount = discountDetailByTax[taxDetail.taxRate].beforeTaxTotalDiscountAmount || 0;
     // eslint-disable-next-line no-param-reassign
-    taxDetail.afterTaxTotalDiscountAmount = discountDetailByTax[taxDetail.taxRate].afterTaxTotalDiscountAmount;
+    taxDetail.afterTaxTotalDiscountAmount = discountDetailByTax[taxDetail.taxRate].afterTaxTotalDiscountAmount || 0;
   });
   return { beforeTaxTotalDiscountAmount, afterTaxTotalDiscountAmount, taxDetailsWithDiscountInfo };
 };
@@ -772,6 +781,7 @@ const calculateOrderSessionAndReturn = async (orderSessionId, shopId) => {
     pretaxPaymentAmount,
     totalTaxAmount,
     calculateTaxDirectly,
+    dishOrders,
   });
 
   orderSessionDetail.taxDetails = taxDetailsWithDiscountInfo;

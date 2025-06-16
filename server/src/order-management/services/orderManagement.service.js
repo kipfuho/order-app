@@ -626,72 +626,91 @@ const discountDishOrder = async ({ shopId, requestBody }) => {
   const dishOrder = _.find(order.dishOrders, (_dishOrder) => _dishOrder.id === dishOrderId);
   throwBadRequest(!dishOrder, getMessageByLocale({ key: 'dish.notFound' }));
 
-  const deletedDiscount = _.find(
+  const previousDiscount = _.find(
     orderSessionDetail.discounts,
     (discount) =>
       discount.discountType === OrderSessionDiscountType.PRODUCT && discount.discountProducts[0].dishOrderId === dishOrderId
   );
-  // eslint-disable-next-line no-param-reassign
-  if (dishOrder.isTaxIncludedPrice) discountAfterTax = true;
-  let dishTaxRate = dishOrder.dishVAT || orderSessionDetail.taxRate || 0;
-  if (orderSessionDetail.taxRate <= 0.001) {
-    dishTaxRate = 0;
-  }
+  if (
+    (discountValue && _.get(previousDiscount, 'discountValueType') !== discountType) ||
+    _.get(previousDiscount, 'discountValue') !== discountValue ||
+    _.get(previousDiscount, 'discountAfterTax') !== discountAfterTax
+  ) {
+    // eslint-disable-next-line no-param-reassign
+    if (dishOrder.isTaxIncludedPrice) discountAfterTax = true;
+    let dishTaxRate = dishOrder.dishVAT || orderSessionDetail.taxRate || 0;
+    if (orderSessionDetail.taxRate <= 0.001) {
+      dishTaxRate = 0;
+    }
 
-  const afterTaxDishPrice = dishOrder.taxIncludedPrice || getRoundDishPrice(dishOrder.price * (1 + dishTaxRate / 100));
-  let beforeTaxDiscountPrice = 0;
-  let afterTaxDiscountPrice = 0;
-  if (discountType === DiscountValueType.PERCENTAGE) {
-    beforeTaxDiscountPrice = getRoundDiscountAmount(dishOrder.price * (discountValue / 100));
-    afterTaxDiscountPrice = getRoundDiscountAmount(afterTaxDishPrice * (discountValue / 100));
-  } else if (discountAfterTax) {
-    afterTaxDiscountPrice = Math.min(discountValue, afterTaxDishPrice);
-    beforeTaxDiscountPrice = getRoundDiscountAmount(afterTaxDiscountPrice / (1 + dishTaxRate / 100));
-  } else {
-    beforeTaxDiscountPrice = Math.min(discountValue, dishOrder.price);
-    afterTaxDiscountPrice = getRoundDiscountAmount(beforeTaxDiscountPrice * (1 + dishTaxRate / 100));
-  }
-  const taxDiscountPrice = getRoundDiscountAmount(afterTaxDiscountPrice - beforeTaxDiscountPrice);
+    const afterTaxDishPrice = dishOrder.taxIncludedPrice || getRoundDishPrice(dishOrder.price * (1 + dishTaxRate / 100));
+    let beforeTaxDiscountPrice = 0;
+    let afterTaxDiscountPrice = 0;
+    if (discountType === DiscountValueType.PERCENTAGE) {
+      beforeTaxDiscountPrice = getRoundDiscountAmount(dishOrder.price * (discountValue / 100));
+      afterTaxDiscountPrice = getRoundDiscountAmount(afterTaxDishPrice * (discountValue / 100));
+    } else if (discountAfterTax) {
+      afterTaxDiscountPrice = Math.min(discountValue, afterTaxDishPrice);
+      beforeTaxDiscountPrice = getRoundDiscountAmount(afterTaxDiscountPrice / (1 + dishTaxRate / 100));
+    } else {
+      beforeTaxDiscountPrice = Math.min(discountValue, dishOrder.price);
+      afterTaxDiscountPrice = getRoundDiscountAmount(beforeTaxDiscountPrice * (1 + dishTaxRate / 100));
+    }
+    const taxDiscountPrice = getRoundDiscountAmount(afterTaxDiscountPrice - beforeTaxDiscountPrice);
 
-  await OrderSession.update({
-    data: {
-      discounts: {
-        create: _.pickBy({
-          name: `${getMessageByLocale({ key: 'discount.dish' })} - ${dishOrder.name}`,
-          discountReason,
-          discountType: OrderSessionDiscountType.PRODUCT,
-          discountValue,
-          discountValueType: discountType,
-          discountAfterTax,
-          discountProducts: _.pickBy({
-            delete: deletedDiscount
-              ? {
-                  id: deletedDiscount.id,
-                }
-              : null,
-            create: _.pickBy({
-              dishOrderId,
-              dishId: dishOrder.dishId,
-              dishName: dishOrder.name,
-              discountValue,
-              discountValueType: discountType,
-              discountRate:
-                discountType === DiscountValueType.PERCENTAGE
-                  ? discountValue
-                  : _.min(100, (100 * discountValue) / (discountAfterTax ? afterTaxDishPrice : dishOrder.price)),
-              beforeTaxDiscountPrice,
-              afterTaxDiscountPrice,
-              taxDiscountPrice,
-            }),
+    await OrderSession.update({
+      data: {
+        discounts: _.pickBy({
+          update: previousDiscount
+            ? {
+                where: {
+                  id: previousDiscount.id,
+                },
+                data: {
+                  status: Status.disabled,
+                  discountProducts: {
+                    updateMany: {
+                      where: {},
+                      data: {
+                        status: Status.disabled,
+                      },
+                    },
+                  },
+                },
+              }
+            : null,
+          create: _.pickBy({
+            name: `${getMessageByLocale({ key: 'discount.dish' })} - ${dishOrder.name}`,
+            discountReason,
+            discountType: OrderSessionDiscountType.PRODUCT,
+            discountValue,
+            discountValueType: discountType,
+            discountAfterTax,
+            discountProducts: {
+              create: {
+                dishOrderId,
+                dishId: dishOrder.dishId,
+                dishName: dishOrder.name,
+                discountValue,
+                discountValueType: discountType,
+                discountRate:
+                  discountType === DiscountValueType.PERCENTAGE
+                    ? discountValue
+                    : _.min(100, (100 * discountValue) / (discountAfterTax ? afterTaxDishPrice : dishOrder.price)),
+                beforeTaxDiscountPrice,
+                afterTaxDiscountPrice,
+                taxDiscountPrice,
+              },
+            },
           }),
         }),
       },
-    },
-    where: { id: orderSessionId },
-    select: { id: true },
-  });
+      where: { id: orderSessionId },
+      select: { id: true },
+    });
 
-  return orderUtilService.calculateOrderSessionAndReturn(orderSessionId);
+    return orderUtilService.calculateOrderSessionAndReturn(orderSessionId);
+  }
 };
 
 const discountOrderSession = async ({ shopId, requestBody }) => {
@@ -706,14 +725,20 @@ const discountOrderSession = async ({ shopId, requestBody }) => {
   );
   if (
     (discountValue && _.get(previousDiscount, 'discountValueType') !== discountType) ||
-    _.get(previousDiscount, 'discountValue') !== discountValue
+    _.get(previousDiscount, 'discountValue') !== discountValue ||
+    _.get(previousDiscount, 'discountAfterTax') !== discountAfterTax
   ) {
     await OrderSession.update({
-      data: {
-        discounts: _.pickBy({
-          delete: previousDiscount
+      data: _.pickBy({
+        discounts: {
+          update: previousDiscount
             ? {
-                id: previousDiscount.id,
+                where: {
+                  id: previousDiscount.id,
+                },
+                data: {
+                  status: Status.disabled,
+                },
               }
             : null,
           create: _.pickBy({
@@ -724,8 +749,8 @@ const discountOrderSession = async ({ shopId, requestBody }) => {
             discountAfterTax,
             discountReason,
           }),
-        }),
-      },
+        },
+      }),
       where: { id: orderSessionId },
       select: { id: true },
     });
