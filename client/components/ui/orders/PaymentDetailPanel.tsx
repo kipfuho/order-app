@@ -118,6 +118,8 @@ export default function OrderSessionDetailPage({
       orderSessionId: orderSessionDetail.id,
       taxRate: numericTaxRate,
     }).unwrap();
+
+    setTaxChangeVisible(false);
   };
 
   if (!orderSessionDetail) {
@@ -143,13 +145,15 @@ export default function OrderSessionDetailPage({
           isLoading={updateOrderSessionLoading}
           onConfirmClick={handleTaxChangeConfirm}
         >
-          <TextInput
-            mode="outlined"
-            label={t("tax_rate")}
-            value={taxRate}
-            keyboardType="numeric" // Shows numeric keyboard
-            onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
-          />
+          <View style={{ padding: 16, gap: 12 }}>
+            <TextInput
+              mode="outlined"
+              label={t("tax_rate")}
+              value={taxRate}
+              keyboardType="numeric" // Shows numeric keyboard
+              onChangeText={(text) => setTaxRate(text.replace(/[^0-9.]/g, ""))} // Restrict input to numbers & decimal
+            />
+          </View>
         </ConfirmCancelDialog>
         <Toast config={toastConfig} />
       </Portal>

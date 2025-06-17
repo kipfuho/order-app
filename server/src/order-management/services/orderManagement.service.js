@@ -5,12 +5,7 @@ const { throwBadRequest } = require('../../utils/errorHandling');
 const { getMessageByLocale } = require('../../locale');
 const { OrderSessionStatus, OrderSessionDiscountType, DiscountValueType, Status } = require('../../utils/constant');
 const { getTablesFromCache, getTableFromCache } = require('../../metadata/tableMetadata.service');
-const {
-  getRoundDishPrice,
-  getRoundDiscountAmount,
-  createSearchByDateOptionWithShopTimezone,
-  divideToNPart,
-} = require('../../utils/common');
+const { createSearchByDateOptionWithShopTimezone, divideToNPart } = require('../../utils/common');
 const { getShopFromCache } = require('../../metadata/shopMetadata.service');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const {
@@ -658,25 +653,7 @@ const discountDishOrder = async ({ shopId, requestBody }) => {
   ) {
     // eslint-disable-next-line no-param-reassign
     if (dishOrder.isTaxIncludedPrice) discountAfterTax = true;
-    let dishTaxRate = dishOrder.dishVAT || orderSessionDetail.taxRate || 0;
-    if (orderSessionDetail.taxRate <= 0.001) {
-      dishTaxRate = 0;
-    }
-
-    const afterTaxDishPrice = dishOrder.taxIncludedPrice || getRoundDishPrice(dishOrder.price * (1 + dishTaxRate / 100));
-    let beforeTaxDiscountPrice = 0;
-    let afterTaxDiscountPrice = 0;
-    if (discountType === DiscountValueType.PERCENTAGE) {
-      beforeTaxDiscountPrice = getRoundDiscountAmount(dishOrder.price * (discountValue / 100));
-      afterTaxDiscountPrice = getRoundDiscountAmount(afterTaxDishPrice * (discountValue / 100));
-    } else if (discountAfterTax) {
-      afterTaxDiscountPrice = Math.min(discountValue, afterTaxDishPrice);
-      beforeTaxDiscountPrice = getRoundDiscountAmount(afterTaxDiscountPrice / (1 + dishTaxRate / 100));
-    } else {
-      beforeTaxDiscountPrice = Math.min(discountValue, dishOrder.price);
-      afterTaxDiscountPrice = getRoundDiscountAmount(beforeTaxDiscountPrice * (1 + dishTaxRate / 100));
-    }
-    const taxDiscountPrice = getRoundDiscountAmount(afterTaxDiscountPrice - beforeTaxDiscountPrice);
+    const afterTaxDishPrice = dishOrder.taxIncludedPrice;
 
     await OrderSession.update({
       data: {
@@ -717,9 +694,6 @@ const discountDishOrder = async ({ shopId, requestBody }) => {
                   discountType === DiscountValueType.PERCENTAGE
                     ? discountValue
                     : _.min(100, (100 * discountValue) / (discountAfterTax ? afterTaxDishPrice : dishOrder.price)),
-                beforeTaxDiscountPrice,
-                afterTaxDiscountPrice,
-                taxDiscountPrice,
               },
             },
           }),

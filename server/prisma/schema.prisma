@@ -244,21 +244,18 @@ model Order {
 }
 
 model DiscountProduct {
-  id                     String            @id @default(uuid())
-  dishOrderId            String
-  dishId                 String
-  dishName               String
-  discountRate           Float
-  discountValue          Float
-  discountValueType      DiscountValueType
-  beforeTaxDiscountPrice Float?
-  afterTaxDiscountPrice  Float?
-  taxDiscountPrice       Float?
-  discountId             String
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime          @updatedAt
-  status                 Status            @default(enabled)
-  discount               Discount          @relation(fields: [discountId], references: [id])
+  id                String            @id @default(uuid())
+  dishOrderId       String
+  dishId            String
+  dishName          String
+  discountRate      Float
+  discountValue     Float
+  discountValueType DiscountValueType
+  discountId        String
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  status            Status            @default(enabled)
+  discount          Discount          @relation(fields: [discountId], references: [id])
 
   @@index([discountId])
 }
