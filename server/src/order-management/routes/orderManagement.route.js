@@ -32,11 +32,6 @@ router.post(
   orderManagementController.getTableActiveOrderSessions
 );
 router.post(
-  '/get-ordersession-detail',
-  auth(PermissionType.SHOP_APP, PermissionType.VIEW_ORDER),
-  orderManagementController.getOrderSessionDetail
-);
-router.post(
   '/pay-ordersession',
   auth(PermissionType.SHOP_APP, PermissionType.UPDATE_ORDER),
   orderManagementController.payOrderSession
@@ -84,5 +79,10 @@ router.post('/update-cart', auth(), orderManagementController.updateCart);
 router.post('/checkout-cart', auth(), orderManagementController.checkoutCart);
 router.post('/checkout-cart-history', auth(), orderManagementController.getCheckoutCartHistory);
 router.post('/unconfirmed-checkout-cart-history', auth(), orderManagementController.getUnconfirmedCheckoutCartHistory);
+
+router
+  .route('/:orderSessionId')
+  .get(auth(PermissionType.SHOP_APP, PermissionType.VIEW_ORDER), orderManagementController.getOrderSessionDetail)
+  .patch(auth(PermissionType.SHOP_APP, PermissionType.UPDATE_ORDER), orderManagementController.updateOrderSession);
 
 module.exports = router;

@@ -52,10 +52,21 @@ const getTableActiveOrderSessions = catchAsync(async (req, res) => {
 
 const getOrderSessionDetail = catchAsync(async (req, res) => {
   const shopId = _.get(req, 'shop.id');
-  const { orderSessionId } = req.body;
+  const orderSessionId = _.get(req, 'params.orderSessionId');
   const orderSessionDetail = await orderManagementService.getOrderSessionDetail({ shopId, orderSessionId });
   const orderSessionResponse = convertOrderSessionForResponse(orderSessionDetail);
   res.status(httpStatus.OK).send({ message: 'OK', orderSession: orderSessionResponse });
+});
+
+const updateOrderSession = catchAsync(async (req, res) => {
+  const shopId = _.get(req, 'shop.id');
+  const orderSessionId = _.get(req, 'params.orderSessionId');
+  await orderManagementService.updateOrderSession({
+    shopId,
+    orderSessionId,
+    requestBody: req.body,
+  });
+  res.status(httpStatus.OK).send({ message: 'Cập nhật thành công' });
 });
 
 const payOrderSession = catchAsync(async (req, res) => {
@@ -215,6 +226,7 @@ module.exports = {
   updateOrder,
   getTableForOrder,
   getTableActiveOrderSessions,
+  updateOrderSession,
   getOrderSessionDetail,
   payOrderSession,
   cancelOrderSession,

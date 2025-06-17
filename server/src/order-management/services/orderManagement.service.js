@@ -266,6 +266,26 @@ const getOrderSessionDetail = async ({ shopId, orderSessionId }) => {
   return orderSessionDetail;
 };
 
+// currently only for update tax rate
+const updateOrderSession = async ({ shopId, orderSessionId, requestBody }) => {
+  const { taxRate } = requestBody;
+
+  const updateData = _.pickBy({
+    taxRate,
+    shouldRecalculateTax: !!taxRate || taxRate === 0,
+  });
+  await OrderSession.update({
+    where: {
+      id: orderSessionId,
+      shopId,
+    },
+    data: updateData,
+    select: {
+      id: true,
+    },
+  });
+};
+
 const _validateBeforePayment = (orderSession, paymentDetails) => {
   throwBadRequest(
     orderSession.status !== OrderSessionStatus.unpaid,
@@ -1012,6 +1032,7 @@ module.exports = {
   getTableForOrder,
   getTableActiveOrderSessions,
   getOrderSessionDetail,
+  updateOrderSession,
   payOrderSession,
   cancelOrder,
   cancelPaidStatus,
