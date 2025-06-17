@@ -38,7 +38,7 @@ export default function OrderManagementApprovePage() {
 
   const { unconfirmedOrderByTable, tablesGroupByPosition, tablePositionById } =
     useMemo(() => {
-      const unconfirmedOrderByTable = _.groupBy(unconfirmedOrders, "table");
+      const unconfirmedOrderByTable = _.groupBy(unconfirmedOrders, "tableId");
       const availableTables = _.filter(
         tables,
         (t) => !_.isEmpty(unconfirmedOrderByTable[t.id]),

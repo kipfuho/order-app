@@ -26,7 +26,6 @@ const convertOrderForResponse = (order) => {
 
   delete order.orderSessionId;
   delete order.shopId;
-  delete order.tableId;
   delete order.customerId;
   delete order.approvedById;
   delete order.cancelledById;

@@ -13,6 +13,8 @@ const {
   notifyUpdateOrderSession,
   EventActionType,
   notifyCancelPaidStatusOrderSession,
+  notifyUpdateUnconfirmedOrder,
+  notifyApproveUnconfirmedOrder,
 } = require('../../utils/awsUtils/appSync.utils');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
@@ -949,6 +951,8 @@ const updateUnconfirmedOrder = async ({ shopId, orderId, updateDishOrders }) => 
       note: dishOrder.note,
     }))
   );
+
+  await notifyUpdateUnconfirmedOrder({ order, action: EventActionType.UPDATE });
   return order;
 };
 
@@ -967,6 +971,7 @@ const cancelUnconfirmedOrder = async ({ shopId, orderId }) => {
     select: { id: true },
   });
   throwBadRequest(!order, getMessageByLocale({ key: 'order.notFound' }));
+  await notifyUpdateUnconfirmedOrder({ order, action: EventActionType.CANCEL });
 };
 
 const approveUnconfirmedOrder = async ({ shopId, orderId, orderSessionId }) => {
@@ -996,7 +1001,9 @@ const approveUnconfirmedOrder = async ({ shopId, orderId, orderSessionId }) => {
     where: { id: orderId },
     select: { id: true },
   });
-  return orderUtilService.calculateOrderSessionAndReturn(orderSession.id);
+
+  await orderUtilService.calculateOrderSessionAndReturn(orderSession.id);
+  await notifyApproveUnconfirmedOrder({ order });
 };
 
 module.exports = {

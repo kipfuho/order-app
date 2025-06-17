@@ -8,7 +8,7 @@ const getShopChannel = (shopId) => `${namespace}/shop/${shopId}`;
 const getCustomerChannel = (shopId) => `${namespace}/shop/${shopId}/customer`;
 const getSingleCustomerChannel = (customerId) => `${namespace}/payment/${customerId}`;
 
-const AppSyncEvent = {
+const AppSyncEvent = Object.freeze({
   SHOP_CHANGED: 'SHOP_CHANGED',
   TABLE_CHANGED: 'TABLE_CHANGED',
   TABLE_POSITION_CHANGED: 'TABLE_POSITION_CHANGED',
@@ -21,15 +21,17 @@ const AppSyncEvent = {
   CANCEL_PAYMENT: 'CANCEL_PAYMENT',
   ORDER_SESSION_UPDATE: 'ORDER_SESSION_UPDATE',
   NEW_ORDER: 'NEW_ORDER',
-};
+  UNCONFIRMED_ORDER_CHANGE: 'UNCONFIRMED_ORDER_CHANGE',
+  UNCONFIRMED_ORDER_APPROVE: 'UNCONFIRMED_ORDER_APPROVE',
+});
 
 // general action action for events
-const EventActionType = {
+const EventActionType = Object.freeze({
   CREATE: 'CREATE',
   UPDATE: 'UPDATE',
   DELETE: 'DELETE',
   CANCEL: 'CANCEL',
-};
+});
 
 const notifyOrderSessionPaymentForCustomer = async ({ orderSession }) => {
   const { customerId } = orderSession;
@@ -336,6 +338,80 @@ const notifyNewOrder = async ({ order, orderSession, action }) => {
   await _notifyUpdateOrderSessionForCustomer({ order, orderSession, action });
 };
 
+const _notifyUpdateUnconfirmedOrderForCustomer = async ({ order, action }) => {
+  const { customerId } = order;
+  if (_.isEmpty(customerId)) {
+    return;
+  }
+
+  const channel = getSingleCustomerChannel(order.shopId);
+  const event = {
+    type: AppSyncEvent.UNCONFIRMED_ORDER_CHANGE,
+    data: {
+      action, // 'UPDATE', 'CANCEL'
+      orderId: order.id,
+      tableId: order.tableId,
+    },
+  };
+
+  await publishSingleAppSyncEvent({ channel, event });
+};
+
+const notifyUpdateUnconfirmedOrder = async ({ order, action }) => {
+  if (_.isEmpty(order)) {
+    return;
+  }
+
+  const channel = getShopChannel(order.shopId);
+  const event = {
+    type: AppSyncEvent.UNCONFIRMED_ORDER_CHANGE,
+    data: {
+      action, // 'UPDATE', 'CANCEL'
+      orderId: order.id,
+      tableId: order.tableId,
+    },
+  };
+
+  await publishSingleAppSyncEvent({ channel, event });
+  await _notifyUpdateUnconfirmedOrderForCustomer({ order, action });
+};
+
+const _notifyApproveUnconfirmedOrderForCustomer = async ({ order }) => {
+  const { customerId } = order;
+  if (_.isEmpty(customerId)) {
+    return;
+  }
+
+  const channel = getSingleCustomerChannel(order.shopId);
+  const event = {
+    type: AppSyncEvent.UNCONFIRMED_ORDER_APPROVE,
+    data: {
+      orderId: order.id,
+      tableId: order.tableId,
+    },
+  };
+
+  await publishSingleAppSyncEvent({ channel, event });
+};
+
+const notifyApproveUnconfirmedOrder = async ({ order }) => {
+  if (_.isEmpty(order)) {
+    return;
+  }
+
+  const channel = getShopChannel(order.shopId);
+  const event = {
+    type: AppSyncEvent.UNCONFIRMED_ORDER_APPROVE,
+    data: {
+      orderId: order.id,
+      tableId: order.tableId,
+    },
+  };
+
+  await publishSingleAppSyncEvent({ channel, event });
+  await _notifyApproveUnconfirmedOrderForCustomer({ order });
+};
+
 module.exports = {
   AppSyncEvent,
   EventActionType,
@@ -353,4 +429,6 @@ module.exports = {
   notifyUpdateOrderSession,
   notifyNewOrder,
   notifyCancelPaidStatusOrderSession,
+  notifyUpdateUnconfirmedOrder,
+  notifyApproveUnconfirmedOrder,
 };
