@@ -32,7 +32,7 @@ export const AppSyncChannelType = {
   SHOP: "SHOP",
   CUSTOMER: "CUSTOMER",
   SINGLE_CUSTOMER: "SINGLE_CUSTOMER",
-};
+} as const;
 
 export const EventType = {
   SHOP_CHANGED: "SHOP_CHANGED",
@@ -47,7 +47,9 @@ export const EventType = {
   CANCEL_PAYMENT: "CANCEL_PAYMENT",
   ORDER_SESSION_UPDATE: "ORDER_SESSION_UPDATE",
   NEW_ORDER: "NEW_ORDER",
-};
+  UNCONFIRMED_ORDER_CHANGE: "UNCONFIRMED_ORDER_CHANGE",
+  UNCONFIRMED_ORDER_APPROVE: "UNCONFIRMED_ORDER_APPROVE",
+} as const;
 
 // general action action for events
 export const EventActionType = {
@@ -55,7 +57,7 @@ export const EventActionType = {
   UPDATE: "UPDATE",
   DELETE: "DELETE",
   CANCEL: "CANCEL",
-};
+} as const;
 
 /**
  * Kết nối đến channel shop cho màn quản lý
@@ -125,9 +127,21 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
                 "TablesForOrder",
               ]),
             );
-            store.dispatch(
-              kitchenApiSlice.util.invalidateTags(["UncookedDishOrders"]),
+            const state = store.getState();
+            const cachedArgs = kitchenApiSlice.util.selectCachedArgsForQuery(
+              state,
+              "getUncookedDishOrders",
             );
+            if (cachedArgs.length > 0) {
+              store.dispatch(
+                kitchenApiSlice.endpoints.getUncookedDishOrders.initiate(
+                  { shopId, cursor: _.get(cachedArgs, "0.cursor") },
+                  {
+                    forceRefetch: true,
+                  },
+                ),
+              );
+            }
             return;
           }
 
@@ -695,6 +709,50 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
             return;
           }
 
+          if (type === EventType.UNCONFIRMED_ORDER_CHANGE) {
+            if (currentClientId !== clientId) {
+              store.dispatch(
+                orderApiSlice.util.invalidateTags(["UnconfirmedOrders"]),
+              );
+            }
+            return;
+          }
+
+          if (type === EventType.UNCONFIRMED_ORDER_APPROVE) {
+            const {
+              orderSessionId,
+              tableId,
+            }: { orderSessionId: string; tableId: string } = data;
+            if (currentClientId !== clientId) {
+              store.dispatch(
+                orderApiSlice.util.invalidateTags(["UnconfirmedOrders"]),
+              );
+            }
+            store.dispatch(
+              orderApiSlice.util.invalidateTags([
+                { type: "OrderSessions", id: orderSessionId },
+                { type: "ActiveOrderSessions", id: tableId },
+                "TablesForOrder",
+              ]),
+            );
+            const state = store.getState();
+            const cachedArgs = kitchenApiSlice.util.selectCachedArgsForQuery(
+              state,
+              "getUncookedDishOrders",
+            );
+            if (cachedArgs.length > 0) {
+              store.dispatch(
+                kitchenApiSlice.endpoints.getUncookedDishOrders.initiate(
+                  { shopId, cursor: _.get(cachedArgs, "0.cursor") },
+                  {
+                    forceRefetch: true,
+                  },
+                ),
+              );
+            }
+            return;
+          }
+
           logger.log("Cannot match event type!~");
         } catch (error) {
           logger.error("Error handling event:", error);
@@ -1101,6 +1159,33 @@ const connectAppSyncForSingleCustomer = async ({
               );
             }
 
+            return;
+          }
+
+          if (type === EventType.UNCONFIRMED_ORDER_CHANGE) {
+            Toast.show({
+              type: "success",
+              text1: t("update_order"),
+              text2: t("order_update"),
+            });
+
+            store.dispatch(
+              cartApiSlice.util.invalidateTags(["UnconfirmedCartHistory"]),
+            );
+            return;
+          }
+
+          if (type === EventType.UNCONFIRMED_ORDER_APPROVE) {
+            Toast.show({
+              type: "success",
+              text1: t("update_order"),
+              text2: t("order_update"),
+            });
+
+            store.dispatch(
+              cartApiSlice.util.invalidateTags(["UnconfirmedCartHistory"]),
+            );
+            store.dispatch(cartApiSlice.util.invalidateTags(["CartHistory"]));
             return;
           }
 

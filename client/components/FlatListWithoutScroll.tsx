@@ -322,9 +322,9 @@ const FlatListWithoutScroll = ({
 
   // force rerender
   useEffect(() => {
-    flatListRef.current?.scrollToOffset({
-      offset: 0,
-    });
+    if (flatListRef.current) {
+      flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+    }
   }, []);
 
   return (
@@ -357,6 +357,7 @@ const FlatListWithoutScroll = ({
         onEndReachedThreshold={onEndReachedThreshold}
         contentContainerStyle={{ padding: 10 }}
         showsHorizontalScrollIndicator={false}
+        waitForInitialLayout={false}
       />
     </Surface>
   );

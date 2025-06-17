@@ -22,7 +22,7 @@ export const Countries = {
     name: "Việt Nam",
     currency: "VND",
   },
-};
+} as const;
 
 export enum DishStatus {
   activated = "activated",

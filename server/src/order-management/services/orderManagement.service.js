@@ -600,13 +600,14 @@ const checkoutCart = async ({ customerId, shopId, requestBody }) => {
 
   // Nếu bàn cần xác nhận của nhân viên thì không gắn order session
   if (table.needApprovalWhenCustomerOrder) {
-    await orderUtilService.createNewOrder({
+    const order = await orderUtilService.createNewOrder({
       tableId,
       shopId,
       dishOrders: availableCartItems,
       customerId,
     });
     await clearCart({ customerId, shopId, remainingItems: unavailableCartItems, deletedItems: availableCartItems });
+    await notifyUpdateUnconfirmedOrder({ order, action: EventActionType.CREATE });
     return;
   }
 
@@ -992,18 +993,28 @@ const approveUnconfirmedOrder = async ({ shopId, orderId, orderSessionId }) => {
     orderSessionId,
     isApproveOrder: true,
   });
+  const currentTime = new Date();
   await Order.update({
     data: {
       approvedById: _.get(operator, 'user.id'),
       approvedByName: _.get(operator, 'employee.name') || _.get(operator, 'user.name'),
       orderSessionId: orderSession.id,
+      createdAt: currentTime,
+      dishOrders: {
+        updateMany: {
+          where: {},
+          data: {
+            createdAt: currentTime,
+          },
+        },
+      },
     },
     where: { id: orderId },
     select: { id: true },
   });
 
   await orderUtilService.calculateOrderSessionAndReturn(orderSession.id);
-  await notifyApproveUnconfirmedOrder({ order });
+  await notifyApproveUnconfirmedOrder({ order, orderSession });
 };
 
 module.exports = {

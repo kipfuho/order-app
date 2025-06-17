@@ -82,7 +82,7 @@ export const cartApiSlice = createApi({
           };
         }
       },
-      invalidatesTags: ["Cart", "CartHistory"],
+      invalidatesTags: ["Cart", "CartHistory", "UnconfirmedCartHistory"],
     }),
 
     getCheckoutCartHistory: builder.query<

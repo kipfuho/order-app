@@ -251,7 +251,7 @@ const _notifyUpdateOrderSessionForCustomer = async ({ order, orderSession, actio
     return;
   }
 
-  const channel = getSingleCustomerChannel(orderSession.shopId);
+  const channel = getSingleCustomerChannel(orderSession.customerId);
   const billNo = formatOrderSessionNo(orderSession);
   const event = {
     type: AppSyncEvent.ORDER_SESSION_UPDATE,
@@ -344,7 +344,7 @@ const _notifyUpdateUnconfirmedOrderForCustomer = async ({ order, action }) => {
     return;
   }
 
-  const channel = getSingleCustomerChannel(order.shopId);
+  const channel = getSingleCustomerChannel(order.customerId);
   const event = {
     type: AppSyncEvent.UNCONFIRMED_ORDER_CHANGE,
     data: {
@@ -366,7 +366,7 @@ const notifyUpdateUnconfirmedOrder = async ({ order, action }) => {
   const event = {
     type: AppSyncEvent.UNCONFIRMED_ORDER_CHANGE,
     data: {
-      action, // 'UPDATE', 'CANCEL'
+      action, // 'CREATE', 'UPDATE', 'CANCEL'
       orderId: order.id,
       tableId: order.tableId,
     },
@@ -376,17 +376,17 @@ const notifyUpdateUnconfirmedOrder = async ({ order, action }) => {
   await _notifyUpdateUnconfirmedOrderForCustomer({ order, action });
 };
 
-const _notifyApproveUnconfirmedOrderForCustomer = async ({ order }) => {
+const _notifyApproveUnconfirmedOrderForCustomer = async ({ order, orderSession }) => {
   const { customerId } = order;
   if (_.isEmpty(customerId)) {
     return;
   }
 
-  const channel = getSingleCustomerChannel(order.shopId);
+  const channel = getSingleCustomerChannel(order.customerId);
   const event = {
     type: AppSyncEvent.UNCONFIRMED_ORDER_APPROVE,
     data: {
-      orderId: order.id,
+      orderSessionId: orderSession.id,
       tableId: order.tableId,
     },
   };
@@ -394,7 +394,7 @@ const _notifyApproveUnconfirmedOrderForCustomer = async ({ order }) => {
   await publishSingleAppSyncEvent({ channel, event });
 };
 
-const notifyApproveUnconfirmedOrder = async ({ order }) => {
+const notifyApproveUnconfirmedOrder = async ({ order, orderSession }) => {
   if (_.isEmpty(order)) {
     return;
   }
@@ -403,13 +403,13 @@ const notifyApproveUnconfirmedOrder = async ({ order }) => {
   const event = {
     type: AppSyncEvent.UNCONFIRMED_ORDER_APPROVE,
     data: {
-      orderId: order.id,
+      orderSessionId: orderSession.id,
       tableId: order.tableId,
     },
   };
 
   await publishSingleAppSyncEvent({ channel, event });
-  await _notifyApproveUnconfirmedOrderForCustomer({ order });
+  await _notifyApproveUnconfirmedOrderForCustomer({ order, orderSession });
 };
 
 module.exports = {
