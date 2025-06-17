@@ -56,7 +56,48 @@ const mergeCartItems = (currentCartItem: Record<string, CartItem>) => {
   return _.filter(Object.values(cardItemByKey), (item) => item.quantity > 0);
 };
 
-const getMinuteForDisplay = (ms?: number) => {
+const getMinuteForDisplay = ({
+  now,
+  dateTimeString,
+  epochTime,
+}: {
+  now: number;
+  dateTimeString?: string;
+  epochTime?: number;
+}) => {
+  let ms: number | undefined;
+
+  if (dateTimeString) {
+    let parsedDate: Date | undefined;
+
+    const isoDate = new Date(dateTimeString);
+    if (dateTimeString.includes("T") && !isNaN(isoDate.getTime())) {
+      // Looks like ISO format
+      parsedDate = isoDate;
+    } else {
+      const timeDateRegex = /^(\d{1,2}):(\d{2}) (\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+      const dateOnlyRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+
+      let match;
+      if ((match = dateTimeString.match(timeDateRegex))) {
+        const [, hh, mm, dd, MM, yyyy] = match.map(Number);
+        parsedDate = new Date(yyyy, MM - 1, dd, hh, mm);
+      } else if ((match = dateTimeString.match(dateOnlyRegex))) {
+        const [, dd, MM, yyyy] = match.map(Number);
+        parsedDate = new Date(yyyy, MM - 1, dd);
+      }
+    }
+
+    if (parsedDate) {
+      ms = now - parsedDate.getTime();
+    }
+  }
+
+  // If no valid date string, use epoch time
+  if (ms === undefined && epochTime !== undefined) {
+    ms = now - epochTime;
+  }
+
   return Math.floor((ms || 0) / 60000);
 };
 

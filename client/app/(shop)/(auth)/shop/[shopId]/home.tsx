@@ -144,6 +144,7 @@ export default function ShopPage() {
               >
                 <Image
                   source={
+                    // eslint-disable-next-line @typescript-eslint/no-require-imports
                     shop.imageUrls?.[0] || require("@assets/images/savora.png")
                   }
                   placeholder={{ blurhash: BLURHASH }}

@@ -15,6 +15,12 @@ interface GetOrderSessionDetailRequest {
   orderSessionId: string;
 }
 
+interface UpdateOrderSessionRequest {
+  shopId: string;
+  orderSessionId: string;
+  taxRate?: number;
+}
+
 interface GetOrderSessionHistoryRequest {
   shopId: string;
   from?: Date;
@@ -109,6 +115,7 @@ export {
   GetTablesForOrderRequest,
   GetActiveOrderSessionRequest,
   GetOrderSessionDetailRequest,
+  UpdateOrderSessionRequest,
   GetOrderSessionHistoryRequest,
   CreateOrderRequest,
   ChangeDishQuantityRequest,

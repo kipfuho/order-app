@@ -14,9 +14,10 @@ import { useTranslation } from "react-i18next";
 const TableForOrderCurrentInfoTime = ({ table }: { table: TableForOrder }) => {
   const theme = useTheme<CustomMD3Theme>();
   const now = useCurrentTime();
-  const minutesSinceOrderCreated = getMinuteForDisplay(
-    now - (table.orderCreatedAtEpoch ?? now),
-  );
+  const minutesSinceOrderCreated = getMinuteForDisplay({
+    now,
+    epochTime: table.orderCreatedAtEpoch,
+  });
 
   return (
     <Text

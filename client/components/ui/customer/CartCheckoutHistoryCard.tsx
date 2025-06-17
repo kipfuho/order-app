@@ -55,6 +55,7 @@ const CartHistoryOrderCard = ({
                 {dish && (
                   <Image
                     source={
+                      // eslint-disable-next-line @typescript-eslint/no-require-imports
                       dish.imageUrls[0] || require("@assets/images/savora.png")
                     }
                     placeholder={{ blurhash: BLURHASH }}

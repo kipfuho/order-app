@@ -1,8 +1,9 @@
 import { ReactNode, useState } from "react";
-import { Appbar, Menu } from "react-native-paper";
+import { Appbar, Menu, Divider, Text } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@stores/store";
 import { setLocale, toggleDarkMode } from "@stores/appSetting.slice";
+import { reloadAppAsync } from "expo";
 
 export function AppBar({
   title,
@@ -26,7 +27,11 @@ export function AppBar({
 
   const onThemeClick = () => {
     dispatch(toggleDarkMode());
-    // Integrate with your theming system if needed
+    setMenuVisible(false);
+  };
+
+  const onReloadClick = () => {
+    reloadAppAsync();
   };
 
   return (
@@ -34,32 +39,41 @@ export function AppBar({
       {goBack && <Appbar.BackAction onPress={goBack} size={20} />}
       {title && <Appbar.Content title={title} titleStyle={{ fontSize: 16 }} />}
       {actions}
+
       <Menu
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
         anchor={
-          <Appbar.Action
-            icon="earth"
-            onPress={() => setMenuVisible(true)}
-            accessibilityLabel="Language"
-          />
+          <Appbar.Action icon="cog" onPress={() => setMenuVisible(true)} />
         }
       >
         <Menu.Item
+          onPress={onReloadClick}
+          title={"Reload"}
+          leadingIcon={"reload"}
+        />
+        <Divider />
+        <Menu.Item
+          onPress={onThemeClick}
+          title={darkMode ? "Light mode" : "Dark mode"}
+          leadingIcon={darkMode ? "weather-sunny" : "weather-night"}
+        />
+        <Divider />
+        <Menu.Item title="Language" disabled />
+        <Menu.Item
           onPress={() => toggleLocale("vi")}
           title="Tiếng Việt"
-          leadingIcon={locale === "vi" ? "check" : undefined}
+          leadingIcon={() => <Text style={{ fontSize: 18 }}>🇻🇳</Text>}
+          trailingIcon={locale === "vi" ? "check" : undefined}
         />
         <Menu.Item
           onPress={() => toggleLocale("en")}
           title="English"
-          leadingIcon={locale === "en" ? "check" : undefined}
+          leadingIcon={() => <Text style={{ fontSize: 18 }}>🇺🇸</Text>}
+          trailingIcon={locale === "en" ? "check" : undefined}
         />
       </Menu>
-      <Appbar.Action
-        icon={darkMode ? "weather-sunny" : "weather-night"}
-        onPress={onThemeClick}
-      />
+
       {children}
     </Appbar.Header>
   );

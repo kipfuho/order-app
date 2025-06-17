@@ -165,6 +165,7 @@ const DishCardForCustomer = ({
     >
       <View>
         <Image
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           source={dish.imageUrls[0] || require("@assets/images/savora.png")}
           placeholder={{ blurhash: BLURHASH }}
           style={{

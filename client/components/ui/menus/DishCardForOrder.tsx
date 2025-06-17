@@ -225,6 +225,7 @@ const DishCardForOrder = ({
       </Surface>
       <View>
         <Image
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           source={dish.imageUrls[0] || require("@assets/images/savora.png")}
           style={{ width: cardWidth, height: cardWidth }}
           placeholder={{ blurhash: BLURHASH }}

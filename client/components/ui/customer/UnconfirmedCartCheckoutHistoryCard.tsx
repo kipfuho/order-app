@@ -51,6 +51,7 @@ export default function UnconfirmedCartCheckoutHistoryCard({
                     <Image
                       source={
                         dish.imageUrls[0] ||
+                        // eslint-disable-next-line @typescript-eslint/no-require-imports
                         require("@assets/images/savora.png")
                       }
                       placeholder={{ blurhash: BLURHASH }}

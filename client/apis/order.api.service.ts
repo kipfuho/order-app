@@ -22,6 +22,7 @@ import {
   GetUnconfirmedOrderRequest,
   PayOrderSessionRequest,
   RemoveDiscountFromOrderSessionRequest,
+  UpdateOrderSessionRequest,
   UpdateUnconfirmedOrderRequest,
 } from "./order.api.interface";
 
@@ -76,15 +77,35 @@ const getOrderSessionDetailRequest = async ({
   const accessToken = await getAccessTokenLazily();
 
   const result: { orderSession: OrderSession } = await apiRequest({
-    method: "POST",
-    endpoint: `/v1/shops/${shopId}/orders/get-ordersession-detail`,
+    method: "GET",
+    endpoint: `/v1/shops/${shopId}/orders/${orderSessionId}`,
     token: accessToken,
-    data: {
-      orderSessionId,
-    },
   });
 
   return result.orderSession;
+};
+
+/**
+ * Update order session detail
+ * @param param0
+ */
+const updateOrderSessionRequest = async ({
+  shopId,
+  orderSessionId,
+  taxRate,
+}: UpdateOrderSessionRequest) => {
+  const accessToken = await getAccessTokenLazily();
+
+  await apiRequest({
+    method: "PATCH",
+    endpoint: `/v1/shops/${shopId}/orders/${orderSessionId}`,
+    token: accessToken,
+    data: {
+      taxRate,
+    },
+  });
+
+  return true;
 };
 
 /**
@@ -417,6 +438,7 @@ export {
   getTablesForOrderRequest,
   getActiveOrderSessionsRequest,
   getOrderSessionDetailRequest,
+  updateOrderSessionRequest,
   createOrderRequest,
   changeDishQuantityRequest,
   getOrderSessionHistoryRequest,

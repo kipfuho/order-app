@@ -17,6 +17,7 @@ import {
   getUnconfirmedOrderRequest,
   payOrderSessionRequest,
   removeDiscountFromOrderSessionRequest,
+  updateOrderSessionRequest,
   updateUnconfirmedOrderRequest,
 } from "@apis/order.api.service";
 import {
@@ -41,6 +42,7 @@ import {
   GetUnconfirmedOrderRequest,
   PayOrderSessionRequest,
   RemoveDiscountFromOrderSessionRequest,
+  UpdateOrderSessionRequest,
   UpdateUnconfirmedOrderRequest,
 } from "@apis/order.api.interface";
 import { resetCurrentOrder } from "../shop.slice";
@@ -113,6 +115,26 @@ export const orderApiSlice = createApi({
         result
           ? [{ type: "OrderSessions" as const, id: result.id }]
           : [{ type: "OrderSessions" as const, id: "ALL" }],
+    }),
+
+    updateOrderSession: builder.mutation<boolean, UpdateOrderSessionRequest>({
+      queryFn: async ({ orderSessionId, shopId, taxRate }) => {
+        try {
+          await updateOrderSessionRequest({
+            shopId,
+            orderSessionId,
+            taxRate,
+          });
+
+          return { data: true };
+        } catch (error) {
+          return { error: { status: 500, data: error } };
+        }
+      },
+      invalidatesTags: (_, __, { orderSessionId }) => [
+        { type: "OrderSessions", id: orderSessionId },
+        "TablesForOrder",
+      ], // Enables cache invalidation
     }),
 
     getOrderSessionHistory: builder.query<
@@ -526,6 +548,7 @@ export const {
   useGetTablesForOrderQuery,
   useGetActiveOrderSessionsQuery,
   useGetOrderSessionDetailQuery,
+  useUpdateOrderSessionMutation,
   useGetOrderSessionHistoryQuery,
   useCreateOrderMutation,
   useChangeDishQuantityMutation,

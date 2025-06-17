@@ -29,9 +29,10 @@ const TableKitchenDishOrderTime = ({
 }) => {
   const { t } = useTranslation();
   const now = useCurrentTime();
-  const minutesSinceOrderCreated = getMinuteForDisplay(
-    now - new Date(item.createdAt).getTime(),
-  );
+  const minutesSinceOrderCreated = getMinuteForDisplay({
+    now,
+    dateTimeString: item.createdAt,
+  });
   const color = getStatusColor(theme, minutesSinceOrderCreated);
 
   return (

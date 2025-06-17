@@ -67,7 +67,7 @@ interface UpdateDishRequest {
   unit?: Unit;
   isTaxIncludedPrice?: boolean;
   imageUrls?: string[];
-  tags: string[];
+  tags?: string[];
   status?: string;
   rtk?: boolean;
 }

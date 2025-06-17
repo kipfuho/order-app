@@ -33,9 +33,10 @@ const TimeDifferentAndDishQuantity = ({
 }) => {
   const { t } = useTranslation();
   const now = useCurrentTime();
-  const minutesSinceOrderCreated = getMinuteForDisplay(
-    now - new Date(dishOrder.createdAt).getTime(),
-  );
+  const minutesSinceOrderCreated = getMinuteForDisplay({
+    now,
+    dateTimeString: dishOrder.createdAt,
+  });
   const color = getStatusColor(theme, minutesSinceOrderCreated);
 
   return (
