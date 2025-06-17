@@ -403,6 +403,7 @@ const FlatListWithScroll = ({
   const renderItem = useCallback(
     ({ item }: { item: FlatListItem }) => {
       if (item.type === "header") {
+        if (!shouldShowGroup) return null;
         return (
           <Text
             style={{
@@ -446,7 +447,7 @@ const FlatListWithScroll = ({
 
       return null;
     },
-    [itemType, itemContainerWidth, openMenu, numColumns],
+    [shouldShowGroup, numColumns, itemType, openMenu, itemContainerWidth],
   );
 
   const scrollToCategory = (categoryId: string) => {
@@ -464,7 +465,7 @@ const FlatListWithScroll = ({
   const MARGIN_BOTTOM = 8;
   const getEstimatedItemSize = (index: number, item: FlatListItem) => {
     if (item.type === "header") {
-      return HEADER_HEIGHT + MARGIN_BOTTOM;
+      return (shouldShowGroup ? HEADER_HEIGHT : 0) + MARGIN_BOTTOM;
     } else if (item.type === "row") {
       return ROW_HEIGHT + MARGIN_BOTTOM;
     }

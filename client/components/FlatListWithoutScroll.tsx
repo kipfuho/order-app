@@ -305,7 +305,7 @@ const FlatListWithoutScroll = ({
 
   const getEstimatedItemSize = (index: number, item: FlatListItem) => {
     if (item.type === "header") {
-      return HEADER_HEIGHT + MARGIN_BOTTOM;
+      return (shouldShowGroup ? HEADER_HEIGHT : 0) + MARGIN_BOTTOM;
     } else if (item.type === "row") {
       return ROW_HEIGHT + MARGIN_BOTTOM;
     } else if (item.type === "loading") {

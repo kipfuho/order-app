@@ -994,12 +994,14 @@ const approveUnconfirmedOrder = async ({ shopId, orderId, orderSessionId }) => {
     isApproveOrder: true,
   });
   const currentTime = new Date();
+  const orderNo = await orderUtilService.getOrderNoForNewOrder({ shopId });
   await Order.update({
     data: {
       approvedById: _.get(operator, 'user.id'),
       approvedByName: _.get(operator, 'employee.name') || _.get(operator, 'user.name'),
       orderSessionId: orderSession.id,
       createdAt: currentTime,
+      orderNo,
       dishOrders: {
         updateMany: {
           where: {},

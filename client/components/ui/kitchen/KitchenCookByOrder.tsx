@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Surface } from "react-native-paper";
 import { RootState } from "@stores/store";
@@ -22,10 +22,13 @@ const KitchenCookByOrder = () => {
     isLoading: uncookedDishOrdersLoading,
   } = useInfiniteScrollingQuery(shop.id, useGetUncookedDishOrdersQuery);
 
-  const uncookedDishOrderGroupByOrder = _.groupBy(
-    uncookedDishOrders,
-    "orderId",
-  );
+  const uncookedDishOrdersByOrder = useMemo(() => {
+    const uncookedDishOrderGroupByOrder = _.groupBy(
+      uncookedDishOrders,
+      "orderId",
+    );
+    return _.flatMap(uncookedDishOrderGroupByOrder, (groups) => groups);
+  }, [uncookedDishOrders]);
 
   if (uncookedDishOrdersLoading) {
     return <LoaderBasic />;
@@ -34,10 +37,8 @@ const KitchenCookByOrder = () => {
   return (
     <Surface style={{ flex: 1 }}>
       <FlatListWithoutScroll
-        groups={Object.keys(uncookedDishOrderGroupByOrder).map((id) => ({
-          id,
-        }))}
-        itemByGroup={uncookedDishOrderGroupByOrder}
+        groups={[{ id: "all" }]}
+        itemByGroup={{ all: uncookedDishOrdersByOrder }}
         itemType={ItemTypeFlatList.KITCHEN_DISHORDER_BYORDER}
         shouldShowGroup={false}
         fetchNextPage={fetchNextPage}

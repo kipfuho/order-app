@@ -97,13 +97,18 @@ const getLastActiveRecord = async ({ model, select, shopId }) => {
     reportTime: shop.reportTime || 0,
   });
 
-  const record = await model.findFirst({
-    where: {
+  const record = await (model === PostgreSQLTable.Order ? Order : OrderSession).findFirst({
+    where: _.pickBy({
       shopId,
       createdAt: {
         gt: startOfDay,
       },
-    },
+      ...(model === PostgreSQLTable.Order && {
+        orderNo: {
+          not: null,
+        },
+      }),
+    }),
     orderBy: {
       createdAt: 'desc',
     },
@@ -114,7 +119,7 @@ const getLastActiveRecord = async ({ model, select, shopId }) => {
 
 const getOrderSessionNoForNewOrderSession = async ({ shopId }) => {
   const lastActiveOrderSession = await getLastActiveRecord({
-    model: OrderSession,
+    model: PostgreSQLTable.OrderSession,
     select: {
       createdAt: true,
       orderSessionNo: true,
@@ -150,7 +155,7 @@ const getOrderSessionNoForNewOrderSession = async ({ shopId }) => {
 
 const getOrderNoForNewOrder = async ({ shopId }) => {
   const lastActiveOrder = await getLastActiveRecord({
-    model: Order,
+    model: PostgreSQLTable.Order,
     select: {
       createdAt: true,
       orderNo: true,
@@ -936,7 +941,7 @@ const createNewOrder = async ({ tableId, shopId, orderSession, dishOrders, custo
         return _dishOrder;
       }
     );
-    const orderNo = await getOrderNoForNewOrder({ shopId });
+    const orderNo = orderSession ? await getOrderNoForNewOrder({ shopId }) : null;
     const order = await Order.create({
       data: {
         tableId,
@@ -1076,4 +1081,5 @@ module.exports = {
   getCart,
   getActiveOrderSessionStatus,
   getorderSessionDetailWithLimit,
+  getOrderNoForNewOrder,
 };
