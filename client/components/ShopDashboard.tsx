@@ -213,7 +213,7 @@ const ShopDashboard = () => {
               },
             ]}
           >
-            {t("report_payment")}
+            {t("report_payment_method")}
           </Text>
         </TouchableOpacity>
       </Surface>

@@ -63,7 +63,7 @@ const DailySalesChart = ({
             tickLabels: {
               fontSize: 12,
               padding: 5,
-              angle: -30,
+              angle: -20,
               fill: theme.colors.onBackground,
             },
           }}

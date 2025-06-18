@@ -157,6 +157,7 @@
   "edit": "Sửa",
   "done": "Hoàn thành",
   "discount_directly": "Chiết khấu trực tiếp",
+  "discount_dish_order": "Chiết khấu món",
   "discount_type": "Loại chiết khấu",
   "percentage": "Phần trăm",
   "absolute": "Số tiền",
@@ -245,5 +246,15 @@
   "update_order": "Có đơn mới được cập nhật",
   "has_been_update": "được cập nhật",
   "no_results": "Không có kết quả",
-  "minute_short": "phút"
+  "minute_short": "phút",
+  "add_tag": "Thêm nhãn",
+  "create_order_failed": "Tạo đơn thất bại",
+  "error_create_order_empty_dish": "Vui lòng chọn ít nhất một món",
+  "error_login": "Đăng nhập thất bại",
+  "error_login_detail": "Vui lòng điền email và mật khẩu",
+  "error_login_detail_2": "Email hoặc mật khẩu không hợp lệ",
+  "error_update_quantity": "Vui lòng điền số lượng hợp lệ",
+  "tax_change": "Thay đổi % thuế đơn",
+  "invalid_tax_rate": "Invalid tax rate. Must be between 0 and 100.",
+  "order_update": "Có đơn mới được cập nhật"
 }
