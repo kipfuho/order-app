@@ -7,6 +7,7 @@ const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
 const { getTablesFromCache } = require('../../metadata/tableMetadata.service');
 const { getOperatorFromSession } = require('../../middlewares/clsHooked');
+const { notifyDishOrderStatusChange } = require('../../utils/awsUtils/appSync.utils');
 
 const _getDishOrdersByStatus = async ({ shopId, status, cursor, limit }) => {
   // const timeOptions = createSearchByDateOptionWithShopTimezone({ filterKey: 'createdAt' });
@@ -135,7 +136,11 @@ const _updateDishOrdersByStatus = async ({ shopId, updateRequests, userId, befor
     type: JobTypes.LOG_KITCHEN,
     data: logs,
   });
-
+  await notifyDishOrderStatusChange({
+    orders,
+    updatedDishOrderIds,
+    afterStatus,
+  });
   return errors;
 };
 

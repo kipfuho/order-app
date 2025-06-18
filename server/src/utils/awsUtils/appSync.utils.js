@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const { publishSingleAppSyncEvent } = require('../aws');
+const { publishSingleAppSyncEvent, publishAppSyncEvents } = require('../aws');
 const { formatOrderSessionNo } = require('../common');
 
 const namespace = 'default';
@@ -23,6 +23,7 @@ const AppSyncEvent = Object.freeze({
   NEW_ORDER: 'NEW_ORDER',
   UNCONFIRMED_ORDER_CHANGE: 'UNCONFIRMED_ORDER_CHANGE',
   UNCONFIRMED_ORDER_APPROVE: 'UNCONFIRMED_ORDER_APPROVE',
+  DISH_ORDER_STATUS_CHANGE: 'DISH_ORDER_STATUS_CHANGE',
 });
 
 // general action action for events
@@ -412,6 +413,29 @@ const notifyApproveUnconfirmedOrder = async ({ order, orderSession }) => {
   await _notifyApproveUnconfirmedOrderForCustomer({ order, orderSession });
 };
 
+const notifyDishOrderStatusChange = async ({ orders, updatedDishOrderIds, afterStatus }) => {
+  if (_.isEmpty(orders)) {
+    return;
+  }
+
+  const channel = getShopChannel(orders[0].shopId);
+  const updatedDishOrderIdSet = new Set(updatedDishOrderIds);
+  const ordersGroupByOrderSessionId = _.groupBy(orders, 'orderSessionId');
+  const events = _.map(ordersGroupByOrderSessionId, (orderGroup) => ({
+    type: AppSyncEvent.DISH_ORDER_STATUS_CHANGE,
+    data: {
+      orderSessionId: orderGroup[0].orderSessionId,
+      tableId: orderGroup[0].tableId,
+      dishOrderIds: _.flatMap(orderGroup, (order) => order.dishOrders)
+        .filter((dishOrder) => updatedDishOrderIdSet.has(dishOrder.id))
+        .map((dishOrder) => dishOrder.id),
+      afterStatus,
+    },
+  }));
+
+  await publishAppSyncEvents({ channel, events, shouldIncludeClientId: true });
+};
+
 module.exports = {
   AppSyncEvent,
   EventActionType,
@@ -431,4 +455,5 @@ module.exports = {
   notifyCancelPaidStatusOrderSession,
   notifyUpdateUnconfirmedOrder,
   notifyApproveUnconfirmedOrder,
+  notifyDishOrderStatusChange,
 };

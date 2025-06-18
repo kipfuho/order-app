@@ -16,7 +16,7 @@ import { updateShop, updateTable } from "@/stores/customerSlice";
 import { getTableRequest } from "./table.api.service";
 import { logger } from "@/constants/utils";
 import { cartApiSlice } from "@/stores/apiSlices/cartApi.slice";
-import { OrderSessionStatus } from "@/constants/common";
+import { DishOrderStatus, OrderSessionStatus } from "@/constants/common";
 import { t } from "i18next";
 
 const namespace = "default";
@@ -49,6 +49,7 @@ export const EventType = {
   NEW_ORDER: "NEW_ORDER",
   UNCONFIRMED_ORDER_CHANGE: "UNCONFIRMED_ORDER_CHANGE",
   UNCONFIRMED_ORDER_APPROVE: "UNCONFIRMED_ORDER_APPROVE",
+  DISH_ORDER_STATUS_CHANGE: "DISH_ORDER_STATUS_CHANGE",
 } as const;
 
 // general action action for events
@@ -77,7 +78,174 @@ const connectAppSyncForShop = async ({ shopId }: { shopId: string }) => {
           const { clientId } = data;
           const currentClientId = store.getState().auth.clientId;
 
-          // unskippable events
+          if (type === EventType.DISH_ORDER_STATUS_CHANGE) {
+            const {
+              orderSessionId,
+              tableId,
+              dishOrderIds,
+              afterStatus,
+            }: {
+              orderSessionId: string;
+              tableId: string;
+              dishOrderIds: string[];
+              afterStatus: DishOrderStatus;
+            } = data;
+            if (currentClientId !== clientId) {
+              if (afterStatus === DishOrderStatus.confirmed) {
+                const dishOrderIdSet = new Set(dishOrderIds);
+                // update getUncookedDishOrders
+                store.dispatch(
+                  kitchenApiSlice.util.invalidateTags(["UncookedDishOrders"]),
+                );
+
+                // update getUnservedDishOrdersRequest
+                store.dispatch(
+                  kitchenApiSlice.util.updateQueryData(
+                    "getUnservedDishOrdersRequest",
+                    { shopId },
+                    (draft) => {
+                      return {
+                        ...draft,
+                        items: draft.items.filter(
+                          (dishOrder) => !dishOrderIdSet.has(dishOrder.id),
+                        ),
+                      };
+                    },
+                  ),
+                );
+
+                // update getCookedHistoriesRequest
+                store.dispatch(
+                  kitchenApiSlice.util.updateQueryData(
+                    "getCookedHistoriesRequest",
+                    { shopId },
+                    (draft) => {
+                      return {
+                        ...draft,
+                        items: draft.items.filter(
+                          (dishOrder) => !dishOrderIdSet.has(dishOrder.id),
+                        ),
+                      };
+                    },
+                  ),
+                );
+              }
+              if (afterStatus === DishOrderStatus.cooked) {
+                const dishOrderIdSet = new Set(dishOrderIds);
+                // update getUncookedDishOrders
+                store.dispatch(
+                  kitchenApiSlice.util.updateQueryData(
+                    "getUncookedDishOrders",
+                    { shopId },
+                    (draft) => {
+                      return {
+                        ...draft,
+                        items: draft.items.filter(
+                          (dishOrder) => !dishOrderIdSet.has(dishOrder.id),
+                        ),
+                      };
+                    },
+                  ),
+                );
+
+                // update getUnservedDishOrdersRequest
+                store.dispatch(
+                  kitchenApiSlice.util.invalidateTags(["UnservedDishOrders"]),
+                );
+
+                // update getCookedHistoriesRequest
+                const state = store.getState();
+                const getCookedHistoriesRequestCachedArgs =
+                  kitchenApiSlice.util.selectCachedArgsForQuery(
+                    state,
+                    "getCookedHistoriesRequest",
+                  );
+                if (getCookedHistoriesRequestCachedArgs.length > 0) {
+                  store.dispatch(
+                    kitchenApiSlice.endpoints.getCookedHistoriesRequest.initiate(
+                      {
+                        shopId,
+                        cursor: _.get(
+                          getCookedHistoriesRequestCachedArgs,
+                          "0.cursor",
+                        ),
+                      },
+                      {
+                        forceRefetch: true,
+                      },
+                    ),
+                  );
+                }
+
+                // update getServedHistoriesRequest
+                store.dispatch(
+                  kitchenApiSlice.util.updateQueryData(
+                    "getServedHistoriesRequest",
+                    { shopId },
+                    (draft) => {
+                      return {
+                        ...draft,
+                        items: draft.items.filter(
+                          (dishOrder) => !dishOrderIdSet.has(dishOrder.id),
+                        ),
+                      };
+                    },
+                  ),
+                );
+              }
+              if (afterStatus === DishOrderStatus.served) {
+                const dishOrderIdSet = new Set(dishOrderIds);
+                // update getUnservedDishOrdersRequest
+                store.dispatch(
+                  kitchenApiSlice.util.updateQueryData(
+                    "getUnservedDishOrdersRequest",
+                    { shopId },
+                    (draft) => {
+                      return {
+                        ...draft,
+                        items: draft.items.filter(
+                          (dishOrder) => !dishOrderIdSet.has(dishOrder.id),
+                        ),
+                      };
+                    },
+                  ),
+                );
+
+                // update getCookedHistoriesRequest
+                const state = store.getState();
+                const getServedHistoriesRequestCachedArgs =
+                  kitchenApiSlice.util.selectCachedArgsForQuery(
+                    state,
+                    "getServedHistoriesRequest",
+                  );
+                if (getServedHistoriesRequestCachedArgs.length > 0) {
+                  store.dispatch(
+                    kitchenApiSlice.endpoints.getUnservedDishOrdersRequest.initiate(
+                      {
+                        shopId,
+                        cursor: _.get(
+                          getServedHistoriesRequestCachedArgs,
+                          "0.cursor",
+                        ),
+                      },
+                      {
+                        forceRefetch: true,
+                      },
+                    ),
+                  );
+                }
+              }
+            }
+            store.dispatch(
+              orderApiSlice.util.invalidateTags([
+                { type: "OrderSessions", id: orderSessionId },
+                { type: "ActiveOrderSessions", id: tableId },
+                "TablesForOrder",
+              ]),
+            );
+            return;
+          }
+
           if (type === EventType.PAYMENT_COMPLETE) {
             const {
               orderSessionId,

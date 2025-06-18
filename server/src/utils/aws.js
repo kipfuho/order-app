@@ -114,8 +114,16 @@ const deleteObjectFromS3 = async (key, persistLog = false) => {
   }
 };
 
-const publishAppSyncEvents = async ({ channel, events }) => {
+const publishAppSyncEvents = async ({ channel, events, shouldIncludeClientId = false }) => {
   if (config.env === 'test') return;
+
+  if (shouldIncludeClientId) {
+    const clientId = getClientIdFromSession();
+    _.forEach(events, (event) => {
+      // eslint-disable-next-line no-param-reassign
+      event.clientId = clientId;
+    });
+  }
 
   try {
     logger.debug(`publish event to channel: ${channel}. events=${JSON.stringify(events)}`);
