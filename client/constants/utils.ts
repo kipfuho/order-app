@@ -1,6 +1,5 @@
 import _ from "lodash";
 import { CartItem } from "@stores/state.interface";
-import store from "@stores/store";
 import { Countries, CurrencyText } from "./common";
 import { CustomMD3Theme } from "./theme";
 
@@ -24,6 +23,8 @@ const logger = {
 
 const getCountryCurrency = () => {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const store = require("../stores/store").default;
     const state = store.getState();
     const country = state.shop.currentShop?.country || Countries.VietNam;
     return CurrencyText[country.currency as keyof typeof CurrencyText];

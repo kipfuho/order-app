@@ -1,3 +1,5 @@
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { PURGE } from "redux-persist";
 import { User } from "./state.interface";
@@ -9,7 +11,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   session: null,
-  clientId: crypto.randomUUID(),
+  clientId: uuidv4(),
 };
 
 const authSlice = createSlice({
