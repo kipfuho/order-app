@@ -1,5 +1,5 @@
 import "react-native-get-random-values";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Provider as ReduxProvider, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { Stack } from "expo-router";
@@ -17,6 +17,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { enGB, registerTranslation } from "react-native-paper-dates";
 import { TimeProvider } from "@/hooks/useCurrentTime";
 import toastConfig from "@/components/CustomToast";
+import { Dimensions } from "react-native";
 
 Amplify.configure(AmplifyConfig);
 
@@ -64,10 +65,26 @@ function ThemeLayout() {
 }
 
 export default function RootLayout() {
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
-    // Hide splash screen once assets are loaded
-    SplashScreen.hideAsync();
+    // Force layout recalculation
+    const subscription = Dimensions.addEventListener("change", () => {
+      // This forces a re-render when dimensions change
+    });
+
+    // Delay initial render slightly to ensure layout is ready
+    setTimeout(() => {
+      setIsReady(true);
+      SplashScreen.hideAsync();
+    }, 100);
+
+    return () => subscription?.remove();
   }, []);
+
+  if (!isReady) {
+    return null; // or a loading component
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

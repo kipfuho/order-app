@@ -1,21 +1,34 @@
 import "dotenv/config";
 
+const profile = process.env.EAS_BUILD_PROFILE || "dev";
+
+const androidPackage =
+  profile === "production"
+    ? "com.anonymous.gradappshop"
+    : `com.anonymous.gradappshop.${profile}`;
+
+const appName = profile === "production" ? "Savora" : "Savora Internal";
+const appSlug = `savora-${profile}`;
+
 export default {
-  name: "grad-app-shop",
-  slug: "grad-app-shop",
-  version: "1.0.0",
+  name: appName,
+  slug: appSlug,
+  version: "1.0.1",
   orientation: "portrait",
-  icon: "./assets/images/icon.png",
+  icon: "./assets/images/savora.png",
   scheme: "myapp",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
+  runtimeVersion: {
+    policy: "appVersion",
+  },
   ios: {
     supportsTablet: true,
   },
   android: {
-    package: "com.anonymous.gradappshop",
+    package: androidPackage,
     adaptiveIcon: {
-      foregroundImage: "./assets/images/adaptive-icon.png",
+      foregroundImage: "./assets/images/savora.png",
       backgroundColor: "#ffffff",
     },
   },
@@ -30,7 +43,7 @@ export default {
     [
       "expo-splash-screen",
       {
-        image: "./assets/images/splash-icon.png",
+        image: "./assets/images/savora.png",
         imageWidth: 200,
         resizeMode: "contain",
         backgroundColor: "#ffffff",
