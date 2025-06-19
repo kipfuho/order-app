@@ -8,12 +8,11 @@ const androidPackage =
     : `com.anonymous.gradappshop.${profile}`;
 
 const appName = profile === "production" ? "Savora" : "Savora Internal";
-const appSlug = `savora-${profile}`;
 
 export default {
   name: appName,
-  slug: appSlug,
-  version: "1.0.1",
+  slug: "savora",
+  version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/savora.png",
   scheme: "myapp",
@@ -55,7 +54,7 @@ export default {
   },
   extra: {
     eas: {
-      projectId: "03c69a5f-922e-4521-9cad-d43c9f71ee5f",
+      projectId: "8c32ec34-e59d-4bd7-b109-4b37964b84b6",
     },
   },
 };
