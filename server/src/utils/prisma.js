@@ -14,6 +14,7 @@ const {
   deleteKitchenCache,
   deleteEmployeeByUserIdCache,
   deleteUserCache,
+  deleteTFIDFCache,
 } = require('../metadata/common');
 const config = require('../config/config');
 const { DefaultUnitList, Countries } = require('./constant');
@@ -221,6 +222,7 @@ const prisma = new PrismaClient({
         }
         const result = await query(args);
         await deleteMenuCache({ shopId });
+        await deleteTFIDFCache({ shopId });
         return result;
       },
       async createMany({ args, query }) {
@@ -230,6 +232,7 @@ const prisma = new PrismaClient({
         }
         const result = await query(args);
         await deleteMenuCache({ shopId });
+        await deleteTFIDFCache({ shopId });
         return result;
       },
       async update({ args, query }) {
@@ -244,6 +247,7 @@ const prisma = new PrismaClient({
         }
         const result = await query(args);
         await deleteMenuCache({ shopId });
+        await deleteTFIDFCache({ shopId });
         return result;
       },
       async updateMany({ args, query }) {
@@ -253,6 +257,7 @@ const prisma = new PrismaClient({
         }
         const result = await query(args);
         await deleteMenuCache({ shopId });
+        await deleteTFIDFCache({ shopId });
         return result;
       },
       async delete({ args, query }) {
@@ -267,6 +272,7 @@ const prisma = new PrismaClient({
         }
         const result = await query(args);
         await deleteMenuCache({ shopId });
+        await deleteTFIDFCache({ shopId });
         return result;
       },
       async deleteMany({ args, query }) {
@@ -276,6 +282,7 @@ const prisma = new PrismaClient({
         }
         const result = await query(args);
         await deleteMenuCache({ shopId });
+        await deleteTFIDFCache({ shopId });
         return result;
       },
     },

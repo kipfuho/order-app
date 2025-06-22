@@ -12,6 +12,7 @@ const getUnitKey = ({ shopId }) => `unit_${shopId}`;
 const getUserKey = ({ userId }) => `user_${userId}`;
 const getCustomerKey = ({ customerId }) => `customer_${customerId}`;
 const getKitchenKey = ({ shopId }) => `kitchen_${shopId}`;
+const getTFIDFKey = ({ allDishes, shopId }) => `tfidf_${shopId}_${allDishes.map((d) => d.id).join('_')}`;
 
 const deleteShopCache = async ({ shopId }) => {
   if (redisClient.isRedisConnected()) {
@@ -85,6 +86,12 @@ const deleteKitchenCache = async ({ shopId }) => {
   }
 };
 
+const deleteTFIDFCache = async ({ shopId }) => {
+  if (redisClient.isRedisConnected()) {
+    return redisClient.deleteKeysByPrefix(getTFIDFKey({ allDishes: [], shopId }));
+  }
+};
+
 module.exports = {
   getShopKey,
   getDepartmentKey,
@@ -98,6 +105,7 @@ module.exports = {
   getUserKey,
   getCustomerKey,
   getKitchenKey,
+  getTFIDFKey,
   deleteShopCache,
   deleteDepartmentCache,
   deleteEmployeeCache,
@@ -110,4 +118,5 @@ module.exports = {
   deleteUserCache,
   deleteCustomerCache,
   deleteKitchenCache,
+  deleteTFIDFCache,
 };

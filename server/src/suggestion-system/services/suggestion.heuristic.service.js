@@ -3,6 +3,7 @@ const { getDayOfWeek } = require('../../utils/common');
 const { getDishesFromCache } = require('../../metadata/dishMetadata.service');
 const { getorderSessionDetailWithLimit } = require('../../order-management/services/orderUtils.service');
 const redisClient = require('../../utils/redis');
+const { getTFIDFKey } = require('../../metadata/common');
 
 const getOrderSessionsForRecommendation = async ({ shopId, limit = 10000, timeWindowDays = 30 }) => {
   const cutoffDate = new Date(Date.now() - timeWindowDays * 24 * 60 * 60 * 1000);
@@ -344,7 +345,7 @@ const recommendDishes = async ({ customerId, shopId, limit = 1000 }) => {
   }
 
   const orderSessions = await getOrderSessionsForRecommendation({ shopId, limit, timeWindowDays: 30 });
-  const cacheKey = `tfidf_${shopId}_${allDishes.map((d) => d.id).join('_')}`;
+  const cacheKey = getTFIDFKey({ shopId, allDishes });
   let tfidfScores = await redisClient.getJson(cacheKey);
   if (!tfidfScores) {
     tfidfScores = computeTFIDF(allDishes.map((dish) => dish.tags || []));
@@ -353,9 +354,10 @@ const recommendDishes = async ({ customerId, shopId, limit = 1000 }) => {
 
   // Get recommendations from various sources
   const preferredDishes = getCustomerPreferences({ orderSessions, customerId, dishById });
-  const similarDishes = preferredDishes.flatMap((dish) =>
-    getSimilarDishesTFIDF({ allDishes, dishId: dish.id, dishById, tfidfScores })
-  );
+  const similarDishes = preferredDishes.flatMap((dish) => {
+    const similarDishesOfSingleDish = getSimilarDishesTFIDF({ allDishes, dishId: dish.id, dishById, tfidfScores });
+    return similarDishesOfSingleDish;
+  });
   const patternDishes = recommendByDayPattern({ orderSessions, customerId, dishById });
   const seasonalDishes = getSeasonalRecommendations({ allDishes });
   const contextualDishes = getContextualRecommendations({ allDishes });
