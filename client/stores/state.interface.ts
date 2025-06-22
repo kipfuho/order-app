@@ -100,6 +100,7 @@ interface Dish {
   imageUrls: string[];
   description: string;
   status: string;
+  tags: string[];
 }
 
 interface DishCategory {

@@ -158,6 +158,7 @@ export default function UpdateDishPage() {
     setUnit(dish.unit);
     setTaxRate(_.toString(dish.taxRate));
     setImages(_.map(dish.imageUrls, (url) => ({ uri: url, loading: false })));
+    setTags(dish.tags);
   }, [dishId, dish, dishFetching]);
 
   if (dishLoading || dishCategoryLoading || dishTypeLoading || unitLoading) {
