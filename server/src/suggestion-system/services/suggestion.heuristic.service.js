@@ -353,7 +353,9 @@ const recommendDishes = async ({ customerId, shopId, limit = 1000 }) => {
 
   // Get recommendations from various sources
   const preferredDishes = getCustomerPreferences({ orderSessions, customerId, dishById });
-  const similarDishes = preferredDishes.flatMap((dish) => getSimilarDishesTFIDF({ dishId: dish.id, dishById, tfidfScores }));
+  const similarDishes = preferredDishes.flatMap((dish) =>
+    getSimilarDishesTFIDF({ allDishes, dishId: dish.id, dishById, tfidfScores })
+  );
   const patternDishes = recommendByDayPattern({ orderSessions, customerId, dishById });
   const seasonalDishes = getSeasonalRecommendations({ allDishes });
   const contextualDishes = getContextualRecommendations({ allDishes });
