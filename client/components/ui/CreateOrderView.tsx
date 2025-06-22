@@ -22,7 +22,7 @@ import { RootState } from "@stores/store";
 import { Dish, DishCategory, Shop } from "@stores/state.interface";
 import { LoaderBasic } from "./Loader";
 import { useCreateOrderMutation } from "@stores/apiSlices/orderApi.slice";
-import { convertPaymentAmount } from "@constants/utils";
+import { convertPaymentAmount, normalizeVietnamese } from "@constants/utils";
 import { ItemTypeFlatList } from "../FlatListWithScroll";
 import FlatListWithoutScroll from "../FlatListWithoutScroll";
 import { AppBar } from "../AppBar";
@@ -61,7 +61,7 @@ export default function CreateOrder({
   } = useSelector((state: RootState) => state.shop);
   const shop = currentShop as Shop;
 
-  const { isLoading: dishLoading } = useGetDishesQuery({
+  const { data: dishes = [], isLoading: dishLoading } = useGetDishesQuery({
     shopId: shop.id,
   });
   const { data: dishCategories = [], isLoading: dishCategoryLoading } =
@@ -80,6 +80,13 @@ export default function CreateOrder({
   const [filteredDishesByCategory, setFilteredDishesByCategory] = useState<
     Record<string, Dish[]>
   >({});
+  const normalizedDishNameByCode = useMemo(() => {
+    const map: Record<string, string> = {};
+    dishes.forEach((dish) => {
+      map[dish.code] = normalizeVietnamese(dish.name.toLowerCase());
+    });
+    return map;
+  }, [dishes]);
 
   const handleCreateOrder = async () => {
     if (currentOrderTotalAmount === 0) {
@@ -124,16 +131,19 @@ export default function CreateOrder({
           },
         );
         const searchValueLowerCase = _searchValue.toLowerCase();
+        const normalizedFilterText = normalizeVietnamese(searchValueLowerCase);
         const filteredDishes = _.filter(tableDishes, (d) => {
+          const _normalizedItemText = normalizedDishNameByCode[d.code] || "";
+
           if (_selectedDishType !== "ALL") {
             return (
               d.type === _selectedDishType &&
-              (_.includes((d.name || "").toLowerCase(), searchValueLowerCase) ||
+              (_normalizedItemText.includes(normalizedFilterText) ||
                 _.includes((d.code || "").toLowerCase(), searchValueLowerCase))
             );
           }
           return (
-            _.includes((d.name || "").toLowerCase(), searchValueLowerCase) ||
+            _normalizedItemText.includes(normalizedFilterText) ||
             _.includes((d.code || "").toLowerCase(), searchValueLowerCase)
           );
         });
@@ -145,7 +155,7 @@ export default function CreateOrder({
           ),
         );
       }, 200),
-    [dishCategories, currentTable, dishesByCategory],
+    [dishCategories, currentTable, dishesByCategory, normalizedDishNameByCode],
   );
 
   useEffect(() => {

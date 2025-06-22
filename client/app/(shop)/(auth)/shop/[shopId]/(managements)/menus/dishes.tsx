@@ -30,6 +30,7 @@ import AppBarSearchBox from "@/components/AppBarSearchBox";
 import { styles } from "@/constants/styles";
 import { PermissionType } from "@/constants/common";
 import toastConfig from "@/components/CustomToast";
+import { normalizeVietnamese } from "@/constants/utils";
 
 const createDismissGesture = (onDismissSearch: () => void) =>
   Gesture.Tap().onStart(() => {
@@ -108,20 +109,27 @@ export default function DishesManagementPage() {
 
   const gesture = createDismissGesture(onDismissSearch);
 
+  const normalizedDishNames = useMemo(() => {
+    return dishes.map((dish) => normalizeVietnamese(dish.name.toLowerCase()));
+  }, [dishes]);
+
   const debouncedSearchDishes = useMemo(
     () =>
       debounce((_searchValue: string) => {
         const searchValueLowerCase = _searchValue.toLowerCase();
-        const matchedDishes = _.filter(
-          dishes,
-          (dish) =>
-            _.includes((dish.name || "").toLowerCase(), searchValueLowerCase) ||
-            _.includes((dish.code || "").toLowerCase(), searchValueLowerCase),
-        );
+        const normalizedFilterText = normalizeVietnamese(searchValueLowerCase);
+        const matchedDishes = _.filter(dishes, (dish, index) => {
+          const _normalizedItemText = normalizedDishNames[index];
+
+          return (
+            _normalizedItemText.includes(normalizedFilterText) ||
+            _.includes((dish.code || "").toLowerCase(), searchValueLowerCase)
+          );
+        });
 
         setFilteredDishGroupById(_.groupBy(matchedDishes, "category.id"));
       }, 200),
-    [dishes],
+    [dishes, normalizedDishNames],
   );
 
   useEffect(() => {

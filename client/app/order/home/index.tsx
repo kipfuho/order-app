@@ -24,7 +24,7 @@ import AppBarSearchBox from "@/components/AppBarSearchBox";
 import { styles } from "@/constants/styles";
 import RecommendDishImageSlider from "@/components/RecommendDishSlider";
 import { updateIsUpdateCartDebouncing } from "@/stores/customerSlice";
-import { mergeCartItems } from "@/constants/utils";
+import { mergeCartItems, normalizeVietnamese } from "@/constants/utils";
 
 const getButtonSize = (width: number) => {
   return width / 2 - 30;
@@ -111,7 +111,15 @@ export default function CustomerHomePage() {
   const [selectedDishType, setSelectedDishType] = useState("all");
   const [menuVisible, setMenuVisible] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [normalizedSearchValue, setNormalizedSearchValue] = useState("");
   const [searchVisible, setSearchVisible] = useState(false);
+  const normalizedDishNameByCode = useMemo(() => {
+    const map: Record<string, string> = {};
+    dishes.forEach((dish) => {
+      map[dish.code] = normalizeVietnamese(dish.name.toLowerCase());
+    });
+    return map;
+  }, [dishes]);
 
   const onDismissSearch = () => {
     setSearchVisible(false);
@@ -122,8 +130,14 @@ export default function CustomerHomePage() {
 
   const handleClickRecommendDish = (dish: Dish) => {
     setSearchValue(dish.name);
+    setNormalizedSearchValue(normalizeVietnamese(dish.name.toLowerCase()));
     setSearchVisible(true);
     setMenuVisible(true);
+  };
+
+  const handleSearchTextChange = (value: string) => {
+    setSearchValue(value);
+    setNormalizedSearchValue(normalizeVietnamese(value.toLowerCase()));
   };
 
   useEffect(() => {
@@ -171,7 +185,7 @@ export default function CustomerHomePage() {
               <AppBarSearchBox
                 searchValue={searchValue}
                 searchVisible={searchVisible}
-                setSearchValue={setSearchValue}
+                setSearchValue={handleSearchTextChange}
                 setSearchVisible={setSearchVisible}
               />
             </CustomerAppBar>
@@ -179,8 +193,16 @@ export default function CustomerHomePage() {
               <CustomerOrderMenu
                 dishes={
                   searchValue
-                    ? _.filter(dishGroupByDishType[selectedDishType], (dish) =>
-                        _.includes(dish.name, searchValue),
+                    ? _.filter(
+                        dishGroupByDishType[selectedDishType],
+                        (dish) => {
+                          const _normalizedDishText =
+                            normalizedDishNameByCode[dish.code] || "";
+
+                          return _normalizedDishText.includes(
+                            normalizedSearchValue,
+                          );
+                        },
                       )
                     : dishGroupByDishType[selectedDishType]
                 }
