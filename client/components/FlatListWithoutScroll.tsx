@@ -168,9 +168,13 @@ const FlatListWithoutScroll = ({
   onEndReachedThreshold?: number;
 }) => {
   const flatListRef = useRef<LegendListRef>(null);
+  const containerRef = useRef<View>(null);
   const { width } = useWindowDimensions();
 
   const [selectedGroup, setSelectGroup] = useState("");
+  const [hasTriggeredInitialLoad, setHasTriggeredInitialLoad] = useState(false);
+  const [containerHeight, setContainerHeight] = useState(0);
+
   const { itemContainerWidth, numColumns } = useMemo(() => {
     let itemContainerWidth = width - 52; // minus padding
     if (width >= UNIVERSAL_WIDTH_PIVOT) {
@@ -233,6 +237,31 @@ const FlatListWithoutScroll = ({
     isFetchingNextPage,
     hasNextPage,
   ]);
+
+  // Calculate total content height to determine if we need more items
+  const totalContentHeight = useMemo(() => {
+    const HEADER_HEIGHT = ItemTypeFlatListProperties[itemType].HEADER_HEIGHT;
+    const ROW_HEIGHT = ItemTypeFlatListProperties[itemType].ROW_HEIGHT;
+    const LOADING_HEIGHT = 80;
+    const MARGIN_BOTTOM = 8;
+
+    return flatListData.reduce((total, item) => {
+      if (item.type === "header") {
+        return total + (shouldShowGroup ? HEADER_HEIGHT : 0) + MARGIN_BOTTOM;
+      } else if (item.type === "row") {
+        return total + ROW_HEIGHT + MARGIN_BOTTOM;
+      } else if (item.type === "loading") {
+        return total + LOADING_HEIGHT + MARGIN_BOTTOM;
+      }
+      return total;
+    }, 20); // Add some padding
+  }, [flatListData, itemType, shouldShowGroup]);
+
+  // Handle container layout to get actual height
+  const handleContainerLayout = useCallback((event: any) => {
+    const { height } = event.nativeEvent.layout;
+    setContainerHeight(height);
+  }, []);
 
   const renderItem = useCallback(
     ({ item }: { item: FlatListItem }) => {
@@ -315,10 +344,52 @@ const FlatListWithoutScroll = ({
   };
 
   const handleEndReached = useCallback(() => {
+    // Prevent triggering on initial empty render
+    if (flatListData.length === 0 && !hasTriggeredInitialLoad) {
+      setHasTriggeredInitialLoad(true);
+      if (hasNextPage && !isFetchingNextPage && fetchNextPage) {
+        fetchNextPage();
+      }
+      return;
+    }
+
     if (hasNextPage && !isFetchingNextPage && fetchNextPage) {
       fetchNextPage();
     }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    flatListData.length,
+    hasTriggeredInitialLoad,
+  ]);
+
+  // Check if content height is less than viewport and we need more data
+  useEffect(() => {
+    const currentHeight = totalContentHeight % containerHeight;
+    if (
+      containerHeight > 0 &&
+      flatListData.length > 0 &&
+      currentHeight >= containerHeight * 0.5 &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      fetchNextPage
+    ) {
+      // Small delay to avoid rapid successive calls
+      const timer = setTimeout(() => {
+        fetchNextPage();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [
+    totalContentHeight,
+    containerHeight,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    flatListData.length,
+  ]);
 
   // force rerender
   useEffect(() => {
@@ -345,20 +416,26 @@ const FlatListWithoutScroll = ({
           }}
         />
       )}
-      <LegendList
-        ref={flatListRef}
-        data={flatListData}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        getEstimatedItemSize={getEstimatedItemSize}
-        estimatedItemSize={ROW_HEIGHT + MARGIN_BOTTOM}
-        initialContainerPoolRatio={1.5}
-        onEndReached={handleEndReached}
-        onEndReachedThreshold={onEndReachedThreshold}
-        contentContainerStyle={{ padding: 10 }}
-        showsHorizontalScrollIndicator={false}
-        waitForInitialLayout={false}
-      />
+      <View
+        ref={containerRef}
+        style={{ flex: 1 }}
+        onLayout={handleContainerLayout}
+      >
+        <LegendList
+          ref={flatListRef}
+          data={flatListData}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          getEstimatedItemSize={getEstimatedItemSize}
+          estimatedItemSize={ROW_HEIGHT + MARGIN_BOTTOM}
+          initialContainerPoolRatio={1.5}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={onEndReachedThreshold}
+          contentContainerStyle={{ padding: 10 }}
+          showsHorizontalScrollIndicator={false}
+          waitForInitialLayout={false}
+        />
+      </View>
     </Surface>
   );
 };
