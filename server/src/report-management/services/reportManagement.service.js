@@ -93,7 +93,7 @@ const getDailySalesReport = async ({ orderSessions, shopId, period, from, to }) 
     saleByDate[dateKey].revenue += orderSession.revenueAmount || 0;
   });
 
-  return Object.values(saleByDate);
+  return Object.values(saleByDate).sort((a, b) => moment(a.date, 'DD-MM-YYYY') - moment(b.date, 'DD-MM-YYYY'));
 };
 
 const getPopularDishesReport = async ({ orders, shopId, from, to, period }) => {
