@@ -141,6 +141,7 @@ const getSimilarUsers = ({ orderSessions, customerId }) => {
     if (!userVectors[userId]) userVectors[userId] = {};
     _.forEach(session.orders, (order) => {
       _.forEach(order.dishOrders, (dishOrder) => {
+        if (!dishOrder.dishId) return;
         userVectors[userId][dishOrder.dishId] = (userVectors[userId][dishOrder.dishId] || 0) + dishOrder.quantity;
       });
     });
