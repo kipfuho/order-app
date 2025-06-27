@@ -7,7 +7,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Button, Dialog, Text, TextInput } from "react-native-paper";
+import { Button, Dialog, TextInput } from "react-native-paper";
 import { useDispatch } from "react-redux";
 import { View } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -114,9 +114,8 @@ export function CustomerInfoDialog({
             }}
             style={{ flex: 1, minWidth: 150 }} // Ensures proper width
           />
-          <Text>{t("customer_number")}</Text>
           <TextInput
-            label="P"
+            label={t("customer_number")}
             mode="outlined"
             keyboardType="numeric"
             value={numberOfCustomer}
