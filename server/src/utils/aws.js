@@ -99,11 +99,8 @@ const deleteObjectFromS3 = async (key, persistLog = false) => {
 
     await s3.deleteObject(params);
     if (!persistLog) {
-      await S3Log.delete({
-        where: {
-          key,
-        },
-        select: { id: true },
+      await S3Log.deleteMany({
+        where: { key },
       });
     }
 
