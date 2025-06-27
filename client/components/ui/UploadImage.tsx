@@ -11,6 +11,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { BLURHASH } from "@constants/common";
 import { removeImageRequest } from "@apis/dish.api.service";
+import Toast from "react-native-toast-message";
 
 export default function UploadImages({
   images,
@@ -27,11 +28,12 @@ export default function UploadImages({
 
   const uploadImageToServer = async (uri: string, index: number) => {
     try {
-      const response = await fetch(uri);
-      const blob = await response.blob(); // Convert URI to Blob
-
       const formData = new FormData();
-      formData.append("image", blob, `image_${Date.now()}.jpg`); // Properly append file
+      formData.append("image", {
+        uri,
+        name: `image_${Date.now()}.jpg`,
+        type: "image/jpeg", // Adjust based on the image type if needed
+      } as any); // Type assertion to satisfy TypeScript
 
       // Replace with your server URL
       const imageUrl = await uploadImage(formData);
@@ -46,8 +48,12 @@ export default function UploadImages({
         throw new Error("Upload failed, no URL returned.");
       }
     } catch {
-      // Optionally, you can remove the failed image or show an error state
-      setImages((prev) => prev.filter((_, i) => i !== index));
+      setImages((prev) => _.filter(prev, (_, i) => i !== index));
+      Toast.show({
+        type: "error",
+        text1: t("error"),
+        text2: t("failed_to_upload_image"),
+      });
     }
   };
 

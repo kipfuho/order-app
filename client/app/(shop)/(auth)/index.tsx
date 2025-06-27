@@ -70,7 +70,9 @@ export default function ShopsPage() {
       <AppBar title={t("shop")} goBack={() => setDialogVisible(true)}>
         <Button
           mode="contained-tonal"
-          onPress={() => goToCreateShop({ router })}
+          onPress={() => {
+            goToCreateShop({ router });
+          }}
         >
           {t("create_shop")}
         </Button>

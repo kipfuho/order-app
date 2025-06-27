@@ -39,9 +39,13 @@ const CustomPaperToast = ({ text1, text2, type = "info" }: ToastProps) => {
   const { icon, backgroundColor, textColor } = getToastStyle(type, theme);
 
   return (
-    <View style={{ paddingHorizontal: 16 }}>
+    <View style={{ paddingHorizontal: 16, width: "80%" }}>
       <Card
-        style={{ backgroundColor, flexDirection: "row", alignItems: "center" }}
+        style={{
+          backgroundColor,
+          flexDirection: "row",
+          alignItems: "center",
+        }}
       >
         <Card.Content style={{ flexDirection: "row", alignItems: "center" }}>
           <Avatar.Icon
@@ -50,7 +54,7 @@ const CustomPaperToast = ({ text1, text2, type = "info" }: ToastProps) => {
             style={{ marginRight: 8, backgroundColor: "transparent" }}
             color={textColor}
           />
-          <View style={{ flex: 1 }}>
+          <View>
             <Text
               style={{ color: textColor, fontWeight: "bold", fontSize: 18 }}
             >
