@@ -38,7 +38,12 @@ const _resizeAndCompressImageBuffer = async (imageBuffer) => {
   };
 
   try {
-    return await sharp(imageBuffer).resize(resizeOptions).withMetadata().jpeg({ quality: 80, progressive: true }).toBuffer();
+    return await sharp(imageBuffer)
+      .resize(resizeOptions)
+      .flatten({ background: { r: 255, g: 255, b: 255 } }) // Fill transparent background with white
+      .withMetadata()
+      .jpeg({ quality: 80, progressive: true })
+      .toBuffer();
   } catch (error) {
     logger.error('Image processing failed:', error);
     return imageBuffer;
