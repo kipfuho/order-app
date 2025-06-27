@@ -256,5 +256,6 @@
   "error_update_quantity": "Please enter valid quantity",
   "tax_change": "Change order tax rate",
   "invalid_tax_rate": "% thuế không hợp lệ. Phải nằm trong khoảng từ 0 đến 100.",
-  "order_update": "An order has been updated"
+  "order_update": "An order has been updated",
+  "failed_to_upload_image": "Upload image failed"
 }
