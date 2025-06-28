@@ -218,9 +218,9 @@ const updateDishRequest = async ({
   taxRate = 0,
   unit,
   isTaxIncludedPrice = false,
-  imageUrls = [],
+  imageUrls,
   status,
-  tags = [],
+  tags,
 }: UpdateDishRequest) => {
   const accessToken = await getAccessTokenLazily();
   const body: {
