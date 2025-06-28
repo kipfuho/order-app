@@ -1,5 +1,6 @@
 import {
   Dispatch,
+  ReactNode,
   SetStateAction,
   useCallback,
   useEffect,
@@ -156,6 +157,7 @@ const FlatListWithoutScroll = ({
   isFetchingNextPage = false,
   fetchNextPage,
   onEndReachedThreshold = 0.5,
+  children,
 }: {
   groups: any[];
   itemByGroup: Record<string, any[]>;
@@ -168,6 +170,7 @@ const FlatListWithoutScroll = ({
   isFetchingNextPage?: boolean;
   fetchNextPage?: () => void;
   onEndReachedThreshold?: number;
+  children?: ReactNode;
 }) => {
   const containerRef = useRef<View>(null);
   const { width } = useWindowDimensions();
@@ -385,6 +388,7 @@ const FlatListWithoutScroll = ({
           onEndReachedThreshold={onEndReachedThreshold}
           onEndReached={handleEndReached}
           contentContainerStyle={{ padding: 10 }}
+          ListFooterComponent={() => children}
           showsHorizontalScrollIndicator={false}
           removeClippedSubviews
           disableAutoLayout

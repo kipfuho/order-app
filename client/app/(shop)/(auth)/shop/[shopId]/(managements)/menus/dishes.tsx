@@ -21,9 +21,7 @@ import {
 import _, { debounce } from "lodash";
 import { useTranslation } from "react-i18next";
 import { ConfirmCancelDialog } from "@components/ui/CancelDialog";
-import FlatListWithScroll, {
-  ItemTypeFlatList,
-} from "@components/FlatListWithScroll";
+import { ItemTypeFlatList } from "@components/FlatListWithScroll";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import AppBarSearchBox from "@/components/AppBarSearchBox";
@@ -31,6 +29,7 @@ import { styles } from "@/constants/styles";
 import { PermissionType } from "@/constants/common";
 import toastConfig from "@/components/CustomToast";
 import { normalizeVietnamese } from "@/constants/utils";
+import FlatListWithoutScroll from "../../../../../../../components/FlatListWithoutScroll";
 
 const createDismissGesture = (onDismissSearch: () => void) =>
   Gesture.Tap().onStart(() => {
@@ -202,7 +201,7 @@ export default function DishesManagementPage() {
 
       <GestureDetector gesture={gesture}>
         <Surface style={{ flex: 1 }}>
-          <FlatListWithScroll
+          <FlatListWithoutScroll
             groups={dishCategories}
             itemByGroup={filteredDishGroupById}
             openMenu={
@@ -215,7 +214,7 @@ export default function DishesManagementPage() {
             {userPermission.has(PermissionType.CREATE_MENU) && (
               <View style={{ height: 60 }} />
             )}
-          </FlatListWithScroll>
+          </FlatListWithoutScroll>
           {userPermission.has(PermissionType.CREATE_MENU) && (
             <FAB
               icon="plus"
