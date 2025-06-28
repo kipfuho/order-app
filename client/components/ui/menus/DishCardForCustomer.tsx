@@ -1,4 +1,4 @@
-import { memo } from "react";
+import React, { memo, useCallback } from "react";
 import { Pressable, View, StyleSheet } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -18,7 +18,8 @@ import { BLURHASH, DishStatus } from "@constants/common";
 import { useTranslation } from "react-i18next";
 import { RootState } from "@/stores/store";
 
-function QuantityControlForCustomer({ dish }: { dish: Dish }) {
+// ====== Quantity Control Subcomponent ======
+const QuantityControlForCustomer = memo(({ dish }: { dish: Dish }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
 
@@ -26,21 +27,19 @@ function QuantityControlForCustomer({ dish }: { dish: Dish }) {
     (state: RootState) => state.customer.cartItemByDishId[dish.id],
   );
 
-  const handleDecrease = () => {
-    if (!cartItemByDish) return;
+  const handleDecrease = useCallback(() => {
+    if (!cartItemByDish || cartItemByDish.totalQuantity <= 0) return;
 
-    if (cartItemByDish.totalQuantity > 0) {
-      dispatch(
-        updateCartSingleDish({
-          id: cartItemByDish.id,
-          dish,
-          quantity: cartItemByDish.newQuantity - 1,
-        }),
-      );
-    }
-  };
+    dispatch(
+      updateCartSingleDish({
+        id: cartItemByDish.id,
+        dish,
+        quantity: cartItemByDish.newQuantity - 1,
+      }),
+    );
+  }, [cartItemByDish, dispatch, dish]);
 
-  const handleIncrease = () => {
+  const handleIncrease = useCallback(() => {
     dispatch(
       updateCartSingleDish({
         id: cartItemByDish?.id,
@@ -48,84 +47,53 @@ function QuantityControlForCustomer({ dish }: { dish: Dish }) {
         quantity: (cartItemByDish?.newQuantity ?? 0) + 1,
       }),
     );
-  };
+  }, [cartItemByDish, dispatch, dish]);
+
   if (
     dish.status === DishStatus.deactivated &&
     (!cartItemByDish || cartItemByDish.newQuantity === 0)
   ) {
-    return;
+    return null;
   }
 
   return (
-    <TouchableRipple
-      style={{
-        position: "absolute",
-        bottom: 0,
-        right: 0,
-        padding: 5,
-        borderRadius: 5,
-        zIndex: 5,
-      }}
-    >
+    <TouchableRipple style={styles.controlRoot}>
       {!cartItemByDish || cartItemByDish.totalQuantity === 0 ? (
-        <Surface style={{ padding: 4, borderRadius: 20 }}>
+        <Surface style={styles.controlSurface}>
           <TouchableRipple
-            style={{
-              backgroundColor: theme.colors.onBackground,
-              borderRadius: 20,
-            }}
+            style={[
+              styles.iconButton,
+              { backgroundColor: theme.colors.onBackground },
+            ]}
             onPress={handleIncrease}
           >
             <Icon source="plus" size={24} color={theme.colors.background} />
           </TouchableRipple>
         </Surface>
       ) : (
-        <Surface
-          style={{
-            padding: 4,
-            borderRadius: 20,
-            alignSelf: "center",
-            alignItems: "center",
-            width: "auto",
-            flexDirection: "row", // Align children in a row (horizontal)
-            justifyContent: "space-between", // Space between the buttons and quantity text
-            flex: 1,
-            flexWrap: "wrap",
-          }}
-        >
+        <Surface style={styles.quantityContainer}>
           {cartItemByDish.newQuantity > 0 && (
             <TouchableRipple
-              style={{
-                backgroundColor: theme.colors.onBackground,
-                borderRadius: 20,
-              }}
+              style={[
+                styles.iconButton,
+                { backgroundColor: theme.colors.onBackground },
+              ]}
               onPress={handleDecrease}
             >
               <Icon source="minus" size={24} color={theme.colors.background} />
             </TouchableRipple>
           )}
-          <Pressable
-            style={{ flex: 1, alignItems: "center" }}
-            onPress={() => {
-              // do sth here
-            }}
-          >
-            <Text
-              style={{
-                maxWidth: "auto",
-                paddingHorizontal: 5,
-                fontSize: 18,
-              }}
-            >
+          <Pressable style={styles.quantityPressable} onPress={() => {}}>
+            <Text style={styles.quantityText}>
               {cartItemByDish.totalQuantity}
             </Text>
           </Pressable>
           {dish.status !== DishStatus.deactivated && (
             <TouchableRipple
-              style={{
-                backgroundColor: theme.colors.onBackground,
-                borderRadius: 20,
-              }}
+              style={[
+                styles.iconButton,
+                { backgroundColor: theme.colors.onBackground },
+              ]}
               onPress={handleIncrease}
             >
               <Icon source="plus" size={24} color={theme.colors.background} />
@@ -135,8 +103,10 @@ function QuantityControlForCustomer({ dish }: { dish: Dish }) {
       )}
     </TouchableRipple>
   );
-}
+});
+QuantityControlForCustomer.displayName = "QuantityControlForCustomer";
 
+// ====== Main Card Component ======
 const DishCardForCustomer = ({
   dish,
   containerWidth = 0,
@@ -146,21 +116,16 @@ const DishCardForCustomer = ({
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
-  const cardWidth = Math.min(200, containerWidth * 0.48);
 
-  if (!dish || cardWidth < 1) {
-    return;
-  }
+  const cardWidth = Math.min(200, containerWidth * 0.48);
+  if (!dish || cardWidth < 1) return null;
 
   return (
     <Card
-      style={{
-        margin: 3,
-        width: cardWidth,
-        height: 294,
-        backgroundColor: theme.colors.background,
-        borderRadius: 5,
-      }}
+      style={[
+        styles.card,
+        { width: cardWidth, backgroundColor: theme.colors.background },
+      ]}
       mode="contained"
     >
       <View>
@@ -168,40 +133,27 @@ const DishCardForCustomer = ({
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           source={dish.imageUrls[0] || require("@assets/images/savora.png")}
           placeholder={{ blurhash: BLURHASH }}
-          style={{
-            width: cardWidth,
-            height: cardWidth,
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
-          }}
+          style={[styles.image, { width: cardWidth, height: cardWidth }]}
         />
         {dish.status === DishStatus.deactivated && (
           <View
-            style={{
-              position: "absolute",
-              width: cardWidth,
-              height: cardWidth,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
+            style={[styles.overlay, { width: cardWidth, height: cardWidth }]}
           >
             <View
-              style={{
-                ...StyleSheet.absoluteFillObject,
-                backgroundColor: theme.colors.inverseSurface,
-                borderTopLeftRadius: 12,
-                borderTopRightRadius: 12,
-                opacity: 0.5,
-              }}
+              style={[
+                styles.overlayBg,
+                {
+                  backgroundColor: theme.colors.inverseSurface,
+                },
+              ]}
             />
-
             <Text
-              style={{
-                opacity: 1,
-                color: theme.colors.inverseOnSurface,
-                fontWeight: "bold",
-                fontSize: 24,
-              }}
+              style={[
+                styles.overlayText,
+                {
+                  color: theme.colors.inverseOnSurface,
+                },
+              ]}
             >
               {t("sold_out")}
             </Text>
@@ -209,6 +161,7 @@ const DishCardForCustomer = ({
         )}
         <QuantityControlForCustomer dish={dish} />
       </View>
+
       <Card.Title
         title={
           <View style={{ flex: 1 }}>
@@ -216,7 +169,7 @@ const DishCardForCustomer = ({
               <Text
                 variant="titleMedium"
                 numberOfLines={2}
-                style={{ fontWeight: "semibold" }}
+                style={styles.textBold}
               >
                 {dish.name}
               </Text>
@@ -224,14 +177,14 @@ const DishCardForCustomer = ({
             <Text
               variant="titleMedium"
               numberOfLines={1}
-              style={{ fontWeight: "semibold" }}
+              style={styles.textBold}
             >
               {convertPaymentAmount(dish.price)}
             </Text>
           </View>
         }
         titleNumberOfLines={5}
-        style={{ marginVertical: 10 }}
+        style={styles.cardTitle}
       />
     </Card>
   );
@@ -239,3 +192,72 @@ const DishCardForCustomer = ({
 
 export default DishCardForCustomer;
 export const MemoizedDishCardForCustomer = memo(DishCardForCustomer);
+
+// ====== Styles ======
+const styles = StyleSheet.create({
+  card: {
+    margin: 3,
+    height: 294,
+    borderRadius: 5,
+  },
+  image: {
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  overlay: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  overlayBg: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.5,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  overlayText: {
+    fontWeight: "bold",
+    fontSize: 24,
+    opacity: 1,
+  },
+  textBold: {
+    fontWeight: "600",
+  },
+  cardTitle: {
+    marginVertical: 10,
+  },
+  controlRoot: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    padding: 5,
+    borderRadius: 5,
+    zIndex: 5,
+  },
+  controlSurface: {
+    padding: 4,
+    borderRadius: 20,
+  },
+  quantityContainer: {
+    padding: 4,
+    borderRadius: 20,
+    alignSelf: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    flex: 1,
+    flexWrap: "wrap",
+  },
+  iconButton: {
+    borderRadius: 20,
+  },
+  quantityPressable: {
+    flex: 1,
+    alignItems: "center",
+  },
+  quantityText: {
+    maxWidth: "auto",
+    paddingHorizontal: 5,
+    fontSize: 18,
+  },
+});
