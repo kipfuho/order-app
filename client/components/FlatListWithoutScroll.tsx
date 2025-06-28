@@ -294,8 +294,6 @@ const FlatListWithoutScroll = ({
     [itemType, itemContainerWidth, openMenu, numColumns, shouldShowGroup],
   );
 
-  const getItemType = useCallback((item: FlatListItem) => item.type, []);
-
   const handleEndReached = useCallback(() => {
     // Prevent triggering on initial empty render
     if (flatListData.length === 0 && !hasTriggeredInitialLoad) {
@@ -372,13 +370,20 @@ const FlatListWithoutScroll = ({
           data={flatListData}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          onEndReached={handleEndReached}
-          getItemType={getItemType}
           estimatedItemSize={
             ItemTypeFlatListProperties[itemType].ROW_HEIGHT +
             ItemTypeFlatListMarginBottom
           }
+          overrideItemLayout={(layout, item) => {
+            layout.size =
+              (item.type === "header"
+                ? ItemTypeFlatListProperties[itemType].HEADER_HEIGHT
+                : ItemTypeFlatListProperties[itemType].ROW_HEIGHT) +
+              ItemTypeFlatListMarginBottom;
+          }}
+          getItemType={(item) => item.type}
           onEndReachedThreshold={onEndReachedThreshold}
+          onEndReached={handleEndReached}
           contentContainerStyle={{ padding: 10 }}
           showsHorizontalScrollIndicator={false}
           removeClippedSubviews

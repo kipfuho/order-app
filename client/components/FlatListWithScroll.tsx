@@ -498,6 +498,14 @@ const FlatListWithScroll = ({
           ItemTypeFlatListProperties[itemType].ROW_HEIGHT +
           ItemTypeFlatListMarginBottom
         }
+        overrideItemLayout={(layout, item) => {
+          layout.size =
+            (item.type === "header"
+              ? ItemTypeFlatListProperties[itemType].HEADER_HEIGHT
+              : ItemTypeFlatListProperties[itemType].ROW_HEIGHT) +
+            ItemTypeFlatListMarginBottom;
+        }}
+        getItemType={(item) => item.type}
         contentContainerStyle={{ padding: 10 }}
         ListFooterComponent={() => children}
         removeClippedSubviews
