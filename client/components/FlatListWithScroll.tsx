@@ -191,7 +191,6 @@ export const ItemTypeMap = {
       item,
       containerWidth,
     }: {
-      key: string;
       item: KitchenLog;
       containerWidth?: number;
     }) => (

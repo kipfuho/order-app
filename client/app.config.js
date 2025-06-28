@@ -1,16 +1,7 @@
 import "dotenv/config";
 
-const profile = process.env.EAS_BUILD_PROFILE || "dev";
-
-const androidPackage =
-  profile === "production"
-    ? "com.anonymous.gradappshop"
-    : `com.anonymous.gradappshop.${profile}`;
-
-const appName = profile === "production" ? "Savora" : "Savora Internal";
-
 export default {
-  name: appName,
+  name: "Savora",
   slug: "savora",
   version: "1.0.0",
   orientation: "portrait",
@@ -25,7 +16,7 @@ export default {
     supportsTablet: true,
   },
   android: {
-    package: androidPackage,
+    package: "com.anonymous.gradappshop",
     adaptiveIcon: {
       foregroundImage: "./assets/images/savora.png",
       backgroundColor: "#ffffff",
