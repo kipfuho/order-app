@@ -115,7 +115,7 @@ export const reportApiSlice = createApi({
     }),
 
     getDashboard: builder.query<ReportDashboard, GetDashboardRequest>({
-      queryFn: async ({ shopId, from, to, period = ReportPeriod.MONTH }) => {
+      queryFn: async ({ shopId, from, to, period = ReportPeriod.WEEK }) => {
         try {
           const dashboard = await getDashboardRequest({
             shopId,

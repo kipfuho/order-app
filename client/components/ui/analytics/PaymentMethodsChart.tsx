@@ -30,6 +30,7 @@ const PaymentMethodsChart = ({
         borderRadius: 8,
         padding: 16,
         marginBottom: 16,
+        alignItems: "center",
       }}
     >
       <Text

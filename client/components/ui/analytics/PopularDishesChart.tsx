@@ -4,9 +4,9 @@ import {
   VictoryAxis,
   VictoryBar,
   VictoryChart,
-  VictoryLabel,
   VictoryLegend,
   VictoryTheme,
+  VictoryTooltip,
 } from "victory-native";
 import { convertPaymentAmount } from "@constants/utils";
 import { PopularDishesReportItem } from "@/stores/state.interface";
@@ -27,6 +27,7 @@ const PopularDishesChart = ({
         borderRadius: 8,
         padding: 16,
         marginBottom: 16,
+        alignItems: "center",
       }}
     >
       <Text
@@ -92,18 +93,14 @@ const PopularDishesChart = ({
             convertPaymentAmount(datum.revenue),
           ]}
           labelComponent={
-            <VictoryLabel
-              dy={10}
-              y={105}
+            <VictoryTooltip
               style={[
                 {
                   fill: theme.colors.secondary,
-                  fontSize: 10,
                   fontFamily: "monospace",
                 },
                 {
                   fill: theme.colors.primary,
-                  fontSize: 10,
                   fontFamily: "monospace",
                 },
               ]}

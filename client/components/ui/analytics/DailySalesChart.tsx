@@ -3,11 +3,12 @@ import { useTranslation } from "react-i18next";
 import { Surface, Text, useTheme } from "react-native-paper";
 import {
   VictoryAxis,
+  VictoryBar,
   VictoryChart,
-  VictoryLabel,
   VictoryLegend,
   VictoryLine,
   VictoryTheme,
+  VictoryTooltip,
 } from "victory-native";
 import { convertPaymentAmount } from "@constants/utils";
 import { DailySalesReportItem } from "@/stores/state.interface";
@@ -40,6 +41,7 @@ const DailySalesChart = ({
         borderRadius: 8,
         padding: 16,
         marginBottom: 16,
+        alignItems: "center",
       }}
     >
       <Text
@@ -54,7 +56,7 @@ const DailySalesChart = ({
       </Text>
       <VictoryChart
         theme={VictoryTheme.clean}
-        domainPadding={{ x: 50, y: [10, 50] }}
+        domainPadding={{ x: 10, y: 50 }}
         width={width}
         height={400}
       >
@@ -74,13 +76,31 @@ const DailySalesChart = ({
           data={data}
           x="date"
           y={normalize(revenueRange, "revenue")}
+          style={{
+            data: { stroke: theme.colors.primary, strokeWidth: 2 },
+          }}
+        />
+
+        {/* Orders Line */}
+        <VictoryLine
+          data={data}
+          x="date"
+          y={normalize(ordersRange, "orders")}
+          style={{
+            data: { stroke: theme.colors.secondary, strokeWidth: 2 },
+          }}
+        />
+
+        <VictoryBar
+          data={data}
+          x="date"
+          y={normalize(ordersRange, "orders")}
           labels={({ datum }) => [
             `${datum.orders} ${t("report_order")}`,
             convertPaymentAmount(datum.revenue),
           ]}
           labelComponent={
-            <VictoryLabel
-              y={93}
+            <VictoryTooltip
               style={[
                 {
                   fill: theme.colors.secondary,
@@ -94,17 +114,14 @@ const DailySalesChart = ({
             />
           }
           style={{
-            data: { stroke: theme.colors.primary, strokeWidth: 2 },
-          }}
-        />
-
-        {/* Orders Line */}
-        <VictoryLine
-          data={data}
-          x="date"
-          y={normalize(ordersRange, "orders")}
-          style={{
-            data: { stroke: theme.colors.secondary, strokeWidth: 2 },
+            data: {
+              fill: "transparent", // Make bars invisible
+              strokeWidth: 0, // Remove outlines
+            },
+            labels: {
+              fill: theme.colors.onBackground,
+              fontSize: 10,
+            },
           }}
         />
 

@@ -5,10 +5,10 @@ import {
   VictoryAxis,
   VictoryBar,
   VictoryChart,
-  VictoryLabel,
   VictoryLegend,
   VictoryLine,
   VictoryTheme,
+  VictoryTooltip,
 } from "victory-native";
 import { convertPaymentAmount } from "@constants/utils";
 import { HourlySalesReportItem } from "@/stores/state.interface";
@@ -42,6 +42,7 @@ const HourlyDistributionChart = ({
         borderRadius: 8,
         padding: 16,
         marginBottom: 16,
+        alignItems: "center",
       }}
     >
       <Text
@@ -56,11 +57,12 @@ const HourlyDistributionChart = ({
       </Text>
       <VictoryChart
         theme={VictoryTheme.clean}
-        domainPadding={{ x: 50, y: [10, 100] }}
+        domainPadding={{ x: 10, y: 50 }}
         width={width}
         height={400}
       >
         <VictoryAxis
+          tickValues={data.map((d) => `${d.hour}:00`)} // ensures all data-defined hours show up
           tickFormat={(t) => t}
           style={{
             tickLabels: {
@@ -71,44 +73,44 @@ const HourlyDistributionChart = ({
             },
           }}
         />
-        <VictoryBar
-          data={data}
-          x="hour"
-          y={normalize(revenueRange, "revenue")}
-          style={{
-            data: { fill: theme.colors.primary },
-          }}
-        />
+
         <VictoryLine
           data={data}
           x="hour"
           y={normalize(ordersRange, "orders")}
           style={{
             data: { stroke: theme.colors.secondary, strokeWidth: 2 },
+            labels: {
+              fill: theme.colors.onBackground,
+              fontSize: 10,
+            },
           }}
+        />
+        <VictoryBar
+          data={data}
+          x="hour"
+          y={normalize(revenueRange, "revenue")}
           labels={({ datum }) => [
-            datum.orders,
+            `${datum.orders} ${t("report_order")}`,
             convertPaymentAmount(datum.revenue),
           ]}
           labelComponent={
-            <VictoryLabel
-              dy={10}
-              y={105}
-              angle={90}
+            <VictoryTooltip
               style={[
                 {
                   fill: theme.colors.secondary,
-                  fontSize: 10,
                   fontFamily: "monospace",
                 },
                 {
                   fill: theme.colors.primary,
-                  fontSize: 10,
                   fontFamily: "monospace",
                 },
               ]}
             />
           }
+          style={{
+            data: { fill: theme.colors.primary },
+          }}
         />
 
         <VictoryLegend
