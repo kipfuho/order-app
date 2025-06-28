@@ -119,7 +119,11 @@ const PopularDishesChart = ({
             labels: { fontSize: 12, fill: theme.colors.onBackground },
           }}
           data={[
-            { name: t("unit_sold"), symbol: { fill: theme.colors.primary } },
+            {
+              name: t("report_revenue"),
+              symbol: { fill: theme.colors.primary },
+            },
+            { name: t("unit_sold"), symbol: { fill: theme.colors.secondary } },
           ]}
         />
       </VictoryChart>

@@ -1,12 +1,18 @@
-import { ReactNode, useCallback, useEffect, useMemo, useRef } from "react";
+import { ReactNode, useCallback, useMemo, useRef, memo } from "react";
 import {
   GestureResponderEvent,
   useWindowDimensions,
   View,
   ScrollView,
 } from "react-native";
-import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
-import { LegendList, LegendListRef } from "@legendapp/list";
+import {
+  ActivityIndicator,
+  Surface,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
+import { FlashList } from "@shopify/flash-list";
 import { Dish, KitchenDishOrder, KitchenLog } from "@stores/state.interface";
 import KitchenDishOrderByOrderCard from "./ui/kitchen/KitchenDishOrderByOrderCard";
 import KitchenDishOrderByDishCard from "./ui/kitchen/KitchenDishOrderByDishCard";
@@ -33,6 +39,8 @@ export enum ItemTypeFlatList {
 }
 
 // GAP = 12
+export const ItemTypeFlatListLoadingHeight = 80;
+export const ItemTypeFlatListMarginBottom = 8;
 export const ItemTypeFlatListProperties = {
   [ItemTypeFlatList.DISH_CARD]: {
     MAX_WIDTH: 300 + 12,
@@ -77,199 +85,193 @@ export const ItemTypeFlatListProperties = {
 };
 
 export const ItemTypeMap = {
-  [ItemTypeFlatList.DISH_CARD]: ({
-    key,
-    item,
-    openMenu,
-    containerWidth,
-  }: {
-    key: string;
-    item: Dish;
-    openMenu?: (dish: Dish, event: any) => void;
-    containerWidth?: number;
-  }) => {
-    return (
+  // eslint-disable-next-line react/display-name
+  [ItemTypeFlatList.DISH_CARD]: memo(
+    ({
+      item,
+      openMenu,
+      containerWidth,
+    }: {
+      item: Dish;
+      openMenu?: (dish: Dish, event: any) => void;
+      containerWidth?: number;
+    }) => (
       <MemoizedDishCard
-        key={key}
         dish={item}
         openMenu={openMenu}
         containerWidth={containerWidth}
       />
-    );
-  },
+    ),
+  ),
 
-  [ItemTypeFlatList.DISH_CARD_ORDER]: ({
-    key,
-    item,
-    containerWidth,
-  }: {
-    key: string;
-    item: Dish;
-    containerWidth?: number;
-  }) => {
-    return (
-      <MemoizedDishCardForOrder
-        key={key}
-        dish={item}
-        containerWidth={containerWidth}
-      />
-    );
-  },
+  // eslint-disable-next-line react/display-name
+  [ItemTypeFlatList.DISH_CARD_ORDER]: memo(
+    ({ item, containerWidth }: { item: Dish; containerWidth?: number }) => (
+      <MemoizedDishCardForOrder dish={item} containerWidth={containerWidth} />
+    ),
+  ),
 
-  [ItemTypeFlatList.DISH_CARD_CUSTOMER]: ({
-    key,
-    item,
-    containerWidth,
-  }: {
-    key: string;
-    item: Dish;
-    containerWidth?: number;
-  }) => {
-    return (
+  // eslint-disable-next-line react/display-name
+  [ItemTypeFlatList.DISH_CARD_CUSTOMER]: memo(
+    ({ item, containerWidth }: { item: Dish; containerWidth?: number }) => (
       <MemoizedDishCardForCustomer
-        key={key}
         dish={item}
         containerWidth={containerWidth}
       />
-    );
-  },
+    ),
+  ),
 
-  [ItemTypeFlatList.KITCHEN_DISHORDER_BYORDER]: ({
-    key,
-    item,
-    containerWidth,
-  }: {
-    key: string;
-    item: KitchenDishOrder;
-    containerWidth?: number;
-  }) => {
-    return (
+  // eslint-disable-next-line react/display-name
+  [ItemTypeFlatList.KITCHEN_DISHORDER_BYORDER]: memo(
+    ({
+      item,
+      containerWidth,
+    }: {
+      item: KitchenDishOrder;
+      containerWidth?: number;
+    }) => (
       <KitchenDishOrderByOrderCard
-        key={key}
         dishOrder={item}
         containerWidth={containerWidth}
       />
-    );
-  },
+    ),
+  ),
 
-  [ItemTypeFlatList.KITCHEN_DISHORDER_BYDISH]: ({
-    key,
-    item,
-    containerWidth,
-  }: {
-    key: string;
-    item: KitchenDishOrder[];
-    containerWidth?: number;
-  }) => {
-    return (
+  // eslint-disable-next-line react/display-name
+  [ItemTypeFlatList.KITCHEN_DISHORDER_BYDISH]: memo(
+    ({
+      item,
+      containerWidth,
+    }: {
+      item: KitchenDishOrder[];
+      containerWidth?: number;
+    }) => (
       <KitchenDishOrderByDishCard
-        key={key}
         dishOrders={item}
         containerWidth={containerWidth}
       />
-    );
-  },
+    ),
+  ),
 
-  [ItemTypeFlatList.KITCHEN_DISHORDER_SERVING]: ({
-    key,
-    item,
-    containerWidth,
-  }: {
-    key: string;
-    item: KitchenDishOrder;
-    containerWidth?: number;
-  }) => {
-    return (
+  // eslint-disable-next-line react/display-name
+  [ItemTypeFlatList.KITCHEN_DISHORDER_SERVING]: memo(
+    ({
+      item,
+      containerWidth,
+    }: {
+      item: KitchenDishOrder;
+      containerWidth?: number;
+    }) => (
       <KitchenDishOrderServingCard
-        key={key}
         dishOrder={item}
         containerWidth={containerWidth}
       />
-    );
-  },
+    ),
+  ),
 
-  [ItemTypeFlatList.KITCHEN_COOKED_HISTORY]: ({
-    key,
-    item,
-    containerWidth,
-  }: {
-    key: string;
-    item: KitchenLog;
-    containerWidth?: number;
-  }) => {
-    return (
+  // eslint-disable-next-line react/display-name
+  [ItemTypeFlatList.KITCHEN_COOKED_HISTORY]: memo(
+    ({
+      item,
+      containerWidth,
+    }: {
+      item: KitchenLog;
+      containerWidth?: number;
+    }) => (
       <KitchenCookedHistoryCard
-        key={key}
         cookedHistory={item}
         containerWidth={containerWidth}
       />
-    );
-  },
+    ),
+  ),
 
-  [ItemTypeFlatList.KITCHEN_SERVED_HISTORY]: ({
-    key,
-    item,
-    containerWidth,
-  }: {
-    key: string;
-    item: KitchenLog;
-    containerWidth?: number;
-  }) => {
-    return (
+  // eslint-disable-next-line react/display-name
+  [ItemTypeFlatList.KITCHEN_SERVED_HISTORY]: memo(
+    ({
+      item,
+      containerWidth,
+    }: {
+      key: string;
+      item: KitchenLog;
+      containerWidth?: number;
+    }) => (
       <KitchenServedHistoryCard
-        key={key}
         servedHistory={item}
         containerWidth={containerWidth}
       />
-    );
-  },
+    ),
+  ),
 };
 
-function GroupList({
-  groups = [],
-  scrollToGroup,
-}: {
-  groups: any[];
-  scrollToGroup: (id: string) => void;
-}) {
-  const theme = useTheme();
-  const { width } = useWindowDimensions();
+// Memoized GroupList component
+// eslint-disable-next-line react/display-name
+const GroupList = memo(
+  ({
+    groups = [],
+    scrollToGroup,
+  }: {
+    groups: any[];
+    scrollToGroup: (id: string) => void;
+  }) => {
+    const theme = useTheme();
+    const { width } = useWindowDimensions();
 
-  if (width < UNIVERSAL_WIDTH_PIVOT) {
+    const groupListStyle = useMemo(
+      () => ({
+        backgroundColor: theme.colors.background,
+        ...(width < UNIVERSAL_WIDTH_PIVOT
+          ? { paddingHorizontal: 8 }
+          : { width: Math.min(UNIVERSAL_MAX_WIDTH_SIDEBAR, width * 0.15) }),
+      }),
+      [theme.colors.background, width],
+    );
+
+    const buttonStyle = useMemo(
+      () => ({
+        backgroundColor: theme.colors.primaryContainer,
+        paddingVertical: 12,
+        paddingHorizontal: width < UNIVERSAL_WIDTH_PIVOT ? 16 : 8,
+        borderRadius: 4,
+      }),
+      [theme.colors.primaryContainer, width],
+    );
+
+    if (width < UNIVERSAL_WIDTH_PIVOT) {
+      return (
+        <Surface mode="flat" style={groupListStyle}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={{ flexDirection: "row", gap: 8, paddingVertical: 8 }}>
+              {groups.map((g) => (
+                <TouchableRipple
+                  key={g.id}
+                  onPress={() => scrollToGroup(g.id)}
+                  style={buttonStyle}
+                >
+                  <Text
+                    variant="bodyMedium"
+                    style={{ flexWrap: "wrap", maxWidth: 200 }}
+                  >
+                    {g.name}
+                  </Text>
+                </TouchableRipple>
+              ))}
+            </View>
+          </ScrollView>
+        </Surface>
+      );
+    }
+
     return (
-      <Surface
-        mode="flat"
-        style={{
-          backgroundColor: theme.colors.background,
-          paddingHorizontal: 8,
-        }}
-      >
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 8,
-              paddingVertical: 8,
-            }}
-          >
+      <Surface mode="flat" style={groupListStyle}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={{ gap: 1 }}>
             {groups.map((g) => (
               <TouchableRipple
                 key={g.id}
                 onPress={() => scrollToGroup(g.id)}
-                style={{
-                  backgroundColor: theme.colors.primaryContainer,
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  borderRadius: 4,
-                }}
+                style={buttonStyle}
               >
-                <Text
-                  variant="bodyMedium"
-                  style={{
-                    flexWrap: "wrap",
-                    maxWidth: 200,
-                  }}
-                >
+                <Text variant="bodyMedium" style={{ flexWrap: "wrap" }}>
                   {g.name}
                 </Text>
               </TouchableRipple>
@@ -278,46 +280,8 @@ function GroupList({
         </ScrollView>
       </Surface>
     );
-  }
-
-  return (
-    <Surface
-      mode="flat"
-      style={{
-        backgroundColor: theme.colors.background,
-        width: Math.min(UNIVERSAL_MAX_WIDTH_SIDEBAR, width * 0.15),
-      }}
-    >
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={{ gap: 1 }}>
-          {groups.map((g) => {
-            return (
-              <TouchableRipple
-                key={g.id}
-                onPress={() => scrollToGroup(g.id)}
-                style={{
-                  backgroundColor: theme.colors.primaryContainer,
-                  paddingVertical: 12,
-                  paddingHorizontal: 8,
-                  borderRadius: 4,
-                }}
-              >
-                <Text
-                  variant="bodyMedium"
-                  style={{
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {g.name}
-                </Text>
-              </TouchableRipple>
-            );
-          })}
-        </View>
-      </ScrollView>
-    </Surface>
-  );
-}
+  },
+);
 
 export interface FlatListItem {
   id: string;
@@ -326,6 +290,84 @@ export interface FlatListItem {
   startIdx?: number;
   items?: any[];
 }
+
+// Memoized EmptyCell component
+// eslint-disable-next-line react/display-name
+export const FlatListEmptyCell = memo(() => <View style={{ flex: 1 }} />);
+
+// Memoized Header component
+// eslint-disable-next-line react/display-name
+export const FlatListHeaderItem = memo(({ group }: { group: any }) => (
+  <Text
+    style={{
+      marginBottom: 8,
+      height: 24,
+      fontWeight: "bold",
+      fontSize: 20,
+    }}
+  >
+    {group.name}
+  </Text>
+));
+
+// Memoized Loading component
+// eslint-disable-next-line react/display-name
+export const FlatListLoadingItem = memo(() => (
+  <View
+    style={{
+      height: 80,
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    <ActivityIndicator size="large" />
+  </View>
+));
+
+// Memoized Row component
+// eslint-disable-next-line react/display-name
+export const FlatListRowItem = memo(
+  ({
+    items,
+    numColumns,
+    itemType,
+    openMenu,
+    itemContainerWidth,
+  }: {
+    items: any[];
+    numColumns: number;
+    itemType: ItemTypeFlatList;
+    openMenu?: (item: any, event: GestureResponderEvent) => void;
+    itemContainerWidth: number;
+  }) => {
+    const ComponentType = ItemTypeMap[itemType];
+
+    return (
+      <View
+        style={{
+          flexDirection: "row",
+          flexWrap: "nowrap",
+          marginBottom: 8,
+          gap: 12,
+        }}
+      >
+        {items.map((_item: any) => (
+          <ComponentType
+            key={_item.id}
+            item={_item}
+            openMenu={openMenu}
+            containerWidth={itemContainerWidth}
+          />
+        ))}
+        {Array(Math.max(0, numColumns - items.length))
+          .fill(null)
+          .map((_, idx) => (
+            <FlatListEmptyCell key={idx} />
+          ))}
+      </View>
+    );
+  },
+);
 
 const FlatListWithScroll = ({
   groups,
@@ -345,6 +387,7 @@ const FlatListWithScroll = ({
   children?: ReactNode;
 }) => {
   const { width } = useWindowDimensions();
+  const flatListRef = useRef<FlashList<FlatListItem>>(null);
 
   const { itemContainerWidth, numColumns } = useMemo(() => {
     let itemContainerWidth = width - 52;
@@ -365,20 +408,27 @@ const FlatListWithScroll = ({
     return { itemContainerWidth, numColumns };
   }, [width, itemType, shouldShowGroup]);
 
-  const flatListRef = useRef<LegendListRef | null>(null);
-  const { flatListData, indexMap } = useMemo(() => {
-    if (numColumns <= 0)
-      return {
-        flatListData: [],
-        indexMap: {},
-      };
+  const { flatListData, indexMap } = useMemo<{
+    flatListData: FlatListItem[];
+    indexMap: Record<string, number>;
+  }>(() => {
+    if (numColumns <= 0) {
+      return { flatListData: [], indexMap: {} };
+    }
 
-    const flatListData = groups.flatMap((g) => {
+    const flatListData: FlatListItem[] = [];
+    const indexMap: Record<string, number> = {};
+
+    groups.forEach((g) => {
       const items = itemByGroup[g.id] || [];
-      const itemRows: FlatListItem[] = [];
 
+      // Add header
+      indexMap[g.id] = flatListData.length;
+      flatListData.push({ type: "header", id: `header-${g.id}`, group: g });
+
+      // Add item rows
       for (let i = 0; i < items.length; i += numColumns) {
-        itemRows.push({
+        flatListData.push({
           type: "row",
           id: `row-${g.id}-${i}`,
           items: items.slice(i, i + numColumns),
@@ -386,62 +436,31 @@ const FlatListWithScroll = ({
           group: g,
         });
       }
-
-      return [{ type: "header", id: `header-${g.id}`, group: g }, ...itemRows];
     });
 
-    const indexMap: Record<string, number> = {};
-    flatListData.forEach((item, index) => {
-      if (item.type === "header") {
-        indexMap[item.group.id] = index;
-      }
-    });
-
-    return { flatListData, indexMap };
+    return {
+      flatListData,
+      indexMap,
+    };
   }, [groups, itemByGroup, numColumns]);
 
   const renderItem = useCallback(
     ({ item }: { item: FlatListItem }) => {
       if (item.type === "header") {
-        if (!shouldShowGroup) return null;
-        return (
-          <Text
-            style={{
-              marginBottom: 8,
-              height: 24,
-              fontWeight: "bold",
-              fontSize: 20,
-            }}
-          >
-            {item.group.name}
-          </Text>
-        );
+        return shouldShowGroup ? (
+          <FlatListHeaderItem group={item.group} />
+        ) : null;
       }
 
       if (item.type === "row") {
         return (
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "nowrap",
-              marginBottom: 8,
-              gap: 12,
-            }}
-          >
-            {(item.items || []).map((_item: any, idx: number) => {
-              return ItemTypeMap[itemType]({
-                key: _item.id || idx,
-                item: _item,
-                openMenu,
-                containerWidth: itemContainerWidth,
-              });
-            })}
-            {Array(Math.max(0, numColumns - (item.items || []).length))
-              .fill(null)
-              .map((_, idx) => (
-                <View key={`empty-${idx}`} style={{ flex: 1 }} />
-              ))}
-          </View>
+          <FlatListRowItem
+            items={item.items || []}
+            numColumns={numColumns}
+            itemType={itemType}
+            openMenu={openMenu}
+            itemContainerWidth={itemContainerWidth}
+          />
         );
       }
 
@@ -450,34 +469,15 @@ const FlatListWithScroll = ({
     [shouldShowGroup, numColumns, itemType, openMenu, itemContainerWidth],
   );
 
-  const scrollToCategory = (categoryId: string) => {
-    const index = indexMap[categoryId];
-    if (index !== undefined && flatListRef.current) {
-      flatListRef.current.scrollToItem({
-        item: flatListData[index],
-        animated: true,
-      });
-    }
-  };
-
-  const HEADER_HEIGHT = ItemTypeFlatListProperties[itemType].HEADER_HEIGHT;
-  const ROW_HEIGHT = ItemTypeFlatListProperties[itemType].ROW_HEIGHT;
-  const MARGIN_BOTTOM = 8;
-  const getEstimatedItemSize = (index: number, item: FlatListItem) => {
-    if (item.type === "header") {
-      return (shouldShowGroup ? HEADER_HEIGHT : 0) + MARGIN_BOTTOM;
-    } else if (item.type === "row") {
-      return ROW_HEIGHT + MARGIN_BOTTOM;
-    }
-    return 0;
-  };
-
-  // force rerender
-  useEffect(() => {
-    flatListRef.current?.scrollToOffset({
-      offset: 0,
-    });
-  }, []);
+  const scrollToCategory = useCallback(
+    (categoryId: string) => {
+      const index = indexMap[categoryId];
+      if (index !== undefined && flatListRef.current) {
+        flatListRef.current.scrollToIndex({ index });
+      }
+    },
+    [indexMap],
+  );
 
   return (
     <Surface
@@ -490,16 +490,19 @@ const FlatListWithScroll = ({
       {shouldShowGroup && (
         <GroupList groups={groups} scrollToGroup={scrollToCategory} />
       )}
-      <LegendList
+      <FlashList
         ref={flatListRef}
         data={flatListData}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        getEstimatedItemSize={getEstimatedItemSize}
-        estimatedItemSize={ROW_HEIGHT + MARGIN_BOTTOM}
-        initialContainerPoolRatio={2.0}
+        estimatedItemSize={
+          ItemTypeFlatListProperties[itemType].ROW_HEIGHT +
+          ItemTypeFlatListMarginBottom
+        }
         contentContainerStyle={{ padding: 10 }}
         ListFooterComponent={() => children}
+        removeClippedSubviews
+        disableAutoLayout
       />
     </Surface>
   );

@@ -20,9 +20,8 @@ import { Shop } from "@/stores/state.interface";
 import { LoaderBasic } from "./ui/Loader";
 import { convertHourForDisplay, convertPaymentAmount } from "@/constants/utils";
 
-const { width } = Dimensions.get("window");
-
 const ShopDashboard = () => {
+  const { width } = Dimensions.get("window");
   const theme = useTheme<CustomMD3Theme>();
   const { t } = useTranslation();
 

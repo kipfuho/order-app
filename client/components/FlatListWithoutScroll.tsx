@@ -12,20 +12,22 @@ import {
   useWindowDimensions,
   View,
   ScrollView,
-  ActivityIndicator,
 } from "react-native";
 import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
-import { LegendList, LegendListRef } from "@legendapp/list";
 import {
+  FlatListHeaderItem,
   FlatListItem,
+  FlatListLoadingItem,
+  FlatListRowItem,
   ItemTypeFlatList,
+  ItemTypeFlatListMarginBottom,
   ItemTypeFlatListProperties,
-  ItemTypeMap,
 } from "./FlatListWithScroll";
 import {
   UNIVERSAL_MAX_WIDTH_SIDEBAR,
   UNIVERSAL_WIDTH_PIVOT,
 } from "@/constants/common";
+import { FlashList } from "@shopify/flash-list";
 
 function GroupList({
   groups = [],
@@ -167,9 +169,9 @@ const FlatListWithoutScroll = ({
   fetchNextPage?: () => void;
   onEndReachedThreshold?: number;
 }) => {
-  const flatListRef = useRef<LegendListRef>(null);
   const containerRef = useRef<View>(null);
   const { width } = useWindowDimensions();
+  const flatListRef = useRef<FlashList<FlatListItem>>(null);
 
   const [selectedGroup, setSelectGroup] = useState("");
   const [hasTriggeredInitialLoad, setHasTriggeredInitialLoad] = useState(false);
@@ -230,12 +232,12 @@ const FlatListWithoutScroll = ({
 
     return data;
   }, [
-    groups,
-    itemByGroup,
     numColumns,
-    selectedGroup,
+    groups,
     isFetchingNextPage,
     hasNextPage,
+    selectedGroup,
+    itemByGroup,
   ]);
 
   // Calculate total content height to determine if we need more items
@@ -266,59 +268,24 @@ const FlatListWithoutScroll = ({
   const renderItem = useCallback(
     ({ item }: { item: FlatListItem }) => {
       if (item.type === "header") {
-        if (!shouldShowGroup) return null;
-        return (
-          <Text
-            style={{
-              marginBottom: 8,
-              height: 24,
-              fontWeight: "bold",
-              fontSize: 20,
-            }}
-          >
-            {item.group.name}
-          </Text>
-        );
+        return shouldShowGroup ? (
+          <FlatListHeaderItem group={item.group} />
+        ) : null;
       }
 
       if (item.type === "loading") {
-        return (
-          <View
-            style={{
-              height: 80,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <ActivityIndicator size="large" />
-          </View>
-        );
+        return <FlatListLoadingItem />;
       }
 
       if (item.type === "row") {
         return (
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "nowrap",
-              marginBottom: 8,
-              gap: 12,
-            }}
-          >
-            {(item.items || []).map((_item: any, idx: number) => {
-              return ItemTypeMap[itemType]({
-                key: `${itemType}-${_item.id || idx}`,
-                item: _item,
-                openMenu,
-                containerWidth: itemContainerWidth,
-              });
-            })}
-            {Array(Math.max(0, numColumns - (item.items || []).length))
-              .fill(null)
-              .map((_, idx) => (
-                <View key={`empty-${idx}`} style={{ flex: 1 }} />
-              ))}
-          </View>
+          <FlatListRowItem
+            items={item.items || []}
+            numColumns={numColumns}
+            itemType={itemType}
+            openMenu={openMenu}
+            itemContainerWidth={itemContainerWidth}
+          />
         );
       }
 
@@ -327,21 +294,7 @@ const FlatListWithoutScroll = ({
     [itemType, itemContainerWidth, openMenu, numColumns, shouldShowGroup],
   );
 
-  const HEADER_HEIGHT = ItemTypeFlatListProperties[itemType].HEADER_HEIGHT;
-  const ROW_HEIGHT = ItemTypeFlatListProperties[itemType].ROW_HEIGHT;
-  const LOADING_HEIGHT = 80;
-  const MARGIN_BOTTOM = 8;
-
-  const getEstimatedItemSize = (index: number, item: FlatListItem) => {
-    if (item.type === "header") {
-      return (shouldShowGroup ? HEADER_HEIGHT : 0) + MARGIN_BOTTOM;
-    } else if (item.type === "row") {
-      return ROW_HEIGHT + MARGIN_BOTTOM;
-    } else if (item.type === "loading") {
-      return LOADING_HEIGHT + MARGIN_BOTTOM;
-    }
-    return 0;
-  };
+  const getItemType = useCallback((item: FlatListItem) => item.type, []);
 
   const handleEndReached = useCallback(() => {
     // Prevent triggering on initial empty render
@@ -391,13 +344,6 @@ const FlatListWithoutScroll = ({
     flatListData.length,
   ]);
 
-  // force rerender
-  useEffect(() => {
-    if (flatListRef.current) {
-      flatListRef.current.scrollToOffset({ offset: 0, animated: true });
-    }
-  }, []);
-
   return (
     <Surface
       mode="flat"
@@ -421,19 +367,22 @@ const FlatListWithoutScroll = ({
         style={{ flex: 1 }}
         onLayout={handleContainerLayout}
       >
-        <LegendList
+        <FlashList
           ref={flatListRef}
           data={flatListData}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          getEstimatedItemSize={getEstimatedItemSize}
-          estimatedItemSize={ROW_HEIGHT + MARGIN_BOTTOM}
-          initialContainerPoolRatio={1.5}
           onEndReached={handleEndReached}
+          getItemType={getItemType}
+          estimatedItemSize={
+            ItemTypeFlatListProperties[itemType].ROW_HEIGHT +
+            ItemTypeFlatListMarginBottom
+          }
           onEndReachedThreshold={onEndReachedThreshold}
           contentContainerStyle={{ padding: 10 }}
           showsHorizontalScrollIndicator={false}
-          waitForInitialLayout={false}
+          removeClippedSubviews
+          disableAutoLayout
         />
       </View>
     </Surface>
