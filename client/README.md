@@ -3,6 +3,7 @@
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 # Build app
+- eas build --platform android --profile local --local
 - eas build --platform android --profile preview
 - eas build --platform android --profile production
 - eas build --platform ios --profile preview
