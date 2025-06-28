@@ -99,7 +99,7 @@ const updateDish = async ({ shopId, dishId, updateBody }) => {
     unitId: updateBody.unitId,
     status: updateBody.status,
     shopId,
-    imageUrls: updateBody.imageUrls || [],
+    imageUrls: updateBody.imageUrls,
     description: updateBody.description,
     hideForCustomers: updateBody.hideForCustomers,
     hideForEmployees: updateBody.hideForEmployees,
