@@ -12,7 +12,6 @@ import {
 import { useState } from "react";
 import { TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { useSelector } from "react-redux";
-import { LegendList } from "@legendapp/list";
 import Toast from "react-native-toast-message";
 import { convertPaymentAmount } from "@constants/utils";
 import DiscountModal from "./DiscountModal";
@@ -26,6 +25,7 @@ import { DiscountType, DiscountValueType } from "@constants/common";
 import { OrderSession } from "@stores/state.interface";
 import toastConfig from "@/components/CustomToast";
 import { ConfirmCancelDialog } from "../CancelDialog";
+import { FlashList } from "@shopify/flash-list";
 
 export default function OrderSessionDetailPage({
   orderSessionDetail,
@@ -180,7 +180,7 @@ export default function OrderSessionDetailPage({
 
         <Divider style={{ marginVertical: 8 }} />
 
-        <LegendList
+        <FlashList
           data={dishOrders}
           style={{ maxHeight: height * 0.6, padding: 12 }}
           renderItem={({ item }) => (

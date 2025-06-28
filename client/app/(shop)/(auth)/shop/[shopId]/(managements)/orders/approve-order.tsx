@@ -1,12 +1,11 @@
 import _ from "lodash";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useSelector } from "react-redux";
 import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
-import { LegendList } from "@legendapp/list";
 import { goToShopHome } from "@apis/navigate.service";
 import { AppBar } from "@components/AppBar";
 import { RootState } from "@stores/store";
@@ -21,6 +20,7 @@ import TableForApproveCard from "@/components/ui/orders/TableForApproveCard";
 import UnconfirmedOrderCard from "@/components/ui/orders/UnconfirmedOrderCard";
 import { styles } from "@/constants/styles";
 import toastConfig from "@/components/CustomToast";
+import { FlashList } from "@shopify/flash-list";
 
 export default function OrderManagementApprovePage() {
   const router = useRouter();
@@ -118,13 +118,15 @@ export default function OrderManagementApprovePage() {
             />
             <Surface mode="flat" style={{ flex: 1 }}>
               <ScrollView>
-                <LegendList
+                <FlashList
                   data={unconfirmedOrderByTable[selectedTable?.id || ""] || []}
                   keyExtractor={(item) => item.id}
                   renderItem={({ item }) => (
-                    <UnconfirmedOrderCard unconfirmedOrder={item} />
+                    <View style={{ marginBottom: 12 }}>
+                      <UnconfirmedOrderCard unconfirmedOrder={item} />
+                    </View>
                   )}
-                  contentContainerStyle={{ gap: 12, padding: 16 }}
+                  contentContainerStyle={{ padding: 16 }}
                   showsVerticalScrollIndicator={false}
                 />
               </ScrollView>

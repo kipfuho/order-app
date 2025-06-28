@@ -3,7 +3,6 @@ import { memo, useEffect, useRef, useState } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { LegendList } from "@legendapp/list";
 import {
   Button,
   Dialog,
@@ -31,6 +30,7 @@ import {
 } from "@stores/apiSlices/orderApi.slice";
 import { RootState } from "@stores/store";
 import toastConfig from "@/components/CustomToast";
+import { FlashList } from "@shopify/flash-list";
 
 const UnconfirmedOrderCard = ({
   unconfirmedOrder,
@@ -286,11 +286,11 @@ const UnconfirmedOrderCard = ({
             }}
             onLayout={measureContentHeight}
           >
-            <LegendList
+            <FlashList
               data={unconfirmedOrder.dishOrders || []}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <View style={{ gap: 4 }}>
+                <View style={{ gap: 4, marginBottom: 12 }}>
                   <Text style={{ flex: 1, marginRight: 8 }}>
                     <Text style={{ fontSize: 16 }}>{item.quantity}</Text>
                     <Text style={{ marginLeft: 4, fontSize: 16 }}>x</Text>
@@ -319,7 +319,7 @@ const UnconfirmedOrderCard = ({
                   </TouchableOpacity>
                 </View>
               )}
-              contentContainerStyle={{ gap: 12, padding: 16 }}
+              contentContainerStyle={{ padding: 16 }}
               showsVerticalScrollIndicator={false}
             />
           </View>

@@ -14,7 +14,6 @@ import { useWindowDimensions, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
-import { LegendList } from "@legendapp/list";
 import Toast from "react-native-toast-message";
 import OrderCustomerInfo from "./OrderCutomerInfo";
 import DishOrderCard from "./DishOrder";
@@ -32,6 +31,7 @@ import { RootState } from "@stores/store";
 import { DiscountValueType } from "@/constants/common";
 import DiscountModal from "./DiscountModal";
 import toastConfig from "@/components/CustomToast";
+import { FlashList } from "@shopify/flash-list";
 
 export default function ActiveOrderSessionPage({
   activeOrderSession,
@@ -328,7 +328,7 @@ export default function ActiveOrderSessionPage({
           </View>
         </Surface>
 
-        <LegendList
+        <FlashList
           data={activeOrderSession.orders || []}
           keyExtractor={(item) => item.id}
           style={{ maxHeight: height * 0.6, padding: 12 }}

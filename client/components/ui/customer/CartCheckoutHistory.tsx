@@ -18,8 +18,8 @@ import {
 import { styles } from "@/constants/styles";
 import CartCheckoutHistoryCard from "./CartCheckoutHistoryCard";
 import { useInfiniteScrollingQuery } from "@/hooks/useInfiniteScrolling";
-import { LegendList } from "@legendapp/list";
 import UnconfirmedCartCheckoutHistoryCard from "./UnconfirmedCartCheckoutHistoryCard";
+import { FlashList } from "@shopify/flash-list";
 
 export default function CartCheckoutHistory({
   setVisible,
@@ -85,12 +85,20 @@ export default function CartCheckoutHistory({
       // Order Session
       if (!_.isEmpty(_.get(item, "orders"))) {
         const orderSession = item as OrderSessionCartCheckoutHistory;
-        return <CartCheckoutHistoryCard orderSession={orderSession} />;
+        return (
+          <View style={{ marginBottom: 16 }}>
+            <CartCheckoutHistoryCard orderSession={orderSession} />
+          </View>
+        );
       }
 
       // Order
       const order = item as OrderCartCheckoutHistory;
-      return <UnconfirmedCartCheckoutHistoryCard order={order} />;
+      return (
+        <View style={{ marginBottom: 16 }}>
+          <UnconfirmedCartCheckoutHistoryCard order={order} />
+        </View>
+      );
     },
     [],
   );
@@ -115,15 +123,14 @@ export default function CartCheckoutHistory({
           </Text>
         </View>
         <View style={styles.baseContainer}>
-          <LegendList
+          <FlashList
             data={[...unconfirmedHistories, ...confirmedHistories]}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
             estimatedItemSize={150}
-            initialContainerPoolRatio={1.5}
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
-            contentContainerStyle={{ padding: 10, gap: 16 }}
+            contentContainerStyle={{ padding: 10 }}
             showsHorizontalScrollIndicator={false}
           />
         </View>

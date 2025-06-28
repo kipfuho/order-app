@@ -8,7 +8,6 @@ import {
 } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { LegendList } from "@legendapp/list";
 import { KitchenDishOrder, Shop } from "@stores/state.interface";
 import { getMinuteForDisplay, getStatusColor } from "@constants/utils";
 import { CustomMD3Theme } from "@constants/theme";
@@ -19,6 +18,7 @@ import {
   updateKitchenDishOrder,
 } from "@stores/shop.slice";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
+import { FlashList } from "@shopify/flash-list";
 
 const TableKitchenDishOrderTime = ({
   item,
@@ -192,7 +192,7 @@ export default function KitchenDishOrderGroup({
       </View>
 
       <View style={{ flex: 1 }}>
-        <LegendList
+        <FlashList
           data={dishOrders}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (

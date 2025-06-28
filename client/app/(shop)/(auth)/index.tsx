@@ -10,11 +10,11 @@ import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
 import _, { debounce } from "lodash";
 import { Shop } from "@stores/state.interface";
-import { LegendList } from "@legendapp/list";
 import { BLURHASH } from "@constants/common";
 import { ConfirmCancelDialog } from "@/components/ui/CancelDialog";
 import { logoutRequest } from "@/apis/auth.api.service";
 import { useSession } from "@/hooks/useSession";
+import { FlashList } from "@shopify/flash-list";
 
 export default function ShopsPage() {
   const router = useRouter();
@@ -78,7 +78,7 @@ export default function ShopsPage() {
         </Button>
       </AppBar>
       <Surface mode="flat" style={{ flex: 1 }}>
-        <LegendList
+        <FlashList
           data={filteredShops}
           keyExtractor={(item) => item.id.toString()}
           ListHeaderComponent={
