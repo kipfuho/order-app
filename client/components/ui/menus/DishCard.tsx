@@ -1,5 +1,5 @@
 import { debounce } from "lodash";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import {
   Card,
@@ -63,6 +63,12 @@ const DishCard = ({
       />
     );
   }, [dish, openMenu]);
+
+  useEffect(() => {
+    return () => {
+      updateDishStatusRef.cancel();
+    };
+  }, [updateDishStatusRef]);
 
   return (
     <Card style={[styles.card, { width: cardWidth }]}>
