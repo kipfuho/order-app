@@ -1,5 +1,6 @@
 import {
   Dispatch,
+  memo,
   ReactNode,
   SetStateAction,
   useCallback,
@@ -23,14 +24,14 @@ import {
   ItemTypeFlatList,
   ItemTypeFlatListMarginBottom,
   ItemTypeFlatListProperties,
-} from "./FlatListWithScroll";
+} from "./FlatListUtil";
 import {
   UNIVERSAL_MAX_WIDTH_SIDEBAR,
   UNIVERSAL_WIDTH_PIVOT,
 } from "@/constants/common";
 import { FlashList } from "@shopify/flash-list";
 
-function GroupList({
+const GroupListMemoized = memo(function GroupList({
   groups = [],
   selectedGroup,
   setSelectedGroup,
@@ -143,7 +144,7 @@ function GroupList({
       </ScrollView>
     </Surface>
   );
-}
+});
 
 const FlatListWithoutScroll = ({
   groups,
@@ -172,7 +173,6 @@ const FlatListWithoutScroll = ({
   onEndReachedThreshold?: number;
   children?: ReactNode;
 }) => {
-  const containerRef = useRef<View>(null);
   const { width } = useWindowDimensions();
   const flatListRef = useRef<FlashList<FlatListItem>>(null);
 
@@ -354,7 +354,7 @@ const FlatListWithoutScroll = ({
       }}
     >
       {shouldShowGroup && (
-        <GroupList
+        <GroupListMemoized
           groups={groups}
           selectedGroup={selectedGroup}
           setSelectedGroup={(id) => {
@@ -363,11 +363,7 @@ const FlatListWithoutScroll = ({
           }}
         />
       )}
-      <View
-        ref={containerRef}
-        style={{ flex: 1 }}
-        onLayout={handleContainerLayout}
-      >
+      <View style={{ flex: 1 }} onLayout={handleContainerLayout}>
         <FlashList
           ref={flatListRef}
           data={flatListData}

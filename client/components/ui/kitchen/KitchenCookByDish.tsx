@@ -4,11 +4,11 @@ import { useSelector } from "react-redux";
 import { Surface } from "react-native-paper";
 import { RootState } from "@stores/store";
 import { Shop } from "@stores/state.interface";
-import FlatListWithoutScroll from "@/components/FlatListWithoutScroll";
-import { ItemTypeFlatList } from "@/components/FlatListWithScroll";
 import { LoaderBasic } from "../Loader";
 import { useInfiniteScrollingQuery } from "@/hooks/useInfiniteScrolling";
 import { useGetUncookedDishOrdersQuery } from "@/stores/apiSlices/kitchenApi.slice";
+import FlatListWithoutScroll from "../FlatList/FlatListWithoutScroll";
+import { ItemTypeFlatList } from "../FlatList/FlatListUtil";
 
 const KitchenCookByDish = () => {
   const { currentShop } = useSelector((state: RootState) => state.shop);

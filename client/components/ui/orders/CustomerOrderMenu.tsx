@@ -6,9 +6,9 @@ import { LoaderBasic } from "@components/ui/Loader";
 import { RootState } from "@stores/store";
 import { CartItem, Dish, Shop } from "@stores/state.interface";
 import { useGetDishCategoriesQuery } from "@stores/apiSlices/dishApi.slice";
-import { ItemTypeFlatList } from "@/components/FlatListWithScroll";
-import FlatListWithoutScroll from "@/components/FlatListWithoutScroll";
 import { useTranslation } from "react-i18next";
+import FlatListWithoutScroll from "../FlatList/FlatListWithoutScroll";
+import { ItemTypeFlatList } from "../FlatList/FlatListUtil";
 
 export default function CustomerOrderMenu({ dishes }: { dishes: Dish[] }) {
   const { t } = useTranslation();

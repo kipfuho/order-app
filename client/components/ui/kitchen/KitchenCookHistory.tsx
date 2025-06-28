@@ -17,11 +17,11 @@ import {
 import { DatePickerModal } from "react-native-paper-dates";
 import { useSelector } from "react-redux";
 import { LoaderBasic } from "../Loader";
-import FlatListWithoutScroll from "@/components/FlatListWithoutScroll";
-import { ItemTypeFlatList } from "@/components/FlatListWithScroll";
 import { View } from "react-native";
 import { useInfiniteScrollingQuery } from "@/hooks/useInfiniteScrolling";
 import { oneSecondBeforeTodayUTC } from "@/constants/utils";
+import FlatListWithoutScroll from "../FlatList/FlatListWithoutScroll";
+import { ItemTypeFlatList } from "../FlatList/FlatListUtil";
 
 const KitchenCookHistory = () => {
   const { i18n, t } = useTranslation();

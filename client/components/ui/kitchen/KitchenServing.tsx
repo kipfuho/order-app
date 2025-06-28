@@ -5,10 +5,10 @@ import { Surface } from "react-native-paper";
 import { RootState } from "@stores/store";
 import { Shop } from "@stores/state.interface";
 import { LoaderBasic } from "../Loader";
-import FlatListWithoutScroll from "@/components/FlatListWithoutScroll";
-import { ItemTypeFlatList } from "@/components/FlatListWithScroll";
 import { useInfiniteScrollingQuery } from "@/hooks/useInfiniteScrolling";
 import { useGetUnservedDishOrdersRequestQuery } from "@/stores/apiSlices/kitchenApi.slice";
+import FlatListWithoutScroll from "../FlatList/FlatListWithoutScroll";
+import { ItemTypeFlatList } from "../FlatList/FlatListUtil";
 
 const KitchenServing = () => {
   const { currentShop } = useSelector((state: RootState) => state.shop);

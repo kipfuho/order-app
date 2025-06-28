@@ -54,14 +54,15 @@ const DishCard = ({
   const RightActions = useMemo(() => {
     if (!openMenu) return undefined;
 
-    // eslint-disable-next-line react/display-name
-    return (props: any) => (
-      <IconButton
-        {...props}
-        icon="dots-vertical"
-        onPress={(event) => openMenu(dish, event)}
-      />
-    );
+    return function ActionButton(props: any) {
+      return (
+        <IconButton
+          {...props}
+          icon="dots-vertical"
+          onPress={(event) => openMenu(dish, event)}
+        />
+      );
+    };
   }, [dish, openMenu]);
 
   useEffect(() => {

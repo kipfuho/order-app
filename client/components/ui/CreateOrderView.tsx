@@ -23,12 +23,12 @@ import { Dish, DishCategory, Shop } from "@stores/state.interface";
 import { LoaderBasic } from "./Loader";
 import { useCreateOrderMutation } from "@stores/apiSlices/orderApi.slice";
 import { convertPaymentAmount, normalizeVietnamese } from "@constants/utils";
-import { ItemTypeFlatList } from "../FlatListWithScroll";
-import FlatListWithoutScroll from "../FlatListWithoutScroll";
 import { AppBar } from "../AppBar";
 import AppBarSearchBox from "../AppBarSearchBox";
 import { goToTableCurrentOrderSessions } from "@/apis/navigate.service";
 import { useRouter } from "expo-router";
+import FlatListWithoutScroll from "./FlatList/FlatListWithoutScroll";
+import { ItemTypeFlatList } from "./FlatList/FlatListUtil";
 
 const createDismissGesture = (onDismissSearch: () => void) =>
   Gesture.Tap().onStart(() => {
