@@ -12,6 +12,8 @@ import { useTranslation } from "react-i18next";
 import { BLURHASH } from "@constants/common";
 import { removeImageRequest } from "@apis/dish.api.service";
 import Toast from "react-native-toast-message";
+import { Platform } from "react-native";
+import { base64ToBlob } from "../../constants/utils";
 
 export default function UploadImages({
   images,
@@ -29,11 +31,19 @@ export default function UploadImages({
   const uploadImageToServer = async (uri: string, index: number) => {
     try {
       const formData = new FormData();
-      formData.append("image", {
-        uri,
-        name: `image_${Date.now()}.jpg`,
-        type: "image/jpeg", // Adjust based on the image type if needed
-      } as any); // Type assertion to satisfy TypeScript
+      if (Platform.OS === "web") {
+        // Extract base64 from data URI
+        const base64 = uri.split(",")[1];
+        const blob = base64ToBlob(base64, "image/jpeg");
+        formData.append("image", blob, `image_${Date.now()}.jpg`);
+      } else {
+        // Native platforms (Android/iOS)
+        formData.append("image", {
+          uri,
+          name: `image_${Date.now()}.jpg`,
+          type: "image/jpeg",
+        } as any);
+      }
 
       // Replace with your server URL
       const imageUrl = await uploadImage(formData);
