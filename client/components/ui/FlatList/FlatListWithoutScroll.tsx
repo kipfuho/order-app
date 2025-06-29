@@ -166,12 +166,12 @@ const FlatListWithoutScroll = ({
   additionalDatas?: any;
   openMenu?: (item: any, event: GestureResponderEvent) => void;
   shouldShowGroup?: boolean;
+  children?: ReactNode;
   // New infinite scrolling props
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   fetchNextPage?: () => void;
   onEndReachedThreshold?: number;
-  children?: ReactNode;
 }) => {
   const { width } = useWindowDimensions();
   const flatListRef = useRef<FlashList<FlatListItem>>(null);
@@ -235,38 +235,13 @@ const FlatListWithoutScroll = ({
 
     return data;
   }, [
-    numColumns,
     groups,
+    itemByGroup,
+    numColumns,
+    selectedGroup,
     isFetchingNextPage,
     hasNextPage,
-    selectedGroup,
-    itemByGroup,
   ]);
-
-  // Calculate total content height to determine if we need more items
-  const totalContentHeight = useMemo(() => {
-    const HEADER_HEIGHT = ItemTypeFlatListProperties[itemType].HEADER_HEIGHT;
-    const ROW_HEIGHT = ItemTypeFlatListProperties[itemType].ROW_HEIGHT;
-    const LOADING_HEIGHT = 80;
-    const MARGIN_BOTTOM = 8;
-
-    return flatListData.reduce((total, item) => {
-      if (item.type === "header") {
-        return total + (shouldShowGroup ? HEADER_HEIGHT : 0) + MARGIN_BOTTOM;
-      } else if (item.type === "row") {
-        return total + ROW_HEIGHT + MARGIN_BOTTOM;
-      } else if (item.type === "loading") {
-        return total + LOADING_HEIGHT + MARGIN_BOTTOM;
-      }
-      return total;
-    }, 20); // Add some padding
-  }, [flatListData, itemType, shouldShowGroup]);
-
-  // Handle container layout to get actual height
-  const handleContainerLayout = useCallback((event: any) => {
-    const { height } = event.nativeEvent.layout;
-    setContainerHeight(height);
-  }, []);
 
   const renderItem = useCallback(
     ({ item }: { item: FlatListItem }) => {
@@ -296,6 +271,31 @@ const FlatListWithoutScroll = ({
     },
     [itemType, itemContainerWidth, openMenu, numColumns, shouldShowGroup],
   );
+
+  // Calculate total content height to determine if we need more items
+  const totalContentHeight = useMemo(() => {
+    const HEADER_HEIGHT = ItemTypeFlatListProperties[itemType].HEADER_HEIGHT;
+    const ROW_HEIGHT = ItemTypeFlatListProperties[itemType].ROW_HEIGHT;
+    const LOADING_HEIGHT = 80;
+    const MARGIN_BOTTOM = 8;
+
+    return flatListData.reduce((total, item) => {
+      if (item.type === "header") {
+        return total + (shouldShowGroup ? HEADER_HEIGHT : 0) + MARGIN_BOTTOM;
+      } else if (item.type === "row") {
+        return total + ROW_HEIGHT + MARGIN_BOTTOM;
+      } else if (item.type === "loading") {
+        return total + LOADING_HEIGHT + MARGIN_BOTTOM;
+      }
+      return total;
+    }, 20); // Add some padding
+  }, [flatListData, itemType, shouldShowGroup]);
+
+  // Handle container layout to get actual height
+  const handleContainerLayout = useCallback((event: any) => {
+    const { height } = event.nativeEvent.layout;
+    setContainerHeight(height);
+  }, []);
 
   const handleEndReached = useCallback(() => {
     // Prevent triggering on initial empty render

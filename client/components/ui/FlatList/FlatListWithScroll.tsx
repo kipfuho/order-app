@@ -31,36 +31,40 @@ const GroupListMemoized = memo(function GroupList({
   const theme = useTheme();
   const { width } = useWindowDimensions();
 
-  const groupListStyle = useMemo(
-    () => ({
-      backgroundColor: theme.colors.background,
-      ...(width < UNIVERSAL_WIDTH_PIVOT
-        ? { paddingHorizontal: 8 }
-        : { width: Math.min(UNIVERSAL_MAX_WIDTH_SIDEBAR, width * 0.15) }),
-    }),
-    [theme.colors.background, width],
-  );
-
-  const buttonStyle = useMemo(
-    () => ({
-      backgroundColor: theme.colors.primaryContainer,
-      paddingVertical: 12,
-      paddingHorizontal: width < UNIVERSAL_WIDTH_PIVOT ? 16 : 8,
-      borderRadius: 4,
-    }),
-    [theme.colors.primaryContainer, width],
-  );
-
   if (width < UNIVERSAL_WIDTH_PIVOT) {
     return (
-      <Surface mode="flat" style={groupListStyle}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={{ flexDirection: "row", gap: 8, paddingVertical: 8 }}>
+      <Surface
+        mode="flat"
+        style={{
+          backgroundColor: theme.colors.background,
+        }}
+      >
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            flex: 1,
+            flexDirection: "column",
+            width: "25%",
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 8,
+              paddingVertical: 8,
+            }}
+          >
             {groups.map((g) => (
               <TouchableRipple
                 key={g.id}
                 onPress={() => scrollToGroup(g.id)}
-                style={buttonStyle}
+                style={{
+                  backgroundColor: theme.colors.primaryContainer,
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  borderRadius: 4,
+                }}
               >
                 <Text
                   variant="bodyMedium"
@@ -77,14 +81,25 @@ const GroupListMemoized = memo(function GroupList({
   }
 
   return (
-    <Surface mode="flat" style={groupListStyle}>
+    <Surface
+      mode="flat"
+      style={{
+        width: Math.min(UNIVERSAL_MAX_WIDTH_SIDEBAR, width * 0.15),
+        backgroundColor: theme.colors.background,
+      }}
+    >
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{ gap: 1 }}>
           {groups.map((g) => (
             <TouchableRipple
               key={g.id}
               onPress={() => scrollToGroup(g.id)}
-              style={buttonStyle}
+              style={{
+                backgroundColor: theme.colors.primaryContainer,
+                paddingVertical: 12,
+                paddingHorizontal: 8,
+                borderRadius: 4,
+              }}
             >
               <Text variant="bodyMedium" style={{ flexWrap: "wrap" }}>
                 {g.name}
@@ -108,9 +123,9 @@ const FlatListWithScroll = ({
 }: {
   groups: any[];
   itemByGroup: Record<string, any[]>;
-  openMenu?: (item: any, event: GestureResponderEvent) => void;
-  additionalDatas?: any;
   itemType: ItemTypeFlatList;
+  additionalDatas?: any;
+  openMenu?: (item: any, event: GestureResponderEvent) => void;
   shouldShowGroup?: boolean;
   children?: ReactNode;
 }) => {
@@ -144,19 +159,13 @@ const FlatListWithScroll = ({
       return { flatListData: [], indexMap: {} };
     }
 
-    const flatListData: FlatListItem[] = [];
     const indexMap: Record<string, number> = {};
-
-    groups.forEach((g) => {
+    let currentIndex = 0;
+    const data = groups.flatMap((g) => {
       const items = itemByGroup[g.id] || [];
-
-      // Add header
-      indexMap[g.id] = flatListData.length;
-      flatListData.push({ type: "header", id: `header-${g.id}`, group: g });
-
-      // Add item rows
+      const itemRows: FlatListItem[] = [];
       for (let i = 0; i < items.length; i += numColumns) {
-        flatListData.push({
+        itemRows.push({
           type: "row",
           id: `row-${g.id}-${i}`,
           items: items.slice(i, i + numColumns),
@@ -164,10 +173,15 @@ const FlatListWithScroll = ({
           group: g,
         });
       }
+
+      // set index for group
+      indexMap[g.id] = currentIndex;
+      currentIndex += itemRows.length + 1; // items + header
+      return [{ type: "header", id: `header-${g.id}`, group: g }, ...itemRows];
     });
 
     return {
-      flatListData,
+      flatListData: data,
       indexMap,
     };
   }, [groups, itemByGroup, numColumns]);
@@ -194,14 +208,14 @@ const FlatListWithScroll = ({
 
       return null;
     },
-    [shouldShowGroup, numColumns, itemType, openMenu, itemContainerWidth],
+    [itemType, itemContainerWidth, openMenu, numColumns, shouldShowGroup],
   );
 
   const scrollToCategory = useCallback(
     (categoryId: string) => {
       const index = indexMap[categoryId];
       if (index !== undefined && flatListRef.current) {
-        flatListRef.current.scrollToIndex({ index });
+        flatListRef.current.scrollToIndex({ index, animated: true });
       }
     },
     [indexMap],
@@ -218,29 +232,31 @@ const FlatListWithScroll = ({
       {shouldShowGroup && (
         <GroupListMemoized groups={groups} scrollToGroup={scrollToCategory} />
       )}
-      <FlashList
-        ref={flatListRef}
-        data={flatListData}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        estimatedItemSize={
-          ItemTypeFlatListProperties[itemType].ROW_HEIGHT +
-          ItemTypeFlatListMarginBottom
-        }
-        overrideItemLayout={(layout, item) => {
-          layout.size =
-            (item.type === "header"
-              ? ItemTypeFlatListProperties[itemType].HEADER_HEIGHT
-              : ItemTypeFlatListProperties[itemType].ROW_HEIGHT) +
-            ItemTypeFlatListMarginBottom;
-        }}
-        getItemType={(item) => item.type}
-        contentContainerStyle={{ padding: 10 }}
-        ListFooterComponent={() => children}
-        showsHorizontalScrollIndicator={false}
-        removeClippedSubviews
-        disableAutoLayout
-      />
+      <View style={{ flex: 1 }}>
+        <FlashList
+          ref={flatListRef}
+          data={flatListData}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          estimatedItemSize={
+            ItemTypeFlatListProperties[itemType].ROW_HEIGHT +
+            ItemTypeFlatListMarginBottom
+          }
+          overrideItemLayout={(layout, item) => {
+            layout.size =
+              (item.type === "header"
+                ? ItemTypeFlatListProperties[itemType].HEADER_HEIGHT
+                : ItemTypeFlatListProperties[itemType].ROW_HEIGHT) +
+              ItemTypeFlatListMarginBottom;
+          }}
+          getItemType={(item) => item.type}
+          contentContainerStyle={{ padding: 10 }}
+          ListFooterComponent={() => children}
+          showsHorizontalScrollIndicator={false}
+          removeClippedSubviews
+          disableAutoLayout
+        />
+      </View>
     </Surface>
   );
 };
