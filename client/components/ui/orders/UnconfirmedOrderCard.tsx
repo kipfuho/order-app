@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -15,7 +15,6 @@ import {
 } from "react-native-paper";
 import Animated, {
   interpolate,
-  runOnUI,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -52,12 +51,16 @@ const UnconfirmedOrderCard = ({
 
   const isOpen = useSharedValue(1); // 1 = open, 0 = closed
   const contentHeight = useSharedValue(0);
-  const contentRef = useRef<View>(null);
   const [selectedDishOrder, setSelectedDishOrder] = useState<DishOrder>();
   const [selectedDishOrderQuantity, setSelectedDishOrderQuantity] =
     useState("");
   const [selectedDishOrderNote, setSelectedDishOrderNote] = useState("");
   const [dialogVisible, setDialogVisble] = useState(false);
+
+  const flashListHeight = useMemo(() => {
+    const trueHeight = 42 + unconfirmedOrder.dishOrders.length * 72;
+    return Math.min(trueHeight, 500); // padding + items
+  }, [unconfirmedOrder]);
 
   const animatedContainerStyle = useAnimatedStyle(() => ({
     height: interpolate(isOpen.value, [0, 1], [0, contentHeight.value]),
@@ -69,20 +72,20 @@ const UnconfirmedOrderCard = ({
     transform: [{ rotate: `${interpolate(isOpen.value, [0, 1], [0, 90])}deg` }],
   }));
 
-  const measureContentHeight = () => {
-    const node = contentRef.current;
-    if (node) {
-      node.measure((_x, _y, _width, height) => {
-        runOnUI(() => {
-          contentHeight.value = height;
-        })();
-      });
+  const measureContentHeight = (event: any) => {
+    const { height } = event.nativeEvent.layout;
+    if (height > 0) {
+      contentHeight.value = height;
+      if (isOpen.value === 0) {
+        isOpen.value = withTiming(1, { duration: 300 });
+      }
     }
   };
 
   const handleToggle = () => {
-    measureContentHeight(); // recalculate before animation
-    isOpen.value = withTiming(isOpen.value === 1 ? 0 : 1, { duration: 300 });
+    if (contentHeight.value > 0) {
+      isOpen.value = withTiming(isOpen.value === 1 ? 0 : 1, { duration: 300 });
+    }
   };
 
   const isLoading = () =>
@@ -140,6 +143,7 @@ const UnconfirmedOrderCard = ({
     setSelectedDishOrderQuantity(selectedDishOrder.quantity.toString());
     setSelectedDishOrderNote(selectedDishOrder.note || "");
   }, [selectedDishOrder]);
+
   return (
     <>
       <Portal>
@@ -279,17 +283,18 @@ const UnconfirmedOrderCard = ({
 
         <Animated.View style={animatedContainerStyle}>
           <View
-            ref={contentRef}
             style={{
-              paddingTop: 12,
-              gap: 12,
+              position: "absolute",
+              width: "100%",
+              paddingTop: 10,
+              height: flashListHeight,
             }}
             onLayout={measureContentHeight}
           >
             <FlashList
               data={unconfirmedOrder.dishOrders || []}
               keyExtractor={(item) => item.id}
-              estimatedItemSize={82}
+              estimatedItemSize={72}
               renderItem={({ item }) => (
                 <View style={{ gap: 4, marginBottom: 12 }}>
                   <Text style={{ flex: 1, marginRight: 8 }}>
@@ -322,10 +327,10 @@ const UnconfirmedOrderCard = ({
               )}
               contentContainerStyle={{ padding: 16 }}
               showsVerticalScrollIndicator={false}
+              nestedScrollEnabled={true}
             />
           </View>
         </Animated.View>
-        {/* Dish section */}
       </Surface>
     </>
   );

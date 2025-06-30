@@ -15,6 +15,16 @@ export function Collapsible({
   const isOpen = useSharedValue(0); // 1 = open, 0 = closed
   const contentHeight = useSharedValue(0);
 
+  const animatedContainerStyle = useAnimatedStyle(() => ({
+    height: interpolate(isOpen.value, [0, 1], [0, contentHeight.value]),
+    opacity: isOpen.value,
+    overflow: "hidden",
+  }));
+
+  const animatedIconStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${interpolate(isOpen.value, [0, 1], [0, 90])}deg` }],
+  }));
+
   const measureContentHeight = (event: any) => {
     const { height } = event.nativeEvent.layout;
     if (height > 0) {
@@ -30,16 +40,6 @@ export function Collapsible({
       isOpen.value = withTiming(isOpen.value === 1 ? 0 : 1, { duration: 300 });
     }
   };
-
-  const animatedContainerStyle = useAnimatedStyle(() => ({
-    height: interpolate(isOpen.value, [0, 1], [0, contentHeight.value]),
-    opacity: isOpen.value,
-    overflow: "hidden",
-  }));
-
-  const animatedIconStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${interpolate(isOpen.value, [0, 1], [0, 90])}deg` }],
-  }));
 
   return (
     <Surface style={styles.container}>

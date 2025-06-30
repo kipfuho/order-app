@@ -33,6 +33,18 @@ const getCountryCurrency = () => {
   }
 };
 
+const getShopUtcOffset = () => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const store = require("../stores/store").default;
+    const state = store.getState();
+    const utcOffset: number = state.shop.currentShop?.utcOffset || 7;
+    return utcOffset;
+  } catch {
+    return 7;
+  }
+};
+
 const convertPaymentAmount = (paymentAmount: number = 0) => {
   const amount = paymentAmount ?? 0;
   return `${amount.toLocaleString()} ${getCountryCurrency()}`;
@@ -136,7 +148,7 @@ const convertHourForDisplay = (hour?: number) => {
 const oneSecondBeforeTodayUTC = () => {
   const now = new Date();
   const startOfTodayUTC = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
   );
 
   return new Date(startOfTodayUTC.getTime() - 1000);
@@ -175,6 +187,7 @@ const base64ToBlob = (
 export {
   logger,
   getCountryCurrency,
+  getShopUtcOffset,
   convertPaymentAmount,
   mergeCartItems,
   getMinuteForDisplay,

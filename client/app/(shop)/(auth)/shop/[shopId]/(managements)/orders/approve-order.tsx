@@ -117,19 +117,17 @@ export default function OrderManagementApprovePage() {
               goBack={() => setModalVisible(false)}
             />
             <Surface mode="flat" style={styles.flex}>
-              <ScrollView>
-                <FlashList
-                  data={unconfirmedOrderByTable[selectedTable?.id || ""] || []}
-                  keyExtractor={(item) => item.id}
-                  renderItem={({ item }) => (
-                    <View style={{ marginBottom: 12 }}>
-                      <UnconfirmedOrderCard unconfirmedOrder={item} />
-                    </View>
-                  )}
-                  contentContainerStyle={{ padding: 16 }}
-                  showsVerticalScrollIndicator={false}
-                />
-              </ScrollView>
+              <FlashList
+                data={unconfirmedOrderByTable[selectedTable?.id || ""] || []}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <View style={{ marginBottom: 12 }}>
+                    <UnconfirmedOrderCard unconfirmedOrder={item} />
+                  </View>
+                )}
+                contentContainerStyle={{ padding: 16 }}
+                showsVerticalScrollIndicator={false}
+              />
             </Surface>
           </>
         </Modal>
