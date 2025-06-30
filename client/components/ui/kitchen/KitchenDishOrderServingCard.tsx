@@ -191,6 +191,7 @@ const KitchenDishOrderServingCard: React.FC<KitchenDishOrderProps> = ({
               fontSize: 14,
               alignSelf: "flex-end",
               color: theme.colors.outline,
+              paddingHorizontal: 4,
             }}
           >
             {dishOrder.createdAt}

@@ -68,7 +68,7 @@ const TimeDifferentAndDishQuantity = ({
         }}
         numberOfLines={1}
       >
-        x {dishOrder.quantity}
+        {`x ${dishOrder.quantity}`}
       </Text>
     </View>
   );
@@ -205,6 +205,7 @@ const KitchenDishOrderByOrderCard: React.FC<KitchenDishOrderProps> = ({
               fontSize: 14,
               alignSelf: "flex-end",
               color: theme.colors.outline,
+              paddingHorizontal: 4,
             }}
           >
             {dishOrder.createdAt}
