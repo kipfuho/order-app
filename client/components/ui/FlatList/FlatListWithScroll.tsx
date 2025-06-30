@@ -166,7 +166,7 @@ const FlatListWithScroll = ({
       const itemRows: FlatListItem[] = [];
       for (let i = 0; i < items.length; i += numColumns) {
         itemRows.push({
-          type: "row",
+          type: "row" as const,
           id: `row-${g.id}-${i}`,
           items: items.slice(i, i + numColumns),
           startIdx: i,
@@ -177,7 +177,10 @@ const FlatListWithScroll = ({
       // set index for group
       indexMap[g.id] = currentIndex;
       currentIndex += itemRows.length + 1; // items + header
-      return [{ type: "header", id: `header-${g.id}`, group: g }, ...itemRows];
+      return [
+        { type: "header" as const, id: `header-${g.id}`, group: g },
+        ...itemRows,
+      ];
     });
 
     return {

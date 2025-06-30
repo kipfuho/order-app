@@ -202,7 +202,7 @@ export const ItemTypeMap = {
 
 export interface FlatListItem {
   id: string;
-  type: string;
+  type: "header" | "row" | "loading";
   group: any;
   startIdx?: number;
   items?: any[];
