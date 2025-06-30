@@ -70,7 +70,8 @@
     "redux": "^5.0.1",
     "redux-persist": "^6.0.0",
     "uuid": "^11.1.0",
-    "victory-native": "^37.3.6"
+    "victory-native": "^37.3.6",
+    "expo-dev-client": "~5.0.20"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
