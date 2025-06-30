@@ -31,6 +31,12 @@ module.exports = {
     "security/detect-object-injection": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": "warn",
+    "prettier/prettier": [
+      "error",
+      {
+        endOfLine: "auto",
+      },
+    ],
   },
   ignorePatterns: [
     "/dist/*",
@@ -43,11 +49,5 @@ module.exports = {
     "metro.config.js",
     "babel.config.js",
     "app.config.js",
-  ],
-  "prettier/prettier": [
-    "error",
-    {
-      endOfLine: "auto",
-    },
   ],
 };
