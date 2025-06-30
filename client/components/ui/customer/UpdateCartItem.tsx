@@ -128,6 +128,11 @@ export default function UpdateCartItem({
               style={{ width: "100%", height: Math.min(500, height * 0.5) }}
               placeholder={{ blurhash: BLURHASH }}
               contentFit="fill"
+              recyclingKey={`dish-${dish.id}`} // Helps recycle image components
+              cachePolicy="memory-disk" // Aggressive caching
+              priority="normal" // Don't compete with high-priority images
+              transition={null} // Disable transitions during scrolling
+              allowDownscaling // Allow image downscaling
             />
             <IconButton
               icon="close"

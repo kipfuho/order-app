@@ -65,6 +65,12 @@ const CartHistoryOrderCard = ({
                       borderTopLeftRadius: 12,
                       borderTopRightRadius: 12,
                     }}
+                    recyclingKey={`dish-${dish.id}`} // Helps recycle image components
+                    cachePolicy="memory-disk" // Aggressive caching
+                    priority="normal" // Don't compete with high-priority images
+                    transition={null} // Disable transitions during scrolling
+                    allowDownscaling // Allow image downscaling
+                    contentFit="cover" // Efficient fit mode
                   />
                 )}
                 <Text

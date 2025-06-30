@@ -62,6 +62,12 @@ export default function RecommendDishImageSlider({
                   source={{ uri: dish.imageUrls[0] }}
                   style={styles.image}
                   placeholder={{ blurhash: BLURHASH }}
+                  recyclingKey={`dish-${dish.id}`} // Helps recycle image components
+                  cachePolicy="memory-disk" // Aggressive caching
+                  priority="normal" // Don't compete with high-priority images
+                  transition={null} // Disable transitions during scrolling
+                  allowDownscaling // Allow image downscaling
+                  contentFit="cover" // Efficient fit mode
                 />
                 <View style={styles.nameOverlay}>
                   <Text style={styles.nameOverlayText}>{dish.name}</Text>

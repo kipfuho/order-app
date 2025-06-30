@@ -154,6 +154,12 @@ export default function ShopPage() {
                     height: 100,
                     borderRadius: 100,
                   }}
+                  recyclingKey={`shop-${shop.id}`} // Helps recycle image components
+                  cachePolicy="memory-disk" // Aggressive caching
+                  priority="normal" // Don't compete with high-priority images
+                  transition={null} // Disable transitions during scrolling
+                  allowDownscaling // Allow image downscaling
+                  contentFit="cover" // Efficient fit mode
                 />
               </Card>
 

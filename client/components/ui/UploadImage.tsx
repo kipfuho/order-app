@@ -77,17 +77,20 @@ export default function UploadImages({
     if (!result.canceled) {
       // nếu chỉ chọn 1 ảnh thì remove ảnh cũ đi
       if (!allowsMultipleSelection && images[0]) {
-        removeImageRequest({ url: images[0].uri });
-        setImages([]);
+        await removeImageRequest({ url: images[0].uri });
       }
       const newImages = result.assets.map((asset) => ({
         uri: asset.uri,
         loading: true, // Mark as loading initially
       }));
-      const currentImagesLength = images.length;
-      setImages((prev) => {
-        return [...prev, ...newImages];
-      });
+      const currentImagesLength = allowsMultipleSelection ? images.length : 0;
+      if (!allowsMultipleSelection && images[0]) {
+        setImages(newImages);
+      } else {
+        setImages((prev) => {
+          return [...prev, ...newImages];
+        });
+      }
 
       // Start uploading each image
       newImages.forEach((image, index) =>
@@ -149,6 +152,7 @@ export default function UploadImages({
                 placeholder={{ blurhash: BLURHASH }}
                 contentFit="cover"
                 transition={1000}
+                allowDownscaling // Allow image downscaling
               />
               <IconButton
                 mode="contained"

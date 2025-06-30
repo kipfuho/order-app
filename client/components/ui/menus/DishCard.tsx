@@ -97,6 +97,12 @@ const DishCard = ({
         source={dish.imageUrls[0] || require("@assets/images/savora.png")}
         placeholder={{ blurhash: BLURHASH }}
         style={styles.image}
+        recyclingKey={`dish-${dish.id}`} // Helps recycle image components
+        cachePolicy="memory-disk" // Aggressive caching
+        priority="normal" // Don't compete with high-priority images
+        transition={null} // Disable transitions during scrolling
+        allowDownscaling // Allow image downscaling
+        contentFit="cover" // Efficient fit mode
       />
       <Card.Title
         title={

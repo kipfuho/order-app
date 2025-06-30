@@ -1,11 +1,4 @@
-import {
-  ReactNode,
-  useCallback,
-  useMemo,
-  useRef,
-  memo,
-  useEffect,
-} from "react";
+import { ReactNode, useCallback, useMemo, useRef, memo } from "react";
 import {
   GestureResponderEvent,
   useWindowDimensions,
@@ -230,12 +223,6 @@ const FlatListWithScroll = ({
     },
     [indexMap],
   );
-
-  useEffect(() => {
-    flatListRef.current?.scrollToOffset({
-      offset: 0,
-    });
-  }, [numColumns]);
 
   return (
     <Surface

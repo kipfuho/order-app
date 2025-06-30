@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import {
   ActivityIndicator,
@@ -42,32 +42,22 @@ const TimeDifferentAndDishQuantity = ({
 
   return (
     <View
-      style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        backgroundColor: color.view,
-        padding: 4,
-        paddingHorizontal: 8,
-        borderBottomStartRadius: 4,
-        borderBottomEndRadius: 4,
-      }}
+      style={[
+        styles.footerContainer,
+        {
+          backgroundColor: color.view,
+        },
+      ]}
     >
-      <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-        <Text style={{ fontSize: 16, color: color.onView }}>
+      <View style={styles.timeTextContainer}>
+        <Text style={[styles.timeText, { color: color.onView }]}>
           {minutesSinceOrderCreated}
         </Text>
-        <Text style={{ fontSize: 12, marginLeft: 2, color: color.onView }}>
+        <Text style={[styles.minuteShortText, { color: color.onView }]}>
           {t("minute_short")}
         </Text>
       </View>
-      <Text
-        style={{
-          color: color.onView,
-          fontSize: 20,
-        }}
-        numberOfLines={1}
-      >
+      <Text style={[styles.quantityText, { color: color.onView }]}>
         {`x ${dishOrder.quantity}`}
       </Text>
     </View>
@@ -126,34 +116,27 @@ const KitchenDishOrderByOrderCard: React.FC<KitchenDishOrderProps> = ({
     );
   };
 
-  if (cardWidth < 1) {
-    return;
-  }
+  if (cardWidth < 1) return null;
 
   return (
     <TouchableRipple onPress={handleOnPress} onLongPress={handleOnLongPress}>
       <Surface
-        style={{
-          borderRadius: 4,
-          width: cardWidth,
-          height: cardWidth,
-          elevation: 3,
-          backgroundColor: kitchenDishOrder[dishOrder.id]?.confirmed
-            ? theme.colors.primaryContainer
-            : theme.colors.background,
-          justifyContent: "space-between",
-        }}
+        style={[
+          styles.card,
+          {
+            width: cardWidth,
+            height: cardWidth,
+            backgroundColor: kitchenDishOrder[dishOrder.id]?.confirmed
+              ? theme.colors.primaryContainer
+              : theme.colors.background,
+          },
+        ]}
       >
-        <View style={{ flex: 1, padding: 8 }}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 6,
-            }}
-          >
-            <Text style={{ fontSize: 24, color: theme.colors.onBackground }}>
+        <View style={styles.cardContent}>
+          <View style={styles.header}>
+            <Text
+              style={[styles.orderNoText, { color: theme.colors.onBackground }]}
+            >
               {dishOrder.orderNo}-{dishOrder.dishOrderNo}
             </Text>
             <Badge
@@ -169,28 +152,21 @@ const KitchenDishOrderByOrderCard: React.FC<KitchenDishOrderProps> = ({
             </Badge>
           </View>
 
-          <View
-            style={{
-              flex: 1,
-            }}
-          >
+          <View style={styles.dishContainer}>
             {updateUncookedDishOrderLoading ? (
               <ActivityIndicator />
             ) : (
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
-                style={{ flex: 1 }}
-                contentContainerStyle={{
-                  flexGrow: 1,
-                  justifyContent: "center",
-                }}
+                style={styles.scroll}
+                contentContainerStyle={styles.scrollContent}
               >
                 <Text
-                  style={{
-                    fontSize: 18,
-                    color: theme.colors.onBackground,
-                  }}
+                  style={[
+                    styles.dishName,
+                    { color: theme.colors.onBackground },
+                  ]}
                 >
                   {dishOrder.name}
                 </Text>
@@ -200,14 +176,7 @@ const KitchenDishOrderByOrderCard: React.FC<KitchenDishOrderProps> = ({
         </View>
 
         <View>
-          <Text
-            style={{
-              fontSize: 14,
-              alignSelf: "flex-end",
-              color: theme.colors.outline,
-              paddingHorizontal: 4,
-            }}
-          >
+          <Text style={[styles.createdAtText, { color: theme.colors.outline }]}>
             {dishOrder.createdAt}
           </Text>
           <MemoizedTimeDifferentAndDishQuantity
@@ -221,3 +190,65 @@ const KitchenDishOrderByOrderCard: React.FC<KitchenDishOrderProps> = ({
 };
 
 export default memo(KitchenDishOrderByOrderCard);
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 4,
+    elevation: 3,
+    justifyContent: "space-between",
+  },
+  cardContent: {
+    flex: 1,
+    padding: 8,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  orderNoText: {
+    fontSize: 24,
+  },
+  dishContainer: {
+    flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+  dishName: {
+    fontSize: 18,
+  },
+  createdAtText: {
+    fontSize: 14,
+    alignSelf: "flex-end",
+    paddingHorizontal: 4,
+  },
+  footerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 4,
+    paddingHorizontal: 8,
+    borderBottomStartRadius: 4,
+    borderBottomEndRadius: 4,
+  },
+  timeTextContainer: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+  },
+  timeText: {
+    fontSize: 16,
+  },
+  minuteShortText: {
+    fontSize: 12,
+    marginLeft: 2,
+  },
+  quantityText: {
+    fontSize: 20,
+  },
+});
