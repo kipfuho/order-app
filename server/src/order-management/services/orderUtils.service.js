@@ -405,8 +405,26 @@ const _getOrderSessionDetail = async ({ orderSessionId, shopId }) => {
       taxDetails: true,
       orders: {
         include: {
-          dishOrders: true,
-          returnedDishOrders: true,
+          dishOrders: {
+            orderBy: [
+              {
+                dishOrderNo: 'asc',
+              },
+              {
+                id: 'asc',
+              },
+            ],
+          },
+          returnedDishOrders: {
+            orderBy: [
+              {
+                dishOrderNo: 'asc',
+              },
+              {
+                id: 'asc',
+              },
+            ],
+          },
         },
       },
     },

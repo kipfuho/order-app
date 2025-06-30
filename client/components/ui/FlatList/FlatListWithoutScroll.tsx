@@ -110,7 +110,7 @@ const GroupListMemoized = memo(function GroupList({
       }}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={{ gap: 1 }}>
+        <View style={{ gap: 4 }}>
           {groups.map((g) => {
             return (
               <TouchableRipple

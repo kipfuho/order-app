@@ -783,8 +783,26 @@ const getTableActiveOrderSessions = async ({ shopId, tableId }) => {
       status: Status.enabled,
     },
     include: {
-      dishOrders: true,
-      returnedDishOrders: true,
+      dishOrders: {
+        orderBy: [
+          {
+            dishOrderNo: 'asc',
+          },
+          {
+            id: 'asc',
+          },
+        ],
+      },
+      returnedDishOrders: {
+        orderBy: [
+          {
+            dishOrderNo: 'asc',
+          },
+          {
+            id: 'asc',
+          },
+        ],
+      },
     },
   });
   const shop = await getShopFromCache({ shopId });
