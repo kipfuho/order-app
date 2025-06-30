@@ -99,7 +99,7 @@ const getMinuteForDisplay = ({
     ms = now - epochTime;
   }
 
-  return Math.floor((ms || 0) / 60000);
+  return Math.max(0, Math.floor((ms || 0) / 60000));
 };
 
 // universal status color
