@@ -1,9 +1,10 @@
-import { Redirect, Stack } from "expo-router";
+import { Stack } from "expo-router";
 import { persistor } from "@stores/store";
 import { useEffect } from "react";
 import { loginForAnonymousCustomerRequest } from "@apis/auth.api.service";
 import { Platform } from "react-native";
 import { useCustomerSession } from "@/hooks/useCustomerSession";
+import { LoaderBasic } from "../../components/ui/Loader";
 
 export default function CustomerAppLayout() {
   const { session, clientId } = useCustomerSession();
@@ -25,7 +26,7 @@ export default function CustomerAppLayout() {
 
   if (!session) {
     loginForAnonymousCustomerRequest({ clientId });
-    return <Redirect href="/order/home" />;
+    return <LoaderBasic />;
   }
 
   // This layout can be deferred because it's not the root layout.
