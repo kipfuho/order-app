@@ -67,18 +67,52 @@ export default function ActiveOrderSessionPage({
   const [newQuantity, setNewQuantity] = useState("");
   const [reason, setReason] = useState("");
 
-  const flashListEstimatedItemSize = useMemo(() => {
-    if (!activeOrderSession?.orders) return 0;
+  const { flatListHeight, flatListData } = useMemo(() => {
+    if (!activeOrderSession?.orders) {
+      return {
+        flatListHeight: 0,
+        flatListData: [],
+      };
+    }
 
+    const orders = activeOrderSession.orders || [];
     let cumulativeSize = 0;
-    _.forEach(activeOrderSession.orders, (order) => {
+    const flatListData = orders.flatMap((order, index) => {
       cumulativeSize += 20 + 160 * order.dishOrders.length; // 20 for header + 160 for each dish order
+
+      const dishOrderItems = order.dishOrders.map((dishOrder) => ({
+        id: dishOrder.id,
+        type: "dishOrder" as const,
+        order,
+        dishOrder,
+      }));
+      const returnedDishOrderItems = order.returnedDishOrders.map(
+        (returnedDishOrder) => ({
+          id: returnedDishOrder.id,
+          type: "returnedDishOrder" as const,
+          order,
+          returnedDishOrder,
+        }),
+      );
+      return _.compact([
+        { id: `header-${index}`, type: "header" as const, index },
+        ...dishOrderItems,
+        returnedDishOrderItems.length > 0
+          ? { id: `divider-s`, type: "divider" as const }
+          : null,
+        ...returnedDishOrderItems,
+        returnedDishOrderItems.length > 0
+          ? { id: `divider-e`, type: "divider" as const }
+          : null,
+        { id: `footer-${index}`, type: "footer" as const, index },
+      ]);
     });
 
-    return activeOrderSession?.orders.length > 0
-      ? cumulativeSize / activeOrderSession?.orders.length
-      : 0;
-  }, [activeOrderSession?.orders]);
+    return {
+      flatListHeight: Math.min(cumulativeSize, height * 0.6),
+      flatListData,
+    };
+  }, [activeOrderSession?.orders, height]);
 
   const onDishQuantityClick = ({
     dishOrder,
@@ -341,61 +375,61 @@ export default function ActiveOrderSessionPage({
           </View>
         </Surface>
 
-        <View style={{ maxHeight: height * 0.6 }}>
+        <View style={{ height: flatListHeight }}>
           <FlashList
-            data={activeOrderSession.orders || []}
+            data={flatListData}
             keyExtractor={(item) => item.id}
             contentContainerStyle={{ padding: 12, paddingBottom: 24 }}
-            estimatedItemSize={flashListEstimatedItemSize}
-            overrideItemLayout={(data, index) => ({})}
-            renderItem={({ item: order, index }) => (
-              <Surface mode="flat" style={{ marginBottom: 12 }}>
-                <Text
-                  style={{
-                    alignSelf: "flex-end",
-                    fontSize: 16,
-                    fontWeight: "bold",
-                  }}
-                >
-                  {t("times")}: {index + 1}
-                </Text>
-                <View style={{ gap: 8 }}>
-                  {order.dishOrders.map((dishOrder) => (
-                    <DishOrderCard
-                      key={dishOrder.id}
-                      order={order}
-                      dishOrder={dishOrder}
-                      onQuantityClick={onDishQuantityClick}
-                      onDiscountClick={onDishOrderDiscountClick}
-                    />
-                  ))}
-                </View>
-                {!_.isEmpty(order.returnedDishOrders) && (
-                  <View style={{ gap: 8 }}>
-                    <Divider />
-                    <Text style={{ fontSize: 18, color: theme.colors.error }}>
-                      {t("returned_dish")}
+            estimatedItemSize={160}
+            getItemType={(item) => item.type}
+            renderItem={({ item }) => {
+              switch (item.type) {
+                case "header":
+                  return (
+                    <Text
+                      style={{
+                        alignSelf: "flex-end",
+                        fontSize: 16,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {t("times")}: {item.index + 1}
                     </Text>
-                    {order.returnedDishOrders.map((returnedDishOrder) => (
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <Text
-                          style={{ fontWeight: "bold" }}
-                        >{`${returnedDishOrder.name}: x${returnedDishOrder.quantity}`}</Text>
-                        <Text>{returnedDishOrder.createdAt}</Text>
-                      </View>
-                    ))}
-                    <Divider />
-                  </View>
-                )}
-              </Surface>
-            )}
-            nestedScrollEnabled={true}
+                  );
+                case "dishOrder":
+                  return (
+                    <View style={{ marginBottom: 8 }}>
+                      <DishOrderCard
+                        order={item.order}
+                        dishOrder={item.dishOrder}
+                        onQuantityClick={onDishQuantityClick}
+                        onDiscountClick={onDishOrderDiscountClick}
+                      />
+                    </View>
+                  );
+                case "returnedDishOrder":
+                  return (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <Text
+                        style={{ fontWeight: "bold" }}
+                      >{`${item.returnedDishOrder.name}: x${item.returnedDishOrder.quantity}`}</Text>
+                      <Text>{item.returnedDishOrder.createdAt}</Text>
+                    </View>
+                  );
+                case "divider":
+                  return <Divider />;
+                case "footer":
+                  return <View style={{ marginBottom: 12 }} />;
+              }
+            }}
             showsHorizontalScrollIndicator={false}
+            nestedScrollEnabled={true}
           />
         </View>
       </Surface>

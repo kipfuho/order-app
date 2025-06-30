@@ -9,7 +9,7 @@ import {
   TextInput,
   useTheme,
 } from "react-native-paper";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { useSelector } from "react-redux";
 import Toast from "react-native-toast-message";
@@ -47,6 +47,15 @@ export default function OrderSessionDetailPage({
   const [discountModalVisible, setDiscountModalVisible] = useState(false);
   const [taxChangeVisible, setTaxChangeVisible] = useState(false);
   const [taxRate, setTaxRate] = useState("");
+
+  const { dishOrders, flashListHeight } = useMemo(() => {
+    const dishOrders = _.get(orderSessionDetail, "orders.0.dishOrders", []);
+
+    return {
+      dishOrders,
+      flashListHeight: Math.min(height * 0.6, 40 * dishOrders.length),
+    };
+  }, [orderSessionDetail, height]);
 
   const applyDiscount = async ({
     discountAfterTax,
@@ -126,8 +135,6 @@ export default function OrderSessionDetailPage({
     return;
   }
 
-  const dishOrders = _.get(orderSessionDetail, "orders.0.dishOrders", []);
-
   return (
     <>
       <Portal>
@@ -180,7 +187,7 @@ export default function OrderSessionDetailPage({
 
         <Divider style={{ marginVertical: 8 }} />
 
-        <View style={{ maxHeight: height * 0.6 }}>
+        <View style={{ height: flashListHeight }}>
           <FlashList
             data={dishOrders}
             contentContainerStyle={{ padding: 8 }}
@@ -194,12 +201,8 @@ export default function OrderSessionDetailPage({
                   padding: 4,
                 }}
               >
-                <Text style={{ flex: 1, marginRight: 8 }}>
-                  <Text style={{ fontSize: 16 }}>{item.quantity}</Text>
-                  <Text style={{ marginLeft: 4, fontSize: 16 }}>x</Text>
-                  <Text style={{ marginLeft: 8, fontSize: 16 }}>
-                    {item.name}
-                  </Text>
+                <Text style={{ flex: 1, marginRight: 8, fontSize: 16 }}>
+                  {`${item.quantity}x ${item.name}`}
                 </Text>
                 <Text style={{ fontSize: 16 }}>
                   {convertPaymentAmount(item.price)}
@@ -207,6 +210,7 @@ export default function OrderSessionDetailPage({
               </View>
             )}
             showsHorizontalScrollIndicator={false}
+            nestedScrollEnabled={true}
           />
         </View>
 
