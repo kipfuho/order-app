@@ -348,6 +348,12 @@ const FlatListWithoutScroll = ({
     flatListData.length,
   ]);
 
+  useEffect(() => {
+    flatListRef.current?.scrollToOffset({
+      offset: 0,
+    });
+  }, [numColumns]);
+
   return (
     <Surface
       mode="flat"
