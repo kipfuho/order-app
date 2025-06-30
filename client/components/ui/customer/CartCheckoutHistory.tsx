@@ -109,7 +109,7 @@ export default function CartCheckoutHistory({
 
   return (
     <>
-      <Surface style={{ flex: 1 }}>
+      <Surface style={styles.flex}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <IconButton icon="arrow-left" onPress={() => setVisible(false)} />
           <Text

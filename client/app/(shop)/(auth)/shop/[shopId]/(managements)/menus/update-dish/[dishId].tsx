@@ -184,7 +184,7 @@ export default function UpdateDishPage() {
       />
       <Surface style={{ flex: 1 }}>
         <ScrollView>
-          <Surface mode="flat" style={{ flex: 1, gap: 16 }}>
+          <View style={{ flex: 1, gap: 16 }}>
             <UploadImages
               images={images}
               setImages={setImages}
@@ -325,7 +325,7 @@ export default function UpdateDishPage() {
                 } // Restrict input to numbers & decimal
               />
             </Collapsible>
-          </Surface>
+          </View>
         </ScrollView>
         <View style={{ marginVertical: 20 }}>
           {updateDishLoading ? (

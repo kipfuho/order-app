@@ -96,7 +96,7 @@ export default function CreateShopPage() {
         title={t("create_shop")}
         goBack={() => goToShopList({ router })}
       />
-      <Surface style={{ flex: 1 }}>
+      <Surface style={styles.flex}>
         <Surface mode="flat" style={styles.baseContainer}>
           <ScrollView>
             <UploadImages

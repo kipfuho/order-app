@@ -45,8 +45,7 @@ const ShopDashboard = () => {
 
   return (
     <Surface style={{ flex: 1, gap: 8 }}>
-      <Surface
-        mode="flat"
+      <View
         style={{
           flexDirection: "row",
           borderBottomWidth: 1,
@@ -223,7 +222,7 @@ const ShopDashboard = () => {
             </Text>
           </View>
         </TouchableRipple>
-      </Surface>
+      </View>
       <ScrollView
         style={{
           flex: 1,

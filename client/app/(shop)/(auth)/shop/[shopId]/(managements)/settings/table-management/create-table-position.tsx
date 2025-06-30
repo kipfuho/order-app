@@ -101,7 +101,7 @@ export default function CreateTablePositionPage() {
           flex: 1,
         }}
       >
-        <Surface mode="flat" style={styles.baseContainer}>
+        <View style={styles.baseContainer}>
           <ScrollView>
             <TextInput
               label={t("table_position_name")}
@@ -140,7 +140,7 @@ export default function CreateTablePositionPage() {
               })}
             </View>
           </ScrollView>
-        </Surface>
+        </View>
 
         {/* Loading or Action Buttons */}
         <View style={{ marginVertical: 20 }}>

@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { View } from "react-native";
 import {
-  Card,
   Icon,
   Surface,
   Text,
@@ -47,8 +46,7 @@ const TableForOrderCurrentInfo = ({ table }: { table: TableForOrder }) => {
 
   if (table.numberOfOrderSession) {
     return (
-      <Surface
-        mode="flat"
+      <View
         style={{
           flex: 1,
           padding: 8,
@@ -78,13 +76,12 @@ const TableForOrderCurrentInfo = ({ table }: { table: TableForOrder }) => {
         <Text style={{ fontSize: 12, color: "grey" }}>
           {convertPaymentAmount(table.averagePaymentAmount)} / P
         </Text>
-      </Surface>
+      </View>
     );
   }
 
   return (
-    <Surface
-      mode="flat"
+    <View
       style={{
         flex: 1,
         alignItems: "center",
@@ -95,7 +92,7 @@ const TableForOrderCurrentInfo = ({ table }: { table: TableForOrder }) => {
       }}
     >
       <Icon source="plus-circle-outline" size={30} />
-    </Surface>
+    </View>
   );
 };
 
@@ -110,42 +107,40 @@ const TableForOrderCard = ({
 }) => {
   const theme = useTheme();
   return (
-    <TouchableRipple
-      onPress={() => onClick(table.id)}
-      style={{ borderRadius: 5 }}
+    <Surface
+      style={{
+        margin: 10,
+        width: 120,
+        height: 150,
+        borderRadius: 5,
+        marginHorizontal: 5,
+        marginVertical: 5,
+      }}
     >
-      <Card
-        style={{
-          margin: 10,
-          width: 120,
-          height: 150,
-          borderRadius: 5,
-          marginHorizontal: 5,
-          marginVertical: 5,
-        }}
-        mode="elevated"
-        contentStyle={{ flex: 1 }}
+      <TouchableRipple
+        onPress={() => onClick(table.id)}
+        style={{ borderRadius: 5, flex: 1 }}
       >
-        {/* Table name */}
-        <Surface
-          mode="flat"
-          style={{
-            backgroundColor: theme.colors.errorContainer,
-            borderRadius: 5,
-            borderBottomLeftRadius: 0,
-            borderBottomRightRadius: 0,
-          }}
-        >
-          <Text
-            style={{ padding: 8, color: theme.colors.onErrorContainer }}
-            numberOfLines={1}
+        <View style={{ flex: 1 }}>
+          <View
+            style={{
+              backgroundColor: theme.colors.errorContainer,
+              borderRadius: 5,
+              borderBottomLeftRadius: 0,
+              borderBottomRightRadius: 0,
+            }}
           >
-            {table.name}
-          </Text>
-        </Surface>
-        <MemoizedTableForOrderCurrentInfo table={table} />
-      </Card>
-    </TouchableRipple>
+            <Text
+              style={{ padding: 8, color: theme.colors.onErrorContainer }}
+              numberOfLines={1}
+            >
+              {table.name}
+            </Text>
+          </View>
+          <MemoizedTableForOrderCurrentInfo table={table} />
+        </View>
+      </TouchableRipple>
+    </Surface>
   );
 };
 

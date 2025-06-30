@@ -8,7 +8,7 @@ import {
 } from "react-native-paper";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { Keyboard, ScrollView } from "react-native";
+import { Keyboard, ScrollView, View } from "react-native";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -189,7 +189,7 @@ export default function CreateOrder({
       />
       <GestureDetector gesture={gesture}>
         <Surface style={{ flex: 1 }}>
-          <Surface mode="flat" style={{ height: 50 }}>
+          <View style={{ height: 50 }}>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -232,7 +232,7 @@ export default function CreateOrder({
                 </Button>
               ))}
             </ScrollView>
-          </Surface>
+          </View>
 
           <FlatListWithoutScroll
             groups={applicableCategories}
@@ -240,8 +240,7 @@ export default function CreateOrder({
             itemType={ItemTypeFlatList.DISH_CARD_ORDER}
           />
 
-          <Surface
-            mode="flat"
+          <View
             style={{
               flexDirection: "row",
               justifyContent: "center",
@@ -267,7 +266,7 @@ export default function CreateOrder({
                 {t("create_order")}
               </Button>
             )}
-          </Surface>
+          </View>
         </Surface>
       </GestureDetector>
     </>

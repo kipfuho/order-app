@@ -200,7 +200,7 @@ export default function DishesManagementPage() {
       </Portal>
 
       <GestureDetector gesture={gesture}>
-        <Surface style={{ flex: 1 }}>
+        <Surface style={styles.flex}>
           <FlatListWithScroll
             groups={dishCategories}
             itemByGroup={filteredDishGroupById}

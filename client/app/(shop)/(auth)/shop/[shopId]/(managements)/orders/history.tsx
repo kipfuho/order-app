@@ -77,7 +77,7 @@ export default function OrderManagementHistoryPage() {
         }}
       />
 
-      <Surface style={{ flex: 1 }}>
+      <Surface style={styles.flex}>
         <View style={{ marginVertical: 16 }}>
           <TouchableRipple
             onPress={() => setOpen(true)}
@@ -112,7 +112,7 @@ export default function OrderManagementHistoryPage() {
                   onPress={() =>
                     setRange({ startDate: undefined, endDate: undefined })
                   }
-                  style={{ marginLeft: 15 }}
+                  style={{ marginLeft: 15, borderRadius: 15 }}
                 >
                   <Icon source="close-circle-outline" size={25} />
                 </TouchableRipple>
@@ -123,7 +123,7 @@ export default function OrderManagementHistoryPage() {
 
         <Surface style={styles.baseContainer}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Surface mode="flat" style={{ gap: 16 }}>
+            <View style={{ gap: 16 }}>
               {orderHistories?.map((orderHistory, index) => (
                 <TouchableOpacity
                   key={index}
@@ -140,7 +140,7 @@ export default function OrderManagementHistoryPage() {
                   <Divider style={{ marginVertical: 8 }} />
                 </TouchableOpacity>
               ))}
-            </Surface>
+            </View>
           </ScrollView>
         </Surface>
       </Surface>

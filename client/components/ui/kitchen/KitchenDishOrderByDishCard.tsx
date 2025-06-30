@@ -131,59 +131,67 @@ const KitchenDishOrderByDishCard: React.FC<KitchenDishOrderProps> = ({
           />
         </Modal>
       </Portal>
-      <TouchableRipple onPress={() => setModalVisible(true)}>
-        <Surface
-          style={[
-            styles.card,
-            {
-              width: cardWidth,
-              height: cardWidth,
-              backgroundColor: theme.colors.background,
-            },
-          ]}
+      <Surface
+        style={[
+          styles.cardOuter,
+          {
+            width: cardWidth,
+            height: cardWidth,
+            backgroundColor: theme.colors.background,
+          },
+        ]}
+      >
+        <TouchableRipple
+          onPress={() => setModalVisible(true)}
+          style={styles.flex}
         >
-          <View style={styles.cardContent}>
-            <View style={styles.header}>
-              <Badge
-                style={{
-                  backgroundColor: theme.colors.tertiaryContainer,
-                  color: theme.colors.onTertiaryContainer,
-                  fontSize: 14,
-                  paddingHorizontal: 8,
-                  alignSelf: "center",
-                }}
+          <View style={styles.cardInner}>
+            <View style={styles.cardContent}>
+              <View style={styles.header}>
+                <Badge
+                  style={{
+                    backgroundColor: theme.colors.tertiaryContainer,
+                    color: theme.colors.onTertiaryContainer,
+                    fontSize: 14,
+                    paddingHorizontal: 8,
+                    alignSelf: "center",
+                  }}
+                >
+                  {dishOrders.length || 0}
+                </Badge>
+              </View>
+
+              <ScrollView
+                style={styles.flex}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
               >
-                {dishOrders.length || 0}
-              </Badge>
+                <Text
+                  style={[
+                    styles.dishName,
+                    { color: theme.colors.onBackground },
+                  ]}
+                >
+                  {dishOrders[0].name}
+                </Text>
+              </ScrollView>
             </View>
 
-            <ScrollView
-              style={styles.scroll}
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
-            >
+            <View>
               <Text
-                style={[styles.dishName, { color: theme.colors.onBackground }]}
+                style={[styles.createdAtText, { color: theme.colors.outline }]}
               >
-                {dishOrders[0].name}
+                {dishOrders[0].createdAt}
               </Text>
-            </ScrollView>
+              <MemoizedTimeDifferentAndDishQuantity
+                dishOrders={dishOrders}
+                theme={theme}
+              />
+            </View>
           </View>
-
-          <View>
-            <Text
-              style={[styles.createdAtText, { color: theme.colors.outline }]}
-            >
-              {dishOrders[0].createdAt}
-            </Text>
-            <MemoizedTimeDifferentAndDishQuantity
-              dishOrders={dishOrders}
-              theme={theme}
-            />
-          </View>
-        </Surface>
-      </TouchableRipple>
+        </TouchableRipple>
+      </Surface>
     </>
   );
 };
@@ -191,9 +199,12 @@ const KitchenDishOrderByDishCard: React.FC<KitchenDishOrderProps> = ({
 export default memo(KitchenDishOrderByDishCard);
 
 const styles = StyleSheet.create({
-  card: {
+  cardOuter: {
     borderRadius: 4,
     elevation: 3,
+  },
+  cardInner: {
+    flex: 1,
     justifyContent: "space-between",
   },
   cardContent: {
@@ -206,7 +217,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 6,
   },
-  scroll: {
+  flex: {
     flex: 1,
   },
   scrollContent: {
@@ -246,7 +257,8 @@ const styles = StyleSheet.create({
   modalContainer: {
     borderRadius: 4,
     alignSelf: "center",
-    width: "60%",
     height: "80%",
+    maxHeight: 500,
+    maxWidth: 700,
   },
 });

@@ -85,29 +85,36 @@ const TableKitchenDishOrder = memo(function TableKitchenDishOrder({
   const { kitchenDishOrder } = useSelector((state: RootState) => state.shop);
 
   return (
-    <TouchableRipple
-      onPress={() => handleOnPress(item, kitchenDishOrder[item.id]?.confirmed)}
-      onLongPress={() => handleOnLongPress(item)}
+    <Surface
+      style={{
+        marginHorizontal: 12,
+        marginTop: 10,
+        borderRadius: 8,
+        backgroundColor: kitchenDishOrder[item.id]?.confirmed
+          ? theme.colors.primaryContainer
+          : theme.colors.background,
+      }}
     >
-      <Surface
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: 8,
-          paddingHorizontal: 16,
-          marginHorizontal: 12,
-          marginTop: 10,
-          borderRadius: 8,
-          backgroundColor: kitchenDishOrder[item.id]?.confirmed
-            ? theme.colors.primaryContainer
-            : theme.colors.background,
-        }}
+      <TouchableRipple
+        onPress={() =>
+          handleOnPress(item, kitchenDishOrder[item.id]?.confirmed)
+        }
+        onLongPress={() => handleOnLongPress(item)}
       >
-        <Text style={{ fontSize: 16 }}>{item.tableName}</Text>
-        <TableKitchenDishOrderTime item={item} theme={theme} />
-      </Surface>
-    </TouchableRipple>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: 8,
+            paddingHorizontal: 16,
+          }}
+        >
+          <Text style={{ fontSize: 16 }}>{item.tableName}</Text>
+          <TableKitchenDishOrderTime item={item} theme={theme} />
+        </View>
+      </TouchableRipple>
+    </Surface>
   );
 });
 

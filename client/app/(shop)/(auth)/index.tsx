@@ -22,6 +22,7 @@ import { ConfirmCancelDialog } from "@/components/ui/CancelDialog";
 import { logoutRequest } from "@/apis/auth.api.service";
 import { useSession } from "@/hooks/useSession";
 import { FlashList } from "@shopify/flash-list";
+import { styles } from "../../../constants/styles";
 
 export default function ShopsPage() {
   const router = useRouter();
@@ -84,69 +85,72 @@ export default function ShopsPage() {
           {t("create_shop")}
         </Button>
       </AppBar>
-      <Surface mode="flat" style={{ flex: 1 }}>
+      <Surface mode="flat" style={styles.flex}>
         <FlashList
           data={filteredShops}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 12 }}
           estimatedItemSize={124}
           renderItem={({ item: shop }) => (
-            <TouchableRipple
-              onPress={() => goToShopHome({ router, shopId: shop.id })}
-            >
-              <Surface
-                style={{
-                  flexDirection: "row",
-                  padding: 12,
-                  borderRadius: 12,
-                }}
+            <Surface style={{ borderRadius: 12 }}>
+              <TouchableRipple
+                onPress={() => goToShopHome({ router, shopId: shop.id })}
+                style={{ borderRadius: 12 }}
               >
-                <Image
-                  source={
-                    // eslint-disable-next-line @typescript-eslint/no-require-imports
-                    shop.imageUrls?.[0] || require("@assets/images/savora.png")
-                  }
-                  placeholder={{ blurhash: BLURHASH }}
-                  style={{
-                    width: 100,
-                    height: 100,
-                    borderRadius: 15,
-                  }}
-                  recyclingKey={`shop-${shop.id}`} // Helps recycle image components
-                  cachePolicy="memory-disk" // Aggressive caching
-                  priority="normal" // Don't compete with high-priority images
-                  transition={null} // Disable transitions during scrolling
-                  allowDownscaling // Allow image downscaling
-                  contentFit="cover" // Efficient fit mode
-                />
                 <View
                   style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    gap: 8,
-                    marginLeft: 8,
+                    flexDirection: "row",
+                    padding: 12,
                   }}
                 >
-                  <Text
+                  <Image
+                    source={
+                      shop.imageUrls?.[0] ||
+                      // eslint-disable-next-line @typescript-eslint/no-require-imports
+                      require("@assets/images/savora.png")
+                    }
+                    placeholder={{ blurhash: BLURHASH }}
                     style={{
-                      fontSize: 24,
-                      textTransform: "capitalize",
+                      width: 100,
+                      height: 100,
+                      borderRadius: 15,
                     }}
-                    numberOfLines={2}
-                  >
-                    {shop.name}
-                  </Text>
-                  <Text
+                    recyclingKey={`shop-${shop.id}`} // Helps recycle image components
+                    cachePolicy="memory-disk" // Aggressive caching
+                    priority="normal" // Don't compete with high-priority images
+                    transition={null} // Disable transitions during scrolling
+                    allowDownscaling // Allow image downscaling
+                    contentFit="cover" // Efficient fit mode
+                  />
+                  <View
                     style={{
-                      fontSize: 16,
+                      flex: 1,
+                      justifyContent: "center",
+                      gap: 8,
+                      marginLeft: 8,
                     }}
-                    numberOfLines={2}
                   >
-                    {shop.location}
-                  </Text>
+                    <Text
+                      style={{
+                        fontSize: 24,
+                        textTransform: "capitalize",
+                      }}
+                      numberOfLines={2}
+                    >
+                      {shop.name}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                      }}
+                      numberOfLines={2}
+                    >
+                      {shop.location}
+                    </Text>
+                  </View>
                 </View>
-              </Surface>
-            </TouchableRipple>
+              </TouchableRipple>
+            </Surface>
           )}
           ListHeaderComponent={
             <Searchbar

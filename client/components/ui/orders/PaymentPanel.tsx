@@ -7,7 +7,7 @@ import {
   TextInput,
   useTheme,
 } from "react-native-paper";
-import { ScrollView, View } from "react-native";
+import { Platform, ScrollView, View } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
@@ -147,7 +147,11 @@ export default function PaymentMethodPage() {
             >
               {t("please_scan_qr_to_pay")}
             </Text>
-            <VNPay scale={0.4} />
+            {Platform.OS === "web" ? (
+              <VNPay scale={0.8} style={{ marginBottom: 12 }} />
+            ) : (
+              <VNPay width={200} height={70} style={{ marginBottom: 12 }} />
+            )}
             <View
               style={{
                 borderWidth: 1,
@@ -175,7 +179,7 @@ export default function PaymentMethodPage() {
           {t("payment_at_counter")}
         </Text>
         <ScrollView style={{ flex: 1 }}>
-          <Surface mode="flat" style={{ flex: 1, gap: 12 }}>
+          <View style={{ flex: 1, gap: 12 }}>
             {paymentMethods.map((paymentMethod) =>
               PaymentComponentMap[paymentMethod]({
                 paymentMethod,
@@ -185,7 +189,7 @@ export default function PaymentMethodPage() {
                 setPaymentUrl,
               }),
             )}
-          </Surface>
+          </View>
         </ScrollView>
       </Surface>
     </>

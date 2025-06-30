@@ -96,8 +96,7 @@ export default function CreateTablePage() {
           flex: 1,
         }}
       >
-        <Surface
-          mode="flat"
+        <View
           style={{
             flex: 1,
           }}
@@ -164,7 +163,7 @@ export default function CreateTablePage() {
               </View>
             </Collapsible>
           </ScrollView>
-        </Surface>
+        </View>
 
         {/* Loading or Action Buttons */}
         <View style={{ marginVertical: 20 }}>

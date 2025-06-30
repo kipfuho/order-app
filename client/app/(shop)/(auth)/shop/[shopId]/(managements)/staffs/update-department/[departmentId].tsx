@@ -119,7 +119,7 @@ export default function UpdateDepartmentPage() {
           flex: 1,
         }}
       >
-        <Surface mode="flat" style={styles.baseContainer}>
+        <View style={styles.baseContainer}>
           <ScrollView>
             {/* department Name Input */}
             <TextInput
@@ -147,7 +147,7 @@ export default function UpdateDepartmentPage() {
               </View>
             </Collapsible>
           </ScrollView>
-        </Surface>
+        </View>
 
         {/* Loading or Action Buttons */}
         <View style={{ marginVertical: 20 }}>

@@ -68,7 +68,7 @@ const KitchenCookHistory = () => {
           }}
         />
       </Portal>
-      <Surface style={{ flex: 1 }}>
+      <Surface style={styles.flex}>
         <View style={{ marginVertical: 16 }}>
           <TouchableRipple
             onPress={() => setOpen(true)}

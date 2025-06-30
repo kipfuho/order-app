@@ -114,7 +114,7 @@ export default function UpdateEmployeePositionPage() {
           flex: 1,
         }}
       >
-        <Surface mode="flat" style={styles.baseContainer}>
+        <View style={styles.baseContainer}>
           <ScrollView>
             {/* Employee position Name Input */}
             <TextInput
@@ -125,7 +125,7 @@ export default function UpdateEmployeePositionPage() {
               style={{ marginBottom: 20 }}
             />
           </ScrollView>
-        </Surface>
+        </View>
 
         {/* Loading or Action Buttons */}
         <View style={{ marginVertical: 20 }}>

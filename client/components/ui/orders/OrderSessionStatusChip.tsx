@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Chip, useTheme } from "react-native-paper";
+import { Chip, Text, useTheme } from "react-native-paper";
 import { OrderSessionStatus } from "@constants/common";
 
 export default function OrderSessionStatusChip({ status }: { status: string }) {
@@ -13,10 +13,9 @@ export default function OrderSessionStatusChip({ status }: { status: string }) {
         textStyle={{
           color: theme.colors.onPrimaryContainer,
           textAlign: "center",
-          flex: 1,
         }}
       >
-        {t(status)}
+        <Text>{t(status)}</Text>
       </Chip>
     );
   }
@@ -31,7 +30,6 @@ export default function OrderSessionStatusChip({ status }: { status: string }) {
         textStyle={{
           color: theme.colors.onSecondaryContainer,
           textAlign: "center",
-          flex: 1,
         }}
       >
         {t(status)}
@@ -46,7 +44,6 @@ export default function OrderSessionStatusChip({ status }: { status: string }) {
         textStyle={{
           color: theme.colors.onErrorContainer,
           textAlign: "center",
-          flex: 1,
         }}
       >
         {t(status)}

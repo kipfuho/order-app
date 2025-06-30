@@ -87,7 +87,7 @@ export default function CreateDepartmentPage() {
           flex: 1,
         }}
       >
-        <Surface mode="flat" style={styles.baseContainer}>
+        <View style={styles.baseContainer}>
           <ScrollView>
             {/* Table Name Input */}
             <TextInput
@@ -115,7 +115,7 @@ export default function CreateDepartmentPage() {
               </View>
             </Collapsible>
           </ScrollView>
-        </Surface>
+        </View>
 
         {/* Loading or Action Buttons */}
         <View style={{ marginVertical: 20 }}>

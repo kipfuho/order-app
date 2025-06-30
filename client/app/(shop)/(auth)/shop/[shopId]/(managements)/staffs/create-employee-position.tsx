@@ -76,7 +76,7 @@ export default function CreateEmployeePositionPage() {
           flex: 1,
         }}
       >
-        <Surface mode="flat" style={styles.baseContainer}>
+        <View style={styles.baseContainer}>
           <ScrollView>
             {/* Table Name Input */}
             <TextInput
@@ -87,7 +87,7 @@ export default function CreateEmployeePositionPage() {
               style={{ marginBottom: 20 }}
             />
           </ScrollView>
-        </Surface>
+        </View>
 
         {/* Loading or Action Buttons */}
         <View style={{ marginVertical: 20 }}>

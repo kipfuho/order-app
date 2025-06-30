@@ -173,7 +173,7 @@ export default function UpdateEmployeePage() {
           flex: 1,
         }}
       >
-        <Surface mode="flat" style={styles.baseContainer}>
+        <View style={styles.baseContainer}>
           <ScrollView>
             {/* Employee Name Input */}
             <TextInput
@@ -234,7 +234,7 @@ export default function UpdateEmployeePage() {
               </View>
             </Collapsible>
           </ScrollView>
-        </Surface>
+        </View>
 
         {/* Loading or Action Buttons */}
         <View style={{ marginVertical: 20 }}>

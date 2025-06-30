@@ -180,7 +180,7 @@ export default function CustomerHomePage() {
             flex: 1,
           }}
         >
-          <View style={{ flex: 1 }}>
+          <View style={styles.flex}>
             <CustomerAppBar goBack={() => setMenuVisible(false)}>
               <AppBarSearchBox
                 searchValue={searchValue}
@@ -218,7 +218,7 @@ export default function CustomerHomePage() {
             isLoading={recommendationDishLoading}
             onDishPress={handleClickRecommendDish}
           />
-          <Surface mode="flat" style={styles.baseGrid}>
+          <View style={styles.baseGrid}>
             {availableDishTypes.map((dishType) => (
               <Button
                 key={dishType}
@@ -249,7 +249,7 @@ export default function CustomerHomePage() {
                 </View>
               </Button>
             ))}
-          </Surface>
+          </View>
         </ScrollView>
       </Surface>
     </>

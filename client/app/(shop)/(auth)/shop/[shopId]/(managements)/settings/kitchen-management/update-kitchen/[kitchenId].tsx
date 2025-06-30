@@ -110,7 +110,7 @@ export default function UpdateKitchenPage() {
 
   if (!kitchen) {
     return (
-      <Surface style={{ flex: 1 }}>
+      <Surface style={styles.flex}>
         <Text>{t("kitchen_not_found")}</Text>
         <Button
           mode="contained"
@@ -152,7 +152,7 @@ export default function UpdateKitchenPage() {
           flex: 1,
         }}
       >
-        <Surface mode="flat" style={styles.baseContainer}>
+        <View style={styles.baseContainer}>
           <ScrollView>
             <TextInput
               label={t("kitchen_position_name")}
@@ -208,7 +208,7 @@ export default function UpdateKitchenPage() {
               })}
             </View>
           </ScrollView>
-        </Surface>
+        </View>
 
         {/* Loading or Action Buttons */}
         <View style={{ marginVertical: 20 }}>

@@ -321,7 +321,7 @@ export default function ActiveOrderSessionPage({
         <Toast config={toastConfig} />
       </Portal>
       <Surface mode="flat" style={{ flex: 1 }}>
-        <Surface mode="flat" style={{ padding: 12 }}>
+        <View style={{ padding: 12 }}>
           <OrderCustomerInfo orderSession={activeOrderSession} />
           <View
             style={{
@@ -373,7 +373,7 @@ export default function ActiveOrderSessionPage({
               </Text>
             </TouchableRipple>
           </View>
-        </Surface>
+        </View>
 
         <View style={{ height: flatListHeight }}>
           <FlashList

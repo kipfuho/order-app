@@ -203,7 +203,7 @@ export default function CartDetail({
         <Modal
           visible={updateItemVisible}
           onDismiss={() => setUpdateItemVisible(false)}
-          contentContainerStyle={{ flex: 1 }}
+          contentContainerStyle={styles.flex}
         >
           <UpdateCartItem
             setVisible={setUpdateItemVisible}

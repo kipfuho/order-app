@@ -117,8 +117,8 @@ export default function UpdateDishCategoryPage() {
         title={t("update_dish_category")}
         goBack={() => goToDishCategoryList({ router, shopId: shop.id })}
       />
-      <Surface style={{ flex: 1 }}>
-        <Surface mode="flat" style={styles.baseContainer}>
+      <Surface style={styles.flex}>
+        <View style={styles.baseContainer}>
           <ScrollView>
             <TextInput
               mode="outlined"
@@ -135,7 +135,7 @@ export default function UpdateDishCategoryPage() {
               style={{ marginBottom: 20 }}
             />
           </ScrollView>
-        </Surface>
+        </View>
 
         <View style={{ marginVertical: 20 }}>
           {updateDishCategoryLoading ? (

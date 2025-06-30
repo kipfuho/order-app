@@ -80,9 +80,9 @@ export default function CreateDishCategoryPage() {
           resetFields();
         }}
       />
-      <Surface style={{ flex: 1 }}>
-        <Surface mode="flat" style={styles.baseContainer}>
-          <ScrollView style={{ flex: 1 }}>
+      <Surface style={styles.flex}>
+        <View style={styles.baseContainer}>
+          <ScrollView style={styles.flex}>
             <TextInput
               label={t("dish_category_name")}
               mode="outlined"
@@ -98,7 +98,7 @@ export default function CreateDishCategoryPage() {
               style={{ marginBottom: 20 }}
             />
           </ScrollView>
-        </Surface>
+        </View>
 
         <View style={{ marginVertical: 20 }}>
           {createDishCategoryLoading ? (

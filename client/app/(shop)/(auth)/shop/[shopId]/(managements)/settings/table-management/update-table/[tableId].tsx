@@ -102,7 +102,7 @@ export default function UpdateTablePage() {
     setTablePosition(table.position);
     setAllowMultipleOrderSession(table.allowMultipleOrderSession);
     setNeedApprovalWhenCustomerOrder(table.needApprovalWhenCustomerOrder);
-  }, [tableId, tableFetching]);
+  }, [tableId, tableFetching, table]);
 
   if (tableLoading || tablePositionLoading) {
     return <LoaderBasic />;
@@ -129,8 +129,7 @@ export default function UpdateTablePage() {
         goBack={() => goToTableList({ router, shopId: shop.id })}
       />
       <Surface style={{ flex: 1 }}>
-        <Surface
-          mode="flat"
+        <View
           style={{
             flex: 1,
           }}
@@ -197,7 +196,7 @@ export default function UpdateTablePage() {
               </View>
             </Collapsible>
           </ScrollView>
-        </Surface>
+        </View>
 
         <View style={{ marginVertical: 20 }}>
           {updateTableLoading ? (

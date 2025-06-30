@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { useEffect, useMemo, useState } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Modal, Portal, Surface, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -134,7 +134,7 @@ export default function OrderManagementOrderPage() {
       </Portal>
 
       <Surface style={styles.baseContainer}>
-        <Surface mode="flat" style={{ height: 50, marginBottom: 10 }}>
+        <View style={{ height: 50, marginBottom: 10 }}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -177,19 +177,18 @@ export default function OrderManagementOrderPage() {
               </Button>
             ))}
           </ScrollView>
-        </Surface>
+        </View>
 
         {/* Tables list */}
-        <Surface mode="flat" style={{ flex: 1 }}>
+        <View style={styles.flex}>
           <ScrollView>
             {_.map(filteredTables, (tables, positionId) => {
               return (
-                <Surface mode="flat" key={positionId}>
+                <View key={positionId}>
                   <Text variant="titleLarge">
                     {tablePositionById[positionId]?.name}
                   </Text>
-                  <Surface
-                    mode="flat"
+                  <View
                     style={{
                       flexDirection: "row",
                       flexWrap: "wrap",
@@ -202,12 +201,12 @@ export default function OrderManagementOrderPage() {
                         onClick={() => onTableClick(table)}
                       />
                     ))}
-                  </Surface>
-                </Surface>
+                  </View>
+                </View>
               );
             })}
           </ScrollView>
-        </Surface>
+        </View>
       </Surface>
     </>
   );

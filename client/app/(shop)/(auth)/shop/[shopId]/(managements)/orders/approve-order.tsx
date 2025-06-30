@@ -109,14 +109,14 @@ export default function OrderManagementApprovePage() {
         <Modal
           visible={modalVisible}
           onDismiss={() => setModalVisible(false)}
-          contentContainerStyle={{ flex: 1 }}
+          contentContainerStyle={styles.flex}
         >
           <>
             <AppBar
               title={selectedTable?.name || ""}
               goBack={() => setModalVisible(false)}
             />
-            <Surface mode="flat" style={{ flex: 1 }}>
+            <Surface mode="flat" style={styles.flex}>
               <ScrollView>
                 <FlashList
                   data={unconfirmedOrderByTable[selectedTable?.id || ""] || []}
@@ -142,7 +142,7 @@ export default function OrderManagementApprovePage() {
         }}
       />
       <Surface style={styles.baseContainer}>
-        <Surface mode="flat" style={{ height: 50, marginBottom: 10 }}>
+        <View style={{ height: 50, marginBottom: 10 }}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -191,19 +191,18 @@ export default function OrderManagementApprovePage() {
               );
             })}
           </ScrollView>
-        </Surface>
+        </View>
 
         {/* Tables list */}
-        <Surface mode="flat" style={{ flex: 1 }}>
+        <View style={styles.flex}>
           <ScrollView>
             {_.map(filteredTables, (tables, positionId) => {
               return (
-                <Surface mode="flat" key={positionId}>
+                <View key={positionId}>
                   <Text variant="titleLarge">
                     {tablePositionById[positionId]?.name}
                   </Text>
-                  <Surface
-                    mode="flat"
+                  <View
                     style={{
                       flexDirection: "row",
                       flexWrap: "wrap",
@@ -219,12 +218,12 @@ export default function OrderManagementApprovePage() {
                         onClick={onTableClick}
                       />
                     ))}
-                  </Surface>
-                </Surface>
+                  </View>
+                </View>
               );
             })}
           </ScrollView>
-        </Surface>
+        </View>
       </Surface>
     </>
   );

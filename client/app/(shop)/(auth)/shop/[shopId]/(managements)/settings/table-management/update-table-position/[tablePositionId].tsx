@@ -107,7 +107,7 @@ export default function UpdateTablePositionPage() {
 
   if (!tablePosition) {
     return (
-      <Surface style={{ flex: 1 }}>
+      <Surface style={styles.flex}>
         <Text>{t("table_position_not_found")}</Text>
         <Button
           onPress={() => goToTablePositionList({ router, shopId: shop.id })}
@@ -136,8 +136,8 @@ export default function UpdateTablePositionPage() {
         />
       </Portal>
 
-      <Surface style={{ flex: 1 }}>
-        <Surface mode="flat" style={styles.baseContainer}>
+      <Surface style={styles.flex}>
+        <View style={styles.baseContainer}>
           <ScrollView>
             <TextInput
               label={t("table_position_name")}
@@ -181,7 +181,7 @@ export default function UpdateTablePositionPage() {
                 })}
             </View>
           </ScrollView>
-        </Surface>
+        </View>
 
         <View style={{ marginVertical: 20 }}>
           {updateTablePositionLoading ? (

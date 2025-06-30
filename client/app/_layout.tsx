@@ -18,6 +18,7 @@ import { enGB, registerTranslation } from "react-native-paper-dates";
 import { TimeProvider } from "@/hooks/useCurrentTime";
 import toastConfig from "@/components/CustomToast";
 import { Dimensions } from "react-native";
+import { styles } from "../constants/styles";
 
 Amplify.configure(AmplifyConfig);
 
@@ -87,7 +88,7 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={styles.flex}>
       <ReduxProvider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <I18nextProvider i18n={i18n}>

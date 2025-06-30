@@ -1,12 +1,7 @@
 import { memo } from "react";
-import {
-  Card,
-  Surface,
-  Text,
-  TouchableRipple,
-  useTheme,
-} from "react-native-paper";
+import { Surface, Text, TouchableRipple, useTheme } from "react-native-paper";
 import { Table } from "@stores/state.interface";
+import { View } from "react-native";
 
 const TableForApproveCard = ({
   table,
@@ -19,64 +14,61 @@ const TableForApproveCard = ({
 }) => {
   const theme = useTheme();
   return (
-    <TouchableRipple
-      onPress={() => onClick(table.id)}
-      style={{ borderRadius: 5 }}
+    <Surface
+      style={{
+        margin: 10,
+        width: 120,
+        height: 150,
+        borderRadius: 5,
+        marginHorizontal: 5,
+        marginVertical: 5,
+      }}
     >
-      <Card
-        style={{
-          margin: 10,
-          width: 120,
-          height: 150,
-          borderRadius: 5,
-          marginHorizontal: 5,
-          marginVertical: 5,
-        }}
-        mode="elevated"
-        contentStyle={{ flex: 1 }}
+      <TouchableRipple
+        onPress={() => onClick(table.id)}
+        style={{ borderRadius: 5, flex: 1 }}
       >
-        {/* Table name */}
-        <Surface
-          mode="flat"
-          style={{
-            backgroundColor: theme.colors.tertiaryContainer,
-            borderRadius: 5,
-            borderBottomLeftRadius: 0,
-            borderBottomRightRadius: 0,
-          }}
-        >
-          <Text
-            style={{ padding: 8, color: theme.colors.onTertiaryContainer }}
-            numberOfLines={1}
+        <View style={{ flex: 1 }}>
+          <View
+            style={{
+              backgroundColor: theme.colors.tertiaryContainer,
+              borderRadius: 5,
+              borderBottomLeftRadius: 0,
+              borderBottomRightRadius: 0,
+            }}
           >
-            {table.name}
-          </Text>
-        </Surface>
-        <Surface
-          mode="flat"
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          {unconfirmedOrderCount > 0 && (
             <Text
-              style={{
-                fontSize: 32,
-                color: theme.colors.error,
-                fontWeight: "bold",
-                width: 120,
-                textAlign: "center",
-              }}
-              numberOfLines={3}
+              style={{ padding: 8, color: theme.colors.onTertiaryContainer }}
+              numberOfLines={1}
             >
-              {unconfirmedOrderCount}
+              {table.name}
             </Text>
-          )}
-        </Surface>
-      </Card>
-    </TouchableRipple>
+          </View>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {unconfirmedOrderCount > 0 && (
+              <Text
+                style={{
+                  fontSize: 32,
+                  color: theme.colors.error,
+                  fontWeight: "bold",
+                  width: 120,
+                  textAlign: "center",
+                }}
+                numberOfLines={3}
+              >
+                {unconfirmedOrderCount}
+              </Text>
+            )}
+          </View>
+        </View>
+      </TouchableRipple>
+    </Surface>
   );
 };
 export default memo(TableForApproveCard);

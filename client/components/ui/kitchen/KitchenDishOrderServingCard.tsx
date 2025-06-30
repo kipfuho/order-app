@@ -112,77 +112,94 @@ const KitchenDishOrderServingCard: React.FC<KitchenDishOrderProps> = ({
   if (cardWidth < 1) return null;
 
   return (
-    <TouchableRipple onPress={handleOnPress} onLongPress={handleOnLongPress}>
-      <Surface
-        style={[
-          styles.card,
-          {
-            width: cardWidth,
-            height: cardWidth,
-            backgroundColor: kitchenDishOrder[dishOrder.id]?.confirmed
-              ? theme.colors.primaryContainer
-              : theme.colors.background,
-          },
-        ]}
+    <Surface
+      style={[
+        styles.cardOuter,
+        {
+          width: cardWidth,
+          height: cardWidth,
+          backgroundColor: kitchenDishOrder[dishOrder.id]?.confirmed
+            ? theme.colors.primaryContainer
+            : theme.colors.background,
+        },
+      ]}
+    >
+      <TouchableRipple
+        onPress={handleOnPress}
+        onLongPress={handleOnLongPress}
+        style={styles.flex}
       >
-        <View style={styles.cardContent}>
-          <View style={styles.header}>
-            <Text
-              style={[styles.orderNoText, { color: theme.colors.onBackground }]}
-            >
-              {dishOrder.orderNo}-{dishOrder.dishOrderNo}
-            </Text>
-            <Badge
-              style={{
-                backgroundColor: theme.colors.tertiaryContainer,
-                color: theme.colors.onTertiaryContainer,
-                fontSize: 14,
-                paddingHorizontal: 8,
-                alignSelf: "center",
-              }}
-            >
-              {dishOrder.tableName}
-            </Badge>
+        <View style={styles.cardInner}>
+          <View style={styles.cardContent}>
+            <View style={styles.header}>
+              <Text
+                style={[
+                  styles.orderNoText,
+                  { color: theme.colors.onBackground },
+                ]}
+              >
+                {dishOrder.orderNo}-{dishOrder.dishOrderNo}
+              </Text>
+              <Badge
+                style={{
+                  backgroundColor: theme.colors.tertiaryContainer,
+                  color: theme.colors.onTertiaryContainer,
+                  fontSize: 14,
+                  paddingHorizontal: 8,
+                  alignSelf: "center",
+                }}
+              >
+                {dishOrder.tableName}
+              </Badge>
+            </View>
+
+            {updateUnservedDishOrderLoading ? (
+              <ActivityIndicator />
+            ) : (
+              <ScrollView
+                style={styles.flex}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+              >
+                <Text
+                  style={[
+                    styles.dishName,
+                    { color: theme.colors.onBackground },
+                  ]}
+                >
+                  {dishOrder.name}
+                </Text>
+              </ScrollView>
+            )}
           </View>
 
-          {updateUnservedDishOrderLoading ? (
-            <ActivityIndicator />
-          ) : (
-            <ScrollView
-              style={styles.scroll}
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
+          <View>
+            <Text
+              style={[styles.createdAtText, { color: theme.colors.outline }]}
             >
-              <Text
-                style={[styles.dishName, { color: theme.colors.onBackground }]}
-              >
-                {dishOrder.name}
-              </Text>
-            </ScrollView>
-          )}
+              {dishOrder.createdAt}
+            </Text>
+            <MemoizedTimeDifferentAndDishQuantity
+              dishOrder={dishOrder}
+              theme={theme}
+            />
+          </View>
         </View>
-
-        <View>
-          <Text style={[styles.createdAtText, { color: theme.colors.outline }]}>
-            {dishOrder.createdAt}
-          </Text>
-          <MemoizedTimeDifferentAndDishQuantity
-            dishOrder={dishOrder}
-            theme={theme}
-          />
-        </View>
-      </Surface>
-    </TouchableRipple>
+      </TouchableRipple>
+    </Surface>
   );
 };
 
 export default memo(KitchenDishOrderServingCard);
 
 const styles = StyleSheet.create({
-  card: {
+  cardOuter: {
     borderRadius: 4,
     elevation: 3,
+  },
+  cardInner: {
+    flex: 1,
     justifyContent: "space-between",
   },
   cardContent: {
@@ -198,7 +215,7 @@ const styles = StyleSheet.create({
   orderNoText: {
     fontSize: 24,
   },
-  scroll: {
+  flex: {
     flex: 1,
   },
   scrollContent: {
