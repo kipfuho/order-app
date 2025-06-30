@@ -228,7 +228,7 @@ export default function CreateOrder({
                     alignSelf: "center",
                   }}
                 >
-                  {dishType}
+                  {t(dishType)}
                 </Button>
               ))}
             </ScrollView>
