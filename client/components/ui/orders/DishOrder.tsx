@@ -7,6 +7,7 @@ import {
   Icon,
   Surface,
   Divider,
+  TouchableRipple,
 } from "react-native-paper";
 import { DishOrder, Order } from "@stores/state.interface";
 import { convertPaymentAmount } from "@constants/utils";
@@ -109,7 +110,7 @@ export default function DishOrderCard({
             </View>
 
             <Surface style={styles.quantityBadge}>
-              <TouchableOpacity
+              <TouchableRipple
                 onPress={() =>
                   onQuantityClick({
                     dishOrder: dishOrder,
@@ -117,9 +118,10 @@ export default function DishOrderCard({
                     newQuantity: dishOrder.quantity - 1,
                   })
                 }
+                style={{ borderRadius: 10 }}
               >
                 <Icon source="minus-circle-outline" size={14} />
-              </TouchableOpacity>
+              </TouchableRipple>
               <Text
                 style={{
                   fontWeight: "bold",
@@ -137,7 +139,7 @@ export default function DishOrderCard({
               >
                 {dishOrder.quantity}
               </Text>
-              <TouchableOpacity
+              <TouchableRipple
                 onPress={() =>
                   onQuantityClick({
                     dishOrder: dishOrder,
@@ -145,9 +147,10 @@ export default function DishOrderCard({
                     newQuantity: dishOrder.quantity + 1,
                   })
                 }
+                style={{ borderRadius: 10 }}
               >
                 <Icon source="plus-circle-outline" size={14} />
-              </TouchableOpacity>
+              </TouchableRipple>
             </Surface>
           </View>
 

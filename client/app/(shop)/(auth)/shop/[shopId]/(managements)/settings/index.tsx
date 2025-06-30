@@ -2,7 +2,13 @@ import { useRouter } from "expo-router";
 import { ScrollView, View, useWindowDimensions } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "@stores/store";
-import { Button, Surface, Icon, Text } from "react-native-paper";
+import {
+  Surface,
+  Icon,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 import { Shop } from "@stores/state.interface";
 import { AppBar } from "@components/AppBar";
 import { goToShopHome } from "@apis/navigate.service";
@@ -40,6 +46,7 @@ const getButtonSize = (width: number) => {
 export default function SettingManagementPage() {
   const router = useRouter();
   const { t } = useTranslation();
+  const theme = useTheme();
   const { width } = useWindowDimensions();
   const buttonSize = getButtonSize(width);
 
@@ -58,22 +65,34 @@ export default function SettingManagementPage() {
           {/* Buttons */}
           <View style={styles.baseGrid}>
             {BUTTONS.map((item) => (
-              <Button
+              <TouchableRipple
                 key={item.key}
-                mode="contained-tonal"
-                style={{ width: buttonSize, height: 100, borderRadius: 10 }}
                 onPress={() =>
                   router.replace({
                     pathname: `/shop/[shopId]/settings/${item.route}`,
                     params: { shopId: shop.id },
                   })
                 }
+                style={{
+                  width: buttonSize,
+                  minHeight: 120,
+                  borderRadius: 10,
+                  backgroundColor: theme.colors.primaryContainer,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
               >
-                <View style={{ flex: 1, gap: 5 }}>
+                <View
+                  style={{
+                    gap: 5,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <Icon source={item.icon} size={50} />
                   <Text variant="bodyLarge">{t(item.title)}</Text>
                 </View>
-              </Button>
+              </TouchableRipple>
             ))}
           </View>
         </ScrollView>

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
+import { StyleSheet, View, ScrollView, Dimensions } from "react-native";
 import {
-  StyleSheet,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
-import { Icon, Surface, Text, useTheme } from "react-native-paper";
+  Icon,
+  Surface,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import DailySalesChart from "./ui/analytics/DailySalesChart";
 import PopularDishesChart from "./ui/analytics/PopularDishesChart";
@@ -52,7 +52,7 @@ const ShopDashboard = () => {
           borderBottomWidth: 1,
         }}
       >
-        <TouchableOpacity
+        <TouchableRipple
           style={[
             {
               flex: 1,
@@ -69,31 +69,33 @@ const ShopDashboard = () => {
           ]}
           onPress={() => setActiveTab("sales")}
         >
-          <Icon
-            source="chart-line"
-            size={16}
-            color={
-              activeTab === "sales"
-                ? theme.colors.primary
-                : theme.colors.secondary
-            }
-          />
-          <Text
-            style={[
-              {
-                fontSize: 12,
-              },
-              activeTab === "sales" && {
-                color: theme.colors.primary,
-                fontWeight: "bold",
-              },
-            ]}
-          >
-            {t("report_sales")}
-          </Text>
-        </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <Icon
+              source="chart-line"
+              size={16}
+              color={
+                activeTab === "sales"
+                  ? theme.colors.primary
+                  : theme.colors.secondary
+              }
+            />
+            <Text
+              style={[
+                {
+                  fontSize: 12,
+                },
+                activeTab === "sales" && {
+                  color: theme.colors.primary,
+                  fontWeight: "bold",
+                },
+              ]}
+            >
+              {t("report_sales")}
+            </Text>
+          </View>
+        </TouchableRipple>
 
-        <TouchableOpacity
+        <TouchableRipple
           style={[
             {
               flex: 1,
@@ -110,31 +112,33 @@ const ShopDashboard = () => {
           ]}
           onPress={() => setActiveTab("dishes")}
         >
-          <Icon
-            source="food"
-            size={16}
-            color={
-              activeTab === "sales"
-                ? theme.colors.primary
-                : theme.colors.secondary
-            }
-          />
-          <Text
-            style={[
-              {
-                fontSize: 12,
-              },
-              activeTab === "dishes" && {
-                color: theme.colors.primary,
-                fontWeight: "bold",
-              },
-            ]}
-          >
-            {t("report_dishes")}
-          </Text>
-        </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <Icon
+              source="food"
+              size={16}
+              color={
+                activeTab === "sales"
+                  ? theme.colors.primary
+                  : theme.colors.secondary
+              }
+            />
+            <Text
+              style={[
+                {
+                  fontSize: 12,
+                },
+                activeTab === "dishes" && {
+                  color: theme.colors.primary,
+                  fontWeight: "bold",
+                },
+              ]}
+            >
+              {t("report_dishes")}
+            </Text>
+          </View>
+        </TouchableRipple>
 
-        <TouchableOpacity
+        <TouchableRipple
           style={[
             {
               flex: 1,
@@ -151,31 +155,33 @@ const ShopDashboard = () => {
           ]}
           onPress={() => setActiveTab("hourly")}
         >
-          <Icon
-            source="clock-outline"
-            size={16}
-            color={
-              activeTab === "sales"
-                ? theme.colors.primary
-                : theme.colors.secondary
-            }
-          />
-          <Text
-            style={[
-              {
-                fontSize: 12,
-              },
-              activeTab === "hourly" && {
-                color: theme.colors.primary,
-                fontWeight: "bold",
-              },
-            ]}
-          >
-            {t("report_hourly")}
-          </Text>
-        </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <Icon
+              source="clock-outline"
+              size={16}
+              color={
+                activeTab === "sales"
+                  ? theme.colors.primary
+                  : theme.colors.secondary
+              }
+            />
+            <Text
+              style={[
+                {
+                  fontSize: 12,
+                },
+                activeTab === "hourly" && {
+                  color: theme.colors.primary,
+                  fontWeight: "bold",
+                },
+              ]}
+            >
+              {t("report_hourly")}
+            </Text>
+          </View>
+        </TouchableRipple>
 
-        <TouchableOpacity
+        <TouchableRipple
           style={[
             {
               flex: 1,
@@ -192,29 +198,31 @@ const ShopDashboard = () => {
           ]}
           onPress={() => setActiveTab("payment")}
         >
-          <Icon
-            source="credit-card-outline"
-            size={16}
-            color={
-              activeTab === "sales"
-                ? theme.colors.primary
-                : theme.colors.secondary
-            }
-          />
-          <Text
-            style={[
-              {
-                fontSize: 12,
-              },
-              activeTab === "payment" && {
-                color: theme.colors.primary,
-                fontWeight: "bold",
-              },
-            ]}
-          >
-            {t("report_payment_method")}
-          </Text>
-        </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <Icon
+              source="credit-card-outline"
+              size={16}
+              color={
+                activeTab === "sales"
+                  ? theme.colors.primary
+                  : theme.colors.secondary
+              }
+            />
+            <Text
+              style={[
+                {
+                  fontSize: 12,
+                },
+                activeTab === "payment" && {
+                  color: theme.colors.primary,
+                  fontWeight: "bold",
+                },
+              ]}
+            >
+              {t("report_payment_method")}
+            </Text>
+          </View>
+        </TouchableRipple>
       </Surface>
       <ScrollView
         style={{

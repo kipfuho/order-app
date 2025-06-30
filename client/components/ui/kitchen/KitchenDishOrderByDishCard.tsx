@@ -1,7 +1,14 @@
 import _ from "lodash";
 import React, { memo, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { Badge, Modal, Portal, Surface, useTheme } from "react-native-paper";
+import { View, Text, ScrollView } from "react-native";
+import {
+  Badge,
+  Modal,
+  Portal,
+  Surface,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 import { KitchenDishOrder, Shop } from "@stores/state.interface";
 import { getMinuteForDisplay, getStatusColor } from "@constants/utils";
 import { CustomMD3Theme } from "@constants/theme";
@@ -142,10 +149,7 @@ const KitchenDishOrderByDishCard: React.FC<KitchenDishOrderProps> = ({
           />
         </Modal>
       </Portal>
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => setModalVisible(true)}
-      >
+      <TouchableRipple onPress={() => setModalVisible(true)}>
         <Surface
           style={{
             borderRadius: 4,
@@ -206,7 +210,7 @@ const KitchenDishOrderByDishCard: React.FC<KitchenDishOrderProps> = ({
             />
           </View>
         </Surface>
-      </TouchableOpacity>
+      </TouchableRipple>
     </>
   );
 };

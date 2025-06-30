@@ -10,6 +10,7 @@ import {
   Surface,
   Icon,
   Card,
+  TouchableRipple,
 } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
@@ -176,9 +177,8 @@ export default function ShopPage() {
 
           <Surface mode="flat" style={styles.baseGrid}>
             {availableButtons.map((item) => (
-              <Button
+              <TouchableRipple
                 key={item.route}
-                mode="contained-tonal"
                 onPress={() =>
                   router.replace({
                     pathname: `/shop/[shopId]/${item.route}`,
@@ -187,22 +187,24 @@ export default function ShopPage() {
                 }
                 style={{
                   width: buttonSize,
-                  height: 100,
+                  minHeight: 120,
                   borderRadius: 10,
+                  backgroundColor: theme.colors.primaryContainer,
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
               >
                 <View
                   style={{
-                    flex: 1,
-                    height: "100%",
                     gap: 5,
                     alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
                   <Icon source={item.icon} size={50} />
                   <Text variant="bodyLarge">{t(item.title)}</Text>
                 </View>
-              </Button>
+              </TouchableRipple>
             ))}
           </Surface>
         </ScrollView>

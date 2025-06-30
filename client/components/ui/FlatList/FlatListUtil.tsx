@@ -273,14 +273,16 @@ export const FlatListRowItem = memo(function RowItem({
         gap: 12,
       }}
     >
-      {items.map((_item: any) => (
-        <ComponentType
-          key={_item.id}
-          item={_item}
-          openMenu={openMenu}
-          containerWidth={itemContainerWidth}
-        />
-      ))}
+      {items.map((_item: any, idx: number) => {
+        return (
+          <ComponentType
+            key={_item.id || idx}
+            item={_item}
+            openMenu={openMenu}
+            containerWidth={itemContainerWidth}
+          />
+        );
+      })}
       {Array(Math.max(0, numColumns - items.length))
         .fill(null)
         .map((_, idx) => (

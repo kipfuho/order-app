@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { useWindowDimensions, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Toast from "react-native-toast-message";
 import OrderCustomerInfo from "./OrderCutomerInfo";
 import DishOrderCard from "./DishOrder";
@@ -66,6 +66,19 @@ export default function ActiveOrderSessionPage({
   const [selectedDishOrder, setSelectedDishOrder] = useState<DishOrder>();
   const [newQuantity, setNewQuantity] = useState("");
   const [reason, setReason] = useState("");
+
+  const flashListEstimatedItemSize = useMemo(() => {
+    if (!activeOrderSession?.orders) return 0;
+
+    let cumulativeSize = 0;
+    _.forEach(activeOrderSession.orders, (order) => {
+      cumulativeSize += 20 + 160 * order.dishOrders.length; // 20 for header + 160 for each dish order
+    });
+
+    return activeOrderSession?.orders.length > 0
+      ? cumulativeSize / activeOrderSession?.orders.length
+      : 0;
+  }, [activeOrderSession?.orders]);
 
   const onDishQuantityClick = ({
     dishOrder,
@@ -328,59 +341,63 @@ export default function ActiveOrderSessionPage({
           </View>
         </Surface>
 
-        <FlashList
-          data={activeOrderSession.orders || []}
-          keyExtractor={(item) => item.id}
-          style={{ maxHeight: height * 0.6, padding: 12 }}
-          contentContainerStyle={{ paddingBottom: 24 }}
-          renderItem={({ item: order, index }) => (
-            <Surface mode="flat" style={{ marginBottom: 12 }}>
-              <Text
-                style={{
-                  alignSelf: "flex-end",
-                  fontSize: 16,
-                  fontWeight: "bold",
-                }}
-              >
-                {t("times")}: {index + 1}
-              </Text>
-              <View style={{ gap: 8 }}>
-                {order.dishOrders.map((dishOrder) => (
-                  <DishOrderCard
-                    key={dishOrder.id}
-                    order={order}
-                    dishOrder={dishOrder}
-                    onQuantityClick={onDishQuantityClick}
-                    onDiscountClick={onDishOrderDiscountClick}
-                  />
-                ))}
-              </View>
-              {!_.isEmpty(order.returnedDishOrders) && (
+        <View style={{ maxHeight: height * 0.6 }}>
+          <FlashList
+            data={activeOrderSession.orders || []}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ padding: 12, paddingBottom: 24 }}
+            estimatedItemSize={flashListEstimatedItemSize}
+            overrideItemLayout={(data, index) => ({})}
+            renderItem={({ item: order, index }) => (
+              <Surface mode="flat" style={{ marginBottom: 12 }}>
+                <Text
+                  style={{
+                    alignSelf: "flex-end",
+                    fontSize: 16,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {t("times")}: {index + 1}
+                </Text>
                 <View style={{ gap: 8 }}>
-                  <Divider />
-                  <Text style={{ fontSize: 18, color: theme.colors.error }}>
-                    {t("returned_dish")}
-                  </Text>
-                  {order.returnedDishOrders.map((returnedDishOrder) => (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Text
-                        style={{ fontWeight: "bold" }}
-                      >{`${returnedDishOrder.name}: x${returnedDishOrder.quantity}`}</Text>
-                      <Text>{returnedDishOrder.createdAt}</Text>
-                    </View>
+                  {order.dishOrders.map((dishOrder) => (
+                    <DishOrderCard
+                      key={dishOrder.id}
+                      order={order}
+                      dishOrder={dishOrder}
+                      onQuantityClick={onDishQuantityClick}
+                      onDiscountClick={onDishOrderDiscountClick}
+                    />
                   ))}
-                  <Divider />
                 </View>
-              )}
-            </Surface>
-          )}
-          nestedScrollEnabled={true}
-        />
+                {!_.isEmpty(order.returnedDishOrders) && (
+                  <View style={{ gap: 8 }}>
+                    <Divider />
+                    <Text style={{ fontSize: 18, color: theme.colors.error }}>
+                      {t("returned_dish")}
+                    </Text>
+                    {order.returnedDishOrders.map((returnedDishOrder) => (
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Text
+                          style={{ fontWeight: "bold" }}
+                        >{`${returnedDishOrder.name}: x${returnedDishOrder.quantity}`}</Text>
+                        <Text>{returnedDishOrder.createdAt}</Text>
+                      </View>
+                    ))}
+                    <Divider />
+                  </View>
+                )}
+              </Surface>
+            )}
+            nestedScrollEnabled={true}
+            showsHorizontalScrollIndicator={false}
+          />
+        </View>
       </Surface>
     </>
   );

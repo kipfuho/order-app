@@ -180,28 +180,35 @@ export default function OrderSessionDetailPage({
 
         <Divider style={{ marginVertical: 8 }} />
 
-        <FlashList
-          data={dishOrders}
-          style={{ maxHeight: height * 0.6, padding: 12 }}
-          renderItem={({ item }) => (
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginVertical: 4,
-              }}
-            >
-              <Text style={{ flex: 1, marginRight: 8 }}>
-                <Text style={{ fontSize: 16 }}>{item.quantity}</Text>
-                <Text style={{ marginLeft: 4, fontSize: 16 }}>x</Text>
-                <Text style={{ marginLeft: 8, fontSize: 16 }}>{item.name}</Text>
-              </Text>
-              <Text style={{ fontSize: 16 }}>
-                {convertPaymentAmount(item.price)}
-              </Text>
-            </View>
-          )}
-        />
+        <View style={{ maxHeight: height * 0.6 }}>
+          <FlashList
+            data={dishOrders}
+            contentContainerStyle={{ padding: 8 }}
+            estimatedItemSize={40}
+            renderItem={({ item }) => (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginVertical: 4,
+                  padding: 4,
+                }}
+              >
+                <Text style={{ flex: 1, marginRight: 8 }}>
+                  <Text style={{ fontSize: 16 }}>{item.quantity}</Text>
+                  <Text style={{ marginLeft: 4, fontSize: 16 }}>x</Text>
+                  <Text style={{ marginLeft: 8, fontSize: 16 }}>
+                    {item.name}
+                  </Text>
+                </Text>
+                <Text style={{ fontSize: 16 }}>
+                  {convertPaymentAmount(item.price)}
+                </Text>
+              </View>
+            )}
+            showsHorizontalScrollIndicator={false}
+          />
+        </View>
 
         <Divider style={{ marginVertical: 8 }} />
 

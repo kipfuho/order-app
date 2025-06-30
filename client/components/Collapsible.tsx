@@ -47,7 +47,7 @@ export function Collapsible({
       <TouchableOpacity
         style={styles.heading}
         onPress={handleToggle}
-        activeOpacity={0.8}
+        activeOpacity={1}
       >
         <View style={{ height: 32, width: 32 }}>
           <Animated.View style={animatedIconStyle}>

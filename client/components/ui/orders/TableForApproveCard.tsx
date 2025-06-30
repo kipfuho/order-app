@@ -1,6 +1,11 @@
 import { memo } from "react";
-import { TouchableOpacity } from "react-native";
-import { Card, Surface, Text, useTheme } from "react-native-paper";
+import {
+  Card,
+  Surface,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 import { Table } from "@stores/state.interface";
 
 const TableForApproveCard = ({
@@ -14,7 +19,10 @@ const TableForApproveCard = ({
 }) => {
   const theme = useTheme();
   return (
-    <TouchableOpacity onPress={() => onClick(table.id)} activeOpacity={1}>
+    <TouchableRipple
+      onPress={() => onClick(table.id)}
+      style={{ borderRadius: 5 }}
+    >
       <Card
         style={{
           margin: 10,
@@ -68,7 +76,7 @@ const TableForApproveCard = ({
           )}
         </Surface>
       </Card>
-    </TouchableOpacity>
+    </TouchableRipple>
   );
 };
 export default memo(TableForApproveCard);

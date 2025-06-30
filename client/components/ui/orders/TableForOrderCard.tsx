@@ -1,6 +1,13 @@
 import { memo } from "react";
-import { TouchableOpacity, View } from "react-native";
-import { Card, Icon, Surface, Text, useTheme } from "react-native-paper";
+import { View } from "react-native";
+import {
+  Card,
+  Icon,
+  Surface,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 import { TableForOrder } from "@stores/state.interface";
 import {
   convertPaymentAmount,
@@ -103,7 +110,10 @@ const TableForOrderCard = ({
 }) => {
   const theme = useTheme();
   return (
-    <TouchableOpacity onPress={() => onClick(table.id)} activeOpacity={1}>
+    <TouchableRipple
+      onPress={() => onClick(table.id)}
+      style={{ borderRadius: 5 }}
+    >
       <Card
         style={{
           margin: 10,
@@ -135,7 +145,7 @@ const TableForOrderCard = ({
         </Surface>
         <MemoizedTableForOrderCurrentInfo table={table} />
       </Card>
-    </TouchableOpacity>
+    </TouchableRipple>
   );
 };
 

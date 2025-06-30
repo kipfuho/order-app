@@ -5,10 +5,16 @@ import {
   useRouter,
 } from "expo-router";
 import { AppBar } from "@components/AppBar";
-import { TouchableOpacity, View } from "react-native";
+import { View } from "react-native";
 import { goToShopHome } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
-import { Icon, Menu, Text, useTheme } from "react-native-paper";
+import {
+  Icon,
+  Menu,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { SwipeContext } from "@/hooks/useSwipeNavigation";
 
@@ -46,7 +52,7 @@ const KitchenButton = ({ title, route }: Item) => {
   }, [pathName, route]);
 
   return (
-    <TouchableOpacity
+    <TouchableRipple
       style={{
         backgroundColor: selected
           ? theme.colors.primaryContainer
@@ -72,7 +78,7 @@ const KitchenButton = ({ title, route }: Item) => {
       >
         {title}
       </Text>
-    </TouchableOpacity>
+    </TouchableRipple>
   );
 };
 
@@ -151,7 +157,7 @@ export default function TabLayout() {
                 visible={menuVisible}
                 onDismiss={() => setMenuVisible(false)}
                 anchor={
-                  <TouchableOpacity
+                  <TouchableRipple
                     style={{
                       padding: 4,
                       justifyContent: "center",
@@ -162,7 +168,7 @@ export default function TabLayout() {
                     onPress={() => setMenuVisible(true)}
                   >
                     <Icon source="dots-horizontal" size={28} />
-                  </TouchableOpacity>
+                  </TouchableRipple>
                 }
               >
                 {allAdditionalRoutes.map((info, index) => (

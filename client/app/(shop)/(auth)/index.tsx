@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, TouchableOpacity } from "react-native";
-import { Button, Portal, Searchbar, Surface, Text } from "react-native-paper";
+import { View } from "react-native";
+import {
+  Button,
+  Portal,
+  Searchbar,
+  Surface,
+  Text,
+  TouchableRipple,
+} from "react-native-paper";
 import { useRouter } from "expo-router";
 import { AppBar } from "@components/AppBar";
 import { useGetShopsQuery } from "@stores/apiSlices/shopApi.slice";
@@ -81,20 +88,11 @@ export default function ShopsPage() {
         <FlashList
           data={filteredShops}
           keyExtractor={(item) => item.id.toString()}
-          ListHeaderComponent={
-            <Searchbar
-              value={searchValue}
-              placeholder={t("search")}
-              onChangeText={setSearchValue}
-              style={{ margin: 12 }}
-            />
-          }
           contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 12 }}
-          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          estimatedItemSize={124}
           renderItem={({ item: shop }) => (
-            <TouchableOpacity
+            <TouchableRipple
               onPress={() => goToShopHome({ router, shopId: shop.id })}
-              activeOpacity={1}
             >
               <Surface
                 style={{
@@ -142,8 +140,17 @@ export default function ShopsPage() {
                   </Text>
                 </View>
               </Surface>
-            </TouchableOpacity>
+            </TouchableRipple>
           )}
+          ListHeaderComponent={
+            <Searchbar
+              value={searchValue}
+              placeholder={t("search")}
+              onChangeText={setSearchValue}
+              style={{ margin: 12 }}
+            />
+          }
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         />
       </Surface>
     </>

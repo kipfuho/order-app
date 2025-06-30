@@ -289,6 +289,7 @@ const UnconfirmedOrderCard = ({
             <FlashList
               data={unconfirmedOrder.dishOrders || []}
               keyExtractor={(item) => item.id}
+              estimatedItemSize={82}
               renderItem={({ item }) => (
                 <View style={{ gap: 4, marginBottom: 12 }}>
                   <Text style={{ flex: 1, marginRight: 8 }}>

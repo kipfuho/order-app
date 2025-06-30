@@ -1,9 +1,10 @@
 import React, { memo } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import {
   ActivityIndicator,
   Badge,
   Surface,
+  TouchableRipple,
   useTheme,
 } from "react-native-paper";
 import { KitchenDishOrder, Shop } from "@stores/state.interface";
@@ -130,11 +131,7 @@ const KitchenDishOrderServingCard: React.FC<KitchenDishOrderProps> = ({
   }
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={handleOnPress}
-      onLongPress={handleOnLongPress}
-    >
+    <TouchableRipple onPress={handleOnPress} onLongPress={handleOnLongPress}>
       <Surface
         style={{
           borderRadius: 4,
@@ -204,7 +201,7 @@ const KitchenDishOrderServingCard: React.FC<KitchenDishOrderProps> = ({
           />
         </View>
       </Surface>
-    </TouchableOpacity>
+    </TouchableRipple>
   );
 };
 

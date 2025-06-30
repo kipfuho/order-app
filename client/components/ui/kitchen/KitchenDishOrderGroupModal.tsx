@@ -1,9 +1,10 @@
 import React, { memo } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import {
   ActivityIndicator,
   Button,
   Surface,
+  TouchableRipple,
   useTheme,
 } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,13 +21,13 @@ import {
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { FlashList } from "@shopify/flash-list";
 
-const TableKitchenDishOrderTime = ({
+const TableKitchenDishOrderTime = memo(function TableKitchenDishOrderTime({
   item,
   theme,
 }: {
   item: KitchenDishOrder;
   theme: CustomMD3Theme;
-}) => {
+}) {
   const { t } = useTranslation();
   const now = useCurrentTime();
   const minutesSinceOrderCreated = getMinuteForDisplay({
@@ -69,11 +70,9 @@ const TableKitchenDishOrderTime = ({
       </View>
     </View>
   );
-};
+});
 
-const MemoizedTableKitchenDishOrderTime = memo(TableKitchenDishOrderTime);
-
-const TableKitchenDishOrder = ({
+const TableKitchenDishOrder = memo(function TableKitchenDishOrder({
   item,
   handleOnPress,
   handleOnLongPress,
@@ -81,13 +80,12 @@ const TableKitchenDishOrder = ({
   item: KitchenDishOrder;
   handleOnPress: (item: KitchenDishOrder, confirmed: boolean) => void;
   handleOnLongPress: (item: KitchenDishOrder) => void;
-}) => {
+}) {
   const theme = useTheme<CustomMD3Theme>();
   const { kitchenDishOrder } = useSelector((state: RootState) => state.shop);
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.8}
+    <TouchableRipple
       onPress={() => handleOnPress(item, kitchenDishOrder[item.id]?.confirmed)}
       onLongPress={() => handleOnLongPress(item)}
     >
@@ -107,13 +105,11 @@ const TableKitchenDishOrder = ({
         }}
       >
         <Text style={{ fontSize: 16 }}>{item.tableName}</Text>
-        <MemoizedTableKitchenDishOrderTime item={item} theme={theme} />
+        <TableKitchenDishOrderTime item={item} theme={theme} />
       </Surface>
-    </TouchableOpacity>
+    </TouchableRipple>
   );
-};
-
-const MemoizedTableKitchenDishOrder = memo(TableKitchenDishOrder);
+});
 
 export default function KitchenDishOrderGroup({
   dishOrders,
@@ -195,8 +191,9 @@ export default function KitchenDishOrderGroup({
         <FlashList
           data={dishOrders}
           keyExtractor={(item) => item.id}
+          estimatedItemSize={58}
           renderItem={({ item }) => (
-            <MemoizedTableKitchenDishOrder
+            <TableKitchenDishOrder
               item={item}
               handleOnPress={handleOnPress}
               handleOnLongPress={handleOnLongPress}
