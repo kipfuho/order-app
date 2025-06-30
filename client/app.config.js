@@ -4,7 +4,7 @@ export default {
   name: "Savora",
   slug: "savora",
   version: "1.0.0",
-  orientation: "portrait",
+  orientation: "default",
   icon: "./assets/images/savora.png",
   scheme: "myapp",
   userInterfaceStyle: "automatic",
