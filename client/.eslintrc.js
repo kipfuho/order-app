@@ -44,4 +44,10 @@ module.exports = {
     "babel.config.js",
     "app.config.js",
   ],
+  "prettier/prettier": [
+    "error",
+    {
+      endOfLine: "auto",
+    },
+  ],
 };
