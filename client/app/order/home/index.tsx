@@ -199,7 +199,7 @@ export default function CustomerHomePage() {
                           const _normalizedDishText =
                             normalizedDishNameByCode[dish.code] || "";
 
-                          return _normalizedDishText.includes(
+                          return _normalizedDishText.startsWith(
                             normalizedSearchValue,
                           );
                         },
