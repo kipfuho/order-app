@@ -100,6 +100,22 @@ export const customerSlice = createSlice({
         quantity: action.payload.quantity,
         note: action.payload.note,
       };
+      // calculate quantity if passed in id
+      if (action.payload.id) {
+        // should only be positive
+        const quantityChange =
+          action.payload.quantity - (currentCartItem?.quantity || 0);
+        state.cartItemByDishId[dish.id] = {
+          ...state.cartItemByDishId[dish.id],
+          totalQuantity:
+            (state.cartItemByDishId[dish.id]?.totalQuantity || 0) +
+            quantityChange,
+          newQuantity:
+            state.cartItemByDishId[dish.id].newQuantity +
+            (action.payload.note ? 0 : quantityChange),
+        };
+        return;
+      }
       state.cartItemByDishId[dish.id] = {
         ...state.cartItemByDishId[dish.id],
         totalQuantity:

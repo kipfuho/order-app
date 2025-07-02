@@ -184,7 +184,7 @@ export function CustomerAppBar({
                 </Badge>
               )}
             </View>
-            <Text variant="titleMedium">{t("cart")}</Text>
+            <Text variant="titleMedium">{t("cart_items")}</Text>
           </View>
         </TouchableRipple>
         <TouchableRipple

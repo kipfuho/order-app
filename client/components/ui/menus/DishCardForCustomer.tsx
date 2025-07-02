@@ -110,9 +110,11 @@ QuantityControlForCustomer.displayName = "QuantityControlForCustomer";
 const DishCardForCustomer = ({
   dish,
   containerWidth = 0,
+  openMenu,
 }: {
   dish: Dish;
   containerWidth?: number;
+  openMenu?: (dish: Dish, event: any) => void;
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -127,6 +129,12 @@ const DishCardForCustomer = ({
         { width: cardWidth, backgroundColor: theme.colors.background },
       ]}
       mode="contained"
+      onPress={(event) => {
+        if (openMenu) {
+          openMenu(dish, event);
+        }
+      }}
+      disabled={dish.status === DishStatus.deactivated}
     >
       <View>
         <Image

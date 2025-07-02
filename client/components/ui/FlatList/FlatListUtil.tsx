@@ -102,14 +102,17 @@ export const ItemTypeMap = {
   [ItemTypeFlatList.DISH_CARD_CUSTOMER]: memo(function DishCardCustomer({
     item,
     containerWidth,
+    openMenu,
   }: {
     item: Dish;
     containerWidth?: number;
+    openMenu?: (dish: Dish, event: any) => void;
   }) {
     return (
       <MemoizedDishCardForCustomer
         dish={item}
         containerWidth={containerWidth}
+        openMenu={openMenu}
       />
     );
   }),

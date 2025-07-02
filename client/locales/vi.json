@@ -257,5 +257,7 @@
   "tax_change": "Thay đổi % thuế đơn",
   "invalid_tax_rate": "Invalid tax rate. Must be between 0 and 100.",
   "order_update": "Có đơn mới được cập nhật",
-  "failed_to_upload_image": "Tải ảnh lên thất bại"
+  "failed_to_upload_image": "Tải ảnh lên thất bại",
+  "close": "Đóng",
+  "update_quantity": "Thay đổi số lượng món"
 }

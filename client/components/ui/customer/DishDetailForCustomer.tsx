@@ -1,7 +1,8 @@
+import "react-native-get-random-values";
 import _ from "lodash";
+import { v4 as uuidv4 } from "uuid";
 import { Dispatch, SetStateAction, useState } from "react";
 import {
-  ActivityIndicator,
   Button,
   Dialog,
   Divider,
@@ -15,40 +16,35 @@ import {
   useTheme,
 } from "react-native-paper";
 import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
-import { Dish, Shop } from "@stores/state.interface";
-import { convertPaymentAmount, mergeCartItems } from "@constants/utils";
+import { Dish } from "@stores/state.interface";
+import { convertPaymentAmount } from "@constants/utils";
 import { RootState } from "@stores/store";
 import { BLURHASH } from "@constants/common";
 import Toast from "react-native-toast-message";
-import { useUpdateCartMutation } from "@/stores/apiSlices/cartApi.slice";
 import toastConfig from "@/components/CustomToast";
+import { updateCartSingleDish } from "../../../stores/customerSlice";
 
-export default function UpdateCartItem({
-  cartItemId,
+export default function DishDetailForCustomer({
   dish,
   setVisible,
 }: {
-  cartItemId: string;
-  dish?: Dish;
+  dish: Dish;
   setVisible: Dispatch<SetStateAction<boolean>>;
 }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const { height } = useWindowDimensions();
+  const dispatch = useDispatch();
 
-  const customerState = useSelector((state: RootState) => state.customer);
-  const shop = customerState.shop as Shop;
-  const cartItem = customerState.currentCartItem[cartItemId];
-  const [updateCart, { isLoading: updateCartLoading }] =
-    useUpdateCartMutation();
+  const currentCartItems = useSelector(
+    (state: RootState) => state.customer.currentCartItem,
+  );
   const [dialogVisible, setDialogVisible] = useState(false);
   const [note, setNote] = useState("");
-  const [currentItemQuantity, setCurrentQuantity] = useState(
-    cartItem?.quantity ?? 0,
-  );
+  const [currentItemQuantity, setCurrentQuantity] = useState(0);
   const [dialogQuantity, setDialogQuantity] = useState("");
 
   const handleUpdateCartItemQuantity = () => {
@@ -65,28 +61,24 @@ export default function UpdateCartItem({
     setDialogVisible(false);
   };
 
-  const handleUpdateCartItem = async () => {
-    if (!cartItem || !dish) return;
+  const handleChangeQuantity = () => {
+    if (!dish || currentItemQuantity === 0) return;
 
-    const newCartItems = {
-      ...customerState.currentCartItem,
-      [cartItem.id]: {
-        ...customerState.currentCartItem[cartItem.id],
-        quantity: currentItemQuantity,
+    const cartItemWithSameNote = _.find(
+      currentCartItems,
+      (cartItem) => cartItem.note === note,
+    );
+    dispatch(
+      updateCartSingleDish({
+        id: cartItemWithSameNote?.id || uuidv4(),
+        dish,
+        quantity: (cartItemWithSameNote?.quantity || 0) + currentItemQuantity,
         note,
-      },
-    };
+      }),
+    );
 
-    await updateCart({
-      shopId: shop!.id,
-      cartItems: mergeCartItems(newCartItems),
-    }).unwrap();
     setVisible(false);
   };
-
-  if (!cartItem || !dish) {
-    return;
-  }
 
   return (
     <>
@@ -128,11 +120,6 @@ export default function UpdateCartItem({
               style={{ width: "100%", height: Math.min(500, height * 0.5) }}
               placeholder={{ blurhash: BLURHASH }}
               contentFit="fill"
-              recyclingKey={`dish-${dish.id}`} // Helps recycle image components
-              cachePolicy="memory-disk" // Aggressive caching
-              priority="normal" // Don't compete with high-priority images
-              transition={null} // Disable transitions during scrolling
-              allowDownscaling // Allow image downscaling
             />
             <IconButton
               icon="close"
@@ -252,39 +239,31 @@ export default function UpdateCartItem({
 
         <Divider style={{ marginVertical: 8 }} />
 
-        {/* Buttons */}
-        {updateCartLoading ? (
-          <View style={{ padding: 16 }}>
-            <ActivityIndicator size={40} />
-          </View>
-        ) : (
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              padding: 16,
-              gap: 8,
-            }}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            padding: 16,
+            gap: 8,
+          }}
+        >
+          <Button
+            mode="contained"
+            icon="cart"
+            onPress={handleChangeQuantity}
+            style={{ flex: 1, borderRadius: 8 }}
           >
-            <Button
-              mode="contained"
-              icon="cart"
-              onPress={handleUpdateCartItem}
-              style={{ flex: 1, borderRadius: 8 }}
-              disabled={updateCartLoading}
-            >
-              {t("update_cart")}
-            </Button>
-            <Button
-              mode="contained-tonal"
-              icon="close"
-              onPress={() => setVisible(false)}
-              style={{ flex: 1, borderRadius: 8 }}
-            >
-              {t("close")}
-            </Button>
-          </View>
-        )}
+            {t("add_product")}
+          </Button>
+          <Button
+            mode="contained-tonal"
+            icon="close"
+            onPress={() => setVisible(false)}
+            style={{ flex: 1, borderRadius: 8 }}
+          >
+            {t("close")}
+          </Button>
+        </View>
       </Surface>
     </>
   );
