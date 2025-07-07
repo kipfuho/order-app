@@ -804,6 +804,14 @@ const getTableActiveOrderSessions = async ({ shopId, tableId }) => {
         ],
       },
     },
+    orderBy: [
+      {
+        createdAt: 'asc',
+      },
+      {
+        id: 'asc',
+      },
+    ],
   });
   const shop = await getShopFromCache({ shopId });
   const tables = await getTablesFromCache({ shopId });
