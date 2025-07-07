@@ -2,7 +2,7 @@ import { OrderSessionStatus } from "@/constants/common";
 import { convertPaymentAmount } from "@/constants/utils";
 import { OrderSessionCartCheckoutHistory } from "@/stores/state.interface";
 import { RootState } from "@/stores/store";
-import FastImage from "@d11/react-native-fast-image";
+import { CrossPlatformImage } from "@/components/CrossPlatformImage";
 import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions, View, Linking } from "react-native";
@@ -53,7 +53,7 @@ const CartHistoryOrderCard = ({
             >
               <View style={{ width: dishOrderWidth, gap: 6 }}>
                 {dish && (
-                  <FastImage
+                  <CrossPlatformImage
                     source={{ uri: dish.imageUrls[0] }}
                     // eslint-disable-next-line @typescript-eslint/no-require-imports
                     defaultSource={require("@assets/images/savora.png")}

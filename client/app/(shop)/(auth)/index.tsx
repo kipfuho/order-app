@@ -14,7 +14,7 @@ import { useGetShopsQuery } from "@stores/apiSlices/shopApi.slice";
 import { LoaderBasic } from "@components/ui/Loader";
 import { goToShopHome, goToCreateShop } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
-import FastImage from "@d11/react-native-fast-image";
+import { CrossPlatformImage } from "@/components/CrossPlatformImage";
 import _, { debounce } from "lodash";
 import { Shop } from "@stores/state.interface";
 import { ConfirmCancelDialog } from "@/components/ui/CancelDialog";
@@ -102,7 +102,7 @@ export default function ShopsPage() {
                     padding: 12,
                   }}
                 >
-                  <FastImage
+                  <CrossPlatformImage
                     source={{
                       uri: shop.imageUrls?.[0],
                     }}

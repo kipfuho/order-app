@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, View, useWindowDimensions, Pressable } from "react-native";
-import FastImage from "@d11/react-native-fast-image";
+import { CrossPlatformImage } from "@/components/CrossPlatformImage";
 import Carousel from "react-native-reanimated-carousel";
 import { Dish } from "@/stores/state.interface";
 import EnhancedLoadingScreen from "./ui/EnhancedLoading";
@@ -57,7 +57,7 @@ export default function RecommendDishImageSlider({
           >
             {dish.imageUrls && dish.imageUrls.length > 0 ? (
               <View style={styles.imageContainer}>
-                <FastImage
+                <CrossPlatformImage
                   source={{ uri: dish.imageUrls[0] }}
                   style={styles.image}
                 />

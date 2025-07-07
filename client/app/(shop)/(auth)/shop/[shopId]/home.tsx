@@ -21,7 +21,7 @@ import { goToShopList, goToUpdateShop } from "@apis/navigate.service";
 import { useDeleteShopMutation } from "@stores/apiSlices/shopApi.slice";
 import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
-import FastImage from "@d11/react-native-fast-image";
+import { CrossPlatformImage } from "@/components/CrossPlatformImage";
 import { PermissionType } from "@constants/common";
 import { styles } from "@/constants/styles";
 
@@ -143,7 +143,7 @@ export default function ShopPage() {
                   elevation: 5, // Shadow effect
                 }}
               >
-                <FastImage
+                <CrossPlatformImage
                   source={{
                     uri: shop.imageUrls?.[0],
                   }}

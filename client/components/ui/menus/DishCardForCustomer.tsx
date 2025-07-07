@@ -10,7 +10,7 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
-import FastImage from "@d11/react-native-fast-image";
+import { CrossPlatformImage } from "@/components/CrossPlatformImage";
 import { Dish } from "@stores/state.interface";
 import { convertPaymentAmount } from "@constants/utils";
 import { updateCartSingleDish } from "@stores/customerSlice";
@@ -137,7 +137,7 @@ const DishCardForCustomer = ({
       disabled={dish.status === DishStatus.deactivated}
     >
       <View>
-        <FastImage
+        <CrossPlatformImage
           source={{ uri: dish.imageUrls[0] }}
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           defaultSource={require("@assets/images/savora.png")}

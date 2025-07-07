@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { Dispatch, SetStateAction } from "react";
 import * as ImagePicker from "expo-image-picker";
-import FastImage from "@d11/react-native-fast-image";
+import { CrossPlatformImage } from "@/components/CrossPlatformImage";
 import {
   ActivityIndicator,
   Button,
@@ -141,7 +141,7 @@ export default function UploadImages({
               }}
               mode="flat"
             >
-              <FastImage
+              <CrossPlatformImage
                 source={{ uri: image.uri }}
                 style={{
                   width: 150,

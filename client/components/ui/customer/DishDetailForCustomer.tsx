@@ -17,7 +17,7 @@ import {
 } from "react-native-paper";
 import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import FastImage from "@d11/react-native-fast-image";
+import { CrossPlatformImage } from "@/components/CrossPlatformImage";
 import { useTranslation } from "react-i18next";
 import { Dish } from "@stores/state.interface";
 import { convertPaymentAmount } from "@constants/utils";
@@ -113,7 +113,7 @@ export default function DishDetailForCustomer({
         <ScrollView>
           {/* Top image with close icon */}
           <View style={{ position: "relative" }}>
-            <FastImage
+            <CrossPlatformImage
               source={{ uri: dish.imageUrls[0] }}
               // eslint-disable-next-line @typescript-eslint/no-require-imports
               defaultSource={require("@assets/images/savora.png")}

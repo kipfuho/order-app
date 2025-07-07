@@ -9,7 +9,7 @@ import {
   Tooltip,
   useTheme,
 } from "react-native-paper";
-import FastImage from "@d11/react-native-fast-image";
+import { CrossPlatformImage } from "@/components/CrossPlatformImage";
 import { useTranslation } from "react-i18next";
 import { Dish } from "@stores/state.interface";
 import { convertPaymentAmount } from "@constants/utils";
@@ -92,7 +92,7 @@ const DishCard = ({
           </Text>
         </View>
       )}
-      <FastImage
+      <CrossPlatformImage
         source={{ uri: dish.imageUrls[0] }}
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         defaultSource={require("@assets/images/savora.png")}

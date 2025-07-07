@@ -14,7 +14,7 @@ import {
   Tooltip,
   useTheme,
 } from "react-native-paper";
-import FastImage from "@d11/react-native-fast-image";
+import { CrossPlatformImage } from "@/components/CrossPlatformImage";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
 import { RootState } from "@stores/store";
@@ -184,7 +184,7 @@ const DishCardForOrder = ({
         <Text style={styles.priceText}>{convertPaymentAmount(dish.price)}</Text>
       </Surface>
       <View>
-        <FastImage
+        <CrossPlatformImage
           source={{ uri: dish.imageUrls[0] }}
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           defaultSource={require("@assets/images/savora.png")}

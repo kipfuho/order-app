@@ -1,7 +1,7 @@
 import { convertPaymentAmount } from "@/constants/utils";
 import { OrderCartCheckoutHistory } from "@/stores/state.interface";
 import { RootState } from "@/stores/store";
-import FastImage from "@d11/react-native-fast-image";
+import { CrossPlatformImage } from "@/components/CrossPlatformImage";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions, View } from "react-native";
 import { Divider, Surface, Text } from "react-native-paper";
@@ -47,7 +47,7 @@ export default function UnconfirmedCartCheckoutHistoryCard({
               >
                 <View style={{ width: dishOrderWidth, gap: 6 }}>
                   {dish && (
-                    <FastImage
+                    <CrossPlatformImage
                       source={{ uri: dish.imageUrls[0] }}
                       // eslint-disable-next-line @typescript-eslint/no-require-imports
                       defaultSource={require("@assets/images/savora.png")}
