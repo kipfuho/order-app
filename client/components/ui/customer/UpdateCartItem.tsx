@@ -16,12 +16,11 @@ import {
 } from "react-native-paper";
 import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { useSelector } from "react-redux";
-import { Image } from "expo-image";
+import FastImage from "@d11/react-native-fast-image";
 import { useTranslation } from "react-i18next";
 import { Dish, Shop } from "@stores/state.interface";
 import { convertPaymentAmount, mergeCartItems } from "@constants/utils";
 import { RootState } from "@stores/store";
-import { BLURHASH } from "@constants/common";
 import Toast from "react-native-toast-message";
 import { useUpdateCartMutation } from "@/stores/apiSlices/cartApi.slice";
 import toastConfig from "@/components/CustomToast";
@@ -122,17 +121,11 @@ export default function UpdateCartItem({
         <ScrollView>
           {/* Top image with close icon */}
           <View style={{ position: "relative" }}>
-            <Image
+            <FastImage
+              source={{ uri: dish.imageUrls[0] }}
               // eslint-disable-next-line @typescript-eslint/no-require-imports
-              source={dish.imageUrls[0] || require("@assets/images/savora.png")}
+              defaultSource={require("@assets/images/savora.png")}
               style={{ width: "100%", height: Math.min(500, height * 0.5) }}
-              placeholder={{ blurhash: BLURHASH }}
-              contentFit="fill"
-              recyclingKey={`dish-${dish.id}`} // Helps recycle image components
-              cachePolicy="memory-disk" // Aggressive caching
-              priority="normal" // Don't compete with high-priority images
-              transition={null} // Disable transitions during scrolling
-              allowDownscaling // Allow image downscaling
             />
             <IconButton
               icon="close"

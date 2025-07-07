@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { Dispatch, SetStateAction } from "react";
 import * as ImagePicker from "expo-image-picker";
-import { Image } from "expo-image";
+import FastImage from "@d11/react-native-fast-image";
 import {
   ActivityIndicator,
   Button,
@@ -9,7 +9,6 @@ import {
   Surface,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-import { BLURHASH } from "@constants/common";
 import { removeImageRequest } from "@apis/dish.api.service";
 import Toast from "react-native-toast-message";
 import { Platform } from "react-native";
@@ -142,17 +141,13 @@ export default function UploadImages({
               }}
               mode="flat"
             >
-              <Image
+              <FastImage
                 source={{ uri: image.uri }}
                 style={{
                   width: 150,
                   height: 150,
                   borderRadius: allowsMultipleSelection ? 10 : 200,
                 }}
-                placeholder={{ blurhash: BLURHASH }}
-                contentFit="cover"
-                transition={1000}
-                allowDownscaling // Allow image downscaling
               />
               <IconButton
                 mode="contained"

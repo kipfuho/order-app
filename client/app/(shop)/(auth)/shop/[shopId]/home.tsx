@@ -21,8 +21,8 @@ import { goToShopList, goToUpdateShop } from "@apis/navigate.service";
 import { useDeleteShopMutation } from "@stores/apiSlices/shopApi.slice";
 import { LoaderBasic } from "@components/ui/Loader";
 import { useTranslation } from "react-i18next";
-import { Image } from "expo-image";
-import { BLURHASH, PermissionType } from "@constants/common";
+import FastImage from "@d11/react-native-fast-image";
+import { PermissionType } from "@constants/common";
 import { styles } from "@/constants/styles";
 
 interface Item {
@@ -143,23 +143,17 @@ export default function ShopPage() {
                   elevation: 5, // Shadow effect
                 }}
               >
-                <Image
-                  source={
-                    // eslint-disable-next-line @typescript-eslint/no-require-imports
-                    shop.imageUrls?.[0] || require("@assets/images/savora.png")
-                  }
-                  placeholder={{ blurhash: BLURHASH }}
+                <FastImage
+                  source={{
+                    uri: shop.imageUrls?.[0],
+                  }}
+                  // eslint-disable-next-line @typescript-eslint/no-require-imports
+                  defaultSource={require("@assets/images/savora.png")}
                   style={{
                     width: 100,
                     height: 100,
                     borderRadius: 100,
                   }}
-                  recyclingKey={`shop-${shop.id}`} // Helps recycle image components
-                  cachePolicy="memory-disk" // Aggressive caching
-                  priority="normal" // Don't compete with high-priority images
-                  transition={null} // Disable transitions during scrolling
-                  allowDownscaling // Allow image downscaling
-                  contentFit="cover" // Efficient fit mode
                 />
               </Card>
 

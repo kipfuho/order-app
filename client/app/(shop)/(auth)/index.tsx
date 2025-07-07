@@ -14,10 +14,9 @@ import { useGetShopsQuery } from "@stores/apiSlices/shopApi.slice";
 import { LoaderBasic } from "@components/ui/Loader";
 import { goToShopHome, goToCreateShop } from "@apis/navigate.service";
 import { useTranslation } from "react-i18next";
-import { Image } from "expo-image";
+import FastImage from "@d11/react-native-fast-image";
 import _, { debounce } from "lodash";
 import { Shop } from "@stores/state.interface";
-import { BLURHASH } from "@constants/common";
 import { ConfirmCancelDialog } from "@/components/ui/CancelDialog";
 import { logoutRequest } from "@/apis/auth.api.service";
 import { useSession } from "@/hooks/useSession";
@@ -103,24 +102,17 @@ export default function ShopsPage() {
                     padding: 12,
                   }}
                 >
-                  <Image
-                    source={
-                      shop.imageUrls?.[0] ||
-                      // eslint-disable-next-line @typescript-eslint/no-require-imports
-                      require("@assets/images/savora.png")
-                    }
-                    placeholder={{ blurhash: BLURHASH }}
+                  <FastImage
+                    source={{
+                      uri: shop.imageUrls?.[0],
+                    }}
+                    // eslint-disable-next-line @typescript-eslint/no-require-imports
+                    defaultSource={require("@assets/images/savora.png")}
                     style={{
                       width: 100,
                       height: 100,
                       borderRadius: 15,
                     }}
-                    recyclingKey={`shop-${shop.id}`} // Helps recycle image components
-                    cachePolicy="memory-disk" // Aggressive caching
-                    priority="normal" // Don't compete with high-priority images
-                    transition={null} // Disable transitions during scrolling
-                    allowDownscaling // Allow image downscaling
-                    contentFit="cover" // Efficient fit mode
                   />
                   <View
                     style={{

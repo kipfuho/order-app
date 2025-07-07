@@ -1,8 +1,7 @@
 import React from "react";
 import { StyleSheet, View, useWindowDimensions, Pressable } from "react-native";
-import { Image } from "expo-image";
+import FastImage from "@d11/react-native-fast-image";
 import Carousel from "react-native-reanimated-carousel";
-import { BLURHASH } from "@constants/common";
 import { Dish } from "@/stores/state.interface";
 import EnhancedLoadingScreen from "./ui/EnhancedLoading";
 import { Surface, Text } from "react-native-paper";
@@ -58,16 +57,9 @@ export default function RecommendDishImageSlider({
           >
             {dish.imageUrls && dish.imageUrls.length > 0 ? (
               <View style={styles.imageContainer}>
-                <Image
+                <FastImage
                   source={{ uri: dish.imageUrls[0] }}
                   style={styles.image}
-                  placeholder={{ blurhash: BLURHASH }}
-                  recyclingKey={`dish-${dish.id}`} // Helps recycle image components
-                  cachePolicy="memory-disk" // Aggressive caching
-                  priority="normal" // Don't compete with high-priority images
-                  transition={null} // Disable transitions during scrolling
-                  allowDownscaling // Allow image downscaling
-                  contentFit="cover" // Efficient fit mode
                 />
                 <View style={styles.nameOverlay}>
                   <Text style={styles.nameOverlayText}>{dish.name}</Text>

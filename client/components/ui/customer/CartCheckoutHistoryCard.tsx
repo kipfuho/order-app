@@ -1,8 +1,8 @@
-import { BLURHASH, OrderSessionStatus } from "@/constants/common";
+import { OrderSessionStatus } from "@/constants/common";
 import { convertPaymentAmount } from "@/constants/utils";
 import { OrderSessionCartCheckoutHistory } from "@/stores/state.interface";
 import { RootState } from "@/stores/store";
-import { Image } from "expo-image";
+import FastImage from "@d11/react-native-fast-image";
 import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions, View, Linking } from "react-native";
@@ -53,24 +53,16 @@ const CartHistoryOrderCard = ({
             >
               <View style={{ width: dishOrderWidth, gap: 6 }}>
                 {dish && (
-                  <Image
-                    source={
-                      // eslint-disable-next-line @typescript-eslint/no-require-imports
-                      dish.imageUrls[0] || require("@assets/images/savora.png")
-                    }
-                    placeholder={{ blurhash: BLURHASH }}
+                  <FastImage
+                    source={{ uri: dish.imageUrls[0] }}
+                    // eslint-disable-next-line @typescript-eslint/no-require-imports
+                    defaultSource={require("@assets/images/savora.png")}
                     style={{
                       width: dishOrderWidth,
                       height: dishOrderWidth,
                       borderTopLeftRadius: 12,
                       borderTopRightRadius: 12,
                     }}
-                    recyclingKey={`dish-${dish.id}`} // Helps recycle image components
-                    cachePolicy="memory-disk" // Aggressive caching
-                    priority="normal" // Don't compete with high-priority images
-                    transition={null} // Disable transitions during scrolling
-                    allowDownscaling // Allow image downscaling
-                    contentFit="cover" // Efficient fit mode
                   />
                 )}
                 <Text

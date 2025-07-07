@@ -17,12 +17,11 @@ import {
 } from "react-native-paper";
 import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { Image } from "expo-image";
+import FastImage from "@d11/react-native-fast-image";
 import { useTranslation } from "react-i18next";
 import { Dish } from "@stores/state.interface";
 import { convertPaymentAmount } from "@constants/utils";
 import { RootState } from "@stores/store";
-import { BLURHASH } from "@constants/common";
 import Toast from "react-native-toast-message";
 import toastConfig from "@/components/CustomToast";
 import { updateCartSingleDish } from "../../../stores/customerSlice";
@@ -114,12 +113,11 @@ export default function DishDetailForCustomer({
         <ScrollView>
           {/* Top image with close icon */}
           <View style={{ position: "relative" }}>
-            <Image
+            <FastImage
+              source={{ uri: dish.imageUrls[0] }}
               // eslint-disable-next-line @typescript-eslint/no-require-imports
-              source={dish.imageUrls[0] || require("@assets/images/savora.png")}
+              defaultSource={require("@assets/images/savora.png")}
               style={{ width: "100%", height: Math.min(500, height * 0.5) }}
-              placeholder={{ blurhash: BLURHASH }}
-              contentFit="fill"
             />
             <IconButton
               icon="close"

@@ -1,8 +1,7 @@
-import { BLURHASH } from "@/constants/common";
 import { convertPaymentAmount } from "@/constants/utils";
 import { OrderCartCheckoutHistory } from "@/stores/state.interface";
 import { RootState } from "@/stores/store";
-import { Image } from "expo-image";
+import FastImage from "@d11/react-native-fast-image";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions, View } from "react-native";
 import { Divider, Surface, Text } from "react-native-paper";
@@ -48,25 +47,16 @@ export default function UnconfirmedCartCheckoutHistoryCard({
               >
                 <View style={{ width: dishOrderWidth, gap: 6 }}>
                   {dish && (
-                    <Image
-                      source={
-                        dish.imageUrls[0] ||
-                        // eslint-disable-next-line @typescript-eslint/no-require-imports
-                        require("@assets/images/savora.png")
-                      }
-                      placeholder={{ blurhash: BLURHASH }}
+                    <FastImage
+                      source={{ uri: dish.imageUrls[0] }}
+                      // eslint-disable-next-line @typescript-eslint/no-require-imports
+                      defaultSource={require("@assets/images/savora.png")}
                       style={{
                         width: dishOrderWidth,
                         height: dishOrderWidth,
                         borderTopLeftRadius: 12,
                         borderTopRightRadius: 12,
                       }}
-                      recyclingKey={`dish-${dish.id}`} // Helps recycle image components
-                      cachePolicy="memory-disk" // Aggressive caching
-                      priority="normal" // Don't compete with high-priority images
-                      transition={null} // Disable transitions during scrolling
-                      allowDownscaling // Allow image downscaling
-                      contentFit="cover" // Efficient fit mode
                     />
                   )}
                   <Text

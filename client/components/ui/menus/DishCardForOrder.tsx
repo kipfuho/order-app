@@ -14,14 +14,14 @@ import {
   Tooltip,
   useTheme,
 } from "react-native-paper";
-import { Image } from "expo-image";
+import FastImage from "@d11/react-native-fast-image";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
 import { RootState } from "@stores/store";
 import { updateCurrentOrder } from "@stores/shop.slice";
 import { Dish, DishOrder } from "@stores/state.interface";
 import { convertPaymentAmount } from "@constants/utils";
-import { BLURHASH, DishStatus } from "@constants/common";
+import { DishStatus } from "@constants/common";
 import toastConfig from "@/components/CustomToast";
 
 // === Quantity Control ===
@@ -184,17 +184,11 @@ const DishCardForOrder = ({
         <Text style={styles.priceText}>{convertPaymentAmount(dish.price)}</Text>
       </Surface>
       <View>
-        <Image
+        <FastImage
+          source={{ uri: dish.imageUrls[0] }}
           // eslint-disable-next-line @typescript-eslint/no-require-imports
-          source={dish.imageUrls[0] || require("@assets/images/savora.png")}
+          defaultSource={require("@assets/images/savora.png")}
           style={{ width: cardWidth, height: cardWidth }}
-          placeholder={{ blurhash: BLURHASH }}
-          recyclingKey={`dish-${dish.id}`} // Helps recycle image components
-          cachePolicy="memory-disk" // Aggressive caching
-          priority="normal" // Don't compete with high-priority images
-          transition={null} // Disable transitions during scrolling
-          allowDownscaling // Allow image downscaling
-          contentFit="cover" // Efficient fit mode
         />
         {currentOrder && (
           <QuantityControl dish={dish} currentOrder={currentOrder} />
