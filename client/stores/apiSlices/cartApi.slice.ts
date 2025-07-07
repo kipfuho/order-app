@@ -49,12 +49,12 @@ export const cartApiSlice = createApi({
 
     updateCart: builder.mutation<
       boolean,
-      { shopId: string; cartItems: CartItem[] }
+      { shopId: string; cartItems: CartItem[]; isDebounce?: boolean }
     >({
-      queryFn: async ({ cartItems, shopId }, api) => {
+      queryFn: async ({ cartItems, shopId, isDebounce }, api) => {
         try {
           const state = api.getState();
-          if (!_.get(state, "customer.isUpdateCartDebouncing")) {
+          if (isDebounce && !_.get(state, "customer.isUpdateCartDebouncing")) {
             return { data: true };
           }
 

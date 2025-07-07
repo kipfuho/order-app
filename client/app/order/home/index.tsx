@@ -95,7 +95,7 @@ export default function CustomerHomePage() {
     () =>
       debounce(
         ({ shopId, cartItems }: { shopId: string; cartItems: CartItem[] }) => {
-          updateCart({ cartItems, shopId });
+          updateCart({ cartItems, shopId, isDebounce: true });
         },
         5000,
       ),
