@@ -97,7 +97,7 @@ export default function CustomerHomePage() {
         ({ shopId, cartItems }: { shopId: string; cartItems: CartItem[] }) => {
           updateCart({ cartItems, shopId });
         },
-        1000,
+        5000,
       ),
     [updateCart],
   );

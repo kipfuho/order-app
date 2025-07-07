@@ -20,6 +20,7 @@ import {
   updateIsUpdateCartDebouncing,
 } from "../customerSlice";
 import { GetCartCheckoutHistoryRequest } from "@/apis/cart.api.interface";
+import _ from "lodash";
 
 export const cartApiSlice = createApi({
   reducerPath: "cartApi",
@@ -52,6 +53,11 @@ export const cartApiSlice = createApi({
     >({
       queryFn: async ({ cartItems, shopId }, api) => {
         try {
+          const state = api.getState();
+          if (!_.get(state, "customer.isUpdateCartDebouncing")) {
+            return { data: true };
+          }
+
           await updateCartRequest({
             shopId,
             cartItems,

@@ -65,7 +65,7 @@ export default function DishDetailForCustomer({
 
     const cartItemWithSameNote = _.find(
       currentCartItems,
-      (cartItem) => cartItem.note === note,
+      (cartItem) => cartItem.dishId === dish.id && cartItem.note === note,
     );
     dispatch(
       updateCartSingleDish({
