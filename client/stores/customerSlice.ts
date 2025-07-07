@@ -111,7 +111,7 @@ export const customerSlice = createSlice({
             (state.cartItemByDishId[dish.id]?.totalQuantity || 0) +
             quantityChange,
           newQuantity:
-            state.cartItemByDishId[dish.id].newQuantity +
+            (state.cartItemByDishId[dish.id]?.newQuantity || 0) +
             (action.payload.note ? 0 : quantityChange),
         };
         return;
