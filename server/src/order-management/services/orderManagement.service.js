@@ -867,6 +867,14 @@ const getCheckoutCartHistory = async ({ customerId, shopId, cursor, limit = 20 }
             },
           },
         },
+        orderBy: [
+          {
+            createdAt: 'asc',
+          },
+          {
+            id: 'asc',
+          },
+        ],
       },
       paymentAmount: true,
     },

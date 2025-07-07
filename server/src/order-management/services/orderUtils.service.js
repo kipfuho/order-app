@@ -426,6 +426,14 @@ const _getOrderSessionDetail = async ({ orderSessionId, shopId }) => {
             ],
           },
         },
+        orderBy: [
+          {
+            createdAt: 'asc',
+          },
+          {
+            id: 'asc',
+          },
+        ],
       },
     },
   });
