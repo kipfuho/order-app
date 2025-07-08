@@ -860,7 +860,7 @@ const updateFullOrderSession = async ({ orderSessionId, orderSession, orderSessi
         ),
       ]);
     }
-    if (_.isEmpty(orderSessionDetail.discounts)) {
+    if (!_.isEmpty(orderSessionDetail.discounts)) {
       await bulkUpdate(
         PostgreSQLTable.Discount,
         orderSessionDetail.discounts.map((discount) => ({
