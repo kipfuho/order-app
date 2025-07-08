@@ -21,7 +21,7 @@ import {
   useUpdateOrderSessionMutation,
 } from "@stores/apiSlices/orderApi.slice";
 import { RootState } from "@stores/store";
-import { DiscountType, DiscountValueType } from "@constants/common";
+import { DiscountValueType } from "@constants/common";
 import { OrderSession } from "@stores/state.interface";
 import toastConfig from "@/components/CustomToast";
 import { ConfirmCancelDialog } from "../CancelDialog";
@@ -84,14 +84,14 @@ export default function OrderSessionDetailPage({
     setDiscountModalVisible(false);
   };
 
-  const removeDiscountOnInvoice = async () => {
+  const removeDiscountById = async (discountId: string) => {
     if (!orderSessionDetail || !currentShop || removeDiscountLoading) {
       return;
     }
 
     const discount = _.find(
       orderSessionDetail.discounts,
-      (d) => d.discountType === DiscountType.INVOICE,
+      (d) => d.id === discountId,
     );
 
     if (!discount) {
@@ -278,7 +278,9 @@ export default function OrderSessionDetailPage({
                 {removeDiscountLoading ? (
                   <ActivityIndicator size={18} />
                 ) : (
-                  <TouchableOpacity onPress={removeDiscountOnInvoice}>
+                  <TouchableOpacity
+                    onPress={() => removeDiscountById(discount.id)}
+                  >
                     <Text
                       style={{
                         fontSize: 16,
