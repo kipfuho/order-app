@@ -790,6 +790,8 @@ const removeDiscountFromOrderSession = async ({ shopId, requestBody }) => {
     where: { id: orderSessionId },
     select: { id: true },
   });
+
+  return orderUtilService.calculateOrderSessionAndReturn(orderSessionId);
 };
 
 const getTableActiveOrderSessions = async ({ shopId, tableId }) => {
