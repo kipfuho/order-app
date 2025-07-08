@@ -33,6 +33,30 @@ const getJson = async (key) => {
   }
 };
 
+const putValue = async ({ key, value }) => {
+  try {
+    await _setKey({ key, value: JSON.stringify({ value, timestamp: Date.now() }) });
+  } catch (err) {
+    const message = `error putting data to redis. ${err.stack}`;
+    logger.error(message);
+  }
+};
+
+const getValue = async (key) => {
+  try {
+    if (!isRedisConnected()) return null;
+
+    const jsonStr = await client.get(key);
+    if (!jsonStr) return null;
+
+    const data = JSON.parse(jsonStr);
+    return data.value;
+  } catch (err) {
+    logger.error(`Error getting data from Redis: ${err.stack}`);
+    return null;
+  }
+};
+
 const deleteKey = async (key) => {
   if (!isRedisConnected()) return;
   await client.del(key);
@@ -85,6 +109,8 @@ const deleteKeysByPrefix = async (prefix) => {
 module.exports = {
   putJson,
   getJson,
+  putValue,
+  getValue,
   isRedisConnected,
   deleteKey,
   expireKey,

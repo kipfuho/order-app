@@ -22,6 +22,7 @@ const { notifyNewOrder, EventActionType } = require('../../utils/awsUtils/appSyn
 const { PostgreSQLTable } = require('../../utils/prisma');
 const { registerJob } = require('../../jobs/jobUtils');
 const { JobTypes } = require('../../jobs/constant');
+const { getUpdateFullOrderSessionKey } = require('../../metadata/common');
 
 // Merge các dish order có trùng tên và giá
 const _mergeDishOrders = (dishOrders, isReturnedDishOrders) => {
@@ -796,6 +797,7 @@ const calculateOrderSessionAndReturn = async (orderSessionId, shopId) => {
     return orderSessionDetail;
   }
 
+  const currentTime = new Date();
   const { shop } = orderSessionDetail;
   const { calculateTaxDirectly } = shop;
   const dishOrders = _.flatMap(orderSessionDetail.orders, 'dishOrders');
@@ -835,12 +837,32 @@ const calculateOrderSessionAndReturn = async (orderSessionId, shopId) => {
     orderSession.beforeTaxTotalDiscountAmount !== orderSessionDetail.beforeTaxTotalDiscountAmount ||
     orderSession.afterTaxTotalDiscountAmount !== orderSessionDetail.afterTaxTotalDiscountAmount
   ) {
+    await OrderSession.update({
+      data: {
+        pretaxPaymentAmount: orderSessionDetail.pretaxPaymentAmount,
+        revenueAmount: orderSessionDetail.revenueAmount,
+        paymentAmount: orderSessionDetail.paymentAmount,
+        updatedAt: orderSessionDetail.updatedAt,
+        auditedAt: orderSessionDetail.auditedAt,
+      },
+      where: { id: orderSessionId },
+      select: {
+        id: true,
+      },
+    });
+    const key = getUpdateFullOrderSessionKey({ orderSessionId });
+    const currentTimeEpoch = currentTime.getTime();
+    await redisClient.putValue({
+      key,
+      value: currentTimeEpoch,
+    });
     await registerJob({
       type: JobTypes.UPDATE_FULL_ORDER_SESSION,
       data: {
         orderSessionId,
         orderSession,
         orderSessionDetail,
+        currentTimeEpoch,
       },
     });
   }

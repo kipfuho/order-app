@@ -13,6 +13,7 @@ const getUserKey = ({ userId }) => `user_${userId}`;
 const getCustomerKey = ({ customerId }) => `customer_${customerId}`;
 const getKitchenKey = ({ shopId }) => `kitchen_${shopId}`;
 const getTFIDFKey = ({ allDishes, shopId }) => `tfidf_${shopId}_${allDishes.map((d) => d.id).join('_')}`;
+const getUpdateFullOrderSessionKey = ({ orderSessionId }) => `update_full_order_session_${orderSessionId}`;
 
 const deleteShopCache = async ({ shopId }) => {
   if (redisClient.isRedisConnected()) {
@@ -106,6 +107,7 @@ module.exports = {
   getCustomerKey,
   getKitchenKey,
   getTFIDFKey,
+  getUpdateFullOrderSessionKey,
   deleteShopCache,
   deleteDepartmentCache,
   deleteEmployeeCache,

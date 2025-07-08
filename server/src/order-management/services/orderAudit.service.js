@@ -3,12 +3,15 @@ const redisClient = require('../../utils/redis');
 const { getRoundDiscountAmount, getRoundPaymentAmount } = require('../../utils/common');
 const { bulkUpdate, PostgreSQLTable } = require('../../utils/prisma');
 const { OrderSession } = require('../../models');
+const { getUpdateFullOrderSessionKey } = require('../../metadata/common');
 
-const updateFullOrderSession = async ({ orderSessionId, orderSession, orderSessionDetail }) => {
-  const key = `update_full_order_session_${orderSessionId}`;
-  const canGetLock = await redisClient.getCloudLock({ key, periodInSecond: 10 });
-  // TODO: can cause bug
-  if (!canGetLock) return;
+const updateFullOrderSession = async ({ orderSessionId, orderSession, orderSessionDetail, currentTimeEpoch }) => {
+  const key = getUpdateFullOrderSessionKey({ orderSessionId });
+  const lastUpdateTimestamp = redisClient.getValue(key);
+  // nếu timestamp trong cache lớn hơn timestamp truyền vào job thì k update sử dụng payload hiện tại
+  if (lastUpdateTimestamp > currentTimeEpoch) {
+    return;
+  }
 
   try {
     // only try to update orders and dishorders in certain cases
@@ -86,7 +89,7 @@ const updateFullOrderSession = async ({ orderSessionId, orderSession, orderSessi
         }))
       );
     }
-    const currentTime = new Date();
+    const currentTime = new Date(currentTimeEpoch);
     await OrderSession.update({
       data: {
         shouldRecalculateTax: false,
