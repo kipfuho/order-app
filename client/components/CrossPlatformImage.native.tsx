@@ -13,6 +13,7 @@ export const CrossPlatformImage: React.FC<FastImageProps> = ({
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       source={isValidUri ? source : require("@assets/images/savora.png")}
       style={style}
+      fallback={true}
       {...props}
     />
   );

@@ -39,10 +39,15 @@ export default function DiscountModal({
       visible={visible}
       onDismiss={onDismiss}
       style={{
-        flex: 1,
         justifyContent: "center",
         alignItems: "center",
         padding: 16,
+      }}
+      contentContainerStyle={{
+        height: "80%",
+        maxHeight: 500,
+        width: "80%",
+        maxWidth: 600,
       }}
     >
       <Surface
@@ -85,16 +90,17 @@ export default function DiscountModal({
             inactiveColor={theme.colors.secondary}
           />
         </View>
+        <View style={styles.inputRow}>
+          <TextInput
+            mode="outlined"
+            placeholder={t("reason")}
+            value={reason}
+            onChangeText={setReason}
+            style={styles.input}
+          />
+        </View>
 
-        <TextInput
-          mode="outlined"
-          placeholder={t("reason")}
-          value={reason}
-          onChangeText={setReason}
-          style={styles.input}
-        />
-
-        <View style={{ marginVertical: 20 }}>
+        <View>
           {isLoading ? (
             <ActivityIndicator size={40} />
           ) : (
