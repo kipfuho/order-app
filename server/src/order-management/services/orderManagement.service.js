@@ -438,7 +438,8 @@ const cancelPaidStatus = async ({ orderSessionId, shopId }) => {
 };
 
 const getOrderHistory = async ({ shopId, from, to }) => {
-  const timeFilter = createSearchByDateOptionWithShopTimezone({ from, to });
+  const filterKey = 'createdAt';
+  const timeFilter = createSearchByDateOptionWithShopTimezone({ from, to, filterKey });
 
   // TODO: replace with order session report
   const orderSessions = await OrderSession.findMany({
@@ -446,6 +447,12 @@ const getOrderHistory = async ({ shopId, from, to }) => {
       shopId,
       ...timeFilter,
     },
+    orderBy: [
+      {
+        [filterKey]: 'asc',
+      },
+      { id: 'asc' },
+    ],
   });
   return orderSessions;
 };
