@@ -2,11 +2,15 @@ const logger = require('../config/logger');
 const { KitchenLog, S3Log, Order } = require('../models');
 const { JobTypes } = require('./constant');
 const { OrderSessionStatus } = require('../utils/constant');
-const { calculateOrderSessionAndReturn } = require('../order-management/services/orderUtils.service');
+const { updateFullOrderSession } = require('../order-management/services/orderAudit.service');
 
 const processJob = async (jobPayload) => {
   const { type, data } = jobPayload;
 
+  if (type === JobTypes.UPDATE_FULL_ORDER_SESSION) {
+    await updateFullOrderSession(data);
+    return;
+  }
   if (type === JobTypes.CONFIRM_S3_OBJECT_USAGE) {
     await S3Log.updateInUseKeys(data);
     return;
@@ -60,11 +64,6 @@ const processJob = async (jobPayload) => {
         orderSessionId,
       },
     });
-    return;
-  }
-  if (type === JobTypes.UPDATE_FULL_ORDER_SESSION) {
-    const { orderSessionId } = data;
-    await calculateOrderSessionAndReturn({ orderSessionId });
     return;
   }
 
