@@ -270,6 +270,7 @@ const updateOrderSession = async ({ shopId, orderSessionId, requestBody }) => {
   const updateData = _.pickBy({
     taxRate,
     shouldRecalculateTax: !!taxRate || taxRate === 0,
+    updatedAt: new Date(),
   });
   await OrderSession.update({
     where: {
@@ -701,6 +702,7 @@ const discountDishOrder = async ({ shopId, requestBody }) => {
             },
           }),
         }),
+        updatedAt: new Date(),
       },
       where: { id: orderSessionId },
       select: { id: true },
@@ -727,7 +729,7 @@ const discountOrderSession = async ({ shopId, requestBody }) => {
   ) {
     await OrderSession.update({
       data: _.pickBy({
-        discounts: {
+        discounts: _.pickBy({
           update: previousDiscount
             ? {
                 where: {
@@ -735,6 +737,14 @@ const discountOrderSession = async ({ shopId, requestBody }) => {
                 },
                 data: {
                   status: Status.disabled,
+                  discountProducts: {
+                    updateMany: {
+                      where: {},
+                      data: {
+                        status: Status.disabled,
+                      },
+                    },
+                  },
                 },
               }
             : null,
@@ -746,7 +756,8 @@ const discountOrderSession = async ({ shopId, requestBody }) => {
             discountAfterTax,
             discountReason,
           }),
-        },
+        }),
+        updatedAt: new Date(),
       }),
       where: { id: orderSessionId },
       select: { id: true },
@@ -763,7 +774,19 @@ const removeDiscountFromOrderSession = async ({ shopId, requestBody }) => {
   throwBadRequest(!orderSessionDetail, getMessageByLocale({ key: 'orderSession.notFound' }));
 
   await OrderSession.update({
-    data: { discounts: { delete: { id: discountId } } },
+    data: {
+      discounts: {
+        update: {
+          where: {
+            id: discountId,
+          },
+          data: {
+            status: Status.disabled,
+          },
+        },
+      },
+      updatedAt: new Date(),
+    },
     where: { id: orderSessionId },
     select: { id: true },
   });

@@ -444,7 +444,8 @@ const _getOrderSessionDetail = async ({ orderSessionId, shopId }) => {
   const orderSessionLastAuditedTime = orderSession.auditedAt || 0;
   const shouldRecalculate =
     orderSession.updatedAt > orderSessionLastAuditedTime ||
-    orderSessionDetail.orders.some((order) => order.updatedAt > orderSessionLastAuditedTime);
+    orderSessionDetail.orders.some((order) => order.updatedAt > orderSessionLastAuditedTime) ||
+    true;
   // eslint-disable-next-line no-param-reassign
   shopId = orderSession.shopId;
   const shop = await getShopFromCache({ shopId });
@@ -859,7 +860,17 @@ const updateFullOrderSession = async ({ orderSessionId, orderSession, orderSessi
         ),
       ]);
     }
-
+    if (_.isEmpty(orderSessionDetail.discounts)) {
+      await bulkUpdate(
+        PostgreSQLTable.Discount,
+        orderSessionDetail.discounts.map((discount) => ({
+          id: discount.id,
+          beforeTaxTotalDiscountAmount: discount.beforeTaxTotalDiscountAmount,
+          afterTaxTotalDiscountAmount: discount.afterTaxTotalDiscountAmount,
+          taxTotalDiscountAmount: discount.taxTotalDiscountAmount,
+        }))
+      );
+    }
     const currentTime = new Date();
     await OrderSession.update({
       data: {
